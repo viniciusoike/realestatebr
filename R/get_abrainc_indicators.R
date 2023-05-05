@@ -35,6 +35,13 @@
 #' @export
 #' @source Abrainc-Fipe available at [https://www.fipe.org.br/pt-br/indices/abrainc](https://www.fipe.org.br/pt-br/indices/abrainc)
 #'
+#' @examples \dontrun{ if (interactive()) {
+#' # Get only the Radar data
+#' radar <- get_abrainc_indicators(category = "radar")
+#' # Get all available data
+#' abrainc <- get_abrainc_indicators()
+#' }}
+#'
 #' @examples
 #' # Get data only from the radar
 #' radar <- get_abrainc_indicators(category = "radar")
