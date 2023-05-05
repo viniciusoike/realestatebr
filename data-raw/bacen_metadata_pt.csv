@@ -1,0 +1,141 @@
+code,name,unit,frequency,first_value,last_value,source
+189,Índice geral de preços do mercado (IGP-M),Var. % mensal,M,1989-06-30,2023-02-01 00:00:00,FGV
+190,Índice geral de preços-disponibilidade interna (IGP-DI),Var. % mensal,M,1944-02-29,2023-02-01 00:00:00,FGV
+192,Índice nacional de custo da construção (INCC),Var. % mensal,M,1944-02-29,2023-02-01 00:00:00,FGV
+432,Taxa de juros - Meta Selic definida pelo Copom,% a.a.,D,1999-03-05,2023-05-03 00:00:00,Copom
+433,Índice nacional de preços ao consumidor-amplo (IPCA),Var. % mensal,M,1980-01-02,2023-02-01 00:00:00,IBGE
+606,Concessões das operações de crédito com recursos livres referenciais para taxa de juros (pré-fixada) - Financiamento imobiliário - Pessoa jurídica,u.m.c. (mil),M,2000-05-31,2012-12-01 00:00:00,Sisbacen PESP300
+619,Concessões das operações de crédito com recursos livres referenciais para taxa de juros (pós-fixada) - Financiamento imobiliário - Pessoa jurídica,u.m.c. (mil),M,2000-05-31,2012-12-01 00:00:00,Sisbacen PESP300
+632,Concessões das operações de crédito com recursos livres referenciais para taxa de juros (flutuante) - Financiamento imobiliário - Pessoa jurídica,u.m.c. (mil),M,2000-05-31,2012-12-01 00:00:00,Sisbacen PESP300
+645,Concessões das operações de crédito com recursos livres referenciais para taxa de juros (base em índices de preços) - Financiamento imobiliário - Pessoa jurídica,u.m.c. (mil),M,2000-05-31,2012-12-01 00:00:00,Sisbacen PESP300
+918,Concessões das operações de crédito com recursos livres referenciais para taxa de juros (pré-fixada) - Financiamento imobiliário - Pessoa física,u.m.c. (mil),M,2000-05-31,2012-12-01 00:00:00,Sisbacen PESP300
+931,Concessões das operações de crédito com recursos livres referenciais para taxa de juros (pós-fixada) - Financiamento imobiliário - Pessoa física,u.m.c. (mil),M,2000-05-31,2012-12-01 00:00:00,Sisbacen PESP300
+944,Concessões das operações de crédito com recursos livres referenciais para taxa de juros (flutuante) - Financiamento imobiliário - Pessoa física,u.m.c. (mil),M,2000-05-31,2012-12-01 00:00:00,Sisbacen PESP300
+957,Concessões das operações de crédito com recursos livres referenciais para taxa de juros (base em índices de preços) - Financiamento imobiliário - Pessoa física,u.m.c. (mil),M,2000-05-31,2012-12-01 00:00:00,Sisbacen PESP300
+1344,Utilização da capacidade instalada - Geral (FGV),%,T,1970-04-30,1º Trim. 2023,FGV
+1346,Utilização da capacidade instalada - Bens de capital,%,T,1970-04-30,4º Trim. 2015,FGV
+1347,Utilização da capacidade instalada - Material de construção,%,T,1970-04-30,4º Trim. 2015,FGV
+1355,Utilização da capacidade instalada - Mobiliário,%,T,1971-04-30,4º Trim. 2015,FGV
+1402,Consumo de energia elétrica - Comercial,GWh,M,1979-01-31,2023-01-01 00:00:00,Eletrobras
+1403,Consumo de energia elétrica - Brasil - Residencial,GWh,M,1979-01-31,2023-01-01 00:00:00,Eletrobras
+1404,Consumo de energia elétrica - Brasil - Industrial,GWh,M,1979-01-31,2023-01-01 00:00:00,Eletrobras
+1455,Índice volume de vendas no varejo - Total - Brasil,Índice,M,2000-01-31,2022-12-01 00:00:00,IBGE
+1636,Índice nacional de preços ao consumidor-Amplo (IPCA) - Habitação,Var. % mensal,M,1991-01-31,2023-02-01 00:00:00,IBGE
+1645,Índice nacional de preços ao consumidor (INPC) - Habitação,Var. % mensal,M,1991-01-31,2023-02-01 00:00:00,IBGE
+2144,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Resultado primário - Total - Governo Federal,u.m.c. (milhões),M,1999-01-01,2023-01-01 00:00:00,BCB-DSTAT
+2147,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Resultado primário - Total - Governos estaduais,u.m.c. (milhões),M,1998-01-01,2023-01-01 00:00:00,BCB-DSTAT
+2148,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Resultado primário - Total - Governos municipais,u.m.c. (milhões),M,1998-01-01,2023-01-01 00:00:00,BCB-DSTAT
+3698,Taxa de câmbio - Livre - Dólar americano (venda) - Média de período - mensal,u.m.c./US$,M,1953-01-31,2023-02-01 00:00:00,BCB-DSTAT
+3986,Concessões consolidadas das operações de crédito com recursos livres referenciais para taxa de juros - Financiamento imobiliário - Pessoa jurídica,u.m.c. (mil),M,2000-06-30,2012-12-01 00:00:00,BCB-DSTAT
+4003,Dívida Líquida do Setor Público - Saldos em u.m.c. milhões - Total - Setor público consolidado,u.m.c. (milhões),M,2001-12-01,2023-01-01 00:00:00,BCB-DSTAT
+4007,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Resultado nominal - Total - Governo Federal,u.m.c. (milhões),M,1999-01-01,2023-01-01 00:00:00,BCB-DSTAT
+4010,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Resultado nominal - Total - Governos estaduais,u.m.c. (milhões),M,1998-01-01,2023-01-01 00:00:00,BCB-DSTAT
+4011,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Resultado nominal - Total - Governos municipais,u.m.c. (milhões),M,1998-01-01,2023-01-01 00:00:00,BCB-DSTAT
+4016,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Resultado nominal - Total - Setor público consolidado,u.m.c. (milhões),M,2001-12-01,2023-01-01 00:00:00,BCB-DSTAT
+4040,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Juros nominais - Total - Governo Federal,u.m.c. (milhões),M,1999-01-01,2023-01-01 00:00:00,BCB-DSTAT
+4043,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Juros nominais - Total - Governos estaduais,u.m.c. (milhões),M,1998-01-01,2023-01-01 00:00:00,BCB-DSTAT
+4044,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Juros nominais - Total - Governos municipais,u.m.c. (milhões),M,1998-01-01,2023-01-01 00:00:00,BCB-DSTAT
+4049,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Juros nominais - Total - Setor público consolidado,u.m.c. (milhões),M,2001-12-01,2023-01-01 00:00:00,BCB-DSTAT
+4144,NFSP sem desvalorização cambial - Fluxo mensal corrente (u.m.c.) - Resultado primário - Total - Setor público consolidado,u.m.c. (milhões),M,2001-12-01,2023-01-01 00:00:00,BCB-DSTAT
+4466,Índice nacional de preços ao consumidor-Amplo (IPCA) - Núcleo médias aparadas com suavização,Var. % mensal,M,1996-01-31,2023-02-01 00:00:00,BCB-Depec
+4504,Dívida Líquida do Setor Público (% PIB) - Total - Governo Federal,%,M,2001-12-31,2023-01-01 00:00:00,BCB-DSTAT
+4507,Dívida Líquida do Setor Público (% PIB) - Total - Governos estaduais,%,M,2001-12-31,2023-01-01 00:00:00,BCB-DSTAT
+4508,Dívida Líquida do Setor Público (% PIB) - Total - Governos municipais,%,M,2001-12-01,2023-01-01 00:00:00,BCB-DSTAT
+4513,Dívida Líquida do Setor Público (% PIB) - Total - Setor público consolidado,%,M,2001-12-01,2023-01-01 00:00:00,BCB-DSTAT
+4536,Dívida líquida do governo geral (% PIB),%,M,2001-12-31,2023-01-01 00:00:00,BCB-DSTAT
+4537,Dívida bruta do governo geral (% PIB) - Metodologia utilizada até 2007,%,M,2001-12-31,2023-01-01 00:00:00,BCB-DSTAT
+5718,NFSP sem desvalorização cambial (% PIB) - Fluxo acumulado em 12 meses - Resultado nominal - Total - Governo Federal,%,M,1999-12-01,2023-01-01 00:00:00,BCB-DSTAT
+5721,NFSP sem desvalorização cambial (% PIB) - Fluxo acumulado em 12 meses - Resultado nominal - Total - Governos estaduais,%,M,1998-12-01,2023-01-01 00:00:00,BCB-DSTAT
+5722,NFSP sem desvalorização cambial (% PIB) - Fluxo acumulado em 12 meses - Resultado nominal - Total - Governos municipais,%,M,1998-12-01,2023-01-01 00:00:00,BCB-DSTAT
+5727,NFSP sem desvalorização cambial (% PIB) - Fluxo acumulado em 12 meses - Resultado nominal - Total - Setor público consolidado,%,M,2002-11-01,2023-01-01 00:00:00,BCB-DSTAT
+5793,NFSP sem desvalorização cambial (% PIB) - Fluxo acumulado em 12 meses - Resultado primário - Total - Setor público consolidado,%,M,2002-11-01,2023-01-01 00:00:00,BCB-DSTAT
+7326,Produto Interno Bruto - Taxa de variação real no ano,Var. % anual,A,1962-12-31,2022-12-31 00:00:00,IBGE
+11752,Índice da taxa de câmbio real efetiva (IPCA) - Jun/1994=100,Índice,M,1988-01-31,2022-12-01 00:00:00,BCB-DSTAT
+13421,Taxa referencial (TR) para financiamentos imobiliários prefixados do SFH,% a.a.,M,2006-09-01,2022-01-01 00:00:00,BCB-Demab
+13762,Dívida bruta do governo geral (% PIB) - Metodologia utilizada a partir de 2008,%,M,2006-12-01,2023-01-01 00:00:00,BCB-DSTAT
+20105,Material de construção,Índice,M,2003-01-01,2022-12-01 00:00:00,IBGE
+20690,Concessões de crédito com recursos direcionados - Pessoas jurídicas - Financiamento imobiliário com taxas de mercado,R$ (milhões),M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20691,Concessões de crédito com recursos direcionados - Pessoas jurídicas - Financiamento imobiliário com taxas reguladas,R$ (milhões),M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20692,Concessões de crédito com recursos direcionados - Pessoas jurídicas - Financiamento imobiliário total,R$ (milhões),M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20702,Concessões de crédito com recursos direcionados - Pessoas físicas - Financiamento imobiliário com taxas de mercado,R$ (milhões),M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20703,Concessões de crédito com recursos direcionados - Pessoas físicas - Financiamento imobiliário com taxas reguladas,R$ (milhões),M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20704,Concessões de crédito com recursos direcionados - Pessoas físicas - Financiamento imobiliário total,R$ (milhões),M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20756,Taxa média de juros das operações de crédito com recursos direcionados - Total,% a.a.,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20757,Taxa média de juros das operações de crédito com recursos direcionados - Pessoas jurídicas - Total,% a.a.,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20761,Taxa média de juros das operações de crédito com recursos direcionados - Pessoas jurídicas - Financiamento imobiliário com taxas de mercado,% a.a.,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20762,Taxa média de juros das operações de crédito com recursos direcionados - Pessoas jurídicas - Financiamento imobiliário com taxas reguladas,% a.a.,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20763,Taxa média de juros das operações de crédito com recursos direcionados - Pessoas jurídicas - Financiamento imobiliário total,% a.a.,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20768,Taxa média de juros das operações de crédito com recursos direcionados - Pessoas físicas - Total,% a.a.,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20772,Taxa média de juros das operações de crédito com recursos direcionados - Pessoas físicas - Financiamento imobiliário com taxas de mercado,% a.a.,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20773,Taxa média de juros das operações de crédito com recursos direcionados - Pessoas físicas - Financiamento imobiliário com taxas reguladas,% a.a.,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20774,Taxa média de juros das operações de crédito com recursos direcionados - Pessoas físicas - Financiamento imobiliário total,% a.a.,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20900,Prazo médio das concessões de crédito com recursos direcionados - Pessoas jurídicas - Financiamento imobiliário com taxas de mercado,Meses,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20901,Prazo médio das concessões de crédito com recursos direcionados - Pessoas jurídicas - Financiamento imobiliário com taxas reguladas,Meses,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20902,Prazo médio das concessões de crédito com recursos direcionados - Pessoas jurídicas - Financiamento imobiliário total,Meses,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20912,Prazo médio das concessões de crédito com recursos direcionados - Pessoas físicas - Financiamento imobiliário com taxas de mercado,Meses,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20913,Prazo médio das concessões de crédito com recursos direcionados - Pessoas físicas - Financiamento imobiliário com taxas reguladas,Meses,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+20914,Prazo médio das concessões de crédito com recursos direcionados - Pessoas físicas - Financiamento imobiliário total,Meses,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21053,Percentual da carteira de crédito com recursos direcionados com atraso entre 15 e 90 dias - Total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21054,Percentual da carteira de crédito com recursos direcionados com atraso entre 15 e 90 dias - Pessoas jurídicas - Total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21058,Percentual da carteira de crédito com recursos direcionados com atraso entre 15 e 90 dias - Pessoas jurídicas - Financiamento imobiliário com taxas de mercado,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21059,Percentual da carteira de crédito com recursos direcionados com atraso entre 15 e 90 dias - Pessoas jurídicas - Financiamento imobiliário com taxas reguladas,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21060,Percentual da carteira de crédito com recursos direcionados com atraso entre 15 e 90 dias - Pessoas jurídicas - Financiamento imobiliário total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21066,Percentual da carteira de crédito com recursos direcionados com atraso entre 15 e 90 dias - Pessoas físicas - Total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21070,Percentual da carteira de crédito com recursos direcionados com atraso entre 15 e 90 dias - Pessoas físicas - Financiamento imobiliário com taxas de mercado,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21071,Percentual da carteira de crédito com recursos direcionados com atraso entre 15 e 90 dias - Pessoas físicas - Financiamento imobiliário com taxas reguladas,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21072,Percentual da carteira de crédito com recursos direcionados com atraso entre 15 e 90 dias - Pessoas físicas - Financiamento imobiliário total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21082,Inadimplência da carteira de crédito - Total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21083,Inadimplência da carteira de crédito - Pessoas jurídicas - Total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21084,Inadimplência da carteira de crédito - Pessoas físicas - Total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21132,Inadimplência da carteira de crédito com recursos direcionados - Total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21133,Inadimplência da carteira de crédito com recursos direcionados - Pessoas jurídicas - Total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21139,Inadimplência da carteira de crédito com recursos direcionados - Pessoas jurídicas - Financiamento imobiliário total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21145,Inadimplência da carteira de crédito com recursos direcionados - Pessoas físicas - Total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21151,Inadimplência da carteira de crédito com recursos direcionados - Pessoas físicas - Financiamento imobiliário total,%,M,2011-03-01,2023-01-01 00:00:00,BCB-DSTAT
+21340,Índice de Valores de Garantia de Imóveis Residenciais Financiados (IVG-R),Índice,M,2001-03-01,2023-01-01 00:00:00,BCB-Desig
+21637,PMS - Receita nominal de serviços - Total - Brasil,Índice,M,2011-01-01,2022-12-01 00:00:00,IBGE
+22105,PIB trimestral - Dados dessazonalizados - Agropecuária (total),Índice,T,1995-01-01,4º Trim. 2022,IBGE
+22106,PIB trimestral - Dados dessazonalizados - Indústria (total),Índice,T,1995-01-01,4º Trim. 2022,IBGE
+22107,PIB trimestral - Dados dessazonalizados - Serviços (total),Índice,T,1995-01-01,4º Trim. 2022,IBGE
+22108,PIB trimestral - Dados dessazonalizados - Valor adicionado a preços básicos,Índice,T,1995-01-01,4º Trim. 2022,IBGE
+22109,PIB trimestral - Dados dessazonalizados - Produto Interno Bruto a preços de mercado,Índice,T,1995-01-01,4º Trim. 2022,IBGE
+22110,PIB trimestral - Dados dessazonalizados - Consumo das famílias,Índice,T,1995-01-01,4º Trim. 2022,IBGE
+22111,PIB trimestral - Dados dessazonalizados - Consumo do Governo,Índice,T,1995-01-01,4º Trim. 2022,IBGE
+22113,PIB trimestral - Dados dessazonalizados - FBCF,Índice,T,1995-01-01,4º Trim. 2022,IBGE
+22114,PIB trimestral - Dados dessazonalizados - Exportação,Índice,T,1995-01-01,4º Trim. 2022,IBGE
+22115,PIB trimestral - Dados dessazonalizados - Importação SCN 2010,Índice,T,1995-01-01,4º Trim. 2022,IBGE
+22704,Balança comercial e Serviços - mensal - saldo,US$ (milhões),M,1995-01-01,2023-01-01 00:00:00,BCB-DSTAT
+22705,Balança comercial e Serviços - mensal - receita,US$ (milhões),M,1995-01-01,2023-01-01 00:00:00,BCB-DSTAT
+22706,Balança comercial e Serviços - mensal - despesa,US$ (milhões),M,1995-01-01,2023-01-01 00:00:00,BCB-DSTAT
+22707,Balança comercial - Balanço de Pagamentos - mensal - saldo,US$ (milhões),M,1995-01-01,2023-01-01 00:00:00,BCB-DSTAT
+22708,Exportação de bens - Balanço de Pagamentos - mensal,US$ (milhões),M,1995-01-01,2023-01-01 00:00:00,BCB-DSTAT
+22709,Importação de bens - Balanço de Pagamentos - mensal,US$ (milhões),M,1995-01-01,2023-01-01 00:00:00,BCB-DSTAT
+23461,Transações correntes - anual - saldo,US$ (milhões),A,1995-01-01,2022-12-31 00:00:00,BCB-DSTAT
+23982,PMS - Volume de serviços - Total - Brasil,Índice,M,2011-01-01,2022-12-01 00:00:00,IBGE
+24364,Índice de Atividade Econômica do Banco Central (IBC-Br) - com ajuste sazonal,Índice,M,2003-01-01,2022-12-01 00:00:00,BCB-Depec
+24369,Taxa de desocupação - PNADC,%,M,2012-03-01,2023-01-01 00:00:00,IBGE
+24382,Rendimento médio real habitual das pessoas ocupadas - PNADC,R$,M,2012-03-01,2023-01-01 00:00:00,IBGE
+25351,Indicador de Custo do Crédito - ICC - Total,% a.a.,M,2013-01-01,2023-01-01 00:00:00,BCB-DSTAT
+25357,Indicador de Custo do Crédito - ICC - Recursos direcionados - Total,% a.a.,M,2013-01-01,2023-01-01 00:00:00,BCB-DSTAT
+25358,Indicador de Custo do Crédito - ICC - Recursos direcionados - Pessoas jurídicas - Total,% a.a.,M,2013-01-01,2023-01-01 00:00:00,BCB-DSTAT
+25359,Indicador de Custo do Crédito - ICC - Recursos direcionados - Pessoas físicas - Total,% a.a.,M,2013-01-01,2023-01-01 00:00:00,BCB-DSTAT
+27713,Indicador de Custo do Crédito - ICC - Recursos Direcionados - Pessoas físicas - Financiamento imobiliário com taxas de mercado,% a.a.,M,2013-01-01,2023-01-01 00:00:00,BCB-DSTAT
+27714,Indicador de Custo do Crédito - ICC - Recursos Direcionados - Pessoas físicas - Financiamento imobiliário com taxas reguladas,% a.a.,M,2013-01-01,2023-01-01 00:00:00,BCB-DSTAT
+27715,Indicador de Custo do Crédito - ICC - Recursos Direcionados - Pessoas físicas - Financiamento imobiliário total,% a.a.,M,2013-01-01,2023-01-01 00:00:00,BCB-DSTAT
+27841,Meios de pagamento - M1 (saldo em final de período) - Novo - sazonalmente ajustado,u.m.c. (mil),M,2001-12-03,2023-01-01 00:00:00,BCB-DSTAT
+28473,Índice volume de vendas no varejo - Total - Brasi - Dados dessazonalizados,Índice,M,2000-01-31,2022-12-01 00:00:00,IBGE
+28478,Índice volume de vendas no varejo - Móveis e eletrodomésticos - Brasil - Dados dessazonalizados,Índice,M,2000-01-31,2022-12-01 00:00:00,IBGE
+28479,"Índice volume de vendas no varejo - Automóveis, motocicletas, partes e peças - Brasil - Dados dessazonalizados",Índice,M,2000-01-31,2022-12-01 00:00:00,IBGE
+28484,Material de construção - Dados dessazonalizados,Índice,M,2003-01-01,2022-12-01 00:00:00,IBGE
+28503,Indicadores da produção (2012=100) - Geral - Dados dessazonalizados,Índice,M,2002-01-01,2022-12-01 00:00:00,IBGE
+28509,Indicadores da produção (2012=100) - Bens de consumo duráveis - Dados dessazonalizados,Índice,M,2002-01-01,2022-12-01 00:00:00,IBGE
+28511,Indicadores da produção (2012=100) - Insumos da construção civil - Dados dessazonalizados,Índice,M,2012-01-01,2022-12-01 00:00:00,IBGE
+28545,Massa de rendimento real habitual de todos os trabalhos,R$ (milhões),M,2012-03-01,2023-01-01 00:00:00,IBGE
+28763,Estoque de empregos formais - Total,Unidades,M,1992-01-01,2023-01-01 00:00:00,ME
+28770,Estoque de empregos formais  Construção,Unidades,M,1992-01-01,2023-01-01 00:00:00,ME
+29033,Comprometimento de renda das famílias com juros da dívida com o Sistema Financeiro Nacional - Com ajuste sazonal (RNDBF),%,M,2005-03-01,2022-11-01 00:00:00,BCB-DSTAT
+29034,Comprometimento de renda das famílias com o serviço da dívida com o Sistema Financeiro Nacional - Com ajuste sazonal (RNDBF),%,M,2005-03-01,2022-11-01 00:00:00,BCB-DSTAT
+29035,Comprometimento de renda das famílias com o serviço da dívida com o Sistema Financeiro Nacional exceto crédito habitacional - Com ajuste sazonal (RNDBF),%,M,2005-03-01,2022-11-01 00:00:00,BCB-DSTAT
+29036,Comprometimento de renda das famílias com amortização da dívida com o Sistema Financeiro Nacional - Com ajuste sazonal (RNDBF),%,M,2005-03-01,2022-11-01 00:00:00,BCB-DSTAT
+29037,Endividamento das famílias com o Sistema Financeiro Nacional em relação à renda acumulada dos últimos doze meses (RNDBF),%,M,2005-01-01,2022-11-01 00:00:00,BCB-DSTAT
+29038,Endividamento das famílias com o Sistema Financeiro Nacional exceto crédito habitacional em relação à renda acumulada dos últimos 12 meses (RNDBF),%,M,2005-01-01,2022-11-01 00:00:00,BCB-DSTAT
