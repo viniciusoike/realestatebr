@@ -102,3 +102,5 @@ usethis::use_data(dim_city, overwrite = TRUE)
 
 source("data-raw/abecip_cgi.R")
 source("data-raw/fgv_clean.R")
+
+usethis::use_data(abecip_cgi, fgv_data, internal = TRUE, overwrite = TRUE)

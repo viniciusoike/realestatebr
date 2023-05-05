@@ -52,6 +52,3 @@ fgv_data <- fgv_data |>
   dplyr::select(
     date, name_simplified, value, name_series, code_series, unit, source
   )
-
-usethis::use_data(fgv_data, internal = TRUE, overwrite = TRUE)
-

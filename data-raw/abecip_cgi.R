@@ -115,5 +115,3 @@ abecip_cgi <- abecip |>
   select(
     year, date, new_contracts, stock_contracts, loan, outstanding_balance, average_term, default_rate
   )
-
-usethis::use_data(abecip_cgi, internal = TRUE, overwrite = TRUE)
