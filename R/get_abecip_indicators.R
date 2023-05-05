@@ -1,7 +1,7 @@
 #' Get Credit Indicators from Abecip
 #'
 #' Downloads updated housing credit data from Abecip. Abecip represents the major
-#' financial institutions the integrate Brazil's finance housing system (SFH).
+#' financial institutions that integrate Brazil's finance housing system (SFH).
 #'
 #' @details
 #' This function returns three tables:
@@ -143,7 +143,7 @@ get_abecip_sbpe <- function(cached) {
   # Sum values and convert to wide
   sbpe_total <- sbpe_total |>
     #dplyr::rename(stock = sbpe_stock, netflow = sbpe_netflow) |>
-    dplyr::rename_with(~str_replace(.x, "sbpe_", "")) |>
+    dplyr::rename_with(~stringr::str_replace(.x, "sbpe_", "")) |>
     #tidyr::pivot_longer(cols = stock:netflow, names_to = "series_name") |>
     tidyr::pivot_longer(cols = inflow:stock, names_to = "series_name") |>
     dplyr::group_by(category, series_name) |>
