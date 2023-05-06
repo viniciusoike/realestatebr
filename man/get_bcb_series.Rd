@@ -42,8 +42,10 @@ against setting \code{date_start} to dates prior to July 1994. To download all
 available data the user can set a date such as \verb{as.Date("1900-01-01)}.
 }
 \examples{
+\dontrun{
 # Get price indicators
 prices <- get_bcb_series(category = "price")
 # Get all series
 bcb_series <- get_bcb_series(date_start = as.Date("2020-01-01"))
+}
 }

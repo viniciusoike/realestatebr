@@ -18,6 +18,3 @@ A \code{tibble} containing all construction confidence indicator series from FGV
 \description{
 Get FGV Confidence Indicators
 }
-\examples{
-get_fgv_indicators()
-}

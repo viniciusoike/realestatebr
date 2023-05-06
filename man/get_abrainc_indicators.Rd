@@ -46,8 +46,10 @@ varies by country so caution is advised in making international comparisons.
 Since this data is only updated quarterly it is usually safe to use \code{cached = TRUE}.
 }
 \examples{
-# Get data only from the radar
+\dontrun{
+# Get only the Radar data
 radar <- get_abrainc_indicators(category = "radar")
 # Get all available data
 abrainc <- get_abrainc_indicators()
+}
 }

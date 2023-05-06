@@ -20,5 +20,12 @@ Imports and cleans the most up to date property transaction records available
 from Registro de Imoveis.
 }
 \examples{
-get_property_records(category = "capitals")
+\dontrun{
+# Get property records
+records <- get_property_records()
+
+# Only for capitals and selected cities
+cities <- get_property_records("capitals")
+
+}
 }

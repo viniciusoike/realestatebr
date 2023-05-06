@@ -32,5 +32,12 @@ accumulated variation in the index number.
 It's important to note the IQA Index is a raw price and not a index-number.
 }
 \examples{
-# get_rppi()
+\dontrun{
+# Get RPPI sales data
+sales <- get_rppi("sale")
+
+# Get RPPI rent data
+rent <- get_rppi("rent")
+
+}
 }

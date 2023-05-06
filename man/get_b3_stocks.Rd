@@ -26,9 +26,3 @@ can be found at \code{b3_real_estate}.
 \details{
 Additionally returns some relevant financial indices.
 }
-\examples{
-# Default input download stock prices for all companies
-get_b3_stocks(as.Date("2022-10-01"))
-# Can use a string as date input as long as it's in a YYYY-MM-DD format
-get_b3_stocks("2022-10-01")
-}

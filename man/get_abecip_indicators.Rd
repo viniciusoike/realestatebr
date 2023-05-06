@@ -17,7 +17,7 @@ Either a named \code{list} or a \code{tibble}.
 }
 \description{
 Downloads updated housing credit data from Abecip. Abecip represents the major
-financial institutions the integrate Brazil's finance housing system (SFH).
+financial institutions that integrate Brazil's finance housing system (SFH).
 }
 \details{
 This function returns three tables:
@@ -37,5 +37,12 @@ is in percentage and \code{average_term} which is in months.
 }
 }
 \examples{
-# get_abecip_indicators(category = "sbpe")
+\dontrun{
+# SBPE financed units
+units <- get_abecip_indicators("units")
+
+# Download all available data
+sbpe <- get_abecip_indicators()
+
+}
 }

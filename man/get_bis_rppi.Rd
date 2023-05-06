@@ -4,19 +4,34 @@
 \alias{get_bis_rppi}
 \title{Get Residential Property Price Indices from BIS}
 \usage{
-get_bis_rppi(cached)
+get_bis_rppi(category = "selected", cached = FALSE)
 }
 \arguments{
+\item{category}{One of \code{selected} (default) or \code{detailed}.}
+
 \item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
 This is a faster option but not recommended for daily data.}
 }
 \value{
-A \code{tibble} with all selected RPPIs from BIS
+A \code{tibble} or a named \code{list} with all RPPIs from BIS.
 }
 \description{
-Get the selected Residential Property Price Indices from the Bank for
-International Settlements (BIS) available at \href{https://www.bis.org/statistics/pp_selected.htm}{their webpage}.
+Get the Residential Property Price Indices series from the Bank for
+International Settlements (BIS).
+}
+\details{
+For the simple selected series select \code{category = 'selected'}. More information
+on these series is available at the \href{https://www.bis.org/statistics/pp_selected.htm}{BIS website}
+
+For the full detailed dataset select \code{category = 'detailed'}. More information
+on these series is available at the \href{https://www.bis.org/statistics/pp_detailed.htm}{BIS website}
 }
 \examples{
-# get_bis_rppi()
+\dontrun{
+# Download selected RPPI data from BIS
+bis <- get_bis_rppi()
+
+# For faster download time use cached data
+bis <- get_bis_rppi(category = "detailed", cached = TRUE)
+}
 }

@@ -23,10 +23,15 @@ The residential Index includes only apartments and
 similar units such as studios and flats.
 }
 \examples{
+\dontrun{ if (interactive) {
+
 # Get all the available indices
-fz <- get_rppi_fipezap()
+# fz <- get_rppi_fipezap()
+
 # Get all indices available for Porto Alegre
-poa <- get_rppi_fipezap(city = "Porto Alegre")
+# poa <- get_rppi_fipezap(city = "Porto Alegre")
+
+}}
 
 }
 \seealso{

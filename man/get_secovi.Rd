@@ -19,7 +19,3 @@ A \code{tibble}
 \description{
 Import data from Secovi-SP.
 }
-\examples{
-# get_secovi()
-
-}
