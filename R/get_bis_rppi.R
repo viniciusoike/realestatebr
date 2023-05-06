@@ -1,21 +1,63 @@
 #' Get Residential Property Price Indices from BIS
 #'
-#' Get the selected Residential Property Price Indices from the Bank for
-#' International Settlements (BIS) available at [their webpage](https://www.bis.org/statistics/pp_selected.htm).
+#' Get the Residential Property Price Indices series from the Bank for
+#' International Settlements (BIS).
 #'
+#' @details
+#' For the simple selected series select `category = 'selected'`. More information
+#' on these series is available at the [BIS website](https://www.bis.org/statistics/pp_selected.htm)
+#'
+#' For the full detailed dataset select `category = 'detailed'`. More information
+#' on these series is available at the [BIS website](https://www.bis.org/statistics/pp_detailed.htm)
+#'
+#' @param category One of `selected` (default) or `detailed`.
 #' @param cached If `TRUE` downloads the cached data from the GitHub repository.
 #' This is a faster option but not recommended for daily data.
 #'
-#' @return A `tibble` with all selected RPPIs from BIS
+#' @return A `tibble` or a named `list` with all RPPIs from BIS.
 #' @export
 #'
-#' @examples
-#' # get_bis_rppi()
-get_bis_rppi <- function(cached) {
+#' @examples \dontrun{ if (interactive()) {
+#' # Download selected RPPI data from BIS
+#' bis <- get_bis_rppi()
+#'
+#' # For faster download time use cached data
+#' bis <- get_bis_rppi(category = "detailed", cached = TRUE)
+#'
+#' }}
+get_bis_rppi <- function(category = "selected", cached = FALSE) {
+
+
+  cats <- c("selected", "detailed")
+  errormsg <- glue::glue("Argument `category` must be one of '{cats[1]}' or '{cats[2]}'")
+
+  if (!any(category %in% cats)) { stop(errormsg) }
 
   if (cached) {
-    df <- readr::read_csv("...")
+    if (category == "selected") {
+      df <- readr::read_csv("...")
+    } else {
+      df <- readr::read_csv("...")
+    }
+    return(df)
   }
+
+  if (category == "selected") {
+    df <- get_bis_rppi_selected()
+  } else if (category == "detailed") {
+    df <- get_bis_rppi_detailed()
+  }
+  return(df)
+}
+
+
+#' Get Residential Property Price Indices from BIS
+#'
+#' Get the detailed Residential Property Price Indices from the Bank for
+#' International Settlements (BIS) available at [their webpage](https://www.bis.org/statistics/pp_selected.htm).
+#'
+#' @return A named `list` with all Detailed RPPIs from BIS
+get_bis_rppi_selected <- function() {
 
   # Download data
 
@@ -32,13 +74,13 @@ get_bis_rppi <- function(cached) {
     temp_path,
     sheet = 3,
     skip = 3
-    )
+  )
   # Import Dictionary into R and clean column names
   dict <- readxl::read_excel(
     temp_path,
     sheet = 2,
     .name_repair = janitor::make_clean_names
-    )
+  )
   # Change column names
   dict <- dplyr::rename(dict, is_nominal = value)
 
@@ -65,21 +107,14 @@ get_bis_rppi <- function(cached) {
     )
 
   return(clean_series)
-
 }
 
 #' Get Residential Property Price Indices from BIS
 #'
 #' Get the detailed Residential Property Price Indices from the Bank for
-#' International Settlements (BIS) available at [their webpage](https://www.bis.org/statistics/pp_selected.htm).
-#'
-#' @inheritParams get_bis_rppi
+#' International Settlements (BIS) available at [their webpage](https://www.bis.org/statistics/pp_detailed.htm).
 #'
 #' @return A named `list` with all Detailed RPPIs from BIS
-#' @export
-#'
-#' @examples
-#' #get_bis_rppi_detailed()
 get_bis_rppi_detailed <- function(cached) {
 
   # Download data
@@ -97,7 +132,7 @@ get_bis_rppi_detailed <- function(cached) {
     readxl::read_excel(temp_path, skip = 3, sheet = x)
   })
   # Name each element according to sheet names
-  names(sheets) <- janitor::make_clean_names(readxl::excel_sheets(temp_file)[3:6])
+  names(sheets) <- janitor::make_clean_names(readxl::excel_sheets(temp_path)[3:6])
 
   # Import Dictionary into R and clean column names
   dict <- readxl::read_excel(
@@ -111,16 +146,35 @@ get_bis_rppi_detailed <- function(cached) {
   # Define a function to clean the data.frames
   clean_bis_detailed <- function(df) {
 
+    # Inputs are a mix of strings '1901.31.01' and excel numeric dates '366'
+    fix_date_column <- function(x) {
+      # In most sheets the Period column is read appropriately
+      if (lubridate::is.POSIXct(x)) {
+        x <- lubridate::ymd(x)
+        x <- lubridate::floor_date(x, unit = "month")
+      } else {
+        # Fix the yearly sheet
+        x <- dplyr::if_else(
+          nchar(x) < 7,
+          janitor::excel_numeric_to_date(as.numeric(x)),
+          lubridate::make_date(substr(x, 7, 10))
+        )
+        x <- lubridate::floor_date(x, unit = "year")
+      }
+
+      return(x)
+    }
+
     # Fix date column and convert to long
     clean_df <- df |>
       dplyr::rename(date = Period) |>
-      dplyr::mutate(date = readr::parse_date(date, format = "%d.%m.%Y")) |>
+      dplyr::mutate(date = suppressWarnings(fix_date_column(date))) |>
       tidyr::pivot_longer(cols = -"date", names_to = "code")
 
     # Join data with dictionary and create a unit code
     clean_df <- clean_df |>
       dplyr::mutate(code = stringr::str_remove(code, "BIS_SPP:")) |>
-      dplyr::left_join(bis_dict, by = "code") |>
+      dplyr::left_join(dict, by = "code") |>
       dplyr::mutate(
         unit_code = dplyr::if_else(stringr::str_detect(unit, "Index"), 1L, 2L)
       )
