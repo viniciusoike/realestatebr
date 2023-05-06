@@ -96,13 +96,6 @@ get_ri_aggregates <- function(cached, ...) {
     ...
     )
 
-  download.file(
-    destfile = path_spo,
-    mode = "wb",
-    quiet = TRUE,
-    url = dlinks[[2]]
-  )
-
   # Import and clean sheets
   aggregates <- suppressMessages(import_ri_aggregates(path_spo))
   clean_aggregates <- suppressWarnings(clean_ri_aggregates(aggregates))
