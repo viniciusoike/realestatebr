@@ -22,14 +22,14 @@
 #' @export
 #'
 #'
-#' @examples \dontrun { if (interactive()) {
+#' @examples \dontrun{
 #' # Get RPPI sales data
 #' sales <- get_rppi("sale")
 #'
 #' # Get RPPI rent data
 #' rent <- get_rppi("rent")
 #'
-#' }}
+#' }
 get_rppi <- function(category = "sale", cached = FALSE, stack = FALSE) {
 
   # Import Index data from FipeZap

@@ -17,14 +17,13 @@
 #' @return A `tibble` or a named `list` with all RPPIs from BIS.
 #' @export
 #'
-#' @examples \dontrun{ if (interactive()) {
+#' @examples \dontrun{
 #' # Download selected RPPI data from BIS
 #' bis <- get_bis_rppi()
 #'
 #' # For faster download time use cached data
 #' bis <- get_bis_rppi(category = "detailed", cached = TRUE)
-#'
-#' }}
+#' }
 get_bis_rppi <- function(category = "selected", cached = FALSE) {
 
 

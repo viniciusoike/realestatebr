@@ -7,10 +7,6 @@
 #'
 #' @return A `tibble`
 #' @export
-#'
-#' @examples
-#' # get_secovi()
-#'
 get_secovi <- function(category = "all", cached = FALSE) {
 
   # Import data

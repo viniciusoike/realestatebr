@@ -25,11 +25,12 @@
 #' @return A 12-column `tibble` with all of the selected series from BCB.
 #' @export
 #'
-#' @examples
+#' @examples \dontrun{
 #' # Get price indicators
 #' prices <- get_bcb_series(category = "price")
 #' # Get all series
 #' bcb_series <- get_bcb_series(date_start = as.Date("2020-01-01"))
+#' }
 get_bcb_series <- function(
     category = "all",
     cached = FALSE,

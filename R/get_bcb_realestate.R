@@ -22,14 +22,14 @@
 #' @return A `tibble`
 #' @export
 #'
-#' @examples \dontrun { if (interactive() {
+#' @examples \dontrun{
 #' # Download all data in long format
 #' bcb <- get_bcb_realestate()
 #'
 #' # Get only data on financed units
 #' units <- get_bcb_realestate("units")
 #'
-#' })}
+#' }
 get_bcb_realestate <- function(category = "all", cached = FALSE) {
 
   cats <- c("accounting", "all", "application", "indices", "sources", "units")
@@ -98,7 +98,7 @@ import_bcb_realestate <- function() {
   # Download csv file
   download.file(url, destfile = temp_file, mode = "wb", quiet = TRUE)
   # Read the data
-  df <- readr::read_csv2(temp_file, col_types = "dcc")
+  df <- readr::read_csv(temp_file)
 
 }
 

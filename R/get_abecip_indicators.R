@@ -24,8 +24,14 @@
 #' @return Either a named `list` or a `tibble`.
 #' @export
 #'
-#' @examples
-#' # get_abecip_indicators(category = "sbpe")
+#' @examples \dontrun{
+#' # SBPE financed units
+#' units <- get_abecip_indicators("units")
+#'
+#' # Download all available data
+#' sbpe <- get_abecip_indicators()
+#'
+#' }
 get_abecip_indicators <- function(category = "all", cached = FALSE) {
 
   message(glue::glue("Downloading data from Abecip."))

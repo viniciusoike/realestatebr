@@ -13,12 +13,6 @@
 #'
 #' @return A `tibble` containing stock prices for all companies.
 #' @export
-#'
-#' @examples
-#' # Default input download stock prices for all companies
-#' # get_b3_stocks(as.Date("2022-10-01"))
-#' # Can use a string as date input as long as it's in a YYYY-MM-DD format
-#' # get_b3_stocks("2022-10-01")
 get_b3_stocks <- function(
     date_start = as.Date("2022-12-01"),
     cached = FALSE,
@@ -29,7 +23,7 @@ get_b3_stocks <- function(
     date_start <- try(lubridate::ymd(date_start))
 
     if (inherits(date_start, "try-error")) {
-      error("Date start must be a valid Date or a string interpretable as a Date.")
+      stop("Date start must be a valid Date or a string interpretable as a Date.")
     }
 
   }
@@ -51,7 +45,7 @@ get_b3_stocks <- function(
   # Uses purrr::map and stacks rows
 
   imob <- suppressWarnings(
-    tidyquant::tq_get(x = syms, get = "stock.prices", from = date_start)
+    quantmod::getSymbols(syms)
     )
   message("Financial series: download complete.")
 

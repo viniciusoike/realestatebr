@@ -5,9 +5,6 @@
 #'
 #' @return A `tibble` containing all construction confidence indicator series from FGV.
 #' @export
-#'
-#' @examples
-#' get_fgv_indicators()
 get_fgv_indicators <- function(category = "all", cached = FALSE) {
 
   # Check if category argument is valid
