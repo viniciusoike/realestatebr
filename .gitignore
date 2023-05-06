@@ -49,3 +49,5 @@ po/*~
 rsconnect/
 
 old/
+.Rprofile
+.Rbuildignore
