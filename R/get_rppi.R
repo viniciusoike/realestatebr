@@ -22,8 +22,14 @@
 #' @export
 #'
 #'
-#' @examples
-#' # get_rppi()
+#' @examples \dontrun { if (interactive()) {
+#' # Get RPPI sales data
+#' sales <- get_rppi("sale")
+#'
+#' # Get RPPI rent data
+#' rent <- get_rppi("rent")
+#'
+#' }}
 get_rppi <- function(category = "sale", cached = FALSE, stack = FALSE) {
 
   # Import Index data from FipeZap
@@ -370,11 +376,15 @@ get_rppi_ivar <- function(cached = FALSE) {
 #' @return A `tibble` with RPPI data for all selected cities
 #' @export
 #' @seealso [get_rppi()]
-#' @examples
+#' @examples \dontrun{ if (interactive) {
+#'
 #' # Get all the available indices
 #' # fz <- get_rppi_fipezap()
+#'
 #' # Get all indices available for Porto Alegre
 #' # poa <- get_rppi_fipezap(city = "Porto Alegre")
+#'
+#' }}
 #'
 get_rppi_fipezap <- function(city = "all", cached = FALSE) {
 

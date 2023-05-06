@@ -9,8 +9,14 @@
 #' @return A named `list` with property records data
 #' @export
 #'
-#' @examples
-#' get_property_records(category = "capitals")
+#' @examples \dontrun{ if (interactive()) {
+#' # Get property records
+#' records <- get_property_records()
+#'
+#' # Only for capitals and selected cities
+#' cities <- get_property_records("capitals")
+#'
+#' }}
 get_property_records <- function(category = "all", cached = FALSE) {
 
   cat_options <- c("all", "aggregates", "capitals")
