@@ -81,10 +81,13 @@ main_cities <- tidyr::tribble(
 code_main_cities <- unique(main_cities$code_muni)
 
 # Import city shapefile with official IBGE identifiers
-dim_city <- geobr::read_municipality(year = 2020)
-# Drop geometry
-dim_city <- sf::st_drop_geometry(dim_city)
-dim_city <- tibble::as_tibble(dim_city)
+# dim_city <- geobr::read_municipality(year = 2020)
+# # Drop geometry
+# dim_city <- sf::st_drop_geometry(dim_city)
+# dim_city <- tibble::as_tibble(dim_city)
+# readr::write_csv(dim_city, "data-raw/dim_city.csv")
+
+dim_city <- readr::read_csv("data-raw/dim_city.csv")
 # Convert code_state to numeric
 dim_city <- dplyr::mutate(dim_city, code_state = as.numeric(code_state))
 
