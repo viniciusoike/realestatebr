@@ -173,11 +173,6 @@ clean_date_label <- function(df) {
   return(df)
 }
 
-#' Clean Secovi Tables
-#'
-#' @param x
-#' @return A `tibble`
-#' @noRd
 clean_secovi <- function(x) {
 
   # html_table comes with wrong header. this function solves that
