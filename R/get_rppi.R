@@ -72,10 +72,11 @@ get_rppi <- function(category = "sale", cached = FALSE, stack = FALSE) {
     # Get IVGR
     ivgr <- suppressMessages(get_rppi_ivgr(cached))
     # Standardize output
-    ivgr <- dplyr::rename(ivgr, name_muni = name_geo)
-    # Get IGMI
+    ivgr <- dplyr::mutate(ivgr, name_muni = "Brazil")
+    ivgr <- dplyr::select(ivgr, -name_geo)
+    # Get IGMI and standardize output
     igmi <- get_rppi_igmi(cached)
-
+    igmi <- dplyr::mutate(igmi, name_muni = ifelse(name_muni == "Brasil", "Brazil", name_muni))
     # Put all series in a named list
     rppi <- list(igmi, ivgr, fipezap)
     names(rppi) <- c("IGMI-R", "IVG-R", "FipeZap")
@@ -120,7 +121,7 @@ get_rppi_ivgr <- function(cached = FALSE) {
   # Import data from BCB API
   ivgr <- GetBCBData::gbcbd_get_series(
     id = 21340,
-    first.date = as.Date("2003-03-01")
+    first.date = as.Date("2001-03-01")
   )
 
   # Clean data
@@ -131,7 +132,7 @@ get_rppi_ivgr <- function(cached = FALSE) {
     dplyr::mutate(
       name_geo = "Brasil",
       chg = index / dplyr::lag(index) - 1,
-      acum12m = RcppRoll::roll_prodr(1 + chg, n = 12)
+      acum12m = RcppRoll::roll_prodr(1 + chg, n = 12) - 1
     )
 
   return(tidyr::as_tibble(clean_ivgr))
@@ -224,55 +225,6 @@ get_rppi_igmi <- function(cached = FALSE) {
     dplyr::select(date, name_muni, index, chg, acum12m)
 
   return(clean_igmi)
-
-}
-
-#' Get simplified RPPI data from BIS
-#'
-#' Download and import a simplified cross-country Residential Property Price
-#' Indices (RPPI) panel data from the Bank for International Settlements (BIS).
-#'
-#' @details
-#' This function is a wrapper around `get_bis_rppi_selected`. It simplifies the
-#' output by filtering out observations prior to 1980. All index values are
-#' centered in 2010. Both nominal and real series are available. Note that
-#' Brazilian data becomes available only after 2001.
-#'
-#' The indexes follow the residential sales market in each country. Index
-#' methodologies may not be comparable.
-#'
-#' @return A cross-country `tibble` with RPPIs.
-#' @export
-get_rppi_bis <- function(cached = FALSE) {
-
-  if (cached) {
-    df <- readr::read_csv("...")
-    return(df)
-  }
-
-  bis <- get_bis_rppi_selected()
-
-  # Get only values from 1980 with non-NA values
-  bis <- bis |>
-    dplyr::filter(
-      unit == "Index, 2010 = 100",
-      date >= as.Date("1980-01-01"),
-      !is.na(value)
-    ) |>
-    dplyr::select(
-      date, code, country = reference_area, is_nominal, index = value
-    )
-
-  # Compute MoM and YoY percent changes by group
-  bis <- bis |>
-    dplyr::group_by(code) |>
-    dplyr::mutate(
-      chg = index / dplyr::lag(index) - 1,
-      acum12m = RcppRoll::roll_prodr(1 + chg, n = 12)
-    ) |>
-    dplyr::ungroup()
-
-  return(bis)
 
 }
 
