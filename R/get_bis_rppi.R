@@ -26,12 +26,12 @@
 #' }
 get_bis_rppi <- function(category = "selected", cached = FALSE) {
 
-
-  cats <- c("selected", "detailed")
-  errormsg <- glue::glue("Argument `category` must be one of '{cats[1]}' or '{cats[2]}'")
-
-  if (!any(category %in% cats)) { stop(errormsg) }
-
+  # Check category argument
+  stopifnot(
+    "Category must be one of 'detailed' or 'selected'." =
+      any(category %in% c("detailed", "selected"))
+  )
+  # Download cached data from the GitHub repo
   if (cached) {
     if (category == "selected") {
       df <- readr::read_csv("...")
@@ -40,7 +40,7 @@ get_bis_rppi <- function(category = "selected", cached = FALSE) {
     }
     return(df)
   }
-
+  # Apply the appropriate function
   if (category == "selected") {
     df <- get_bis_rppi_selected()
   } else if (category == "detailed") {

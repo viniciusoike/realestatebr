@@ -38,6 +38,15 @@ get_bcb_series <- function(
     ...
 ) {
 
+  check_cats <- unique(bcb_metadata$bcb_category)
+
+  if (!any(category %in% cats)) {
+    stop(
+      glue::glue(
+        "Category must be one of {paste(check_cats, collapse = ', ')}.")
+    )
+  }
+
   if (cached) {
     df <- readr::read_csv("...")
     return(df)
@@ -45,36 +54,20 @@ get_bcb_series <- function(
 
   # Subset metadata based on categories
   if (category != "all") {
-
-    cats <- unique(bcb_metadata$bcb_category)
-    cats_labels <- paste(cats, collapse = ", ")
-
-    if (!all(category %in% cats)) {
-      stop("Category must be one of: ", cats_labels, ".")
-    }
-
+    # Subset the metadata to the specific category
     codes_bcb <- subset(bcb_metadata, bcb_category %in% category)$code_bcb
-
   } else {
-
+    # Use all available categories
     codes_bcb <- bcb_metadata$code_bcb
-
   }
 
   # Check if date_start argument is a valid Date
   if (!inherits(date_start, "Date")) {
-
+    # Try to convert to YYYY-MM-DD date
     date_start <- try(lubridate::ymd(date_start))
-
     if (inherits(date_start, "try-error")) {
       stop("Argument `date_start` must a valid Date or a string interpretable as a YYYY-MM-DD date.")
     }
-
-  }
-
-  # TBD
-  if (date_start < min(bcb_metadata$first_value)) {
-
   }
 
   # Download series

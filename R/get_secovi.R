@@ -1,5 +1,8 @@
 #' Import data from Secovi-SP.
 #'
+#' Download and clean real estate information from Sao Paulo (SP) made available
+#' by SECOVI-SP.
+#'
 #' @param category One of `'condo'`, `'rent'`, `'launch'`, `'sale'` or `'all'`
 #' (default).
 #' @param cached If `TRUE` downloads the cached data from the GitHub repository.
@@ -7,29 +10,52 @@
 #'
 #' @return A `tibble`
 #' @export
+#'
+#' @examples
+#' # Download all available data
+#' secovi <- get_secovi()
+#'
+#' # Download only
+#'
 get_secovi <- function(category = "all", cached = FALSE) {
 
-  # Import data
+  # Check category argument
+  stopifnot(
+    "Category must be one of 'all', 'condo', 'launch', 'rent', or 'sale'." =
+      any(category %in% c("all", "condo", "launch", "rent", "sale"))
+  )
+
+  if (cached) {
+    # Download the data from the GitHub repo
+    df <- readr::read_rds("...")
+    # Filter category if needed
+    if (category != "all") {
+      df <- subset(df, category == category)
+    }
+    return(df)
+  }
+
+  # Import data from SECOVI
   message("Downloading Secovi data.")
   scrape <- import_secovi(category)
 
   # Clean data
-  clean_tables <- purrr::map(scrape, clean_secovi)
+  clean_tables <- parallel::mclapply(scrape, clean_secovi)
   names(clean_tables) <- names(scrape)
   fact_secovi <- dplyr::bind_rows(clean_tables, .id = "variable")
-
+  # Filter metadata table if needed
   if (category != "all") {
     secovi <- subset(secovi_metadata, cat == category)
   } else {
     secovi <- secovi_metadata
   }
-
+  # Join table with the metadata (dictionary)
   fact_secovi <- dplyr::left_join(
     fact_secovi,
     secovi,
     by = c("variable" = "label")
     )
-
+  # Rearrange column order
   fact_secovi <- fact_secovi |>
     dplyr::select(date, category = cat, variable, name, value)
 
@@ -150,11 +176,7 @@ clean_date_label <- function(df) {
 #' Clean Secovi Tables
 #'
 #' @param x
-#'
 #' @return A `tibble`
-#' @importFrom purrr map
-#' @importFrom dplyr bind_rows
-#' @importFrom stringr str_remove
 #' @noRd
 clean_secovi <- function(x) {
 
@@ -228,41 +250,3 @@ clean_secovi <- function(x) {
   return(fact_table)
 
 }
-
-# specific function for the hardest case
-# clean_secovi_vendas <- function(x) {
-#
-#   # Data structure:
-#   # Each year contains 3 tables:
-#   ## 1: vendas
-#   ## 2: vso
-#   ## 3: vgv
-#
-#   # Index all tables and extract
-#   tables_ind <- rep(1:3, length.out = length(x))
-#   x1 <- dplyr::bind_rows(x[tables_ind == 1])
-#   x2 <- dplyr::bind_rows(x[tables_ind == 2])
-#   x3 <- dplyr::bind_rows(x[tables_ind == 3])
-#   # List results, clean, and convert to data.frame
-#   ls <- list(vendas = x1, vso = x2, vgv = x3)
-#   out <- parallel::mclapply(ls, clean_secovi)
-#   out <- dplyr::bind_rows(out, .id = "name")
-#   out <- dplyr::select(out, date, name, valor)
-#   return(out)
-#
-# }
-#
-# clean_secovi_lanc <- function(x) {
-#   # Separate tables into x1 and x2 and join in list
-#   tables_ind <- rep(1:2, length.out = length(x))
-#   x1 <- dplyr::bind_rows(x[tables_ind == 1])
-#   x2 <- dplyr::bind_rows(x[tables_ind == 2])
-#   ls <- list(lanc = x1, lanc_vgv = x2)
-#   # Clean tables and bind
-#   out <- parallel::mclapply(ls, clean_secovi)
-#   out <- dplyr::bind_rows(out, .id = "name")
-#   out <- dplyr::select(out, date, name, valor)
-#   return(out)
-# }
-
-

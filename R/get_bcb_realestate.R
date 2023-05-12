@@ -32,9 +32,13 @@
 #' }
 get_bcb_realestate <- function(category = "all", cached = FALSE) {
 
-  cats <- c("accounting", "all", "application", "indices", "sources", "units")
+  check_cats <- c("all", "accounting", "application", "indices", "sources", "units")
 
-  stopifnot(category %in% cats)
+  if (!any(category %in% check_cats)) {
+    stop(
+      glue::glue("Category must be one of {paste(check_cats, collapse = ', ')}.")
+    )
+  }
 
   if (cached) {
     df <- readr::read_csv("...")
@@ -157,86 +161,3 @@ clean_bcb_realestate <- function(df) {
   return(df)
 
 }
-
-# tables_bcb_realestate <- function(df, cat) {
-#
-#   if (cat == "all") {
-#
-#     units = tbl_bcb_wider(df, "imoveis", c("date", "abbrev_state"), c("type", "v1"))
-#     accounting = tbl_bcb_wider(df, "contabil", "date", c("type", "v1"))
-#     sources = tbl_bcb_wider(df, "fontes", "date", c("type", "v1"))
-#     application = tbl_bcb_wider(df, "direcionamento", "date", c("type", "v1", "v2"))
-#     indices = tbl_bcb_wider(df, "indices", "date", c("type", "v1"))
-#
-#   }
-#
-# }
-#
-# tbl_bcb_imoveis <- function(df) {
-#
-#   df |>
-#     dplyr::filter(category == "imoveis") |>
-#     tidyr::pivot_wider(
-#       id_cols = c("date", "abbrev_state"),
-#       names_from = c("type", "v1"),
-#       values_from = "value",
-#       names_sep = "_"
-#     )
-#
-# }
-#
-# tbl_bcb_contabil <- function(df) {
-#
-#   df |>
-#     dplyr::filter(category == "contabil") |>
-#     tidyr::pivot_wider(
-#       id_cols = "date",
-#       names_from = c("type", "v1"),
-#       values_from = "value",
-#       names_sep = "_"
-#     )
-#
-# }
-#
-# tbl_bcb_fontes <- function(df) {
-#
-#   df |>
-#     dplyr::filter(category == "fontes") |>
-#     tidyr::pivot_wider(
-#       id_cols = "date",
-#       names_from = c("type", "v1"),
-#       values_from = "value",
-#       names_sort = TRUE,
-#     ) |>
-#     dplyr::rename_with(~stringr::str_remove(.x, "_br"))
-#
-# }
-#
-# tbl_bcb_direcionamento <- function(df) {
-#
-#   df |>
-#     dplyr::filter(category == "direcionamento", !stringr::str_detect(type, "[0-9]")) |>
-#     tidyr::pivot_wider(
-#       id_cols = "date",
-#       names_from = c("type", "v1", "v2"),
-#       values_from = "value",
-#       names_sort = TRUE,
-#     ) |>
-#     dplyr::rename_with(~stringr::str_remove(.x, "_br"))
-#
-# }
-#
-# tbl_bcb_indices <- function(df) {
-#
-#   df |>
-#     dplyr::filter(category == "indices") |>
-#     dplyr::mutate(type = stringr::str_c(type, v1)) |>
-#     tidyr::pivot_wider(
-#       id_cols = "date",
-#       names_from = "type",
-#       values_from = "value",
-#       names_sort = TRUE,
-#     ) |>
-#     dplyr::rename_with(~stringr::str_remove(.x, "br$"))
-#
-# }

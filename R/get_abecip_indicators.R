@@ -18,7 +18,7 @@
 #' since January 2017. All columns are in absolute/nominal units except `default_rate` which
 #' is in percentage and `average_term` which is in months.
 #'
-#' @param category One of `'sbpe'`, `'units'`, `'cgi'` or `'all'` (default)
+#' @param category One of `'sbpe'`, `'units'`, `'cgi'` or `'all'` (default).
 #' @inheritParams get_secovi
 #'
 #' @return Either a named `list` or a `tibble`.
@@ -33,6 +33,13 @@
 #'
 #' }
 get_abecip_indicators <- function(category = "all", cached = FALSE) {
+
+  check_cats <- c("sbpe", "cgi", "units", "all")
+
+  stopifnot(
+    "Category must be one of 'all', 'cgi', 'sbpe', or 'units'." =
+      any(category %in% check_cats)
+  )
 
   message(glue::glue("Downloading data from Abecip."))
 

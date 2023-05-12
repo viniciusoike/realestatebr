@@ -1,5 +1,12 @@
 #' Get FGV Confidence Indicators
 #'
+#' Download and clean construction confidence indicators estimated and relased
+#' by the Getulio Vargas Foundation (FGV).
+#'
+#' @details
+#' Available category options are `nuci`, `ie_cst`, `ic_cst`, and `isa_cst`.
+#'
+#'
 #' @param category Defaults to `'all'`. Check details for more information.
 #' @inheritParams get_secovi
 #'
@@ -23,7 +30,7 @@ get_fgv_indicators <- function(category = "all", cached = FALSE) {
   error_msg <- paste(cat_options, collapse = ", ")
   # Check if 'category' is valid
   if (!any(category %in% cat_options)) {
-    stop(glue::glue("Argument 'category' must be one of: {cat_options}."))
+    stop(glue::glue("Category must be one of: {cat_options}."))
   }
   # Swap category with vars
   vars <- ifelse(category == "all", vl_category, vl_category[category])
