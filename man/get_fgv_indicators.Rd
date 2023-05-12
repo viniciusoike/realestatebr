@@ -16,5 +16,9 @@ This is a faster option but not recommended for daily data.}
 A \code{tibble} containing all construction confidence indicator series from FGV.
 }
 \description{
-Get FGV Confidence Indicators
+Download and clean construction confidence indicators estimated and relased
+by the Getulio Vargas Foundation (FGV).
+}
+\details{
+Available category options are \code{nuci}, \code{ie_cst}, \code{ic_cst}, and \code{isa_cst}.
 }

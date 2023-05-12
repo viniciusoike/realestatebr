@@ -1,0 +1,98 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# Brazilian Real Estate
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of realestatebr is to facilitate the access to reports and indicators on the Brazilian real estate market. This package currently covers only the residential market but in the future it will also encompass other real estate markets.
+
+**Important**: This package is still under development but can already be installed. Feedback is welcome.
+
+## Installation
+
+You can install the development version of realestatebr from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("remotes")
+remotes::install_github("viniciusoike/realestatebr")
+```
+
+## Downloading data
+
+To get the data use one of the `get_*` functions such as `get_abecip_indicators`. 
+
+```{r example}
+library(realestatebr)
+# Import data from Abecip
+abecip <- get_abecip_indicators()
+
+abecip
+```
+
+Outputs will be either a named `list` of `tibbles` or a single `tibble`. All `get_*` functions have two arguments: `category` and `cached`. The `category` argument helps to filter the final result and will always default to `'all'`. The `cached` argument is a `logical` that indicates whether to download the data directly from this GitHub repository. This option will usually be faster.
+
+```{r}
+sbpe <- get_abecip_indicators(category = "sbpe")
+
+sbpe
+```
+
+## Residential Property Price Indexes
+
+There are several house price indices available in the Brazilian residential real estate market. The `get_rppi_*` functions collect all of these indices. A general `get_rppi()` function
+
+```{r}
+# For better plots
+library(ggplot2)
+
+# Download and clean all sales RPPIs
+rppi <- get_rppi(category = "sale", stack = TRUE)
+# Filter only Brazil
+rppi_brazil <- subset(rppi, name_muni == "Brazil" & date >= as.Date("2019-01-01"))
+
+ggplot(rppi_brazil, aes(date, acum12m)) +
+  geom_line(aes(color = source)) +
+  scale_y_continuous(labels = scales::label_percent()) +
+  theme_light()
+```
+
+International comparisons are also possible using the BIS data
+
+```{r}
+library(dplyr)
+# Download simplified BIS RPPI data
+bis <- get_rppi_bis()
+# Highlight some countries, show only real indices
+bis_brasil <- bis |> 
+  filter(
+    country %in% c("Australia", "Brazil", "Chile", "Japan", "United States"),
+    is_nominal == FALSE,
+    date >= as.Date("2000-01-01")
+    )
+
+ggplot(bis_brasil, aes(date, index)) +
+  geom_line(aes(color = country)) +
+  geom_hline(yintercept = 100) +
+  theme_light() +
+  theme(legend.position = "top")
+```
+
+
+
+## Functions available
+
+Currently the functions are: ...

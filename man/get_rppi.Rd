@@ -20,7 +20,7 @@ Either a named \code{list} or a \code{tibble}.
 }
 \description{
 Quickly import all Residential Price Indexes in Brazil. This function returns
-a convinient standardized output.
+a convenient standardized output.
 }
 \details{
 There are several residential property price indexes in Brazil. This function

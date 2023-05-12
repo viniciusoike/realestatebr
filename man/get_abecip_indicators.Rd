@@ -7,7 +7,7 @@
 get_abecip_indicators(category = "all", cached = FALSE)
 }
 \arguments{
-\item{category}{One of \code{'sbpe'}, \code{'units'}, \code{'cgi'} or \code{'all'} (default)}
+\item{category}{One of \code{'sbpe'}, \code{'units'}, \code{'cgi'} or \code{'all'} (default).}
 
 \item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
 This is a faster option but not recommended for daily data.}

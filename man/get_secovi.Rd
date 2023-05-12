@@ -17,5 +17,13 @@ This is a faster option but not recommended for daily data.}
 A \code{tibble}
 }
 \description{
-Import data from Secovi-SP.
+Download and clean real estate information from Sao Paulo (SP) made available
+by SECOVI-SP.
+}
+\examples{
+# Download all available data
+secovi <- get_secovi()
+
+# Download only
+
 }
