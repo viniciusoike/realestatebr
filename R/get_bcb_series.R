@@ -40,7 +40,7 @@ get_bcb_series <- function(
 
   check_cats <- unique(bcb_metadata$bcb_category)
 
-  if (!any(category %in% cats)) {
+  if (!any(category %in% check_cats)) {
     stop(
       glue::glue(
         "Category must be one of {paste(check_cats, collapse = ', ')}.")
