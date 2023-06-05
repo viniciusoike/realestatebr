@@ -38,7 +38,7 @@ get_bcb_series <- function(
     ...
 ) {
 
-  check_cats <- unique(bcb_metadata$bcb_category)
+  check_cats <- c(unique(bcb_metadata$bcb_category), "all")
 
   if (!any(category %in% check_cats)) {
     stop(
