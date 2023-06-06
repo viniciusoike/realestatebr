@@ -1,0 +1,29 @@
+library(realestatebr)
+library(vroom)
+library(here)
+
+bcb_realestate <- get_bcb_realestate("all")
+bcb_series <- get_bcb_series("all")
+abrainc <- get_abrainc_indicators("all")
+abecip <- get_abecip_indicators("all")
+prop_records <- get_property_records("all")
+secovi_sp <- get_secovi("all")
+rppi_sale <- get_rppi("sale", stack = TRUE)
+rppi_rent <- get_rppi("rent", stack = TRUE)
+bis_selected <- get_bis_rppi("selected")
+bis_detailed <- get_bis_rppi("detailed")
+
+# Export to compressed csv using vroom
+vroom_write(bcb_series, here("cached_data", "bcb_series.csv.gz"))
+vroom_write(bcb_realestate, here("cached_data", "bcb_realestate.csv.gz"))
+vroom_write(rppi_sale, here("cached_data", "rppi_sale.csv.gz"))
+vroom_write(rppi_rent, here("cached_data", "rppi_rent.csv.gz"))
+vroom_write(secovi_sp, here("cached_data", "secovi_sp.csv.gz"))
+vroom_write(bis_selected, here("cached_data", "bis_selected.csv.gz"))
+vroom_write(fgv_data, here("cached_data", "fgv_indicators.csv.gz"))
+
+# Export to compressed RDS using readr
+readr::write_rds(abrainc, here("cached_data", "abrainc.rds"), compress = "gz")
+readr::write_rds(abecip, here("cached_data", "abecip.rds"), compress = "gz")
+readr::write_rds(prop_records, here("cached_data", "property_records.rds"), compress = "gz")
+readr::write_rds(bis_detailed, here("cached_data", "bis_detailed.rds"), compress = "gz")
