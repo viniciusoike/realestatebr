@@ -41,15 +41,7 @@ get_bcb_series <- function(
   check_cats <- c(unique(bcb_metadata$bcb_category), "all")
 
   if (!any(category %in% check_cats)) {
-    stop(
-      glue::glue(
-        "Category must be one of {paste(check_cats, collapse = ', ')}.")
-    )
-  }
-
-  if (cached) {
-    df <- readr::read_csv("...")
-    return(df)
+    stop(glue::glue("Category must be one of {paste(check_cats, collapse = ', ')}."))
   }
 
   # Subset metadata based on categories
@@ -70,11 +62,19 @@ get_bcb_series <- function(
     }
   }
 
+  if (cached) {
+    bcb_series <- import_cached("bcb_series")
+    bcb_series <- dplyr::filter(bcb_series, code_bcb %in% codes_bcb, date >= date_start)
+    return(bcb_series)
+  }
+
   # Download series
   message("BCB series: downloading.")
-  bcb_series <- GetBCBData::gbcbd_get_series(
-    id = codes_bcb,
-    first.date = date_start
+  bcb_series <- suppressMessages(
+    GetBCBData::gbcbd_get_series(
+      id = codes_bcb,
+      first.date = date_start
+    )
   )
   message("BCB series: download complete.")
 

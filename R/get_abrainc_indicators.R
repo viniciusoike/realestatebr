@@ -49,6 +49,16 @@ get_abrainc_indicators <- function(category = "all", cached = FALSE) {
     any(category %in% c("all", "indicator", "radar", "leading"))
     )
 
+  # Download cached data from the GitHub repository
+  if (cached) {
+    abrainc <- import_cached("abrainc")
+    if (category == "all") {
+      return(abrainc)
+    } else {
+      return(abrainc[[category]])
+    }
+  }
+
   # Url to excel spreadsheet
   url <- "https://downloads.fipe.org.br/indices/abrainc/series-historicas-abraincfipe.xlsx"
   # Define output path file

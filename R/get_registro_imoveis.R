@@ -26,11 +26,10 @@ get_property_records <- function(category = "all", cached = FALSE) {
       any(category %in% cat_options)
     )
 
+  # Download cached data from the GitHub repository
   if (cached) {
-    # Import full named list
-    df <- readr::read_rds("...")
-    # Either return list or subset
-    if (category == "all") { return(df) } else { return(df[[category]]) }
+    prop <- import_cached("property_records")
+    if (category == "all") { return(prop) } else { return(prop[[category]]) }
   }
 
   # Params to download data
@@ -62,11 +61,6 @@ get_property_records <- function(category = "all", cached = FALSE) {
 
 get_ri_capitals <- function(cached, ...) {
 
-  if (cached) {
-    df <- readr::read_csv("...")
-    return(df)
-  }
-
   # Define path
   path_capitals <- tempfile("registro_imoveis_capitals.xlsx")
   # Download file
@@ -86,11 +80,6 @@ get_ri_capitals <- function(cached, ...) {
 }
 
 get_ri_aggregates <- function(cached, ...) {
-
-  if (cached) {
-    df <- readr::read_csv("...")
-    return(df)
-  }
 
   # Define path
   path_spo <- tempfile("registro_imoveis_spo.xlsx")

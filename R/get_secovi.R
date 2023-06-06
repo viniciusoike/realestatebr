@@ -11,12 +11,14 @@
 #' @return A `tibble`
 #' @export
 #'
-#' @examples
+#' @examples \dontrun{
 #' # Download all available data
-#' secovi <- get_secovi()
+#' secovi <- get_secovi_sp()
 #'
-#' # Download only
+#' # Download only a specific series
+#' sales <- get_secovi_sp("sale")
 #'
+#' }
 get_secovi <- function(category = "all", cached = FALSE) {
 
   # Check category argument
@@ -27,12 +29,12 @@ get_secovi <- function(category = "all", cached = FALSE) {
 
   if (cached) {
     # Download the data from the GitHub repo
-    df <- readr::read_rds("...")
+    tbl_secovi <- import_cached("secovi_sp")
     # Filter category if needed
     if (category != "all") {
-      df <- subset(df, category == category)
+      tbl_secovi <- dplyr::filter(tbl_secovi, category == category)
     }
-    return(df)
+    return(tbl_secovi)
   }
 
   # Import data from SECOVI
@@ -42,7 +44,7 @@ get_secovi <- function(category = "all", cached = FALSE) {
   # Clean data
   clean_tables <- parallel::mclapply(scrape, clean_secovi)
   names(clean_tables) <- names(scrape)
-  fact_secovi <- dplyr::bind_rows(clean_tables, .id = "variable")
+  tbl_secovi <- dplyr::bind_rows(clean_tables, .id = "variable")
   # Filter metadata table if needed
   if (category != "all") {
     secovi <- subset(secovi_metadata, cat == category)
@@ -50,16 +52,16 @@ get_secovi <- function(category = "all", cached = FALSE) {
     secovi <- secovi_metadata
   }
   # Join table with the metadata (dictionary)
-  fact_secovi <- dplyr::left_join(
-    fact_secovi,
+  tbl_secovi <- dplyr::left_join(
+    tbl_secovi,
     secovi,
     by = c("variable" = "label")
     )
   # Rearrange column order
-  fact_secovi <- fact_secovi |>
+  tbl_secovi <- tbl_secovi |>
     dplyr::select(date, category = cat, variable, name, value)
 
-  return(fact_secovi)
+  return(tbl_secovi)
 
 }
 

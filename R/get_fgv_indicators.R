@@ -37,7 +37,7 @@ get_fgv_indicators <- function(category = "all", cached = FALSE) {
 
   if (cached) {
     # Currently unable to implement
-    df <- readr::read_csv("...")
+    df <- import_cached("fgv_indicators")
     df <- dplyr::filter(df, name_simplified %in% vars)
 
   } else {

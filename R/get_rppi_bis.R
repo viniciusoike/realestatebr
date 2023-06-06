@@ -16,17 +16,16 @@
 #' @export
 #'
 #' @examples
-#' # Download data
-#' bis <- get_rppi_bis()
-#'
+#' # Download data from the GitHub Repository
+#' bis <- get_rppi_bis(cached = TRUE)
 get_rppi_bis <- function(cached = FALSE) {
 
+  # Either download the data from the GitHub repository or fetch from the BIS website
   if (cached) {
-    df <- readr::read_csv("...")
-    return(df)
+    bis <- import_cached("bis_selected")
+  } else {
+    bis <- get_bis_rppi_selected()
   }
-
-  bis <- get_bis_rppi_selected()
 
   # Get only values from 1980 with non-NA values
   bis <- bis |>

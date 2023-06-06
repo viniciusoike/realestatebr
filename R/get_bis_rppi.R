@@ -34,9 +34,9 @@ get_bis_rppi <- function(category = "selected", cached = FALSE) {
   # Download cached data from the GitHub repo
   if (cached) {
     if (category == "selected") {
-      df <- readr::read_csv("...")
+      df <- import_cached("bis_selected")
     } else {
-      df <- readr::read_csv("...")
+      df <- import_cached("bis_detailed")
     }
     return(df)
   }

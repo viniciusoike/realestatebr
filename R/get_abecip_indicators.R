@@ -41,6 +41,16 @@ get_abecip_indicators <- function(category = "all", cached = FALSE) {
       any(category %in% check_cats)
   )
 
+  # Download cached data from the GitHub repository
+  if (cached) {
+    abecip <- import_cached("abecip")
+    if (category == "all") {
+      return(abecip)
+    } else {
+      return(abecip[[category]])
+    }
+  }
+
   message(glue::glue("Downloading data from Abecip."))
 
   if (category == "sbpe") {
