@@ -5,15 +5,15 @@
 #' units, real estate indices.
 #'
 #' @details
-#' The Brazilian Central Bank (BCB) publishes
-#'
 #' If `category = 'all'` a tidy long `tibble` will be returned with all available
 #' data. This table can be hard to navigate since it contains several different
 #' tables within it. Each series is uniquely identified by the `series_info` column.
+#' The `series_info` column is also split along the `v1` to `v8` columns.
 #' A complete metadata of each series is available [here](https://www.bcb.gov.br/estatisticas/mercadoimobiliario) (only in Portuguese).
 #'
-#' Other choices of `category` return a tidy wide `tibble` with informative column
-#' names.
+#' Other choices of `category` return a wide `tibble` with informative column
+#' names. Available options are: `'accounting'`, `'application'`, `'indices'`,
+#' `'sources'`, `'units'`, or `'all'`.
 #'
 #' @param category One of `'accounting'`, `'application'`, `'indices'`,
 #' `'sources'`, `'units'`, or `'all'` (default).
@@ -41,15 +41,16 @@ get_bcb_realestate <- function(category = "all", cached = FALSE) {
   }
 
   if (cached) {
-    df <- readr::read_csv("...")
-    return(df)
+    # Download cached data
+    clean_bcb <- import_cached("bcb_realestate")
+  } else {
+    # Download and import most recent data available
+    bcb <- import_bcb_realestate()
+    # Clean data
+    clean_bcb <- clean_bcb_realestate(bcb)
   }
 
-  # Download and import data
-  bcb <- import_bcb_realestate()
-  # Clean data
-  clean_bcb <- clean_bcb_realestate(bcb)
-
+  # Return full cleaned table
   if (category == "all") {
     return(clean_bcb)
   }
@@ -102,7 +103,7 @@ import_bcb_realestate <- function() {
   # Download csv file
   download.file(url, destfile = temp_file, mode = "wb", quiet = TRUE)
   # Read the data
-  df <- readr::read_csv(temp_file)
+  df <- vroom::vroom(temp_file, col_types = "Dcc")
 
 }
 
@@ -152,6 +153,9 @@ clean_bcb_realestate <- function(df) {
       # If no element was found, default to BR (Brazil)
       abbrev_state = ifelse(is.na(abbrev_state), "BR", abbrev_state)
     )
+
+  # Remove columns that are full NA
+  df <- dplyr::select(df, dplyr::where(~!all(is.na(.x))))
 
   # Rearrange columns
   df <- df |>
