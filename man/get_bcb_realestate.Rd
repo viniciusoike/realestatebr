@@ -22,15 +22,15 @@ Bank. Includes credit sources, credit applications, credit operations, financed
 units, real estate indices.
 }
 \details{
-The Brazilian Central Bank (BCB) publishes
-
 If \code{category = 'all'} a tidy long \code{tibble} will be returned with all available
 data. This table can be hard to navigate since it contains several different
 tables within it. Each series is uniquely identified by the \code{series_info} column.
+The \code{series_info} column is also split along the \code{v1} to \code{v8} columns.
 A complete metadata of each series is available \href{https://www.bcb.gov.br/estatisticas/mercadoimobiliario}{here} (only in Portuguese).
 
-Other choices of \code{category} return a tidy wide \code{tibble} with informative column
-names.
+Other choices of \code{category} return a wide \code{tibble} with informative column
+names. Available options are: \code{'accounting'}, \code{'application'}, \code{'indices'},
+\code{'sources'}, \code{'units'}, or \code{'all'}.
 }
 \examples{
 \dontrun{

@@ -21,9 +21,12 @@ Download and clean real estate information from Sao Paulo (SP) made available
 by SECOVI-SP.
 }
 \examples{
+\dontrun{
 # Download all available data
-secovi <- get_secovi()
+secovi <- get_secovi_sp()
 
-# Download only
+# Download only a specific series
+sales <- get_secovi_sp("sale")
 
+}
 }

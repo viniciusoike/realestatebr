@@ -22,11 +22,13 @@ Imports:
     lifecycle,
     lubridate,
     purrr,
+    RcppRoll,
     readr,
     readxl,
     rlang,
     rvest,
     stringr,
     tidyr,
+    tidyxl,
     withr
 Roxygen: list(markdown = TRUE)
