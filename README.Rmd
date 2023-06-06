@@ -73,7 +73,7 @@ ggplot(rppi_brazil, aes(date, acum12m)) +
 International comparisons are also possible using the BIS data
 
 ```{r}
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 # Download simplified BIS RPPI data
 bis <- get_rppi_bis()
 # Highlight some countries, show only real indices

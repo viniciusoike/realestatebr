@@ -57,7 +57,7 @@ abecip
 #> #   total_netflow <dbl>
 #> 
 #> $units
-#> # A tibble: 255 × 7
+#> # A tibble: 256 × 7
 #>    date       units_construction units_acquisition units_total
 #>    <date>                  <dbl>             <dbl>       <dbl>
 #>  1 2002-01-01                200              1455        1655
@@ -70,7 +70,7 @@ abecip
 #>  8 2002-08-01                506              1838        2344
 #>  9 2002-09-01               1698              1568        3266
 #> 10 2002-10-01                337              1687        2024
-#> # ℹ 245 more rows
+#> # ℹ 246 more rows
 #> # ℹ 3 more variables: currency_construction <dbl>, currency_acquisition <dbl>,
 #> #   currency_total <dbl>
 #> 
@@ -150,15 +150,7 @@ ggplot(rppi_brazil, aes(date, acum12m)) +
 International comparisons are also possible using the BIS data
 
 ``` r
-library(dplyr)
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
+library(dplyr, warn.conflicts = FALSE)
 # Download simplified BIS RPPI data
 bis <- get_rppi_bis()
 # Highlight some countries, show only real indices
