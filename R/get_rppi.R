@@ -114,8 +114,9 @@ get_rppi <- function(category = "sale", cached = FALSE, stack = FALSE) {
 get_rppi_ivgr <- function(cached = FALSE) {
 
   if (cached) {
-    df <- readr::read_csv("...")
-    return(df)
+    ivgr <- import_cached("rppi_sale")
+    ivgr <- dplyr::filter(ivgr, source == "IVG-R")
+    return(ivgr)
   }
 
   # Import data from BCB API
@@ -159,8 +160,9 @@ get_rppi_ivgr <- function(cached = FALSE) {
 get_rppi_igmi <- function(cached = FALSE) {
 
   if (cached) {
-    df <- readr::read_csv("...")
-    return(df)
+    igmi <- import_cached("rppi_sale")
+    igmi <- dplyr::filter(igmi, source == "IGMI-R")
+    return(igmi)
   }
 
   # Download data
@@ -256,8 +258,9 @@ get_rppi_igmi <- function(cached = FALSE) {
 get_rppi_iqa <- function(cached = FALSE) {
 
   if (cached) {
-    df <- readr::read_csv("...")
-    return(df)
+    iqa <- import_cached("rppi_rent")
+    iqa <- dplyr::filter(iqa, source == "IQA")
+    return(iqa)
   }
 
   # Import data
@@ -321,8 +324,8 @@ get_rppi_iqa <- function(cached = FALSE) {
 get_rppi_ivar <- function(cached = FALSE) {
 
   if (cached) {
-    df <- readr::read_csv("...")
-    return(df)
+    ivar <- import_cached("rppi_rent")
+    ivar <- dplyr::filter(ivar, source = "IVAR")
   }
 
   ivar_cities <- dim_city |>
