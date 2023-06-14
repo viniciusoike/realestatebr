@@ -1,8 +1,8 @@
 #' Import Indicators from the Abrainc-Fipe Report
 #'
-#' Downloads data from the Abrainc-Fipe Indicators report. Data is updated monthly
-#' and includes information on new launches, sales, delivered units, etc. in the
-#' primary market.
+#' Downloads data from the Abrainc-Fipe Indicators report. Data includes
+#' information on new launches, sales, delivered units, etc. in the primary
+#' market.
 #'
 #' @details
 #'
@@ -23,8 +23,8 @@
 #' and is usually built by private developers. The definition of social housing
 #' varies by country so caution is advised in making international comparisons.
 #'
-#' Since this data is only updated quarterly it is usually safe to use `cached = TRUE`.
-#'
+#' Data comes from developers that are partnered with Abrainc. As of June 2023, there were
+#' 66 real estate developers associated with Abrainc.
 #'
 #' @param category One of `'all'` (default), `'indicator'`, `'radar'`, or
 #' `'leading'`.
@@ -203,13 +203,13 @@ clean_abrainc <- function(ls, category) {
 abrainc_fipe_col_names <- function() {
 
   ind_col_names <- c(
-    "date", "new_units-total", "new_units-market_rate", "new_units-affordable",
+    "date", "new_units-total", "new_units-market_rate", "new_units-social_housing",
     "new_units-other", "new_units-missing_info", "sold-total", "sold-market_rate",
-    "sold-affordable", "sold-other", "sold-missing_info", "delivered-total",
-    "delivered-market_rate", "delivered-affordable", "delivered-other",
+    "sold-social_housing", "sold-other", "sold-missing_info", "delivered-total",
+    "delivered-market_rate", "delivered-social_housing", "delivered-other",
     "delivered-missing_info", "distratado-total", "distratado-market_rate",
-    "distratado-affordable", "distratado-other", "distratado-missing_info",
-    "supply-total", "supply-market_rate", "supply-affordable", "supply-other",
+    "distratado-social_housing", "distratado-other", "distratado-missing_info",
+    "supply-total", "supply-market_rate", "supply-social_housing", "supply-other",
     "supply-missing_info", "value-new_units", "value-sale", "value-new_units_cpi",
     "value-sale_cpi")
 
