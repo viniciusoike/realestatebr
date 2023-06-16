@@ -56,6 +56,8 @@ get_rppi <- function(category = "sale", cached = FALSE, stack = FALSE) {
     )
 
   if (category == "rent") {
+    # Get Secovi-SP
+    secovi <- get_rppi_secovi_sp(cached)
     # Get IQA
     iqa <- get_rppi_iqa(cached)
     # Get IVAR
@@ -64,8 +66,8 @@ get_rppi <- function(category = "sale", cached = FALSE, stack = FALSE) {
     ivar <- dplyr::select(ivar, date, name_muni, index, chg, acum12m)
 
     # Put all series in a named list
-    rppi <- list(iqa, ivar, fipezap)
-    names(rppi) <- c("IQA", "IVAR", "FipeZap")
+    rppi <- list(iqa, ivar, secovi, fipezap)
+    names(rppi) <- c("IQA", "IVAR", "Secovi-SP", "FipeZap")
   }
 
   if (category == "sale") {
@@ -92,18 +94,27 @@ get_rppi <- function(category = "sale", cached = FALSE, stack = FALSE) {
 
 #' Get the IVGR Sales Index
 #'
-#' The IVGR Index is a monthly median sales index based on bank appraisals in
-#' Brazil. The index is calculated by the Brazilian Central Bank.
+#' Imports the IVG-R sales index
 #'
 #' @details
-#' The IVGR, or Residential Real Estate Collateral Value Index, is a monthly median
-#' sales index based on bank appraisals in Brazil. Median property price indices
-#' suffer from composition bias and cannot account for quality changes across the
-#' housing stock.
+#' The IVG-R, or Residential Real Estate Collateral Value Index, is a monthly median
+#' sales index based on bank appraisals in Brazil. The index is calculated by the
+#' Brazilian Central Bank and is representative of the entire country. The index estimates
+#' the long-run trend in home prices and encompasses Brazil's major metropolitan regions.
+#' Trend in prices are obtained by the familiar Hodrick-Prescott filter (lambda = 3600)
+#' applied to each city. The IVG-R is a weighted average of these price trends.
+#'
+#' Median property price indices suffer from composition bias and cannot account
+#' for quality changes across the housing stock.
 #'
 #' @inheritParams get_rppi
 #'
-#' @return A `tibble` with the IVAR Index.
+#' @return A `tibble` with the IVAR Index where:
+#'
+#' * `index` is the index-number.
+#' * `chg` is the monthly change.
+#' * `acum12m` is the year-on-year change.
+#'
 #' @export
 #' @seealso [get_rppi()]
 #'
@@ -120,10 +131,9 @@ get_rppi_ivgr <- function(cached = FALSE) {
   }
 
   # Import data from BCB API
-  ivgr <- GetBCBData::gbcbd_get_series(
-    id = 21340,
-    first.date = as.Date("2001-03-01")
-  )
+  ivgr <- suppressMessages(
+    GetBCBData::gbcbd_get_series(id = 21340, first.date = as.Date("2001-03-01"))
+    )
 
   # Clean data
   clean_ivgr <- ivgr |>
@@ -131,7 +141,7 @@ get_rppi_ivgr <- function(cached = FALSE) {
     dplyr::rename(date = ref.date, index = value) |>
     dplyr::select(date, index) |>
     dplyr::mutate(
-      name_geo = "Brasil",
+      name_geo = "Brazil",
       chg = index / dplyr::lag(index) - 1,
       acum12m = RcppRoll::roll_prodr(1 + chg, n = 12) - 1
     )
@@ -142,18 +152,25 @@ get_rppi_ivgr <- function(cached = FALSE) {
 
 #' Get the IGMI Sales Index
 #'
-#' The IGMI Index is a monthly hedonic sales and is based on bank appraisal reports
-#' in Brazil. The index is available for Brazil and 10 capital cities.
+#' Imports the IGMI sales index for all cities available.
 #'
 #' @details
-#' The IGMI, or Residential Real Estate Index, is a hedonic sales index based on
-#' bank appraisal reports. Hedonic prices indices account for both composition
-#' bias and quality differentials across the housing stock. The index is maintained
-#' by Abecip in parternship with FGV.
+#' The IGMI-R, or Residential Real Estate Index, is a hedonic sales index based on
+#' bank appraisal reports. The index is available for Brazil + 10 capital cities.
+#'
+#' Hedonic prices indices account for both composition bias and quality
+#' differentials across the housing stock. The index is maintained by Abecip in
+#' parternship with FGV.
 #'
 #' @inheritParams get_rppi
 #'
-#' @return A `tibble`
+#' @return A `tibble` stacking data for all cities. The national IGMI-R is defined
+#' as the series with `name_muni == 'Brazil'`.
+#'
+#' * `index` is the index-number.
+#' * `chg` is the monthly change.
+#' * `acum12m` is the year-on-year change.
+#'
 #' @examples
 #' # get_abecip_igmi()
 #'
@@ -232,24 +249,25 @@ get_rppi_igmi <- function(cached = FALSE) {
 
 #' Get data from The QuintoAndar Rental Index (IQA)
 #'
-#' The QuintoAndar Rental Index is a monthly median stratified index calculated
-#' for Brazil's two main cities: Rio de Janeiro and Sao Paulo. It takes into
-#' account all new monthly rent contracts managed by QuintoAndar.
+#' Imports the QuintoAndar Rental Index for all cities available.
 #'
 #' @details
 #' The IQA, or QuintoAndar Rental Index, is a median stratified index calculated
-#' for Brazil's two main cities: Rio de Janeiro and Sao Paulo. Median property
-#' price indices suffer from composition bias and cannot account for quality
-#' changes across the housing stock. The source of the data are all the monthly
-#' rent contracts managed by QuintoAndar. The Index includes only apartments and
-#' similar units such as studios and flats.
+#' for Brazil's two main cities: Rio de Janeiro and São Paulo. The source of the
+#' data are all the new rent contracts managed by QuintoAndar. The Index includes
+#' only apartments and similar units such as studios and flats.
 #'
-#' Despite the name "Index", the IQA provides a raw-price and not an index-number.
+#' Despite the name "Index", the IQA actually provides a raw-price and not an index-number.
 #' This means that the `rent_price` column is the median rent per square meter.
 #'
 #' @inheritParams get_rppi
 #'
-#' @return A `tibble` with the most up to date QuintoAndar Rental Index.
+#' @return A `tibble` QuintoAndar Rental Index where
+#'
+#' * `rent_price` is the median rent price per squared meter.
+#' * `chg` is the monthly change.
+#' * `acum12m` is the year-on-year change.
+#'
 #' @export
 #' @seealso [get_rppi()]
 #'
@@ -300,14 +318,14 @@ get_rppi_iqa <- function(cached = FALSE) {
 
 #' Get the IVAR rent Index
 #'
-#' The IVAR Index is a monthly repeat-rent index and is based on rental contracts
-#' in four major Brazilian cities. The national index is calculated as a weighted
-#' average of the four individual series.
+#' Imports the IVAR rent index for all cities available.
 #'
 #' @details
 #' The IVAR, or Residential Rent Variation Index, is a repeat-rent index, meaning
 #' it compares the same housing unit across different points in time. The source
-#' of the Index are rental contracts provided by brokers to IBRE (FGV).
+#' of the Index are rental contracts provided by brokers to IBRE (FGV). Data is available
+#' in four major Brazilian cities; the national index is calculated as a weighted
+#' average of the four individual series.
 #'
 #' Although other price indices such as the IGP-M are commonly used in rental
 #' contracts in Brazil, the IVAR is theoretically more appropriate since it
@@ -316,7 +334,12 @@ get_rppi_iqa <- function(cached = FALSE) {
 #' @inheritParams get_rppi
 #'
 #' @return A `tibble` stacking data for all cities. The national IVAR is defined
-#' as the series with `name_muni = 'Brazil'`.
+#' as the series with `name_muni == 'Brazil'`.
+#'
+#' * `index` is the index-number.
+#' * `chg` is the monthly change.
+#' * `acum12m` is the year-on-year change.
+#'
 #' @export
 #' @seealso [get_rppi()]
 #' @examples
@@ -367,17 +390,65 @@ get_rppi_ivar <- function(cached = FALSE) {
 
 }
 
+#' Get the Secovi-SP Rent Index
+#'
+#' Imports the Secovi-SP rent index for São Paulo.
+#'
+#' @inheritParams get_rppi
+#' @export
+#' @return A `tibble` with the Secovi Rent Index where:
+#'
+#' * `index` is the index-number.
+#' * `chg` is the monthly change.
+#' * `acum12m` is the year-on-year change.
+get_rppi_secovi_sp <- function(cached = FALSE) {
+
+  if (cached) {
+    secovi <- import_cached("rppi_rent")
+    secovi <- dplyr::filter(secovi, source = "Secovi-SP")
+  }
+
+  secovi <- get_secovi("rent", cached = FALSE)
+
+  secovi_index <- secovi |>
+    dplyr::filter(category == "rent", variable == "rent_price") |>
+    dplyr::rename(index = value) |>
+    dplyr::mutate(
+      name_muni = "São Paulo",
+      chg = index / dplyr::lag(index) - 1,
+      acum12m = RcppRoll::roll_prodr(1 + chg, n = 12) - 1
+    ) |>
+    dplyr::select(date, name_muni, index, chg, acum12m)
+
+  return(secovi_index)
+
+}
+
 #' Get the FipeZap RPPI
 #'
-#' @details
-#' The residential Index includes only apartments and
-#' similar units such as studios and flats.
+#' Import all residential indices from FipeZap
 #'
+#' @details
+#' The FipeZap Index is a monthly median stratified index calculated across several
+#' cities in Brazil. This function imports both the rental and the sale index for
+#' all cities. The Index is based on online listings of the Zap Imóveis group and is
+#' stratified by number of rooms. The overall city index is a weighted sum of median
+#' prices by room/region.
+#'
+#' The residential Index includes only apartments and similar units such as studios and flats.
 #'
 #' @param city Either the name of the city or `'all'` (default).
 #' @inheritParams get_rppi
 #'
-#' @return A `tibble` with RPPI data for all selected cities
+#' @return A `tibble` with RPPI data for all selected cities where:
+#'
+#' * `market` - specifices either `'commercial'` or `'residential'`
+#' * `rent_sale` - specifies either `'rent'` or `'sale'`
+#' * `variable` - 'index' is the index-number, 'chg' is the monthly change, 'acum12m' is the year-on-year change, 'price_m2' is the raw sale/rent price per squared meter, and 'yield' is the gross rental yield.
+#' * `rooms` - number of rooms (`total` is the average)
+#'
+#' The national index is defined as the series with `name_muni == 'Índice Fipezap+'`.
+#'
 #' @export
 #' @seealso [get_rppi()]
 #' @examples \dontrun{ if (interactive) {
