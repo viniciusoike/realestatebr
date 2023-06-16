@@ -12,17 +12,22 @@ This is a faster option but not recommended for daily data.}
 }
 \value{
 A \code{tibble} stacking data for all cities. The national IVAR is defined
-as the series with \code{name_muni = 'Brazil'}.
+as the series with \code{name_muni == 'Brazil'}.
+\itemize{
+\item \code{index} is the index-number.
+\item \code{chg} is the monthly change.
+\item \code{acum12m} is the year-on-year change.
+}
 }
 \description{
-The IVAR Index is a monthly repeat-rent index and is based on rental contracts
-in four major Brazilian cities. The national index is calculated as a weighted
-average of the four individual series.
+Imports the IVAR rent index for all cities available.
 }
 \details{
 The IVAR, or Residential Rent Variation Index, is a repeat-rent index, meaning
 it compares the same housing unit across different points in time. The source
-of the Index are rental contracts provided by brokers to IBRE (FGV).
+of the Index are rental contracts provided by brokers to IBRE (FGV). Data is available
+in four major Brazilian cities; the national index is calculated as a weighted
+average of the four individual series.
 
 Although other price indices such as the IGP-M are commonly used in rental
 contracts in Brazil, the IVAR is theoretically more appropriate since it

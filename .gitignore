@@ -51,3 +51,4 @@ rsconnect/
 old/
 .Rprofile
 .Rbuildignore
+inst/doc

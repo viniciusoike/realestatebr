@@ -13,14 +13,27 @@ get_rppi_fipezap(city = "all", cached = FALSE)
 This is a faster option but not recommended for daily data.}
 }
 \value{
-A \code{tibble} with RPPI data for all selected cities
+A \code{tibble} with RPPI data for all selected cities where:
+\itemize{
+\item \code{market} - specifices either \code{'commercial'} or \code{'residential'}
+\item \code{rent_sale} - specifies either \code{'rent'} or \code{'sale'}
+\item \code{variable} - 'index' is the index-number, 'chg' is the monthly change, 'acum12m' is the year-on-year change, 'price_m2' is the raw sale/rent price per squared meter, and 'yield' is the gross rental yield.
+\item \code{rooms} - number of rooms (\code{total} is the average)
+}
+
+The national index is defined as the series with \code{name_muni == 'Índice Fipezap+'}.
 }
 \description{
-Get the FipeZap RPPI
+Import all residential indices from FipeZap
 }
 \details{
-The residential Index includes only apartments and
-similar units such as studios and flats.
+The FipeZap Index is a monthly median stratified index calculated across several
+cities in Brazil. This function imports both the rental and the sale index for
+all cities. The Index is based on online listings of the Zap Imóveis group and is
+stratified by number of rooms. The overall city index is a weighted sum of median
+prices by room/region.
+
+The residential Index includes only apartments and similar units such as studios and flats.
 }
 \examples{
 \dontrun{ if (interactive) {

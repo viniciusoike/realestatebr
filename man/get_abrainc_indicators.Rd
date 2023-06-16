@@ -21,9 +21,9 @@ A named \code{list} or a \code{tibble} containing updated data of the Abrainc Fi
 Indicators.
 }
 \description{
-Downloads data from the Abrainc-Fipe Indicators report. Data is updated monthly
-and includes information on new launches, sales, delivered units, etc. in the
-primary market.
+Downloads data from the Abrainc-Fipe Indicators report. Data includes
+information on new launches, sales, delivered units, etc. in the primary
+market.
 }
 \details{
 The data in \code{'indicator'} gives broad numbers of launches, sales, supply, etc.
@@ -43,7 +43,8 @@ conditions the housing is not free (families commit to monthly mortgage payments
 and is usually built by private developers. The definition of social housing
 varies by country so caution is advised in making international comparisons.
 
-Since this data is only updated quarterly it is usually safe to use \code{cached = TRUE}.
+Data comes from developers that are partnered with Abrainc. As of June 2023, there were
+66 real estate developers associated with Abrainc.
 }
 \examples{
 \dontrun{

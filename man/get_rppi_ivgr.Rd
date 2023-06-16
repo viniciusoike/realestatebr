@@ -11,17 +11,26 @@ get_rppi_ivgr(cached = FALSE)
 This is a faster option but not recommended for daily data.}
 }
 \value{
-A \code{tibble} with the IVAR Index.
+A \code{tibble} with the IVAR Index where:
+\itemize{
+\item \code{index} is the index-number.
+\item \code{chg} is the monthly change.
+\item \code{acum12m} is the year-on-year change.
+}
 }
 \description{
-The IVGR Index is a monthly median sales index based on bank appraisals in
-Brazil. The index is calculated by the Brazilian Central Bank.
+Imports the IVG-R sales index
 }
 \details{
-The IVGR, or Residential Real Estate Collateral Value Index, is a monthly median
-sales index based on bank appraisals in Brazil. Median property price indices
-suffer from composition bias and cannot account for quality changes across the
-housing stock.
+The IVG-R, or Residential Real Estate Collateral Value Index, is a monthly median
+sales index based on bank appraisals in Brazil. The index is calculated by the
+Brazilian Central Bank and is representative of the entire country. The index estimates
+the long-run trend in home prices and encompasses Brazil's major metropolitan regions.
+Trend in prices are obtained by the familiar Hodrick-Prescott filter (lambda = 3600)
+applied to each city. The IVG-R is a weighted average of these price trends.
+
+Median property price indices suffer from composition bias and cannot account
+for quality changes across the housing stock.
 }
 \examples{
 ivgr <- get_rppi_ivgr()

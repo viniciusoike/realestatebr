@@ -11,17 +11,24 @@ get_rppi_igmi(cached = FALSE)
 This is a faster option but not recommended for daily data.}
 }
 \value{
-A \code{tibble}
+A \code{tibble} stacking data for all cities. The national IGMI-R is defined
+as the series with \code{name_muni == 'Brazil'}.
+\itemize{
+\item \code{index} is the index-number.
+\item \code{chg} is the monthly change.
+\item \code{acum12m} is the year-on-year change.
+}
 }
 \description{
-The IGMI Index is a monthly hedonic sales and is based on bank appraisal reports
-in Brazil. The index is available for Brazil and 10 capital cities.
+Imports the IGMI sales index for all cities available.
 }
 \details{
-The IGMI, or Residential Real Estate Index, is a hedonic sales index based on
-bank appraisal reports. Hedonic prices indices account for both composition
-bias and quality differentials across the housing stock. The index is maintained
-by Abecip in parternship with FGV.
+The IGMI-R, or Residential Real Estate Index, is a hedonic sales index based on
+bank appraisal reports. The index is available for Brazil + 10 capital cities.
+
+Hedonic prices indices account for both composition bias and quality
+differentials across the housing stock. The index is maintained by Abecip in
+parternship with FGV.
 }
 \examples{
 # get_abecip_igmi()

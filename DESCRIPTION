@@ -32,3 +32,8 @@ Imports:
     tidyxl,
     withr
 Roxygen: list(markdown = TRUE)
+Suggests: 
+    ggplot2,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

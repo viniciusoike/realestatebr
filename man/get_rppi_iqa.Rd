@@ -11,22 +11,23 @@ get_rppi_iqa(cached = FALSE)
 This is a faster option but not recommended for daily data.}
 }
 \value{
-A \code{tibble} with the most up to date QuintoAndar Rental Index.
+A \code{tibble} QuintoAndar Rental Index where
+\itemize{
+\item \code{rent_price} is the median rent price per squared meter.
+\item \code{chg} is the monthly change.
+\item \code{acum12m} is the year-on-year change.
+}
 }
 \description{
-The QuintoAndar Rental Index is a monthly median stratified index calculated
-for Brazil's two main cities: Rio de Janeiro and Sao Paulo. It takes into
-account all new monthly rent contracts managed by QuintoAndar.
+Imports the QuintoAndar Rental Index for all cities available.
 }
 \details{
 The IQA, or QuintoAndar Rental Index, is a median stratified index calculated
-for Brazil's two main cities: Rio de Janeiro and Sao Paulo. Median property
-price indices suffer from composition bias and cannot account for quality
-changes across the housing stock. The source of the data are all the monthly
-rent contracts managed by QuintoAndar. The Index includes only apartments and
-similar units such as studios and flats.
+for Brazil's two main cities: Rio de Janeiro and São Paulo. The source of the
+data are all the new rent contracts managed by QuintoAndar. The Index includes
+only apartments and similar units such as studios and flats.
 
-Despite the name "Index", the IQA provides a raw-price and not an index-number.
+Despite the name "Index", the IQA actually provides a raw-price and not an index-number.
 This means that the \code{rent_price} column is the median rent per square meter.
 }
 \examples{
