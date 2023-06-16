@@ -1,0 +1,120 @@
+---
+title: "Getting Started"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(realestatebr)
+# Additional packages to facilitate data visualization.
+library(ggplot2)
+library(dplyr)
+library(RcppRoll)
+```
+
+# General Usage
+
+The `realestatebr` package aims to offer real estate reports and data in a "tidy" output. By "tidy" I mean a form that is more amenable to be used in data analysis work. Currently, the package is focused only on residential real estate but in the future the package may also encompass commercial real estate information.
+
+This package downloads, cleans and returns data. All functions follow a similar syntax (`get_*()`) with only two arguments:
+
+-   `category` - A string that indicates specific parts/tables of the data (will default to `'all'`)
+-   `cached` - A logical that indicates if the data should be downloaded from the original provider or from the GitHub repository.
+
+Both arguments have the same purpose: to accelerate data consumption. By specifying a particular table, the function can save processing time; similarly, downloading the cleaned data from the GitHub repository can be faster.
+
+Currently the only exception to the rule above is the `get_rppi()` function, which downloads data on Residential Property Prices Indexes. It has an additional third argument `stack` which is a logical that indicates whether the indexes should be returned in a single table or as elements in a named `list`.
+
+# Examples
+
+## Abrainc
+
+As a simple use case example consider the case of downloading the quarterly [Abrainc-Fipe report](https://www.abrainc.org.br/lab). To get all of the available data use the `get_abrainc_indicators()` function.
+
+```{r}
+abrainc <- get_abrainc_indicators()
+```
+
+The result will be a named list with three `tibble`.
+
+```{r}
+abrainc
+```
+
+When working specifically with a single table this can be specified in the `category` argument.
+
+```{r}
+# Either subset the existing abrainc file or download again
+radar <- get_abrainc_indicators(category = "radar")
+
+# Plot example
+ggplot(radar, aes(x = date, y = value)) +
+  geom_line() +
+  facet_wrap(vars(variable), ncol = 3) +
+  theme_light()
+```
+
+### Brazilian Central Bank
+
+The Brazilian Central Bank offers a wide variety of
+
+```{r}
+bcb <- get_bcb_realestate()
+
+credit_south <- bcb %>%
+  filter(
+    category == "credito",
+    type == "contratacao",
+    v1 == "contratado",
+    v2 == "pf",
+    abbrev_state %in% c("PR", "RS", "SC")
+  ) %>%
+  summarise(total = sum(value, na.rm = TRUE), .by = c("date", "abbrev_state"))
+
+credit_south <- credit_south %>%
+  group_by(abbrev_state) %>%
+  mutate(
+    trend = RcppRoll::roll_mean(total, n = 12, fill = NA),
+    trend = RcppRoll::roll_mean(trend, n = 2, fill = NA)
+  ) %>%
+  ungroup()
+
+ggplot(credit_south, aes(x = date, color = abbrev_state)) + 
+  geom_line(aes(y = total), alpha = 0.5) +
+  geom_line(aes(y = trend)) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(0, 3, 0.5) * 1e9, labels = seq(0, 3, 0.5)) +
+  scale_color_brewer(name = "State", type = "qual", palette = 6) +
+  labs(
+    title = "Monthly Real Estate Credit Volume Trend",
+    subtitle = "Smoothed 12x2-month moving averge of monthly real estate credit operations.",
+    x = NULL,
+    y = "R$ (Billion)",
+    caption = "Source: Brazilian Central Bank (BCB)"
+  ) +
+  theme_light() +
+  theme(legend.position = "bottom")
+```
+
+## RPPI
+
+There are several Residential Property Price Indices in Brazil. Each index has its own methodology, coverage,
+
+| Name        | Rent/sale     | Coverage                     | Source           | Methodology                   |
+|-------------|---------------|------------------------------|------------------|-------------------------------|
+| IVG-R       | Sale          | National                     | BCB (all         | Median Stratified + Smoothing |
+| FipeZap     | Rent and Sale | National (cities)            | Online Listings  | Median Stratified + Smoothing |
+| IGMI-R      | Sale          | National (cities)            |                  | Hedonic                       |
+| IVAR        | Rent          | National (cities)            | Rental Contracts | Repeat-rent                   |
+| QuintoAndar | Rent          | Rio de Janeiro and São Paulo | Rental Contracts | Median Stratified             |
