@@ -52,14 +52,10 @@ get_range <- function(path = NULL, sheet, skip_row = 4) {
   return(range_excel)
 }
 
-add_geo_dimensions <- function(
-    df,
-    key = c("name_simplified", "abbrev_state"),
-    update = FALSE) {
+add_geo_dimensions <- function(df, key = c("name_simplified", "abbrev_state")) {
 
   # Join original table with geographic dimension
-  joined <- dplyr::left_join(df, dim_geo, by = key)
-
+  joined <- dplyr::left_join(df, dim_city, by = key)
   return(joined)
 
 }
