@@ -4,7 +4,7 @@
 \alias{get_bis_rppi_detailed}
 \title{Get Residential Property Price Indices from BIS}
 \usage{
-get_bis_rppi_detailed(cached)
+get_bis_rppi_detailed()
 }
 \value{
 A named \code{list} with all Detailed RPPIs from BIS

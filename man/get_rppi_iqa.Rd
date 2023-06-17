@@ -31,7 +31,11 @@ Despite the name "Index", the IQA actually provides a raw-price and not an index
 This means that the \code{rent_price} column is the median rent per square meter.
 }
 \examples{
+# Get the IQA index
 iqa <- get_rppi_iqa()
+
+# Subset Rio de Janeiro
+rio <- subset(iqa, name_muni == "Rio de Janeiro")
 }
 \seealso{
 \code{\link[=get_rppi]{get_rppi()}}

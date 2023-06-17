@@ -23,6 +23,7 @@
 #'
 #' @return Either a named `list` or a `tibble`.
 #' @export
+#' @source [https://www.abecip.org.br](https://www.abecip.org.br)
 #'
 #' @examples \dontrun{
 #' # SBPE financed units

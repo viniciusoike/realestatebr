@@ -8,7 +8,7 @@
 #' If `category = 'all'` a tidy long `tibble` will be returned with all available
 #' data. This table can be hard to navigate since it contains several different
 #' tables within it. Each series is uniquely identified by the `series_info` column.
-#' The `series_info` column is also split along the `v1` to `v8` columns.
+#' The `series_info` column is also split along the `v1` to `v5` columns.
 #' A complete metadata of each series is available [here](https://www.bcb.gov.br/estatisticas/mercadoimobiliario) (only in Portuguese).
 #'
 #' Other choices of `category` return a wide `tibble` with informative column
@@ -19,7 +19,14 @@
 #' `'sources'`, `'units'`, or `'all'` (default).
 #' @inheritParams get_secovi
 #'
-#' @return A `tibble`
+#' @source [https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario](https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario)
+#' @return If `category = 'all'` returns a `tibble` with 13 columns where:
+#' * `series_info`: the full name identifying each series.
+#' * `category`: category of the series (first element of `series_info`).
+#' * `type`: subcategory of the series (second element of `series_info`).
+#' * `v1` to `v5`: elements of `series_info`.
+#' * `value`: numeric value of the series.
+#' * `abbrev_state`: two letter state abbreviation.
 #' @export
 #'
 #' @examples \dontrun{

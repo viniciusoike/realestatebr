@@ -1,10 +1,11 @@
 #' Get FGV Confidence Indicators
 #'
-#' Download and clean construction confidence indicators estimated and relased
-#' by the Getulio Vargas Foundation (FGV).
+#' Download and clean construction confidence indicators estimated and released
+#' by the Getúlio Vargas Foundation (FGV).
 #'
 #' @details
 #' Available category options are `nuci`, `ie_cst`, `ic_cst`, and `isa_cst`.
+#'
 #'
 #'
 #' @param category Defaults to `'all'`. Check details for more information.
@@ -36,7 +37,7 @@ get_fgv_indicators <- function(category = "all", cached = FALSE) {
   vars <- ifelse(category == "all", vl_category, vl_category[category])
 
   if (cached) {
-    # Currently unable to implement
+
     df <- import_cached("fgv_indicators")
     df <- dplyr::filter(df, name_simplified %in% vars)
 

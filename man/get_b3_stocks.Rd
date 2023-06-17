@@ -2,27 +2,47 @@
 % Please edit documentation in R/get_b3_stocks.R
 \name{get_b3_stocks}
 \alias{get_b3_stocks}
-\title{Import Stock Prices for Brazilian Real Estate Players}
+\title{Get Stock Prices}
 \usage{
-get_b3_stocks(date_start = as.Date("2022-12-01"), cached = FALSE, ...)
+get_b3_stocks(cached = FALSE, src = "yahoo", symbol = NULL, quiet = TRUE, ...)
 }
 \arguments{
-\item{date_start}{Date value passed on to \code{tidyquant::tq_get}. Defaults
-to \code{2022-12-01}.}
-
 \item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
 This is a faster option but not recommended for daily data.}
 
-\item{...}{Additional arguments passed on to \code{tidyquant::tq_get}.}
+\item{src}{Character string specifying sourcing method (defaults to \code{'yahoo'}).}
+
+\item{symbol}{Optional character string with the stock tickers symbols. If
+none is provided uses all symbols in \code{b3_real_estate}.}
+
+\item{quiet}{Logical indicating if warnings should be printed to the console.}
+
+\item{...}{Additional arguments passed on to \code{quantmod::getSymbols}.}
 }
 \value{
 A \code{tibble} containing stock prices for all companies.
 }
 \description{
-Download and imports the stock values of the most relevant
-real-estate players in Brazil via \code{tidyquant::tq_get()}. A list of companies
-can be found at \code{b3_real_estate}.
+Imports stock prices of Brazilian real estate players. Additionally, imports
+some relevant financial indices.
 }
 \details{
-Additionally returns some relevant financial indices.
+Downloads and imports the stock values of the most relevant
+real estate players in Brazil via \code{quantmod::getSymbols}. A list of companies
+can be found at \code{b3_real_estate}.
+
+By deafult uses \code{src = 'yahoo'}.
+}
+\examples{
+\dontrun{
+# Get a specific company
+cyrela <- get_b3_stocks(symbol = "CYRE3.SA")
+
+# Get all available companies
+stocks <- get_b3_stocks()
+
+}
+}
+\seealso{
+\code{\link[quantmod:getSymbols]{quantmod::getSymbols()}}
 }

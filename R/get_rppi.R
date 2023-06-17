@@ -272,7 +272,11 @@ get_rppi_igmi <- function(cached = FALSE) {
 #' @seealso [get_rppi()]
 #'
 #' @examples
+#' # Get the IQA index
 #' iqa <- get_rppi_iqa()
+#'
+#' # Subset Rio de Janeiro
+#' rio <- subset(iqa, name_muni == "Rio de Janeiro")
 get_rppi_iqa <- function(cached = FALSE) {
 
   if (cached) {
@@ -343,7 +347,11 @@ get_rppi_iqa <- function(cached = FALSE) {
 #' @export
 #' @seealso [get_rppi()]
 #' @examples
+#' # Get the IVAR index
 #' ivar <- get_rppi_ivar()
+#'
+#' # Subset national index
+#' brasil <- subset(ivar, name_muni == "Brazil")
 get_rppi_ivar <- function(cached = FALSE) {
 
   if (cached) {

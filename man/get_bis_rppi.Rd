@@ -3,6 +3,9 @@
 \name{get_bis_rppi}
 \alias{get_bis_rppi}
 \title{Get Residential Property Price Indices from BIS}
+\source{
+\url{(https://www.bis.org/statistics/pp_detailed.htm)}
+}
 \usage{
 get_bis_rppi(category = "selected", cached = FALSE)
 }

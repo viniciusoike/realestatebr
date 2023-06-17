@@ -3,6 +3,9 @@
 \name{get_bcb_series}
 \alias{get_bcb_series}
 \title{Download macroeconomic time-series from BCB.}
+\source{
+\url{https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries}
+}
 \usage{
 get_bcb_series(
   category = "all",

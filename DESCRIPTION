@@ -22,15 +22,19 @@ Imports:
     lifecycle,
     lubridate,
     purrr,
+    quantmod,
     RcppRoll,
     readr,
     readxl,
     rlang,
     rvest,
     stringr,
+    tibble,
     tidyr,
     tidyxl,
-    withr
+    vroom,
+    withr,
+    xml2
 Roxygen: list(markdown = TRUE)
 Suggests: 
     ggplot2,

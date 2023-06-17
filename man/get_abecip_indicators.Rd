@@ -3,6 +3,9 @@
 \name{get_abecip_indicators}
 \alias{get_abecip_indicators}
 \title{Get Credit Indicators from Abecip}
+\source{
+\url{https://www.abecip.org.br}
+}
 \usage{
 get_abecip_indicators(category = "all", cached = FALSE)
 }

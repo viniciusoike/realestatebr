@@ -6,6 +6,10 @@
 \usage{
 get_rppi_bis(cached = FALSE)
 }
+\arguments{
+\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
+This is a faster option but not recommended for daily data.}
+}
 \value{
 A cross-country \code{tibble} with RPPIs.
 }

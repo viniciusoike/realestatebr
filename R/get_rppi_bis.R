@@ -11,7 +11,7 @@
 #'
 #' The indexes follow the residential sales market in each country. Index
 #' methodologies may not be comparable.
-#'
+#' @inheritParams get_secovi
 #' @return A cross-country `tibble` with RPPIs.
 #' @export
 #'

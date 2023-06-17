@@ -22,6 +22,7 @@
 #' from the time series. Defaults to 2010-01-01.
 #' @param ... Additional arguments passed to `GetBCBData::gbcbd_get_series`.
 #'
+#' @source [https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 #' @return A 12-column `tibble` with all of the selected series from BCB.
 #' @export
 #'

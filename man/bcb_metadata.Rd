@@ -3,27 +3,32 @@
 \docType{data}
 \name{bcb_metadata}
 \alias{bcb_metadata}
-\title{World Health Organization TB data}
+\title{Brazilian Central Bank Series Metadata}
 \format{
-\subsection{\code{who}}{
+\subsection{\code{bcb_metadata}}{
 
-A data frame with 7,240 rows and 60 columns:
+A data frame with 140 rows and 10 columns:
 \describe{
-\item{country}{Country name}
-\item{iso2, iso3}{2 & 3 letter ISO country codes}
-\item{year}{Year}
-...
+\item{code_bcb}{Numeric code identifying the series.}
+\item{bcb_category}{Category of the series.}
+\item{name_simplified}{Simplified name of the series.}
+\item{name_pt}{Full name of the series in Portuguese.}
+\item{name}{Full name of the series in English.}
+\item{unit}{Unit of the series.}
+\item{frequency}{Frequency of the series.}
+\item{first_value}{Date of the first available observation.}
+\item{last_value}{Date of the last available observation.}
+\item{source}{Source of the series.}
 }
 }
 }
 \source{
-\url{https://www.who.int/teams/global-tuberculosis-programme/data}
+\url{https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries}
 }
 \usage{
 bcb_metadata
 }
 \description{
-A subset of data from the World Health Organization Global Tuberculosis
-Report ...
+A table with metadata that supports the \code{get_bcb_series()} function.
 }
 \keyword{datasets}

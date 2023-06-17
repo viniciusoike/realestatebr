@@ -11,9 +11,8 @@
 #' on these series is available at the [BIS website](https://www.bis.org/statistics/pp_detailed.htm)
 #'
 #' @param category One of `selected` (default) or `detailed`.
-#' @param cached If `TRUE` downloads the cached data from the GitHub repository.
-#' This is a faster option but not recommended for daily data.
-#'
+#' @inheritParams get_secovi
+#' @source [(https://www.bis.org/statistics/pp_detailed.htm)]((https://www.bis.org/statistics/pp_detailed.htm))
 #' @return A `tibble` or a named `list` with all RPPIs from BIS.
 #' @export
 #'
@@ -114,7 +113,7 @@ get_bis_rppi_selected <- function() {
 #' International Settlements (BIS) available at [their webpage](https://www.bis.org/statistics/pp_detailed.htm).
 #'
 #' @return A named `list` with all Detailed RPPIs from BIS
-get_bis_rppi_detailed <- function(cached) {
+get_bis_rppi_detailed <- function() {
 
   # Download data
 

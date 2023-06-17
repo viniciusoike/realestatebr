@@ -34,7 +34,11 @@ contracts in Brazil, the IVAR is theoretically more appropriate since it
 measures only rent prices.
 }
 \examples{
+# Get the IVAR index
 ivar <- get_rppi_ivar()
+
+# Subset national index
+brasil <- subset(ivar, name_muni == "Brazil")
 }
 \seealso{
 \code{\link[=get_rppi]{get_rppi()}}
