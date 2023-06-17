@@ -244,7 +244,7 @@ clean_ri_aggregates <- function(ls) {
   tbl1 <- dplyr::inner_join(
     record_cities,
     sale_cities,
-    by = c("year", "date", "abbrev_state", "name_simplified")
+    by = c("year", "date", "abbrev_state", "name_simplified", "name_muni")
     )
 
   # Join aggregate-regions sales and records data
