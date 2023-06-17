@@ -100,10 +100,26 @@ dim_city <- dim_city |>
     name_simplified = stringr::str_replace_all(name_simplified, " ", "_")
   )
 
+b3_real_estate <- readxl::read_excel(
+  "data-raw/b3_real_estate.xlsx",
+  range = "A2:C39",
+  col_names = c("symbol", "name", "name_short")
+)
+
 usethis::use_data(main_cities, overwrite = TRUE)
 usethis::use_data(dim_city, overwrite = TRUE)
+usethis::use_data(b3_real_estate, overwrite = TRUE)
 
 source("data-raw/abecip_cgi.R")
 source("data-raw/fgv_clean.R")
 
-usethis::use_data(abecip_cgi, fgv_data, internal = TRUE, overwrite = TRUE)
+ire <- readxl::read_excel(
+  "data-raw/nre_ire.xlsx",
+  skip = 1,
+  col_types = c("date", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"),
+  col_names = c("date", "ire", "ire_r50_plus", "ire_bi", "ire_r50_minus", "ibov", "ibov_points", "ire_ibov")
+)
+
+ire <- dplyr::mutate(ire, date = lubridate::ymd(date))
+
+usethis::use_data(abecip_cgi, fgv_data, ire, internal = TRUE, overwrite = TRUE)
