@@ -94,6 +94,10 @@ import_cached <- function(table) {
       ctypes = "Dfcccccccdiic",
       link = paste0(base_url, "bcb_realestate.csv.gz")
     ),
+    b3_stocks = list(
+      ctypes = "cDdddddd",
+      link = paste0(base_url, "b3_stocks.csv.gz")
+    ),
     bis_selected = list(
       ctypes = "Dcdcfclcccci",
       link = paste0(base_url, "bis_selected.csv.gz")

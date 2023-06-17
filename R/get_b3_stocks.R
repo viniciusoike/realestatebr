@@ -1,54 +1,94 @@
-#' Import Stock Prices for Brazilian Real Estate Players
+#' Get Stock Prices
 #'
-#' Download and imports the stock values of the most relevant
-#' real-estate players in Brazil via `tidyquant::tq_get()`. A list of companies
+#' Imports stock prices of Brazilian real estate players. Additionally, imports
+#' some relevant financial indices.
+#'
+#' @details
+#' Downloads and imports the stock values of the most relevant
+#' real estate players in Brazil via `quantmod::getSymbols`. A list of companies
 #' can be found at `b3_real_estate`.
 #'
-#' Additionally returns some relevant financial indices.
+#' By deafult uses `src = 'yahoo'`.
 #'
 #' @inheritParams get_secovi
-#' @param date_start Date value passed on to `tidyquant::tq_get`. Defaults
-#' to `2022-12-01`.
-#' @param ... Additional arguments passed on to `tidyquant::tq_get`.
+#' @param symbol Optional character string with the stock tickers symbols. If
+#' none is provided uses all symbols in `b3_real_estate`.
+#' @param src Character string specifying sourcing method (defaults to `'yahoo'`).
+#' @param quiet Logical indicating if warnings should be printed to the console.
+#' @param ... Additional arguments passed on to `quantmod::getSymbols`.
+#'
+#' @seealso [quantmod::getSymbols()]
 #'
 #' @return A `tibble` containing stock prices for all companies.
 #' @export
-get_b3_stocks <- function(
-    date_start = as.Date("2022-12-01"),
-    cached = FALSE,
-    ...) {
+#' @examples \dontrun{
+#' # Get a specific company
+#' cyrela <- get_b3_stocks(symbol = "CYRE3.SA")
+#'
+#' # Get all available companies
+#' stocks <- get_b3_stocks()
+#'
+#' }
+get_b3_stocks <- function(cached = FALSE, src = "yahoo", symbol = NULL, quiet = TRUE, ...) {
 
-  if (!inherits(date_start, "Date")) {
-
-    date_start <- try(lubridate::ymd(date_start))
-
-    if (inherits(date_start, "try-error")) {
-      stop("Date start must be a valid Date or a string interpretable as a Date.")
-    }
-
+  # Download cached data
+  if (cached) {
+    stack <- import_cached("b3_stocks")
   }
 
-  # Download series using tidyquant::tq_get
+  # Download series using quantmod::getSymbols
 
   # Stock Symbols
-  syms <- c("ALSO3", "BRML3", "BRPR3", "CYRE3", "DIRR3", "EVEN3", "EZTC3",
-            "GFSA3", "HBOR3", "IGTI11", "JHSF3", "LOGG3", "LPSB3", "MRVE3",
-            "MULT3", "TCSA3", "TEND3", "TRIS3", "RSID3", "RDNI3", "CURY3",
-            "MTRE3", "VIVR3", "BBRK3", "LAVV3", "MDNE3", "MELK3", "PLPL3",
-            "AVLL3", "CALI3", "CRDE3", "INTT3", "JFEN3", "KLAS3", "PDGR3",
-            "TEGA3")
-  syms <- paste0(syms, ".SA")
-  # Indexes
-  syms <- c(syms, "^BVSP", "^IBX50", "EWZ", "EEM", "DBC", "IFIX")
 
+  if (is.null(symbol)) {
+    # Get real estate companies symbols
+    symbol <- b3_real_estate$symbol
+    # Indexes
+    symbol <- c(symbol, "^BVSP", "^IBX50", "EWZ", "EEM", "DBC", "IFIX")
+  } else {
+    stopifnot(is.character(symbol))
+    stopifnot(any(symbol %in% b3_real_estate$symbol))
+  }
+
+  # Download series
   message("Financial series: downloading.")
-  # Uses purrr::map and stacks rows
 
-  imob <- suppressWarnings(
-    quantmod::getSymbols(syms)
-    )
+  if (quiet) {
+    imob <- try(suppressWarnings(quantmod::getSymbols(symbol, src = src, ...)))
+  } else {
+    imob <- try(quantmod::getSymbols(symbol, src = src, ...))
+  }
+
+  if (inherits(imob, "try-error")) {
+    stop("Error: failed to download series. Check internet connection or change provider.")
+  }
+
   message("Financial series: download complete.")
 
-  return(imob)
+  # Stack series
+  series <- mget(imob)
+
+  # Convert from xts to tibble
+  # Helper function
+  xts_to_tibble <- function(x) {
+    # Convert xts to data.frame and then to tibble
+    df <- data.frame(date = zoo::index(x), zoo::coredata(x))
+    tbl <- tidyr::as_tibble(df)
+    # Adjust column names
+    col_names <- names(tbl)
+    # Removes symbols from column names, removes a trailing dot
+    col_names <- stringr::str_remove_all(col_names, paste(symbol, collapse = "|"))
+    col_names <- stringr::str_remove(col_names, "^\\.")
+    col_names <- stringr::str_to_lower(col_names)
+    names(tbl) <- col_names
+
+    return(tbl)
+
+  }
+  # Convert all series to tibble and stack
+  series <- lapply(series, xts_to_tibble)
+  stack <- dplyr::bind_rows(series, .id = "symbol")
+
+  return(stack)
 
 }
