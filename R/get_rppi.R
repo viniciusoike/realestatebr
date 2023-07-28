@@ -287,20 +287,18 @@ get_rppi_iqa <- function(cached = FALSE) {
 
   # Import data
   url <- "https://publicfiles.data.quintoandar.com.br/Indice_QuintoAndar.csv"
-  iqa <- readr::read_csv(url, col_types = "ccn")
+  iqa <- readr::read_csv(url, col_types = "cDn")
 
   # Clean data
   clean_iqa <- iqa |>
     # Rename columns
     dplyr::select(
-      date = mes,
-      name_muni = cidade,
-      rent_price = indice_quintoandar_precos_aluguel_reais_m2
+      date = month,
+      name_muni = city_name,
+      rent_price = weighted_median_contract_rent_per_sqm
     ) |>
     # Convert to appropriate types
     dplyr::mutate(
-      # Parse dates from character to date
-      date = readr::parse_date(date, format = "%Y-%m"),
       # Capitalize strings
       name_muni = stringr::str_to_title(name_muni, locale = "pt_BR"),
       # Convert rent price to numeric
