@@ -202,16 +202,25 @@ clean_abrainc <- function(ls, category) {
 
 abrainc_fipe_col_names <- function() {
 
+  # ind_col_names <- c(
+  #   "date", "new_units-total", "new_units-market_rate", "new_units-social_housing",
+  #   "new_units-other", "new_units-missing_info", "sold-total", "sold-market_rate",
+  #   "sold-social_housing", "sold-other", "sold-missing_info", "delivered-total",
+  #   "delivered-market_rate", "delivered-social_housing", "delivered-other",
+  #   "delivered-missing_info", "distratado-total", "distratado-market_rate",
+  #   "distratado-social_housing", "distratado-other", "distratado-missing_info",
+  #   "supply-total", "supply-market_rate", "supply-social_housing", "supply-other",
+  #   "supply-missing_info", "value-new_units", "value-sale", "value-new_units_cpi",
+  #   "value-sale_cpi")
+
   ind_col_names <- c(
-    "date", "new_units-total", "new_units-market_rate", "new_units-social_housing",
-    "new_units-other", "new_units-missing_info", "sold-total", "sold-market_rate",
-    "sold-social_housing", "sold-other", "sold-missing_info", "delivered-total",
-    "delivered-market_rate", "delivered-social_housing", "delivered-other",
-    "delivered-missing_info", "distratado-total", "distratado-market_rate",
-    "distratado-social_housing", "distratado-other", "distratado-missing_info",
+    "date",
+    "new_units-total", "new_units-market_rate", "new_units-social_housing", "new_units-other",
+    "sold-total", "sold-market_rate", "sold-social_housing", "sold-other",
+    "delivered-total", "delivered-market_rate", "delivered-social_housing", "delivered-other",
+    "distratado-total", "distratado-market_rate", "distratado-social_housing", "distratado-other",
     "supply-total", "supply-market_rate", "supply-social_housing", "supply-other",
-    "supply-missing_info", "value-new_units", "value-sale", "value-new_units_cpi",
-    "value-sale_cpi")
+    "value-new_units", "value-sale", "value-new_units_cpi", "value-sale_cpi")
 
   ind_labels <- tibble::tribble(
           ~variable,            ~variable_label,
