@@ -11,6 +11,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
+  message = FALSE,
   comment = "#>"
 )
 ```
@@ -20,6 +21,7 @@ library(realestatebr)
 # Additional packages to facilitate data visualization.
 library(ggplot2)
 library(dplyr)
+library(tidyr)
 library(RcppRoll)
 ```
 
@@ -27,14 +29,14 @@ library(RcppRoll)
 
 The `realestatebr` package aims to offer real estate reports and data in a "tidy" output. By "tidy" I mean a form that is more amenable to be used in data analysis work. Currently, the package is focused only on residential real estate but in the future the package may also encompass commercial real estate information.
 
-This package downloads, cleans and returns data. All functions follow a similar syntax (`get_*()`) with only two arguments:
+This package downloads, cleans and returns data. All functions follow a similar syntax (`get_*()`) with two arguments:
 
 -   `category` - A string that indicates specific parts/tables of the data (will default to `'all'`)
 -   `cached` - A logical that indicates if the data should be downloaded from the original provider or from the GitHub repository.
 
 Both arguments have the same purpose: to accelerate data consumption. By specifying a particular table, the function can save processing time; similarly, downloading the cleaned data from the GitHub repository can be faster.
 
-Currently the only exception to the rule above is the `get_rppi()` function, which downloads data on Residential Property Prices Indexes. It has an additional third argument `stack` which is a logical that indicates whether the indexes should be returned in a single table or as elements in a named `list`.
+One of the exceptions to the rule above is the `get_rppi()` function, which downloads data on Residential Property Prices Indexes. It has an additional third argument `stack` which is a logical that indicates whether the indexes should be returned in a single table or as elements in a named `list`.
 
 # Examples
 
@@ -65,9 +67,9 @@ ggplot(radar, aes(x = date, y = value)) +
   theme_light()
 ```
 
-### Brazilian Central Bank
+## Brazilian Central Bank
 
-The Brazilian Central Bank offers a wide variety of
+The Brazilian Central Bank has a wide variety of real estate data that is stored into a single long-format csv file. This makes working with this data quite difficult. The example below shows how to find the total amount of new real estate credit in three specific states.
 
 ```{r}
 bcb <- get_bcb_realestate()
@@ -109,12 +111,47 @@ ggplot(credit_south, aes(x = date, color = abbrev_state)) +
 
 ## RPPI
 
-There are several Residential Property Price Indices in Brazil. Each index has its own methodology, coverage,
+### Brazil
+
+There are several Residential Property Price Indices in Brazil. Each index has its own methodology, coverage, and data source. The table below summarizes
 
 | Name        | Rent/sale     | Coverage                     | Source           | Methodology                   |
 |-------------|---------------|------------------------------|------------------|-------------------------------|
-| IVG-R       | Sale          | National                     | BCB (all         | Median Stratified + Smoothing |
+| IVG-R       | Sale          | National                     | Bank appraisals  | Median Stratified + Smoothing |
 | FipeZap     | Rent and Sale | National (cities)            | Online Listings  | Median Stratified + Smoothing |
-| IGMI-R      | Sale          | National (cities)            |                  | Hedonic                       |
+| IGMI-R      | Sale          | National (cities)            | Bank appraisals  | Hedonic                       |
 | IVAR        | Rent          | National (cities)            | Rental Contracts | Repeat-rent                   |
 | QuintoAndar | Rent          | Rio de Janeiro and São Paulo | Rental Contracts | Median Stratified             |
+
+To get a specific series use one of the `get_rppi_*` functions. The IVAR index is available for many cities.
+
+```{r}
+ivar <- get_rppi_ivar()
+
+ggplot(ivar, aes(x = date, y = index)) +
+  geom_line() +
+  facet_wrap(vars(name_muni))
+```
+
+To get multiple indexes use the `get_rppi()` function with `stack = TRUE`.
+
+```{r}
+sales_index <- get_rppi(category = "sale", stack = TRUE)
+
+ggplot(sales_index, aes(x = date, y = acum12m, color = source)) +
+  geom_line()
+```
+
+The FipeZap Index has the most 
+
+```{r}
+fipe <- get_rppi_fipezap()
+```
+
+### International
+
+```{r}
+
+```
+
+
