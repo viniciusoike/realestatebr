@@ -1,4 +1,4 @@
-load_all()
+library(realestatebr)
 library(vroom)
 library(here)
 
