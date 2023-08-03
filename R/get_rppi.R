@@ -21,7 +21,6 @@
 #' @return Either a named `list` or a `tibble`.
 #' @export
 #'
-#'
 #' @examples \dontrun{
 #' # Get RPPI sales data
 #' sales <- get_rppi("sale")
@@ -163,7 +162,7 @@ get_rppi_ivgr <- function(cached = FALSE) {
 #' parternship with FGV.
 #'
 #' @inheritParams get_rppi
-#'
+#' @export
 #' @return A `tibble` stacking data for all cities. The national IGMI-R is defined
 #' as the series with `name_muni == 'Brazil'`.
 #'
