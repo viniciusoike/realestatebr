@@ -38,6 +38,8 @@ Both arguments have the same purpose: to accelerate data consumption. By specify
 
 One of the exceptions to the rule above is the `get_rppi()` function, which downloads data on Residential Property Prices Indexes. It has an additional third argument `stack` which is a logical that indicates whether the indexes should be returned in a single table or as elements in a named `list`.
 
+The specific `get_rppi_*()` functions have different arguments.
+
 # Examples
 
 ## Abrainc
@@ -109,6 +111,15 @@ ggplot(credit_south, aes(x = date, color = abbrev_state)) +
   theme(legend.position = "bottom")
 ```
 
+The `category` argument allows for a more direct "query"; also, data is presented in "wide" format.
+
+```{r}
+index <- get_bcb_realestate("indices")
+
+index
+```
+
+
 ## RPPI
 
 ### Brazil
@@ -133,25 +144,43 @@ ggplot(ivar, aes(x = date, y = index)) +
   facet_wrap(vars(name_muni))
 ```
 
-To get multiple indexes use the `get_rppi()` function with `stack = TRUE`.
-
-```{r}
-sales_index <- get_rppi(category = "sale", stack = TRUE)
-
-ggplot(sales_index, aes(x = date, y = acum12m, color = source)) +
-  geom_line()
-```
-
-The FipeZap Index has the most 
+The FipeZap Index has many cities and subindices.
 
 ```{r}
 fipe <- get_rppi_fipezap()
+
+subfipe <- fipe |> 
+  filter(
+    name_muni == "São Paulo",
+    market == "residential",
+    variable == "index",
+    rooms != "total"
+    )
+
+ggplot(subfipe, aes(x = date, y = value, color = rooms)) +
+  geom_line() +
+  facet_wrap(vars(rent_sale)) +
+  theme_light()
 ```
 
 ### International
 
-```{r}
+The Bank for International Settlements compiles RPPIs from across the world. The default output calls the selected quarterly series.
 
+```{r}
+bis <- get_bis_rppi()
+
+subbis <- bis |> 
+  filter(
+    date >= as.Date("2000-01-01"),
+    reference_area %in% c("World", "Japan", "United States", "Brazil"),
+    is_nominal == TRUE,
+    unit == "Index, 2010 = 100"
+    )
+
+ggplot(subbis, aes(x = date, y = value, color = reference_area)) +
+  geom_line() +
+  theme_light()
 ```
 
 

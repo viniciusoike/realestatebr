@@ -52,3 +52,5 @@ old/
 .Rprofile
 .Rbuildignore
 inst/doc
+/doc/
+/Meta/
