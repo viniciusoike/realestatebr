@@ -90,9 +90,3 @@ ggplot(bis_brasil, aes(date, index)) +
   theme_light() +
   theme(legend.position = "top")
 ```
-
-
-
-## Functions available
-
-Currently the functions are: ...

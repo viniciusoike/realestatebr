@@ -57,7 +57,7 @@ abecip
 #> #   total_netflow <dbl>
 #> 
 #> $units
-#> # A tibble: 256 × 7
+#> # A tibble: 258 × 7
 #>    date       units_construction units_acquisition units_total
 #>    <date>                  <dbl>             <dbl>       <dbl>
 #>  1 2002-01-01                200              1455        1655
@@ -70,7 +70,7 @@ abecip
 #>  8 2002-08-01                506              1838        2344
 #>  9 2002-09-01               1698              1568        3266
 #> 10 2002-10-01                337              1687        2024
-#> # ℹ 246 more rows
+#> # ℹ 248 more rows
 #> # ℹ 3 more variables: currency_construction <dbl>, currency_acquisition <dbl>,
 #> #   currency_total <dbl>
 #> 
@@ -169,7 +169,3 @@ ggplot(bis_brasil, aes(date, index)) +
 ```
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
-
-## Functions available
-
-Currently the functions are: …
