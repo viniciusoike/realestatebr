@@ -103,8 +103,12 @@ import_cached <- function(table) {
       link = paste0(base_url, "bis_selected.csv.gz")
     ),
     fgv_indicators = list(
-      cytpes = "Dcdcdcc",
+      ctypes = "Dcdcdcc",
       link = paste0(base_url, "fgv_indicators.csv.gz")
+    ),
+    rppi_fipe = list(
+      ctypes = "Dcccccd",
+      link = paste0(base_url, "rppi_fipe.csv.gz")
     ),
     abrainc = list(link = paste0(base_url, "abrainc.rds")),
     abecip  = list(link = paste0(base_url, "abecip.rds")),

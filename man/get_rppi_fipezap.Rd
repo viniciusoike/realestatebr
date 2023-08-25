@@ -7,7 +7,8 @@
 get_rppi_fipezap(city = "all", cached = FALSE)
 }
 \arguments{
-\item{city}{Either the name of the city or \code{'all'} (default).}
+\item{city}{Either the name of the city or \code{'all'} (default). If the chosen
+city name is not available the full table will be returned.}
 
 \item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
 This is a faster option but not recommended for daily data.}
@@ -24,7 +25,7 @@ A \code{tibble} with RPPI data for all selected cities where:
 The national index is defined as the series with \code{name_muni == 'Índice Fipezap+'}.
 }
 \description{
-Import all residential indices from FipeZap
+Import residential and commercial prices indices from FipeZap
 }
 \details{
 The FipeZap Index is a monthly median stratified index calculated across several
@@ -34,6 +35,9 @@ stratified by number of rooms. The overall city index is a weighted sum of media
 prices by room/region.
 
 The residential Index includes only apartments and similar units such as studios and flats.
+
+Choosing a specific city will only filter the final results and will not save
+processing/downloading time.
 }
 \examples{
 \dontrun{ if (interactive) {

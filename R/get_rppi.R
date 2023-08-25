@@ -431,7 +431,7 @@ get_rppi_secovi_sp <- function(cached = FALSE) {
 
 #' Get the FipeZap RPPI
 #'
-#' Import all residential indices from FipeZap
+#' Import residential and commercial prices indices from FipeZap
 #'
 #' @details
 #' The FipeZap Index is a monthly median stratified index calculated across several
@@ -442,7 +442,11 @@ get_rppi_secovi_sp <- function(cached = FALSE) {
 #'
 #' The residential Index includes only apartments and similar units such as studios and flats.
 #'
-#' @param city Either the name of the city or `'all'` (default).
+#' Choosing a specific city will only filter the final results and will not save
+#' processing/downloading time.
+#'
+#' @param city Either the name of the city or `'all'` (default). If the chosen
+#' city name is not available the full table will be returned.
 #' @inheritParams get_rppi
 #'
 #' @return A `tibble` with RPPI data for all selected cities where:
@@ -468,8 +472,14 @@ get_rppi_secovi_sp <- function(cached = FALSE) {
 #'
 get_rppi_fipezap <- function(city = "all", cached = FALSE) {
 
+  # Download cached data from the GitHub repository
   if (cached) {
-    df <- readr::read_csv("...")
+    df <- import_cached("rppi_fipe")
+
+    if (city != "all" && city %in% unique(df$name_muni)) {
+      df <- dplyr::filter(df, name_muni == city)
+    }
+
     return(df)
   }
 
@@ -546,6 +556,12 @@ get_rppi_fipezap <- function(city = "all", cached = FALSE) {
     dplyr::mutate(date = lubridate::ymd(date)) |>
     # Select column order
     dplyr::select(date, name_muni, market, rent_sale, variable, rooms, value)
+
+  if (city != "all" && city %in% unique(clean_fipe$name_muni)) {
+
+    clean_fipe <- dplyr::filter(clean_fipe, name_muni == city)
+
+  }
 
   return(clean_fipe)
 
