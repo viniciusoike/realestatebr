@@ -13,6 +13,7 @@ rppi_sale <- get_rppi("sale", stack = TRUE)
 rppi_rent <- get_rppi("rent", stack = TRUE)
 bis_selected <- get_bis_rppi("selected")
 bis_detailed <- get_bis_rppi("detailed")
+rppi_fipe <- get_rppi_fipezap(city = "all")
 
 # Export to compressed csv using vroom
 vroom_write(bcb_series, here("cached_data", "bcb_series.csv.gz"))
@@ -23,6 +24,7 @@ vroom_write(rppi_rent, here("cached_data", "rppi_rent.csv.gz"))
 vroom_write(secovi_sp, here("cached_data", "secovi_sp.csv.gz"))
 vroom_write(bis_selected, here("cached_data", "bis_selected.csv.gz"))
 vroom_write(fgv_data, here("cached_data", "fgv_indicators.csv.gz"))
+vroom_write(rppi_fipe, here("cached_data", "rppi_fipe.csv.gz"))
 
 # Export to compressed RDS using readr
 readr::write_rds(abrainc, here("cached_data", "abrainc.rds"), compress = "gz")
