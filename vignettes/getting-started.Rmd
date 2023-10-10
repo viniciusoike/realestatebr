@@ -74,7 +74,7 @@ ggplot(radar, aes(x = date, y = value)) +
 The Brazilian Central Bank has a wide variety of real estate data that is stored into a single long-format csv file. This makes working with this data quite difficult. The example below shows how to find the total amount of new real estate credit in three specific states.
 
 ```{r}
-bcb <- get_bcb_realestate()
+bcb <- get_bcb_realestate(cached = TRUE)
 
 credit_south <- bcb %>%
   filter(
@@ -114,7 +114,7 @@ ggplot(credit_south, aes(x = date, color = abbrev_state)) +
 The `category` argument allows for a more direct "query"; also, data is presented in "wide" format.
 
 ```{r}
-index <- get_bcb_realestate("indices")
+index <- get_bcb_realestate("indices", cached = TRUE)
 
 index
 ```
