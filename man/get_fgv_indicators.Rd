@@ -20,5 +20,13 @@ Download and clean construction confidence indicators estimated and released
 by the Getúlio Vargas Foundation (FGV).
 }
 \details{
-Available category options are \code{nuci}, \code{ie_cst}, \code{ic_cst}, and \code{isa_cst}.
+Available category options are \code{nuci}, \code{ie_cst}, \code{ic_cst}, \code{isa_cst}.
+}
+\examples{
+# Get expectations indicator
+expec <- get_fgv_indicators("ie_cst")
+
+# Get all indicators
+indic <- get_fgv_indicators("all")
+
 }

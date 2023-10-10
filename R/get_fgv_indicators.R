@@ -4,7 +4,7 @@
 #' by the Getúlio Vargas Foundation (FGV).
 #'
 #' @details
-#' Available category options are `nuci`, `ie_cst`, `ic_cst`, and `isa_cst`.
+#' Available category options are `nuci`, `ie_cst`, `ic_cst`, `isa_cst`.
 #'
 #'
 #'
@@ -13,6 +13,13 @@
 #'
 #' @return A `tibble` containing all construction confidence indicator series from FGV.
 #' @export
+#' @examples
+#' # Get expectations indicator
+#' expec <- get_fgv_indicators("ie_cst")
+#'
+#' # Get all indicators
+#' indic <- get_fgv_indicators("all")
+#'
 get_fgv_indicators <- function(category = "all", cached = FALSE) {
 
   # Check if category argument is valid
@@ -22,7 +29,13 @@ get_fgv_indicators <- function(category = "all", cached = FALSE) {
     "used_capacity" = "nuci",
     "expectations" = "ie_cst",
     "confidence" = "ic_cst",
-    "current" = "isa_cst"
+    "current" = "isa_cst",
+    "incc_brasil_di" = "incc_brasil_di",
+    "incc_brasil" = "incc_brasil",
+    "incc_brasil_10" = "incc_brasil_10",
+    "incc_1o_decendio" = "incc_1o_decendio",
+    "incc_2o_decendio" = "incc_2o_decendio",
+    "incc" = "incc"
     )
 
   # Group all valid category options into a single vector
@@ -47,8 +60,46 @@ get_fgv_indicators <- function(category = "all", cached = FALSE) {
 
   }
 
+  if (all(names(df) %in% names(dict))) {
+    df <- dplyr::left_join(df, fgv_dict, by = "code_series")
+  }
+
   df <- stats::na.omit(df)
 
   return(df)
 
 }
+
+fgv_dict <- data.frame(
+  id_series = 1:15,
+  code_series = c(
+    1463201, 1463202, 1463203, 1463204, 1463205, 1428409, 1416233, 1416234, 1416232,
+    1464783, 1465235, 1464331, 1000379, 1000366, 1000370
+  ),
+  name_series = c(
+    "Índice de Variação de Aluguéis Residenciais (IVAR) - Média Nacional",
+    "Índice de Variação de Aluguéis Residenciais (IVAR) - São Paulo",
+    "Índice de Variação de Aluguéis Residenciais (IVAR) - Rio de Janeiro",
+    "Índice de Variação de Aluguéis Residenciais (IVAR) - Belo Horizonte",
+    "Índice de Variação de Aluguéis Residenciais (IVAR) - Porto Alegre",
+    "Sondagem da Construção – Nível de Utilização da Capacidade Instalada",
+    "IE-CST Com ajuste Sazonal - Índice de Expectativas da Construção",
+    "ISA-CST Com ajuste Sazonal - Índice da Situação Atual da Construção",
+    "ICST Com ajuste Sazonal - Índice de Confiança da Construção",
+    "INCC - Brasil - DI",
+    "INCC - Brasil",
+    "INCC - Brasil-10",
+    "INCC - 1o Decendio",
+    "INCC - 2o Decendio",
+    "INCC - Fechamento Mensal"
+  ),
+  source = c(
+    "FGV", "FGV", "FGV", "FGV", "FGV", "FGV", "FGV-SONDA", "FGV-SONDA", "FGV-SONDA",
+    "FGV-INCC", "FGV-INCC", "FGV-INCC", "FGV-INCC", "FGV-INCC", "FGV-INCC"
+  ),
+  unit = c(
+    "Indice", "Indice", "Indice", "Indice", "Indice", "Percentual", "Indicador",
+    "Indicador", "Indicador", "Índice", "Índice", "Índice", "Percentual",
+    "Percentual", "Percentual"
+  )
+)

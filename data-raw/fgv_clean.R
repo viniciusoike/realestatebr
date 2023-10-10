@@ -3,9 +3,10 @@
 # https://extra-ibre.fgv.br/IBRE/sitefgvdados/consulta.aspx
 
 fgv_dict <- data.frame(
-  id_series = 1:9,
+  id_series = 1:15,
   code_series = c(
-    1463201, 1463202, 1463203, 1463204, 1463205, 1428409, 1416233, 1416234, 1416232
+    1463201, 1463202, 1463203, 1463204, 1463205, 1428409, 1416233, 1416234, 1416232,
+    1464783, 1465235, 1464331, 1000379, 1000366, 1000370
   ),
   name_series = c(
     "Índice de Variação de Aluguéis Residenciais (IVAR) - Média Nacional",
@@ -16,14 +17,22 @@ fgv_dict <- data.frame(
     "Sondagem da Construção – Nível de Utilização da Capacidade Instalada",
     "IE-CST Com ajuste Sazonal - Índice de Expectativas da Construção",
     "ISA-CST Com ajuste Sazonal - Índice da Situação Atual da Construção",
-    "ICST Com ajuste Sazonal - Índice de Confiança da Construção"
+    "ICST Com ajuste Sazonal - Índice de Confiança da Construção",
+    "INCC - Brasil - DI",
+    "INCC - Brasil",
+    "INCC - Brasil-10",
+    "INCC - 1o Decendio",
+    "INCC - 2o Decendio",
+    "INCC - Fechamento Mensal"
   ),
   source = c(
-    "FGV", "FGV", "FGV", "FGV", "FGV", "FGV", "FGV-SONDA", "FGV-SONDA", "FGV-SONDA"
+    "FGV", "FGV", "FGV", "FGV", "FGV", "FGV", "FGV-SONDA", "FGV-SONDA", "FGV-SONDA",
+    "FGV-INCC", "FGV-INCC", "FGV-INCC", "FGV-INCC", "FGV-INCC", "FGV-INCC"
   ),
   unit = c(
     "Indice", "Indice", "Indice", "Indice", "Indice", "Percentual", "Indicador",
-    "Indicador", "Indicador"
+    "Indicador", "Indicador", "Índice", "Índice", "Índice", "Percentual",
+    "Percentual", "Percentual"
   )
 )
 
@@ -37,15 +46,21 @@ fgv_key <- tibble::tribble(
   1428409,                "nuci",
   1416233,              "ie_cst",
   1416234,             "isa_cst",
-  1416232,              "ic_cst"
+  1416232,              "ic_cst",
+  1464783,      "incc_brasil_di",
+  1465235,         "incc_brasil",
+  1464331,      "incc_brasil_10",
+  1000379,    "incc_1o_decendio",
+  1000366,    "incc_2o_decendio",
+  1000370,                "incc"
 )
 
 fgv_data <- readr::read_delim(
   "data-raw/xgdvConsulta.csv",
   delim = ";",
-  locale = readr::locale(decimal_mark = ",", encoding = "ISO-8859-1"),
+  locale = readr::locale(decimal_mark = ".", encoding = "ISO-8859-1"),
   na = " - ",
-  col_types = "cddddddddd"
+  col_types = "cddddddddddddddd"
   )
 
 fgv_data <- fgv_data |>
@@ -61,7 +76,8 @@ fgv_data <- fgv_data |>
   dplyr::left_join(fgv_key, by = "code_series") |>
   dplyr::select(
     date, name_simplified, value, name_series, code_series, unit, source
-  )
+  ) |>
+  dplyr::filter(!is.na(value))
 
 # fgv_dict <- readxl::read_excel(
 #   path = "data-raw/xgvxConsulta.xls",
