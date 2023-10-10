@@ -15,7 +15,7 @@
 #' @export
 #' @examples
 #' # Get expectations indicator
-#' expec <- get_fgv_indicators("ie_cst")
+#' expec <- get_fgv_indicators("expectations")
 #'
 #' # Get all indicators
 #' indic <- get_fgv_indicators("all")
@@ -44,7 +44,7 @@ get_fgv_indicators <- function(category = "all", cached = FALSE) {
   error_msg <- paste(cat_options, collapse = ", ")
   # Check if 'category' is valid
   if (!any(category %in% cat_options)) {
-    stop(glue::glue("Category must be one of: {cat_options}."))
+    stop(glue::glue("Category must be one of: {error_msg}."))
   }
   # Swap category with vars
   vars <- ifelse(category == "all", vl_category, vl_category[category])
@@ -60,7 +60,7 @@ get_fgv_indicators <- function(category = "all", cached = FALSE) {
 
   }
 
-  if (all(names(df) %in% names(dict))) {
+  if (all(names(df) %in% names(fgv_dict))) {
     df <- dplyr::left_join(df, fgv_dict, by = "code_series")
   }
 

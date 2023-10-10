@@ -24,7 +24,7 @@ Available category options are \code{nuci}, \code{ie_cst}, \code{ic_cst}, \code{
 }
 \examples{
 # Get expectations indicator
-expec <- get_fgv_indicators("ie_cst")
+expec <- get_fgv_indicators("expectations")
 
 # Get all indicators
 indic <- get_fgv_indicators("all")
