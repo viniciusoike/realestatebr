@@ -74,17 +74,19 @@ get_rppi <- function(category = "sale", cached = FALSE, stack = FALSE) {
     ivgr <- suppressMessages(get_rppi_ivgr(cached))
     # Standardize output
     ivgr <- dplyr::mutate(ivgr, name_muni = "Brazil")
-    ivgr <- dplyr::select(ivgr, -name_geo)
+    ivgr <- dplyr::select(ivgr, -dplyr::any_of("name_geo"))
     # Get IGMI and standardize output
     igmi <- get_rppi_igmi(cached)
     igmi <- dplyr::mutate(igmi, name_muni = ifelse(name_muni == "Brasil", "Brazil", name_muni))
     # Put all series in a named list
     rppi <- list(igmi, ivgr, fipezap)
-    names(rppi) <- c("IGMI-R", "IVG-R", "FipeZap")
   }
 
   if (stack) {
+    names(rppi) <- c("IGMI-R", "IVG-R", "FipeZap")
     rppi <- dplyr::bind_rows(rppi, .id = "source")
+  } else {
+    names(rppi) <- c("igmi_r", "ivg_r", "fipezap")
   }
 
   return(rppi)
