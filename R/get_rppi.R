@@ -355,7 +355,7 @@ get_rppi_ivar <- function(cached = FALSE) {
 
   if (cached) {
     ivar <- import_cached("rppi_rent")
-    ivar <- dplyr::filter(ivar, source = "IVAR")
+    ivar <- dplyr::filter(ivar, source == "IVAR")
   }
 
   ivar_cities <- dim_city |>
@@ -412,7 +412,7 @@ get_rppi_secovi_sp <- function(cached = FALSE) {
 
   if (cached) {
     secovi <- import_cached("rppi_rent")
-    secovi <- dplyr::filter(secovi, source = "Secovi-SP")
+    secovi <- dplyr::filter(secovi, source == "Secovi-SP")
   }
 
   secovi <- get_secovi("rent", cached = FALSE)
