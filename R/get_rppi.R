@@ -18,7 +18,7 @@
 #' @param stack If `TRUE` returns a single `tibble` identified by a `source` column.
 #' If `FALSE` returns a named `list` (default).
 #'
-#' @return Either a named `list` or a `tibble`.
+#' @return Either a named `list` or a `tibble` (if `stack = TRUE`).
 #' @export
 #'
 #' @examples \dontrun{
@@ -66,7 +66,14 @@ get_rppi <- function(category = "sale", cached = FALSE, stack = FALSE) {
 
     # Put all series in a named list
     rppi <- list(iqa, ivar, secovi, fipezap)
-    names(rppi) <- c("IQA", "IVAR", "Secovi-SP", "FipeZap")
+    # If stack is TRUE name the list and then bind the rows
+    if (stack) {
+      names(rppi) <- c("IQA", "IVAR", "Secovi-SP", "FipeZap")
+      rppi <- dplyr::bind_rows(rppi, .id = "source")
+    } else {
+      # Else just use simple names and return as list
+      names(rppi) <- c("iqa", "ivar", "secovi_sp", "fipezap")
+    }
   }
 
   if (category == "sale") {
@@ -80,13 +87,15 @@ get_rppi <- function(category = "sale", cached = FALSE, stack = FALSE) {
     igmi <- dplyr::mutate(igmi, name_muni = ifelse(name_muni == "Brasil", "Brazil", name_muni))
     # Put all series in a named list
     rppi <- list(igmi, ivgr, fipezap)
-  }
+    # If stack is TRUE name the list and then bind the rows
+    if (stack) {
+      names(rppi) <- c("IGMI-R", "IVG-R", "FipeZap")
+      rppi <- dplyr::bind_rows(rppi, .id = "source")
+    } else {
+      # Else just use simple names and return as list
+      names(rppi) <- c("igmi_r", "ivg_r", "fipezap")
+    }
 
-  if (stack) {
-    names(rppi) <- c("IGMI-R", "IVG-R", "FipeZap")
-    rppi <- dplyr::bind_rows(rppi, .id = "source")
-  } else {
-    names(rppi) <- c("igmi_r", "ivg_r", "fipezap")
   }
 
   return(rppi)
@@ -359,9 +368,7 @@ get_rppi_ivar <- function(cached = FALSE) {
   }
 
   ivar_cities <- dim_city |>
-    dplyr::filter(
-      code_muni %in% c(3550308, 4314902, 3304557, 3106200)
-    ) |>
+    dplyr::filter(code_muni %in% c(3550308, 4314902, 3304557, 3106200)) |>
     dplyr::select(name_simplified, name_muni, abbrev_state)
 
   # Filter IVAR from fgv_data, select columns and change the value column name
@@ -413,6 +420,7 @@ get_rppi_secovi_sp <- function(cached = FALSE) {
   if (cached) {
     secovi <- import_cached("rppi_rent")
     secovi <- dplyr::filter(secovi, source == "Secovi-SP")
+    return(secovi)
   }
 
   secovi <- get_secovi("rent", cached = FALSE)
