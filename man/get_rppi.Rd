@@ -16,7 +16,7 @@ This is a faster option but not recommended for daily data.}
 If \code{FALSE} returns a named \code{list} (default).}
 }
 \value{
-Either a named \code{list} or a \code{tibble}.
+Either a named \code{list} or a \code{tibble} (if \code{stack = TRUE}).
 }
 \description{
 Quickly import all Residential Price Indexes in Brazil. This function returns
