@@ -1,3 +1,4 @@
+# remotes::install_github("viniciusoike/realestatebr", force = TRUE, upgrade = "never")
 library(realestatebr)
 library(vroom)
 library(here)
