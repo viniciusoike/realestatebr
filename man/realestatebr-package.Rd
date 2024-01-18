@@ -4,8 +4,8 @@
 \name{realestatebr-package}
 \alias{realestatebr}
 \alias{realestatebr-package}
-\title{realestatebr: What the Package Does (Title Case)}
+\title{realestatebr: Import Brazilian Real Estate Data into R}
 \description{
-More about what it does (maybe more than one line) Use four spaces when indenting paragraphs within the Description.
+This package offers a suite of functions that import real estate data from market reports in a convenient 'tidy' format in R.
 }
 \keyword{internal}
