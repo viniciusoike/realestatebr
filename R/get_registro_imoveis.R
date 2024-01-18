@@ -36,7 +36,7 @@ get_property_records <- function(category = "all", cached = FALSE) {
   url <- "https://www.registrodeimoveis.org.br/portal-estatistico-registral"
   # Scrape page and get the links
   dlinks <- xml2::read_html(url) |>
-    rvest::html_elements(xpath = "//*[@id='section-contact']/div/p[9]/a") |>
+    rvest::html_elements(xpath = "//*[@id='section-contact']/div/p[5]/a") |>
     rvest::html_attr("href") |>
     purrr::map(stringr::str_replace, pattern = " ", replacement = "%20")
 
@@ -105,10 +105,10 @@ import_ri_capitals <- function(path) {
 
   # Get city names and state (UFs) abbreviations
   # Import city name and clean
-  city_name <- readxl::read_excel(path = path, sheet = 2, range = "C2:Q2")
+  city_name <- readxl::read_excel(path = path, sheet = 2, range = "C2:R2")
   city_name <- janitor::make_clean_names(names(city_name))
   # Import UF abbreviation and clean
-  state_abb <- readxl::read_excel(path = path, sheet = 2, range = "C3:Q3")
+  state_abb <- readxl::read_excel(path = path, sheet = 2, range = "C3:R3")
   state_abb <- stringr::str_extract(names(state_abb), "[A-Z]{2}")
 
   # Build a header for the registro/compra sheet
@@ -301,7 +301,7 @@ clean_ri <- function(df, var_name = "name", value_name = "value", state = TRUE) 
 
   # Fix date column, convert to long and remove missing values
   clean <- df |>
-    dplyr::mutate(date = lubridate::ymd(date)) |>
+    dplyr::mutate(date = janitor::excel_numeric_to_date(as.numeric(date))) |>
     tidyr::pivot_longer(
       cols = -c(date, year),
       names_to = var_name,
