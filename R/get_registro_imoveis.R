@@ -100,7 +100,6 @@ get_ri_aggregates <- function(cached, ...) {
 }
 
 import_ri_capitals <- function(path) {
-
   # Extract the names of the cities and states from the header
 
   # Get city names and state (UFs) abbreviations
@@ -301,7 +300,8 @@ clean_ri <- function(df, var_name = "name", value_name = "value", state = TRUE) 
 
   # Fix date column, convert to long and remove missing values
   clean <- df |>
-    dplyr::mutate(date = janitor::excel_numeric_to_date(as.numeric(date))) |>
+    # dplyr::mutate(date = janitor::excel_numeric_to_date(as.numeric(date))) |>
+    dplyr::mutate(date = lubridate::ymd(date)) |>
     tidyr::pivot_longer(
       cols = -c(date, year),
       names_to = var_name,
