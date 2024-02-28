@@ -3,70 +3,63 @@
 #' Download and clean construction confidence indicators estimated and released
 #' by the Getúlio Vargas Foundation (FGV).
 #'
-#' @details
-#' Available category options are `nuci`, `ie_cst`, `ic_cst`, `isa_cst`.
-#'
-#'
-#'
-#' @param category Defaults to `'all'`. Check details for more information.
 #' @inheritParams get_secovi
 #'
 #' @return A `tibble` containing all construction confidence indicator series from FGV.
 #' @export
-#' @examples
-#' # Get expectations indicator
-#' expec <- get_fgv_indicators("expectations")
-#'
-#' # Get all indicators
-#' indic <- get_fgv_indicators("all")
-#'
-get_fgv_indicators <- function(category = "all", cached = FALSE) {
+get_fgv_indicators <- function(cached = TRUE) {
 
   # Check if category argument is valid
 
   # Swap vector for categories
-  vl_category <- c(
-    "used_capacity" = "nuci",
-    "expectations" = "ie_cst",
-    "confidence" = "ic_cst",
-    "current" = "isa_cst",
-    "incc_brasil_di" = "incc_brasil_di",
-    "incc_brasil" = "incc_brasil",
-    "incc_brasil_10" = "incc_brasil_10",
-    "incc_1o_decendio" = "incc_1o_decendio",
-    "incc_2o_decendio" = "incc_2o_decendio",
-    "incc" = "incc"
-    )
+  # vl_category <- c(
+  #   "used_capacity" = "nuci",
+  #   "expectations" = "ie_cst",
+  #   "confidence" = "ic_cst",
+  #   "current" = "isa_cst",
+  #   "incc_brasil_di" = "incc_brasil_di",
+  #   "incc_brasil" = "incc_brasil",
+  #   "incc_brasil_10" = "incc_brasil_10",
+  #   "incc_1o_decendio" = "incc_1o_decendio",
+  #   "incc_2o_decendio" = "incc_2o_decendio",
+  #   "incc" = "incc"
+  #   )
 
-  # Group all valid category options into a single vector
-  cat_options <- c("all", names(vl_category))
-  # Collapse into a single string for error output message
-  error_msg <- paste(cat_options, collapse = ", ")
-  # Check if 'category' is valid
-  if (!any(category %in% cat_options)) {
-    stop(glue::glue("Category must be one of: {error_msg}."))
-  }
-  # Swap category with vars
-  vars <- ifelse(category == "all", vl_category, vl_category[category])
+  # # Group all valid category options into a single vector
+  # cat_options <- c("all", names(vl_category))
+  # # Collapse into a single string for error output message
+  # error_msg <- paste(cat_options, collapse = ", ")
+  # # Check if 'category' is valid
+  # if (!any(category %in% cat_options)) {
+  #   stop(glue::glue("Category must be one of: {error_msg}."))
+  # }
+  # # Swap category with vars
+  # vars <- ifelse(category == "all", vl_category, vl_category[category])
+  #
+  # if (cached) {
+  #
+  #   df <- import_cached("fgv_indicators")
+  #   df <- dplyr::filter(df, name_simplified %in% vars)
+  #
+  # } else {
+  #
+  #   df <- dplyr::filter(fgv_data, name_simplified %in% vars)
+  #
+  # }
+  #
+  # if (all(names(df) %in% names(fgv_dict))) {
+  #   df <- dplyr::left_join(df, fgv_dict, by = "code_series")
+  # }
+  #
+  # df <- stats::na.omit(df)
 
   if (cached) {
-
-    df <- import_cached("fgv_indicators")
-    df <- dplyr::filter(df, name_simplified %in% vars)
-
+    return(import_cached("fgv_indicators"))
   } else {
-
-    df <- dplyr::filter(fgv_data, name_simplified %in% vars)
-
+    return(fgv_data)
   }
 
-  if (all(names(df) %in% names(fgv_dict))) {
-    df <- dplyr::left_join(df, fgv_dict, by = "code_series")
-  }
-
-  df <- stats::na.omit(df)
-
-  return(df)
+  # return(df)
 
 }
 
