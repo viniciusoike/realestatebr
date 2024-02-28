@@ -4,11 +4,9 @@
 \alias{get_fgv_indicators}
 \title{Get FGV Confidence Indicators}
 \usage{
-get_fgv_indicators(category = "all", cached = FALSE)
+get_fgv_indicators(cached = FALSE)
 }
 \arguments{
-\item{category}{Defaults to \code{'all'}. Check details for more information.}
-
 \item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
 This is a faster option but not recommended for daily data.}
 }
@@ -18,15 +16,4 @@ A \code{tibble} containing all construction confidence indicator series from FGV
 \description{
 Download and clean construction confidence indicators estimated and released
 by the Getúlio Vargas Foundation (FGV).
-}
-\details{
-Available category options are \code{nuci}, \code{ie_cst}, \code{ic_cst}, \code{isa_cst}.
-}
-\examples{
-# Get expectations indicator
-expec <- get_fgv_indicators("expectations")
-
-# Get all indicators
-indic <- get_fgv_indicators("all")
-
 }
