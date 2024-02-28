@@ -58,7 +58,7 @@ fgv_key <- tibble::tribble(
 fgv_data <- readr::read_delim(
   "data-raw/xgdvConsulta.csv",
   delim = ";",
-  locale = readr::locale(decimal_mark = ".", encoding = "ISO-8859-1"),
+  locale = readr::locale(decimal_mark = ",", encoding = "ISO-8859-1"),
   na = " - ",
   col_types = "cddddddddddddddd"
   )
