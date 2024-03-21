@@ -40,6 +40,8 @@ get_property_records <- function(category = "all", cached = FALSE) {
     rvest::html_attr("href") |>
     purrr::map(stringr::str_replace, pattern = " ", replacement = "%20")
 
+  dlinks <- purrr::map(dlinks, \(x) stringr::str_extract(x, "https.+\\.xlsx$"))
+
   if (category == "all") {
     out <- list(
       capitals = get_ri_capitals(cached, url = dlinks[[1]]),
