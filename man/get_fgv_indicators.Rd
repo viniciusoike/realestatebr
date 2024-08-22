@@ -4,7 +4,7 @@
 \alias{get_fgv_indicators}
 \title{Get FGV Confidence Indicators}
 \usage{
-get_fgv_indicators(cached = FALSE)
+get_fgv_indicators(cached = TRUE)
 }
 \arguments{
 \item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
