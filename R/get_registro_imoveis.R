@@ -32,13 +32,18 @@ get_property_records <- function(category = "all", cached = FALSE) {
     if (category == "all") { return(prop) } else { return(prop[[category]]) }
   }
 
+  clean_links <- function(x) {
+    stringr::str_remove(x, "\\\t")
+  }
+
   # Params to download data
   url <- "https://www.registrodeimoveis.org.br/portal-estatistico-registral"
   # Scrape page and get the links
   dlinks <- xml2::read_html(url) |>
     rvest::html_elements(xpath = "//*[@id='section-contact']/div/p[5]/a") |>
     rvest::html_attr("href") |>
-    purrr::map(stringr::str_replace, pattern = " ", replacement = "%20")
+    purrr::map(stringr::str_replace, pattern = " ", replacement = "%20") |>
+    purrr::map(clean_links)
 
   dlinks <- purrr::map(dlinks, \(x) stringr::str_extract(x, "https.+\\.xlsx$"))
 
