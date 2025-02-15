@@ -9,7 +9,7 @@ jobs:
   update-data:
     runs-on: ubuntu-latest
     env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v3
@@ -21,17 +21,43 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
-            any::tidyverse
+            any::vroom
+            any::here
+            any::readr
             any::devtools
+            any::usethis
             any::remotes
+
+      - name: Install package from current repository
+        run: |
+          Rscript -e 'remotes::install_local(".", dependencies = TRUE)'
+
+      - name: Create directories
+        run: |
+          mkdir -p cached_data
+          mkdir -p data
 
       - name: Run data update script
         run: Rscript 'data-raw/update_data.R'
+
+      - name: Update package data and documentation
+        run: |
+          Rscript -e 'devtools::document()'
+          Rscript -e 'current_version <- desc::desc_get_version(); new_version <- package_version(current_version) + c(0,0,1); desc::desc_set_version(new_version)'
 
       - name: Commit and push if there are changes
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
+          git add cached_data/
           git add data/
+          git add DESCRIPTION
+          git add man/
           git commit -m "Weekly data update: $(date +%Y-%m-%d)" || echo "No changes to commit"
-          git push origin || echo "No changes to push"
+          git push https://$GITHUB_TOKEN@github.com/${GITHUB_REPOSITORY}.git HEAD:$GITHUB_REF || echo "No changes to push"
+
+      - name: Check for errors
+        if: failure()
+        run: |
+          echo "The workflow failed. Check the logs for details."
+          exit 1
