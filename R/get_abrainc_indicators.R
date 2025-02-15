@@ -223,7 +223,7 @@ abrainc_fipe_col_names <- function() {
     "supply-total", "supply-market_rate", "supply-social_housing", "supply-other",
     "value-new_units", "value-sale", "value-new_units_cpi", "value-sale_cpi")
 
-  ind_labels <- tibble::tribble(
+  ind_labels <- dplyr::tribble(
           ~variable,            ~variable_label,
             "total",                    "Total",
       "market_rate",  "Market-rate Development",
@@ -244,7 +244,7 @@ abrainc_fipe_col_names <- function() {
     "sector-input_costs-CAGED, IBGE, FGV", "sector-new_units-FipeZap",
     "sector-real_estate_prices-FGV")
 
-  radar_labels <- tibble::tribble(
+  radar_labels <- dplyr::tribble(
                   ~variable,             ~variable_label,
                "confidence",          "Confidence Index",
                  "activity",            "Activity Index",
@@ -266,7 +266,7 @@ abrainc_fipe_col_names <- function() {
 
   lead_col_names <- c("date", paste(rep(xx, each = length(yy)), yy, sep = "-"))
 
-  lead_labels <- tibble::tribble(
+  lead_labels <- dplyr::tribble(
     ~variable,                                             ~variable_label,
     "leading_index",            "Real Estate Leading Indicator (100 = dec/2000)",
     "leading_index_12m", "Real Estate Leading Indicator (% 12-month cumulative) (%)",

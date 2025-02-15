@@ -277,7 +277,7 @@ clean_ri_aggregates <- function(ls) {
 
 clean_ri_spo <- function(df) {
 
-  df_aux <- tibble::tribble(
+  df_aux <- dplyr::tribble(
     ~name_sp_region,                          ~name_sp_label,
     "estado_de_sao_paulo_total",              "Estado de São Paulo",
     "metropolitana_de_sao_paulo_total",       "Metropolitana de São Paulo",

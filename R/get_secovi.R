@@ -66,7 +66,7 @@ get_secovi <- function(category = "all", cached = FALSE) {
 }
 
 
-secovi_metadata <- tibble::tribble(
+secovi_metadata <- dplyr::tribble(
 ~code,               ~label,      ~cat,
    14, "default_condominio",   "condo",
    78,               "icon",   "condo",

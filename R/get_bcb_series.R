@@ -81,7 +81,7 @@ get_bcb_series <- function(
 
   # Rename column names and join with dictionary (metadata)
   bcb_series <- bcb_series |>
-    tibble::as_tibble() |>
+    dplyr::as_tibble() |>
     dplyr::rename(date = ref.date, code_bcb = id.num) |>
     dplyr::select(-series.name) |>
     dplyr::left_join(bcb_metadata, by = "code_bcb")
