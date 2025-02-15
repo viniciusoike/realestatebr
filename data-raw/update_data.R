@@ -1,10 +1,12 @@
 # data-raw/update_data.R
-
+install.packages("import")
 # Load required packages
 library(realestatebr)
 library(here)
-import::from(vroom, vroom_write)
-import::from(readr, write_rds)
+library(vroom)
+library(readr)
+# import::from(vroom, vroom_write)
+# import::from(readr, write_rds)
 
 # Create log directory
 log_dir <- here("logs")
