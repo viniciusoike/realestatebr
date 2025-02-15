@@ -79,7 +79,7 @@ get_bcb_realestate <- function(category = "all", cached = FALSE) {
   }
 
   # Tibble with parameters to feed the tbl_bcb_wider function
-  params <- tibble::tibble(
+  params <- dplyr::tibble(
     category_label = c("units", "accounting", "indices", "sources", "application"),
     cat = c("imoveis", "contabil", "indices", "fontes", "direcionamento"),
     id_cols = c(list(c("date", "abbrev_state")), "date", "date", "date", "date"),
@@ -101,6 +101,11 @@ get_bcb_realestate <- function(category = "all", cached = FALSE) {
 
 }
 
+download_csv <- function(url, destfile) {
+
+  tryCatch()
+}
+
 import_bcb_realestate <- function() {
 
   url <- "https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor"
@@ -110,8 +115,54 @@ import_bcb_realestate <- function() {
   # Download csv file
   download.file(url, destfile = temp_file, mode = "wb", quiet = TRUE)
   # Read the data
-  df <- vroom::vroom(temp_file, col_types = "Dcc")
+  # df <- vroom::vroom(temp_file, col_types = "Dcc")
+  df <- readr::read_csv(temp_file, col_types = "Dcc")
+  return(df)
+}
 
+import_bcb_realestate <- function() {
+  tryCatch(
+    {
+      url <- "https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor"
+
+      # Create a temporary file name
+      temp_file <- tempfile(fileext = ".csv")
+
+      message("Downloading real estate data from the Brazilian Central Bank.")
+
+      # Download csv file with error checking
+      download_result <- download.file(url, destfile = temp_file, mode = "wb", quiet = TRUE)
+
+      # Check if download was successful
+      if (download_result != 0) {
+        stop("Failed to download file from BCB")
+      }
+
+      # Read the data
+      df <- readr::read_csv(temp_file, col_types = "Dcc")
+
+      # Check if data is empty
+      if (nrow(df) == 0) {
+        stop("Downloaded file contains no data")
+      }
+
+      return(df)
+    },
+    error = function(e) {
+      message(sprintf("Error in import_bcb_realestate: %s", e$message))
+      return(NULL)
+    },
+    warning = function(w) {
+      message(sprintf("Warning in import_bcb_realestate: %s", w$message))
+      return(NULL)
+    },
+    finally = {
+      # Clean up temporary file if it exists
+      if (exists("temp_file") && file.exists(temp_file)) {
+        unlink(temp_file)
+      }
+    }
+  )
 }
 
 clean_bcb_realestate <- function(df) {
