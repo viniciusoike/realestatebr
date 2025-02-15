@@ -8,11 +8,11 @@
 #' on these series is available at the [BIS website](https://www.bis.org/statistics/pp_selected.htm)
 #'
 #' For the full detailed dataset select `category = 'detailed'`. More information
-#' on these series is available at the [BIS website](https://www.bis.org/statistics/pp_detailed.htm)
+#' on these series is available at the [BIS website](https://data.bis.org/topics/RPP)
 #'
 #' @param category One of `selected` (default) or `detailed`.
 #' @inheritParams get_secovi
-#' @source [(https://www.bis.org/statistics/pp_detailed.htm)]((https://www.bis.org/statistics/pp_detailed.htm))
+#' @source [https://data.bis.org/topics/RPP](https://data.bis.org/topics/RPP)
 #' @return A `tibble` or a named `list` with all RPPIs from BIS.
 #' @export
 #'
