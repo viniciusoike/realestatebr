@@ -21,8 +21,6 @@ Imports:
     lifecycle,
     lubridate,
     purrr,
-    quantmod,
-    RcppRoll,
     readr,
     readxl,
     rlang,

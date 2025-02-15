@@ -153,7 +153,7 @@ get_rppi_ivgr <- function(cached = FALSE) {
     dplyr::mutate(
       name_geo = "Brazil",
       chg = index / dplyr::lag(index) - 1,
-      acum12m = RcppRoll::roll_prodr(1 + chg, n = 12) - 1
+      acum12m = zoo::rollapplyr(1 + chg, width = 12, FUN = prod, fill = NA) - 1
     )
 
   return(tidyr::as_tibble(clean_ivgr))
@@ -247,7 +247,7 @@ get_rppi_igmi <- function(cached = FALSE) {
     dplyr::group_by(name_simplified) |>
     dplyr::mutate(
       chg = index / dplyr::lag(index) - 1,
-      acum12m = RcppRoll::roll_prodr(1 + chg, n = 12) - 1) |>
+      acum12m = zoo::rollapplyr(1 + chg, width = 12, FUN = prod, fill = NA) - 1) |>
     dplyr::ungroup() |>
     dplyr::left_join(dim_geo, by = "name_simplified") |>
     # Select column order
@@ -382,7 +382,7 @@ get_rppi_ivar <- function(cached = FALSE) {
     dplyr::group_by(name_simplified) |>
     dplyr::mutate(
       chg = index / dplyr::lag(index) - 1,
-      acum12m = RcppRoll::roll_prodr(1 + chg, n = 12)
+      acum12m = zoo::rollapplyr(1 + chg, width = 12, FUN = prod, fill = NA) - 1
     ) |>
     dplyr::ungroup()
 
@@ -431,7 +431,7 @@ get_rppi_secovi_sp <- function(cached = FALSE) {
     dplyr::mutate(
       name_muni = "São Paulo",
       chg = index / dplyr::lag(index) - 1,
-      acum12m = RcppRoll::roll_prodr(1 + chg, n = 12) - 1
+      acum12m = zoo::rollapplyr(1 + chg, width = 12, FUN = prod, fill = NA) - 1
     ) |>
     dplyr::select(date, name_muni, index, chg, acum12m)
 

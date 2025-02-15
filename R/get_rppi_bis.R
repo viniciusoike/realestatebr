@@ -43,7 +43,7 @@ get_rppi_bis <- function(cached = FALSE) {
     dplyr::group_by(code) |>
     dplyr::mutate(
       chg = index / dplyr::lag(index) - 1,
-      acum12m = RcppRoll::roll_prodr(1 + chg, n = 12)
+      acum12m = zoo::rollapplyr(1 + chg, width = 12, FUN = prod, fill = NA) - 1
     ) |>
     dplyr::ungroup()
 

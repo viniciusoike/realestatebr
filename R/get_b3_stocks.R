@@ -21,6 +21,7 @@
 #'
 #' @return A `tibble` containing stock prices for all companies.
 #' @export
+#' @importFrom quantmod getSymbols
 #' @examples \dontrun{
 #' # Get a specific company
 #' cyrela <- get_b3_stocks(symbol = "CYRE3.SA")

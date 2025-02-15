@@ -188,8 +188,9 @@ clean_abrainc <- function(ls, category) {
       # Compute trends for variables
       dplyr::group_by(variable) |>
       dplyr::mutate(
-        ma3 = RcppRoll::roll_meanr(value, n = 3),
-        ma6 = RcppRoll::roll_meanr(value, n = 6)) |>
+        ma3 = zoo::rollmeanr(value, k = 3, fill = NA),
+        ma6 = zoo::rollmeanr(value, k = 3, fill = NA)
+        ) |>
       dplyr::ungroup() |>
       # Join with variable labels
       dplyr::left_join(labels, by = "variable")
