@@ -4,7 +4,7 @@
 \alias{get_bis_rppi}
 \title{Get Residential Property Price Indices from BIS}
 \source{
-\url{(https://www.bis.org/statistics/pp_detailed.htm)}
+\url{https://data.bis.org/topics/RPP}
 }
 \usage{
 get_bis_rppi(category = "selected", cached = FALSE)
@@ -27,7 +27,7 @@ For the simple selected series select \code{category = 'selected'}. More informa
 on these series is available at the \href{https://www.bis.org/statistics/pp_selected.htm}{BIS website}
 
 For the full detailed dataset select \code{category = 'detailed'}. More information
-on these series is available at the \href{https://www.bis.org/statistics/pp_detailed.htm}{BIS website}
+on these series is available at the \href{https://data.bis.org/topics/RPP}{BIS website}
 }
 \examples{
 \dontrun{
