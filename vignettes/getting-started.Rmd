@@ -22,7 +22,6 @@ library(realestatebr)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
-library(RcppRoll)
 ```
 
 # General Usage
@@ -89,8 +88,8 @@ credit_south <- bcb %>%
 credit_south <- credit_south %>%
   group_by(abbrev_state) %>%
   mutate(
-    trend = RcppRoll::roll_mean(total, n = 12, fill = NA),
-    trend = RcppRoll::roll_mean(trend, n = 2, fill = NA)
+    trend = zoo::rollmean(total, k = 12, fill = NA, align = "center"),
+    trend = zoo::rollmean(trend, k = 2, fill = NA, align = "center")
   ) %>%
   ungroup()
 
