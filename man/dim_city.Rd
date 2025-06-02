@@ -3,27 +3,29 @@
 \docType{data}
 \name{dim_city}
 \alias{dim_city}
-\title{World Health Organization TB data}
+\title{Brazilian city identifier table}
 \format{
-\subsection{\code{who}}{
-
-A data frame with 7,240 rows and 60 columns:
-\describe{
-\item{country}{Country name}
-\item{iso2, iso3}{2 & 3 letter ISO country codes}
-\item{year}{Year}
-...
-}
-}
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5570 rows and 8 columns.
 }
 \source{
-\url{https://www.who.int/teams/global-tuberculosis-programme/data}
+<IBGE ...>
 }
 \usage{
 dim_city
 }
 \description{
-A subset of data from the World Health Organization Global Tuberculosis
-Report ...
+A table with official IBGE identifiers for all Brazilian cities.
+}
+\details{
+A \code{tibble} with 5,570 rows and 8 columns:
+\describe{
+\item{code_muni}{7-digit IBGE code identifying the city.}
+\item{name_muni}{Name of the city.}
+\item{code_state}{2-digit IBGE code identifying the state.}
+\item{name_state}{Name of the state.}
+\item{code_region}{1-digit IBGE code identifying the region}
+\item{name_region}{Name of the region}
+\item{name_simplified}{Simplified version of the city name for easier subsetting.}
+}
 }
 \keyword{datasets}

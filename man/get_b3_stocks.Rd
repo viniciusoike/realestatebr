@@ -31,7 +31,7 @@ Downloads and imports the stock values of the most relevant
 real estate players in Brazil via \code{quantmod::getSymbols}. A list of companies
 can be found at \code{b3_real_estate}.
 
-By deafult uses \code{src = 'yahoo'}.
+By default uses \code{src = 'yahoo'}.
 }
 \examples{
 \dontrun{

@@ -8,7 +8,7 @@
 #' real estate players in Brazil via `quantmod::getSymbols`. A list of companies
 #' can be found at `b3_real_estate`.
 #'
-#' By deafult uses `src = 'yahoo'`.
+#' By default uses `src = 'yahoo'`.
 #'
 #' @inheritParams get_secovi
 #' @param symbol Optional character string with the stock tickers symbols. If

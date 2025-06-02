@@ -1,5 +1,4 @@
 # data-raw/update_data.R
-install.packages("import")
 # Load required packages
 library(realestatebr)
 library(here)

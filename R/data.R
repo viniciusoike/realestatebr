@@ -19,37 +19,35 @@
 #' @source <https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries>
 "bcb_metadata"
 
-#' World Health Organization TB data
+#' Brazilian city identifier table
 #'
-#' A subset of data from the World Health Organization Global Tuberculosis
-#' Report ...
+#' A subset of `dim_city` including the most relevant Brazilian cities.
 #'
-#' @format ## `who`
-#' A data frame with 7,240 rows and 60 columns:
+#' A data frame with 72 rows and 3 columns:
 #' \describe{
-#'   \item{country}{Country name}
-#'   \item{iso2, iso3}{2 & 3 letter ISO country codes}
-#'   \item{year}{Year}
-#'   ...
-#' }
-#' @source <https://www.who.int/teams/global-tuberculosis-programme/data>
-"dim_city"
-
-#' World Health Organization TB data
-#'
-#' A subset of data from the World Health Organization Global Tuberculosis
-#' Report ...
-#'
-#' @format ## `who`
-#' A data frame with 7,240 rows and 60 columns:
-#' \describe{
-#'   \item{country}{Country name}
-#'   \item{iso2, iso3}{2 & 3 letter ISO country codes}
-#'   \item{year}{Year}
-#'   ...
+#'   \item{code_muni}{7-digit IBGE code identifying the city.}
+#'   \item{name_muni}{Name of the city.}
+#'   \item{abbrev_muni}{Year}
 #' }
 #' @source <https://www.who.int/teams/global-tuberculosis-programme/data>
 "main_cities"
+
+#' Brazilian city identifier table
+#'
+#' A table with official IBGE identifiers for all Brazilian cities.
+#'
+#' A `tibble` with 5,570 rows and 8 columns:
+#' \describe{
+#'   \item{code_muni}{7-digit IBGE code identifying the city.}
+#'   \item{name_muni}{Name of the city.}
+#'   \item{code_state}{2-digit IBGE code identifying the state.}
+#'   \item{name_state}{Name of the state.}
+#'   \item{code_region}{1-digit IBGE code identifying the region}
+#'   \item{name_region}{Name of the region}
+#'   \item{name_simplified}{Simplified version of the city name for easier subsetting.}
+#' }
+#' @source <IBGE ...>
+"dim_city"
 
 #' Real Estate Players listed on B3
 #'
