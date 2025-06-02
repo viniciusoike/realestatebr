@@ -38,8 +38,10 @@ get_property_records <- function(category = "all", cached = FALSE) {
 
   # Params to download data
   url <- "https://www.registrodeimoveis.org.br/portal-estatistico-registral"
+  url <- "https://www.registrodeimoveis.org.br/"
+  con <- url(url, "rb")
   # Scrape page and get the links
-  dlinks <- xml2::read_html(url) |>
+  dlinks <- xml2::read_html(con) |>
     rvest::html_elements(xpath = "//*[@id='section-contact']/div/p[5]/a") |>
     rvest::html_attr("href") |>
     purrr::map(stringr::str_replace, pattern = " ", replacement = "%20") |>
