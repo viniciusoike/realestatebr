@@ -45,7 +45,7 @@ jobs:
       - name: Update package data and documentation
         run: |
           Rscript -e 'devtools::document()'
-          Rscript -e 'current_version <- desc::desc_get_version(); new_version <- package_version(current_version) + c(0,0,1); desc::desc_set_version(new_version)'
+          Rscript -e 'current_version <- desc::desc_get_version(); version_parts <- unclass(current_version)[[1]]; new_version <- paste(version_parts[1], version_parts[2], version_parts[3] + 1, sep = "."); desc::desc_set_version(new_version)'
 
       - name: Commit and push if there are changes
         run: |
