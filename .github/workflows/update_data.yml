@@ -2,7 +2,7 @@ name: Update Real Estate Data
 
 on:
   schedule:
-    - cron: '0 0 * * 0'  # Runs at 00:00 on Sunday
+    - cron: '0 0 */14 * *'  # Runs every 14 days at 00:00 UTC
   workflow_dispatch:      # Allows manual trigger
 
 jobs:
