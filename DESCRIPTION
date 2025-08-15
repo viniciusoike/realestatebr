@@ -1,7 +1,7 @@
 Package: realestatebr
 Type: Package
 Title: Import Brazilian Real Estate Data into R
-Version: 0.1.1
+Version: 0.1.2
 Author: Vinicius Oike Reginatto
 Maintainer: Vinicius Oike Reginatto <viniciusoike@gmail.com>
 Description: This package offers a suite of functions that import real estate 
