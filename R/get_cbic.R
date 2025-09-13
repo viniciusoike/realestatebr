@@ -524,6 +524,142 @@ clean_cbic_cement_cub <- function(file_path) {
   return(result)
 }
 
+#' Clean CBIC PIM industrial production data
+#'
+#' Processes the PIM (Pesquisa Industrial Mensal) industrial production index
+#' for construction materials. This data uses a unique structure with Excel
+#' serial dates for January and month abbreviations for other months.
+#'
+#' @param file_path Character. Path to the PIM Excel file
+#' @param skip Numeric. Number of rows to skip (default = 4)
+#'
+#' @return A tibble with columns:
+#'   \describe{
+#'     \item{date}{Date. Monthly date}
+#'     \item{year}{Numeric. Year}
+#'     \item{month}{Character. Month name}
+#'     \item{value}{Numeric. Production index (base: 2022 = 100)}
+#'   }
+#'
+#' @examples
+#' \dontrun{
+#' pim_data <- clean_cbic_pim("path/to/pim_file.xlsx")
+#' }
+clean_cbic_pim <- function(file_path, skip = 4) {
+  dat <- readxl::read_excel(file_path, skip = skip)
+  
+  if (ncol(dat) < 2) {
+    cli::cli_warn("Unexpected structure for PIM file")
+    return(tibble::tibble())
+  }
+  
+  # Rename columns
+  names(dat) <- c("date_raw", "value")
+  
+  # Identify rows with Excel serial dates (years)
+  excel_date_rows <- grepl("^[0-9]{5}$", dat$date_raw)
+  
+  # Convert Excel serial dates to actual dates
+  year_dates <- dat$date_raw[excel_date_rows]
+  year_values <- as.Date(as.numeric(year_dates), origin = "1899-12-30")
+  years <- lubridate::year(year_values)
+  
+  # Create a year column by filling down
+  dat$year <- NA
+  year_indices <- which(excel_date_rows)
+  
+  for (i in seq_along(year_indices)) {
+    start_idx <- year_indices[i]
+    end_idx <- if (i < length(year_indices)) {
+      year_indices[i + 1] - 1
+    } else {
+      nrow(dat)
+    }
+    dat$year[start_idx:end_idx] <- years[i]
+  }
+  
+  # Create month column
+  dat$month <- dat$date_raw
+  dat$month[excel_date_rows] <- "jan"
+  
+  # Filter out non-data rows (e.g., source notes at the end)
+  dat_clean <- dat |>
+    dplyr::filter(
+      !is.na(year),
+      !is.na(value),
+      month %in% c("jan", "fev", "mar", "abr", "mai", "jun", 
+                   "jul", "ago", "set", "out", "nov", "dez")
+    )
+  
+  # Create proper date column
+  month_map <- c(
+    jan = 1, fev = 2, mar = 3, abr = 4, mai = 5, jun = 6,
+    jul = 7, ago = 8, set = 9, out = 10, nov = 11, dez = 12
+  )
+  
+  result <- dat_clean |>
+    dplyr::mutate(
+      month_num = month_map[month],
+      date = lubridate::make_date(year, month_num, 1),
+      value = as.numeric(value)
+    ) |>
+    dplyr::select(date, year, month, value) |>
+    dplyr::arrange(date)
+  
+  # Check for any parsing issues
+  if (any(is.na(result$date))) {
+    cli::cli_warn("Some dates could not be parsed correctly")
+  }
+  
+  return(result)
+}
+
+#' Process CBIC PIM Excel sheets
+#'
+#' Wrapper function to process PIM files. Currently handles only the
+#' current methodology file (file 3), as files 1 and 2 are historical
+#' data with discontinued methodologies.
+#'
+#' @param download_results A tibble. Output from import_cbic_files()
+#'
+#' @return A list with the cleaned PIM data
+#'
+#' @examples
+#' \dontrun{
+#' download_results <- import_cbic_files(pim_files)
+#' pim_data <- clean_cbic_pim_sheets(download_results)
+#' }
+clean_cbic_pim_sheets <- function(download_results) {
+  successful_files <- dplyr::filter(download_results, download_success)
+  
+  if (nrow(successful_files) == 0) {
+    cli::cli_warn("No PIM files were successfully downloaded")
+    return(list())
+  }
+  
+  cli::cli_inform("Processing PIM industrial production data...")
+  
+  # Find the current methodology file (usually the 3rd one or the one with "Atual" in name)
+  current_file_idx <- which(
+    stringr::str_detect(successful_files$link, "Atual") |
+    stringr::str_detect(successful_files$link, "07\\.C\\.03")
+  )
+  
+  if (length(current_file_idx) == 0) {
+    # If no "Atual" file found, use the last one (most recent)
+    current_file_idx <- nrow(successful_files)
+  }
+  
+  file_path <- successful_files$file_path[current_file_idx]
+  cli::cli_inform("Processing file: {basename(file_path)}")
+  
+  pim_data <- clean_cbic_pim(file_path)
+  
+  cli::cli_inform("Processed {nrow(pim_data)} months of PIM data")
+  
+  return(list(production_index = pim_data))
+}
+
 #' Process CBIC cement Excel sheets specifically
 #'
 #' Routes to the appropriate cleaning function based on file type.
@@ -1045,6 +1181,50 @@ get_cbic_steel <- function() {
   
   cli::cli_h1("CBIC steel data retrieval complete")
   return(steel_data)
+}
+
+#' Get CBIC PIM industrial production data
+#'
+#' Complete workflow to get cleaned PIM (Pesquisa Industrial Mensal) industrial
+#' production index data from CBIC. This data tracks the physical production
+#' of typical construction industry inputs in Brazil.
+#'
+#' @return A list with:
+#'   \describe{
+#'     \item{production_index}{Tibble with monthly production index values (base: 2022 = 100)}
+#'   }
+#'
+#' @details
+#' The PIM data uses production index with base year 2022 = 100. The data
+#' covers monthly observations from 2012 onwards. Note that files 1 and 2
+#' available on CBIC website contain historical data with discontinued
+#' methodologies and are not processed by this function.
+#'
+#' @examples
+#' \dontrun{
+#' pim_data <- get_cbic_pim()
+#' production <- pim_data$production_index
+#' }
+#'
+#' @export
+get_cbic_pim <- function() {
+  cli::cli_h1("Getting CBIC PIM industrial production data")
+  
+  materials <- import_cbic_materials()
+  pim_url <- materials$link[stringr::str_detect(
+    materials$title, "PIM"
+  )][1]
+  
+  if (is.na(pim_url)) {
+    cli::cli_abort("PIM material not found in CBIC database")
+  }
+  
+  file_params <- import_cbic_material_links(pim_url)
+  download_results <- import_cbic_files(file_params)
+  pim_data <- clean_cbic_pim_sheets(download_results)
+  
+  cli::cli_h1("CBIC PIM data retrieval complete")
+  return(pim_data)
 }
 
 #' Get available CBIC materials
