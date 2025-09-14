@@ -31,24 +31,80 @@ You can install the development version of realestatebr from [GitHub](https://gi
 remotes::install_github("viniciusoike/realestatebr")
 ```
 
-## Downloading data
+## Getting Started
 
-To get the data use one of the `get_*` functions such as `get_abecip_indicators`. 
+### New Unified Interface (Recommended)
+
+The package now provides a modern, unified interface for accessing all datasets:
 
 ```{r example}
 library(realestatebr)
-# Import data from Abecip
-abecip <- get_abecip_indicators()
 
+# Discover available datasets
+datasets <- list_datasets()
+head(datasets)
+
+# Get dataset information
+info <- get_dataset_info("abecip_indicators")
+str(info$categories)
+
+# Get data with automatic fallback (GitHub cache → fresh download)
+abecip <- get_dataset("abecip_indicators")
 abecip
 ```
 
-Outputs will be either a named `list` of `tibbles` or a single `tibble`. All `get_*` functions have two arguments: `category` and `cached`. The `category` argument helps to filter the final result and will always default to `'all'`. The `cached` argument is a `logical` that indicates whether to download the data directly from this GitHub repository. This option will usually be faster.
+The unified interface provides several advantages:
+
+- **Automatic fallback**: Tries GitHub cache first, then fresh download if needed
+- **Consistent naming**: All datasets use standardized English column names
+- **Easy discovery**: Use `list_datasets()` to see all available data
+- **Category filtering**: Access specific parts of complex datasets
 
 ```{r}
-sbpe <- get_abecip_indicators(category = "sbpe")
+# Get specific category only
+sbpe <- get_dataset("abecip_indicators", category = "sbpe")
+head(sbpe)
+
+# Force fresh download
+fresh_data <- get_dataset("bcb_realestate", source = "fresh")
+```
+
+### Legacy Functions (Still Supported)
+
+All existing `get_*` functions continue to work as before:
+
+```{r legacy}
+# Legacy interface still works
+abecip_legacy <- get_abecip_indicators(category = "sbpe", cached = TRUE)
 
 sbpe
+```
+
+## Available Datasets
+
+The package provides access to comprehensive Brazilian real estate data from multiple sources:
+
+| Dataset | Source | Description | Geography |
+|---------|--------|-------------|-----------|
+| `abecip_indicators` | ABECIP | Housing credit data (SBPE flows, units, home equity) | Brazil |
+| `abrainc_indicators` | ABRAINC/FIPE | Primary market indicators (launches, sales, business conditions) | Brazil (major cities) |
+| `bcb_realestate` | BCB | Real estate credit and market data | Brazil (by state) |
+| `secovi` | SECOVI-SP | São Paulo market indicators (fees, rentals, launches, sales) | São Paulo |
+| `bis_rppi` | BIS | International residential property price indices | International (60+ countries) |
+| `rppi` | FIPE/ZAP | Property price indices for sales and rentals | Brazil (50+ cities) |
+| `bcb_series` | BCB | Economic time series (price indices, credit, activity) | Brazil |
+| `b3_stocks` | B3 | Real estate company stock data | Brazil |
+| `fgv_indicators` | FGV | Real estate market indicators | Brazil |
+| `cbic` | CBIC | Construction materials data (cement, steel, production) | Brazil |
+
+```{r datasets}
+# See all available datasets with details
+available_data <- list_datasets()
+print(available_data[, c("name", "source", "frequency", "coverage")])
+
+# Filter by source
+bcb_datasets <- list_datasets(source = "BCB")
+print(bcb_datasets$name)
 ```
 
 ## Residential Property Price Indexes

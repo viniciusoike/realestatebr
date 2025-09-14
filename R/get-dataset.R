@@ -89,12 +89,16 @@ get_dataset <- function(name,
 #' @keywords internal
 get_dataset_with_fallback <- function(name, dataset_info, category, date_start, date_end, ...) {
   
+  # Initialize error tracking
+  errors <- list()
+  
   # Try 1: GitHub cache (fastest for most users)
   cli::cli_inform("Attempting to load {name} from GitHub cache...")
   data <- tryCatch({
     get_dataset_from_source(name, dataset_info, "github", category, date_start, date_end, ...)
   }, error = function(e) {
-    cli::cli_inform("GitHub cache failed: {e$message}")
+    errors$github <<- e$message
+    cli::cli_warn("GitHub cache failed: {e$message}")
     NULL
   })
   
@@ -108,7 +112,8 @@ get_dataset_with_fallback <- function(name, dataset_info, category, date_start, 
   data <- tryCatch({
     get_dataset_from_source(name, dataset_info, "fresh", category, date_start, date_end, ...)
   }, error = function(e) {
-    cli::cli_inform("Fresh download failed: {e$message}")
+    errors$fresh <<- e$message
+    cli::cli_warn("Fresh download failed: {e$message}")
     NULL
   })
   
@@ -117,7 +122,21 @@ get_dataset_with_fallback <- function(name, dataset_info, category, date_start, 
     return(data)
   }
   
-  cli::cli_abort("All data sources failed for dataset '{name}'. Check internet connection or try again later.")
+  # All sources failed - provide detailed error information
+  error_details <- paste(
+    "All data sources failed for dataset '{name}':",
+    "- GitHub cache: {errors$github %||% 'Not attempted'}",
+    "- Fresh download: {errors$fresh %||% 'Not attempted'}",
+    "",
+    "Troubleshooting:",
+    "1. Check your internet connection",
+    "2. Try again later (temporary server issues)",
+    "3. Use source='fresh' to force fresh download",
+    "4. Check dataset availability with list_datasets()",
+    sep = "\n"
+  )
+  
+  cli::cli_abort(error_details)
 }
 
 #' Get Dataset from Specific Source

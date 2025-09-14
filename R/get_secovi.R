@@ -28,8 +28,8 @@ get_secovi <- function(category = "all", cached = FALSE) {
   )
 
   if (cached) {
-    # Download the data from the GitHub repo
-    tbl_secovi <- import_cached("secovi_sp")
+    # Use new unified architecture for cached data
+    tbl_secovi <- get_dataset("secovi", source = "github")
     # Filter category if needed
     if (category != "all") {
       tbl_secovi <- dplyr::filter(tbl_secovi, category == category)

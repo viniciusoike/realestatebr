@@ -42,14 +42,15 @@ get_abecip_indicators <- function(category = "all", cached = FALSE) {
       any(category %in% check_cats)
   )
 
-  # Download cached data from the GitHub repository
+  # Use new unified architecture for cached data
   if (cached) {
-    abecip <- import_cached("abecip")
+    # Map category to unified architecture
     if (category == "all") {
-      return(abecip)
+      data <- get_dataset("abecip_indicators", source = "github")
     } else {
-      return(abecip[[category]])
+      data <- get_dataset("abecip_indicators", source = "github", category = category)
     }
+    return(data)
   }
 
   message(glue::glue("Downloading data from Abecip."))

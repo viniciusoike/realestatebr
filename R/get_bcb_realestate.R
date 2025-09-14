@@ -48,8 +48,8 @@ get_bcb_realestate <- function(category = "all", cached = FALSE) {
   }
 
   if (cached) {
-    # Download cached data
-    clean_bcb <- import_cached("bcb_realestate")
+    # Use new unified architecture for cached data
+    clean_bcb <- get_dataset("bcb_realestate", source = "github")
   } else {
     # Download and import most recent data available
     bcb <- import_bcb_realestate()

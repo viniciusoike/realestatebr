@@ -30,14 +30,10 @@ get_bis_rppi <- function(category = "selected", cached = FALSE) {
     "Category must be one of 'detailed' or 'selected'." =
       any(category %in% c("detailed", "selected"))
   )
-  # Download cached data from the GitHub repo
+  # Use new unified architecture for cached data
   if (cached) {
-    if (category == "selected") {
-      df <- import_cached("bis_selected")
-    } else {
-      df <- import_cached("bis_detailed")
-    }
-    return(df)
+    data <- get_dataset("bis_rppi", source = "github", category = category)
+    return(data)
   }
   # Apply the appropriate function
   if (category == "selected") {

@@ -33,13 +33,22 @@ import_cached <- function(dataset_name,
                          quiet = FALSE) {
   
   # Validate inputs
+  if (!is.character(dataset_name) || length(dataset_name) != 1 || dataset_name == "") {
+    cli::cli_abort("dataset_name must be a non-empty character string")
+  }
+  
   format <- match.arg(format, choices = c("auto", "rds", "csv"))
   
   # Build cache path
   cache_path <- system.file(cache_dir, package = "realestatebr")
   
   if (!dir.exists(cache_path) || cache_path == "") {
-    cli::cli_abort("Cache directory not found. Package may not be properly installed.")
+    cli::cli_abort(c(
+      "Cache directory not found.",
+      "i" = "Expected location: {cache_path}",
+      "i" = "Package may not be properly installed or cache_dir is incorrect.",
+      "!" = "Try reinstalling the package or check cache_dir parameter."
+    ))
   }
   
   # Try different file formats
@@ -50,7 +59,22 @@ import_cached <- function(dataset_name,
   }
   
   if (is.null(data)) {
-    cli::cli_abort("Dataset '{dataset_name}' not found in cache.")
+    # List available files for helpful error message
+    available_files <- list.files(cache_path, pattern = "\\.(rds|csv|csv\\.gz)$")
+    if (length(available_files) > 0) {
+      available_names <- unique(gsub("\\.(rds|csv|csv\\.gz)$", "", available_files))
+      cli::cli_abort(c(
+        "Dataset '{dataset_name}' not found in cache.",
+        "i" = "Available datasets: {paste(available_names, collapse = ', ')}",
+        "i" = "Use check_cache_status() to see all cached files."
+      ))
+    } else {
+      cli::cli_abort(c(
+        "No cached datasets found.",
+        "i" = "Cache directory: {cache_path}",
+        "!" = "You may need to download data first using source='fresh'."
+      ))
+    }
   }
   
   if (!quiet) {

@@ -64,7 +64,8 @@ get_bcb_series <- function(
   }
 
   if (cached) {
-    bcb_series <- import_cached("bcb_series")
+    # Use new unified architecture for cached data
+    bcb_series <- get_dataset("bcb_series", source = "github", date_start = date_start)
     bcb_series <- dplyr::filter(bcb_series, code_bcb %in% codes_bcb, date >= date_start)
     return(bcb_series)
   }

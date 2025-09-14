@@ -49,14 +49,15 @@ get_abrainc_indicators <- function(category = "all", cached = FALSE) {
     any(category %in% c("all", "indicator", "radar", "leading"))
     )
 
-  # Download cached data from the GitHub repository
+  # Use new unified architecture for cached data
   if (cached) {
-    abrainc <- import_cached("abrainc")
+    # Map category to unified architecture
     if (category == "all") {
-      return(abrainc)
+      data <- get_dataset("abrainc_indicators", source = "github")
     } else {
-      return(abrainc[[category]])
+      data <- get_dataset("abrainc_indicators", source = "github", category = category)
     }
+    return(data)
   }
 
   # Url to excel spreadsheet
