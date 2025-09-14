@@ -1,0 +1,237 @@
+# Dataset Registry for realestatebr package
+# This file contains metadata for all available datasets
+
+datasets:
+  abecip_indicators:
+    name: "ABECIP Housing Credit Indicators"
+    name_pt: "Indicadores de Crédito Habitacional ABECIP"
+    description: "Housing credit data from Brazilian housing finance system (SFH) including SBPE flows, financed units, and home equity loans"
+    source: "ABECIP - Associação Brasileira das Entidades de Crédito Imobiliário"
+    url: "https://www.abecip.org.br"
+    geography: "Brazil"
+    frequency: "monthly"
+    coverage: "1982-present (varies by category)"
+    categories:
+      sbpe:
+        name: "SBPE Monetary Flows"
+        description: "Monetary flows from SBPE (Sistema Brasileiro de Poupança e Empréstimo)"
+        coverage: "January 1982-present"
+      units:
+        name: "Financed Units"
+        description: "Number of units financed by SBPE, split by construction and acquisition"
+        coverage: "January 2002-present"
+      cgi:
+        name: "Home Equity Loans (CGI)"
+        description: "Summary data on home equity loans including default rates and average terms"
+        coverage: "January 2017-present"
+    legacy_function: "get_abecip_indicators"
+    data_type: "list"
+    cached_file: "abecip.rds"
+    translation_notes: "Column names translated from Portuguese to English following standard patterns"
+    
+  abrainc_indicators:
+    name: "ABRAINC-FIPE Primary Market Indicators"
+    name_pt: "Indicadores ABRAINC-FIPE do Mercado Primário"
+    description: "Primary real estate market indicators including launches, sales, and business conditions from 66+ partnered developers"
+    source: "ABRAINC/FIPE"
+    url: "https://www.fipe.org.br/pt-br/indices/abrainc"
+    geography: "Brazil (major cities)"
+    frequency: "quarterly"
+    coverage: "2014-present"
+    categories:
+      indicator:
+        name: "Market Indicators"
+        description: "Broad numbers of launches, sales, supply in the primary market"
+      radar:
+        name: "Business Radar"
+        description: "0-10 standardized index for general business conditions"
+      leading:
+        name: "Leading Indicator"
+        description: "Building permits in São Paulo as real estate leading indicator"
+    legacy_function: "get_abrainc_indicators"
+    data_type: "list"
+    cached_file: "abrainc.rds"
+    translation_notes: "Social Housing (MCMV) refers to Minha Casa Minha Vida and Casa Verde Amarela programs"
+    
+  bcb_realestate:
+    name: "BCB Real Estate Market Data"
+    name_pt: "Dados do Mercado Imobiliário BCB"
+    description: "Comprehensive real estate credit and market data from Brazilian Central Bank"
+    source: "Banco Central do Brasil"
+    url: "https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario"
+    geography: "Brazil (by state)"
+    frequency: "monthly"
+    coverage: "2001-present (varies by category)"
+    categories:
+      accounting:
+        name: "Credit Accounting"
+        description: "Credit accounting and balance sheet data"
+      application:
+        name: "Credit Applications"
+        description: "Credit application statistics and approvals"
+      indices:
+        name: "Real Estate Indices"
+        description: "Various real estate market indices"
+      sources:
+        name: "Credit Sources"
+        description: "Breakdown of credit sources and funding"
+      units:
+        name: "Financed Units"
+        description: "Number and value of financed units"
+    legacy_function: "get_bcb_realestate"
+    data_type: "tibble"
+    cached_file: "bcb_realestate.csv.gz"
+    translation_notes: "Complex multi-level series structure; v1-v5 columns contain series components"
+    
+  secovi:
+    name: "SECOVI-SP Real Estate Market Data"
+    name_pt: "Dados do Mercado Imobiliário SECOVI-SP"
+    description: "São Paulo real estate market indicators including condominium fees, rentals, launches, and sales"
+    source: "SECOVI-SP - Sindicato da Habitação"
+    url: "https://www.secovi.com.br"
+    geography: "São Paulo"
+    frequency: "monthly"
+    coverage: "2004-present (varies by category)"
+    categories:
+      condo:
+        name: "Condominium Fees"
+        description: "Average condominium fees by region and property type"
+      rent:
+        name: "Rental Market"
+        description: "Rental prices and market dynamics"
+      launch:
+        name: "New Launches"
+        description: "New real estate project launches"
+      sale:
+        name: "Sales Market"
+        description: "Sales prices and transaction volumes"
+    legacy_function: "get_secovi"
+    data_type: "tibble"
+    cached_file: "secovi_sp.csv.gz"
+    translation_notes: "Regional classifications specific to São Paulo metropolitan area"
+    
+  bis_rppi:
+    name: "BIS Residential Property Price Indices"
+    name_pt: "Índices de Preços Residenciais BIS"
+    description: "International residential property price indices from Bank for International Settlements"
+    source: "Bank for International Settlements"
+    url: "https://data.bis.org/topics/RPP"
+    geography: "International (60+ countries including Brazil)"
+    frequency: "quarterly"
+    coverage: "1970-present (varies by country)"
+    categories:
+      selected:
+        name: "Selected Series"
+        description: "Core RPPI series for major countries"
+        url: "https://www.bis.org/statistics/pp_selected.htm"
+      detailed:
+        name: "Detailed Dataset"
+        description: "Full RPPI dataset with all available series"
+        url: "https://data.bis.org/topics/RPP"
+    legacy_function: "get_bis_rppi"
+    data_type: "mixed"
+    cached_file: 
+      selected: "bis_selected.csv.gz"
+      detailed: "bis_detailed.rds"
+    translation_notes: "International data; minimal translation needed"
+
+  rppi:
+    name: "FIPE Residential Property Price Index"
+    name_pt: "Índice FipeZap de Preços de Imóveis"
+    description: "Residential property price indices for sales and rentals in Brazilian cities"
+    source: "FIPE/ZAP Imóveis"
+    url: "https://www.fipe.org.br/pt-br/indices/fipezap"
+    geography: "Brazil (50+ cities)"
+    frequency: "monthly"
+    coverage: "2008-present"
+    categories:
+      sale:
+        name: "Sales Index"
+        description: "Property sales price index by city"
+      rent:
+        name: "Rental Index"
+        description: "Property rental price index by city"
+    legacy_function: "get_rppi"
+    data_type: "tibble"
+    cached_file:
+      sale: "rppi_sale.csv.gz"
+      rent: "rppi_rent.csv.gz"
+      fipe: "rppi_fipe.csv.gz"
+    translation_notes: "City names standardized; property types translated"
+
+  bcb_series:
+    name: "BCB Economic Series"
+    name_pt: "Séries Econômicas BCB"
+    description: "General economic and real estate related time series from Brazilian Central Bank"
+    source: "Banco Central do Brasil - SGS"
+    url: "https://www3.bcb.gov.br/sgspub"
+    geography: "Brazil"
+    frequency: "varies (daily/monthly/quarterly)"
+    coverage: "varies by series"
+    categories:
+      price:
+        name: "Price Indices"
+        description: "Various price and inflation indices"
+      credit:
+        name: "Credit Indicators"
+        description: "Credit market indicators"
+      activity:
+        name: "Economic Activity"
+        description: "Economic activity indicators"
+    legacy_function: "get_bcb_series"
+    data_type: "tibble"
+    cached_file: "bcb_series.csv.gz"
+    metadata_table: "bcb_metadata"
+    translation_notes: "Metadata available in both Portuguese and English"
+
+  b3_stocks:
+    name: "B3 Real Estate Stocks"
+    name_pt: "Ações Imobiliárias B3"
+    description: "Stock market data for real estate companies and REITs listed on B3"
+    source: "B3 - Brasil Bolsa Balcão"
+    url: "https://www.b3.com.br"
+    geography: "Brazil"
+    frequency: "daily"
+    coverage: "2010-present"
+    legacy_function: "get_b3_stocks"
+    data_type: "tibble"
+    cached_file: "b3_stocks.csv.gz"
+    metadata_table: "b3_real_estate"
+    translation_notes: "Ticker symbols preserved; company names in Portuguese"
+
+  fgv_indicators:
+    name: "FGV Real Estate Indicators"
+    name_pt: "Indicadores Imobiliários FGV"
+    description: "Real estate market indicators from Fundação Getulio Vargas"
+    source: "FGV IBRE"
+    url: "https://portalibre.fgv.br"
+    geography: "Brazil"
+    frequency: "monthly"
+    coverage: "2010-present"
+    legacy_function: "get_fgv_indicators"
+    data_type: "tibble"
+    cached_file: "fgv_indicators.csv.gz"
+    translation_notes: "Technical economic terms; standard translations applied"
+
+  cbic:
+    name: "CBIC Construction Materials Data"
+    name_pt: "Dados de Materiais de Construção CBIC"
+    description: "Construction materials data including cement, steel, and industrial production indices"
+    source: "CBIC - Câmara Brasileira da Indústria da Construção"
+    url: "http://www.cbicdados.com.br"
+    geography: "Brazil (by state for some metrics)"
+    frequency: "monthly"
+    coverage: "varies by material"
+    categories:
+      cement:
+        name: "Cement Data"
+        description: "Production, consumption, and prices of cement"
+      steel:
+        name: "Steel Data"
+        description: "Steel production and prices"
+      pim:
+        name: "Industrial Production (PIM)"
+        description: "Industrial production index for construction materials"
+    legacy_function: "get_cbic_*"
+    data_type: "list"
+    translation_notes: "Material types and units translated; regional data preserved"
