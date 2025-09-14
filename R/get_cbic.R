@@ -216,7 +216,7 @@ clean_cbic_cement_monthly <- function(dat, year) {
   # Convert all month columns to numeric before pivoting
   dat_clean <- dat_clean |>
     dplyr::mutate(
-      dplyr::across(-dplyr::all_of(id_cols), ~as.numeric(as.character(.x)))
+      dplyr::across(-dplyr::all_of(id_cols), ~ as.numeric(as.character(.x)))
     )
 
   dat_long <- dat_clean |>
@@ -277,9 +277,6 @@ clean_cbic_cement_monthly <- function(dat, year) {
 
 #' Clean CBIC cement annual consumption data (tabela_07.A.01)
 #'
-#' **WARNING: This function only works for annual consumption tables (tabela_07.A.01).**
-#' Handles complex multi-region structure with grouped columns.
-#'
 #' @param file_path Character. Path to Excel file
 #' @param sheet Character or numeric. Sheet to read
 #'
@@ -294,25 +291,29 @@ clean_cbic_cement_annual <- function(file_path, sheet = 1) {
   # This file has a complex structure with multiple column groups
   # Each group has: Year, Value, Growth %, blank column
   dat <- readxl::read_excel(file_path, sheet = sheet, skip = 4)
-  
+
   if (ncol(dat) < 8) {
     cli::cli_warn("Unexpected structure for annual cement consumption file")
     return(tibble::tibble())
   }
-  
+
   # Process in chunks of 4 columns (year, value, growth, blank)
   regions <- c("Brasil", "Centro-Oeste", "Nordeste", "Norte", "Sudeste", "Sul")
   all_data <- list()
-  
+
   for (i in seq(1, ncol(dat), by = 4)) {
-    if (i + 2 > ncol(dat)) break
-    
+    if (i + 2 > ncol(dat)) {
+      break
+    }
+
     region_idx <- ceiling(i / 4)
-    if (region_idx > length(regions)) break
-    
-    chunk <- dat[, i:min(i+2, ncol(dat))]
+    if (region_idx > length(regions)) {
+      break
+    }
+
+    chunk <- dat[, i:min(i + 2, ncol(dat))]
     names(chunk) <- c("year", "consumption", "growth_pct")
-    
+
     chunk_clean <- chunk |>
       dplyr::filter(!is.na(year)) |>
       dplyr::mutate(
@@ -327,10 +328,10 @@ clean_cbic_cement_annual <- function(file_path, sheet = 1) {
         values_to = "value"
       ) |>
       dplyr::select(year, region, variable, value)
-    
+
     all_data[[region_idx]] <- chunk_clean
   }
-  
+
   result <- dplyr::bind_rows(all_data)
   return(result)
 }
@@ -350,36 +351,42 @@ clean_cbic_cement_annual <- function(file_path, sheet = 1) {
 #'   }
 clean_cbic_cement_production <- function(file_path) {
   dat <- readxl::read_excel(file_path, skip = 4)
-  
+
   if (ncol(dat) < 5) {
     cli::cli_warn("Unexpected structure for cement production file")
     return(tibble::tibble())
   }
-  
+
   # Expected columns: Year, Production(1000t), Apparent Consumption, Per Capita, Export, Import
-  col_names <- c("year", "production_1000t", "apparent_consumption", 
-                 "per_capita_kg", "export", "import")
-  
+  col_names <- c(
+    "year",
+    "production_1000t",
+    "apparent_consumption",
+    "per_capita_kg",
+    "export",
+    "import"
+  )
+
   if (ncol(dat) >= length(col_names)) {
     names(dat)[1:length(col_names)] <- col_names
   } else {
     names(dat) <- col_names[1:ncol(dat)]
   }
-  
+
   # Convert all columns to numeric first (handling character data)
   result <- dat |>
     dplyr::select(dplyr::all_of(names(dat)[names(dat) %in% col_names])) |>
     dplyr::filter(!is.na(year)) |>
     dplyr::mutate(
       year = as.numeric(year),
-      dplyr::across(dplyr::everything(), ~as.numeric(as.character(.x)))
+      dplyr::across(dplyr::everything(), ~ as.numeric(as.character(.x)))
     ) |>
     tidyr::pivot_longer(
       cols = -year,
       names_to = "variable",
       values_to = "value"
     )
-  
+
   return(result)
 }
 
@@ -405,25 +412,25 @@ clean_cbic_cement_monthly_production <- function(dat, year) {
     cli::cli_warn("Very few columns detected for monthly production")
     return(tibble::tibble())
   }
-  
+
   # First column should be state names
   names(dat)[1] <- "localidade"
-  
+
   # Remove TOTAL column if present
   if ("TOTAL" %in% names(dat)) {
     dat <- dplyr::select(dat, -TOTAL)
   }
-  
+
   # Filter out summary rows
   pat_drop_rows <- "^TOTAL|^REGIÃO|^BRASIL|(CENTRO-OESTE)|(CENTRO OESTE)|^Fonte:|^FONTE:"
   dat_clean <- dat |>
     dplyr::filter(!stringr::str_detect(localidade, pat_drop_rows))
-  
+
   if (nrow(dat_clean) == 0) {
     cli::cli_warn("No data rows remaining after filtering")
     return(tibble::tibble())
   }
-  
+
   # Convert "..." to NA and pivot
   dat_long <- dat_clean |>
     dplyr::mutate(dplyr::across(-localidade, ~ dplyr::na_if(.x, "..."))) |>
@@ -433,7 +440,7 @@ clean_cbic_cement_monthly_production <- function(dat, year) {
       names_to = "mes",
       values_to = "value"
     )
-  
+
   # Parse dates
   dat_dated <- dat_long |>
     dplyr::mutate(
@@ -446,16 +453,16 @@ clean_cbic_cement_monthly_production <- function(dat, year) {
       )
     ) |>
     dplyr::select(localidade, date, year, value)
-  
+
   # Add state codes
   dim_state <- get_cbic_dim_state() |>
     dplyr::select(code_state, name_state)
-  
+
   result <- dat_dated |>
     dplyr::mutate(localidade = stringr::str_to_title(localidade)) |>
     dplyr::left_join(dim_state, by = c("localidade" = "name_state")) |>
     dplyr::select(date, year, code_state, name_state = localidade, value)
-  
+
   return(result)
 }
 
@@ -475,32 +482,32 @@ clean_cbic_cement_monthly_production <- function(dat, year) {
 #'   }
 clean_cbic_cement_cub <- function(file_path) {
   dat <- readxl::read_excel(file_path, skip = 4)
-  
+
   if (ncol(dat) < 5) {
     cli::cli_warn("Unexpected structure for CUB cement price file")
     return(tibble::tibble())
   }
-  
+
   # First two columns are year and month
   names(dat)[1:2] <- c("year", "month")
-  
+
   # Fill down year values
   dat_filled <- dat |>
     tidyr::fill(year, .direction = "down") |>
     dplyr::filter(!is.na(month))
-  
+
   # Remove Brasil column if present (it's an average)
   if ("Brasil" %in% names(dat_filled)) {
     dat_filled <- dplyr::select(dat_filled, -Brasil)
   }
-  
+
   # Convert all state columns to numeric before pivoting
   state_cols <- setdiff(names(dat_filled), c("year", "month"))
   dat_filled <- dat_filled |>
     dplyr::mutate(
-      dplyr::across(dplyr::all_of(state_cols), ~as.numeric(as.character(.x)))
+      dplyr::across(dplyr::all_of(state_cols), ~ as.numeric(as.character(.x)))
     )
-  
+
   # Pivot state columns
   result <- dat_filled |>
     tidyr::pivot_longer(
@@ -520,7 +527,7 @@ clean_cbic_cement_cub <- function(file_path) {
     ) |>
     dplyr::filter(!is.na(value)) |>
     dplyr::select(date, year, state, value)
-  
+
   return(result)
 }
 
@@ -547,27 +554,27 @@ clean_cbic_cement_cub <- function(file_path) {
 #' }
 clean_cbic_pim <- function(file_path, skip = 4) {
   dat <- readxl::read_excel(file_path, skip = skip)
-  
+
   if (ncol(dat) < 2) {
     cli::cli_warn("Unexpected structure for PIM file")
     return(tibble::tibble())
   }
-  
+
   # Rename columns
   names(dat) <- c("date_raw", "value")
-  
+
   # Identify rows with Excel serial dates (years)
   excel_date_rows <- grepl("^[0-9]{5}$", dat$date_raw)
-  
+
   # Convert Excel serial dates to actual dates
   year_dates <- dat$date_raw[excel_date_rows]
   year_values <- as.Date(as.numeric(year_dates), origin = "1899-12-30")
   years <- lubridate::year(year_values)
-  
+
   # Create a year column by filling down
   dat$year <- NA
   year_indices <- which(excel_date_rows)
-  
+
   for (i in seq_along(year_indices)) {
     start_idx <- year_indices[i]
     end_idx <- if (i < length(year_indices)) {
@@ -577,26 +584,49 @@ clean_cbic_pim <- function(file_path, skip = 4) {
     }
     dat$year[start_idx:end_idx] <- years[i]
   }
-  
+
   # Create month column
   dat$month <- dat$date_raw
   dat$month[excel_date_rows] <- "jan"
-  
+
   # Filter out non-data rows (e.g., source notes at the end)
   dat_clean <- dat |>
     dplyr::filter(
       !is.na(year),
       !is.na(value),
-      month %in% c("jan", "fev", "mar", "abr", "mai", "jun", 
-                   "jul", "ago", "set", "out", "nov", "dez")
+      month %in%
+        c(
+          "jan",
+          "fev",
+          "mar",
+          "abr",
+          "mai",
+          "jun",
+          "jul",
+          "ago",
+          "set",
+          "out",
+          "nov",
+          "dez"
+        )
     )
-  
+
   # Create proper date column
   month_map <- c(
-    jan = 1, fev = 2, mar = 3, abr = 4, mai = 5, jun = 6,
-    jul = 7, ago = 8, set = 9, out = 10, nov = 11, dez = 12
+    jan = 1,
+    fev = 2,
+    mar = 3,
+    abr = 4,
+    mai = 5,
+    jun = 6,
+    jul = 7,
+    ago = 8,
+    set = 9,
+    out = 10,
+    nov = 11,
+    dez = 12
   )
-  
+
   result <- dat_clean |>
     dplyr::mutate(
       month_num = month_map[month],
@@ -605,12 +635,12 @@ clean_cbic_pim <- function(file_path, skip = 4) {
     ) |>
     dplyr::select(date, year, month, value) |>
     dplyr::arrange(date)
-  
+
   # Check for any parsing issues
   if (any(is.na(result$date))) {
     cli::cli_warn("Some dates could not be parsed correctly")
   }
-  
+
   return(result)
 }
 
@@ -631,32 +661,32 @@ clean_cbic_pim <- function(file_path, skip = 4) {
 #' }
 clean_cbic_pim_sheets <- function(download_results) {
   successful_files <- dplyr::filter(download_results, download_success)
-  
+
   if (nrow(successful_files) == 0) {
     cli::cli_warn("No PIM files were successfully downloaded")
     return(list())
   }
-  
+
   cli::cli_inform("Processing PIM industrial production data...")
-  
+
   # Find the current methodology file (usually the 3rd one or the one with "Atual" in name)
   current_file_idx <- which(
     stringr::str_detect(successful_files$link, "Atual") |
-    stringr::str_detect(successful_files$link, "07\\.C\\.03")
+      stringr::str_detect(successful_files$link, "07\\.C\\.03")
   )
-  
+
   if (length(current_file_idx) == 0) {
     # If no "Atual" file found, use the last one (most recent)
     current_file_idx <- nrow(successful_files)
   }
-  
+
   file_path <- successful_files$file_path[current_file_idx]
   cli::cli_inform("Processing file: {basename(file_path)}")
-  
+
   pim_data <- clean_cbic_pim(file_path)
-  
+
   cli::cli_inform("Processed {nrow(pim_data)} months of PIM data")
-  
+
   return(list(production_index = pim_data))
 }
 
@@ -687,69 +717,72 @@ clean_cbic_cement_sheets <- function(download_results, skip_rows = 4) {
     file_title <- successful_files$title[i]
 
     cli::cli_inform("Processing file {i}: {file_title}")
-    
+
     # Detect file type based on content or title patterns
     if (stringr::str_detect(file_title, "consumo anual|07\\.A\\.01")) {
       # File 1: Annual consumption by region
       cli::cli_inform("  Detected as annual consumption file")
       cleaned_data <- clean_cbic_cement_annual(file_path)
       all_data[["annual_consumption"]] <- cleaned_data
-      
-    } else if (stringr::str_detect(file_title, "produção.*consumo.*exportação|07\\.A\\.02")) {
+    } else if (
+      stringr::str_detect(
+        file_title,
+        "produção.*consumo.*exportação|07\\.A\\.02"
+      )
+    ) {
       # File 2: Production, consumption, exports
       cli::cli_inform("  Detected as production/export file")
       cleaned_data <- clean_cbic_cement_production(file_path)
       all_data[["production_exports"]] <- cleaned_data
-      
     } else if (stringr::str_detect(file_title, "consumo mensal|07\\.A\\.03")) {
       # File 3: Monthly consumption by state (multiple year sheets)
       cli::cli_inform("  Detected as monthly consumption file")
       sheets <- readxl::excel_sheets(file_path)
       year_sheets <- sheets[!is.na(as.numeric(sheets))]
-      
+
       monthly_data <- list()
       for (sheet in year_sheets) {
         cli::cli_inform("    Processing sheet: {sheet}")
         dat <- read_excel_safe(file_path, skip = skip_rows, sheet = sheet)
-        
+
         if (is.null(dat) || nrow(dat) == 0) {
           cli::cli_warn("Failed to read sheet {sheet}")
           next
         }
-        
+
         names(dat)[1] <- "localidade"
         cleaned_sheet <- clean_cbic_cement_monthly(dat, as.numeric(sheet))
         monthly_data[[sheet]] <- cleaned_sheet
       }
       all_data[["monthly_consumption"]] <- dplyr::bind_rows(monthly_data)
-      
     } else if (stringr::str_detect(file_title, "produção mensal|07\\.A\\.04")) {
       # File 4: Monthly production by state (multiple year sheets)
       cli::cli_inform("  Detected as monthly production file")
       sheets <- readxl::excel_sheets(file_path)
       year_sheets <- sheets[!is.na(as.numeric(sheets))]
-      
+
       production_data <- list()
       for (sheet in year_sheets) {
         cli::cli_inform("    Processing sheet: {sheet}")
         dat <- read_excel_safe(file_path, skip = skip_rows, sheet = sheet)
-        
+
         if (is.null(dat) || nrow(dat) == 0) {
           cli::cli_warn("Failed to read sheet {sheet}")
           next
         }
-        
-        cleaned_sheet <- clean_cbic_cement_monthly_production(dat, as.numeric(sheet))
+
+        cleaned_sheet <- clean_cbic_cement_monthly_production(
+          dat,
+          as.numeric(sheet)
+        )
         production_data[[sheet]] <- cleaned_sheet
       }
       all_data[["monthly_production"]] <- dplyr::bind_rows(production_data)
-      
     } else if (stringr::str_detect(file_title, "CUB|07\\.A\\.05")) {
       # File 5: CUB cement prices
       cli::cli_inform("  Detected as CUB price file")
       cleaned_data <- clean_cbic_cement_cub(file_path)
       all_data[["cub_prices"]] <- cleaned_data
-      
     } else {
       cli::cli_warn("  Unknown file type, skipping: {file_title}")
     }
@@ -843,17 +876,19 @@ explore_cbic_structure <- function(file_path, sheet = 1) {
 #' }
 clean_cbic_steel_prices <- function(file_path, skip_rows = 4) {
   drop_cols <- c("TOTAL", "Total", "total", "TOTAL GERAL", "Brasil", "BRASIL")
-  
+
   dat <- readxl::read_excel(file_path, skip = skip_rows)
-  
+
   if (ncol(dat) < 3) {
-    cli::cli_warn("Very few columns detected for steel prices. Structure may be unexpected.")
+    cli::cli_warn(
+      "Very few columns detected for steel prices. Structure may be unexpected."
+    )
     return(tibble::tibble())
   }
-  
+
   names(dat)[1:2] <- c("year", "month_abb")
   id_cols <- c("date", "year")
-  
+
   dat_processed <- dat |>
     dplyr::select(-dplyr::any_of(drop_cols)) |>
     tidyr::fill(year) |>
@@ -868,11 +903,11 @@ clean_cbic_steel_prices <- function(file_path, skip_rows = 4) {
       .before = 1
     ) |>
     dplyr::select(-"month_abb")
-  
+
   # Get state dimension data
   dim_state <- get_cbic_dim_state() |>
     dplyr::select(abbrev_state, name_state, code_state)
-  
+
   result <- dat_processed |>
     tidyr::pivot_longer(
       cols = -dplyr::all_of(id_cols),
@@ -881,13 +916,15 @@ clean_cbic_steel_prices <- function(file_path, skip_rows = 4) {
     ) |>
     dplyr::left_join(dim_state, by = "abbrev_state") |>
     dplyr::select(date, year, code_state, name_state, avg_price)
-  
+
   # Check for unmatched states
   unmatched_states <- sum(is.na(result$code_state))
   if (unmatched_states > 0) {
-    cli::cli_warn("{unmatched_states} state abbreviation matching failures in steel prices.")
+    cli::cli_warn(
+      "{unmatched_states} state abbreviation matching failures in steel prices."
+    )
   }
-  
+
   return(result)
 }
 
@@ -921,12 +958,12 @@ clean_cbic_steel_production <- function(file_path, skip_rows = 3) {
     col_names = FALSE,
     .name_repair = janitor::make_clean_names
   )
-  
+
   if (ncol(header) < 3) {
     cli::cli_warn("Very few columns detected for steel production headers.")
     return(tibble::tibble())
   }
-  
+
   # Process headers - fill right to handle merged cells
   header_processed <- header |>
     dplyr::mutate(dplyr::across(dplyr::everything(), as.character)) |>
@@ -936,13 +973,16 @@ clean_cbic_steel_production <- function(file_path, skip_rows = 3) {
         tibble::as_tibble_row()
     }) |>
     purrr::list_rbind()
-  
+
   # Create clean column names
-  cnames <- purrr::map_chr(header_processed, ~ paste(stats::na.omit(.x), collapse = "@"))
+  cnames <- purrr::map_chr(
+    header_processed,
+    ~ paste(stats::na.omit(.x), collapse = "@")
+  )
   cnames <- lapply(stringr::str_split(cnames, "@"), clean_cbic_string)
   cnames <- purrr::map_chr(cnames, ~ paste(stats::na.omit(.x), collapse = "/"))
   cnames <- stringr::str_remove(cnames, "_mil_t$")
-  
+
   # Read actual data
   dat <- readxl::read_excel(
     file_path,
@@ -950,12 +990,12 @@ clean_cbic_steel_production <- function(file_path, skip_rows = 3) {
     col_names = cnames,
     na = "..."
   )
-  
+
   if (nrow(dat) == 0) {
     cli::cli_warn("No data rows found in steel production file.")
     return(tibble::tibble())
   }
-  
+
   result <- dat |>
     dplyr::rename(year = 1) |>
     dplyr::mutate(dplyr::across(dplyr::everything(), as.numeric)) |>
@@ -977,7 +1017,7 @@ clean_cbic_steel_production <- function(file_path, skip_rows = 3) {
       )
     ) |>
     dplyr::select(year, product, variable, value)
-  
+
   return(result)
 }
 
@@ -987,7 +1027,7 @@ clean_cbic_steel_production <- function(file_path, skip_rows = 3) {
 get_cbic_dim_state <- function() {
   states <- geobr::read_state(year = 2010, showProgress = FALSE)
   states <- dplyr::as_tibble(sf::st_drop_geometry(states))
-  
+
   dim_state <- states |>
     dplyr::mutate(
       name_state = stringr::str_replace(
@@ -996,7 +1036,7 @@ get_cbic_dim_state <- function() {
         "Espírito Santo"
       )
     )
-  
+
   return(dim_state)
 }
 
@@ -1029,24 +1069,27 @@ clean_cbic_string <- function(x) {
 #' }
 clean_cbic_steel_sheets <- function(download_results) {
   successful_files <- dplyr::filter(download_results, download_success)
-  
+
   cli::cli_inform("Processing {nrow(successful_files)} steel files...")
-  
+
   if (nrow(successful_files) == 0) {
     cli::cli_warn("No successful steel file downloads to process.")
     return(list())
   }
-  
+
   all_data <- list()
-  
+
   for (i in seq_len(nrow(successful_files))) {
     file_path <- successful_files$file_path[i]
     file_title <- successful_files$title[i]
-    
+
     cli::cli_inform("Processing steel file: {file_title}")
-    
+
     # Determine file type based on position or title
-    if (i == 1 || stringr::str_detect(stringr::str_to_lower(file_title), "preço|price")) {
+    if (
+      i == 1 ||
+        stringr::str_detect(stringr::str_to_lower(file_title), "preço|price")
+    ) {
       # Assume first file or files with "preço" are price data
       prices_data <- clean_cbic_steel_prices(file_path)
       all_data[["prices"]] <- prices_data
@@ -1056,17 +1099,10 @@ clean_cbic_steel_sheets <- function(download_results) {
       all_data[[paste0("production_", i)]] <- production_data
     }
   }
-  
+
   cli::cli_inform("Processed steel data successfully")
   return(all_data)
 }
-
-# WORKFLOW FOR NEW MATERIALS:
-# 1. Use get_cbic_files("material_name") to download files
-# 2. Use explore_cbic_structure() to understand the data structure
-# 3. Create material-specific clean_cbic_X() function
-# 4. Test thoroughly with different years/files
-# 5. Create get_cbic_X() wrapper function
 
 # ==============================================================================
 # GET FUNCTIONS (Main user-facing functions)
@@ -1165,20 +1201,21 @@ get_cbic_cement <- function() {
 #' @export
 get_cbic_steel <- function() {
   cli::cli_h1("Getting CBIC steel data")
-  
+
   materials <- import_cbic_materials()
   steel_url <- materials$link[stringr::str_detect(
-    stringr::str_to_lower(materials$title), "aço"
+    stringr::str_to_lower(materials$title),
+    "aço"
   )][1]
-  
+
   if (is.na(steel_url)) {
     cli::cli_abort("Steel material not found in CBIC database")
   }
-  
+
   file_params <- import_cbic_material_links(steel_url)
   download_results <- import_cbic_files(file_params)
   steel_data <- clean_cbic_steel_sheets(download_results)
-  
+
   cli::cli_h1("CBIC steel data retrieval complete")
   return(steel_data)
 }
@@ -1209,20 +1246,18 @@ get_cbic_steel <- function() {
 #' @export
 get_cbic_pim <- function() {
   cli::cli_h1("Getting CBIC PIM industrial production data")
-  
+
   materials <- import_cbic_materials()
-  pim_url <- materials$link[stringr::str_detect(
-    materials$title, "PIM"
-  )][1]
-  
+  pim_url <- subset(materials, title == "PIM")$link
+
   if (is.na(pim_url)) {
     cli::cli_abort("PIM material not found in CBIC database")
   }
-  
+
   file_params <- import_cbic_material_links(pim_url)
   download_results <- import_cbic_files(file_params)
   pim_data <- clean_cbic_pim_sheets(download_results)
-  
+
   cli::cli_h1("CBIC PIM data retrieval complete")
   return(pim_data)
 }
@@ -1242,24 +1277,3 @@ get_cbic_pim <- function() {
 get_cbic_materials <- function() {
   import_cbic_materials()
 }
-
-# ==============================================================================
-# EXAMPLE USAGE
-# ==============================================================================
-
-# Main user functions:
-# materials <- get_cbic_materials()        # Get all available materials
-# cement_data <- get_cbic_cement()         # Get cement data (recommended)
-# steel_data <- get_cbic_steel()           # Get steel data (prices + production)
-
-# Step-by-step approach (advanced users):
-# materials <- import_cbic_materials()
-# cement_url <- materials$link[stringr::str_detect(materials$title, "cimento")][1]
-# files <- import_cbic_material_links(cement_url)
-# downloads <- import_cbic_files(files)
-# clean_data <- clean_cbic_cement_sheets(downloads)  # Cement-specific cleaning
-
-# For exploring new materials:
-# wood_files <- get_cbic_files("madeira")
-# explore_cbic_structure(wood_files$file_path[1])   # Explore first!
-# # Then create clean_cbic_wood_* functions based on what you find

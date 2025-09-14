@@ -1,5 +1,3 @@
-## code to prepare `DATASET` dataset goes here
-
 main_cities <- readr::read_rds("data-raw/main_cities.rds")
 
 code_main_cities <- unique(main_cities$code_muni)
@@ -37,13 +35,41 @@ usethis::use_data(b3_real_estate, overwrite = TRUE)
 source("data-raw/abecip_cgi.R")
 source("data-raw/fgv_clean.R")
 
+bcb_metadata <- readxl::read_excel("data-raw/bacen_codes.xlsx")
+
+
 ire <- readxl::read_excel(
   "data-raw/nre_ire.xlsx",
   skip = 1,
-  col_types = c("date", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"),
-  col_names = c("date", "ire", "ire_r50_plus", "ire_bi", "ire_r50_minus", "ibov", "ibov_points", "ire_ibov")
+  col_types = c(
+    "date",
+    "numeric",
+    "numeric",
+    "numeric",
+    "numeric",
+    "numeric",
+    "numeric",
+    "numeric"
+  ),
+  col_names = c(
+    "date",
+    "ire",
+    "ire_r50_plus",
+    "ire_bi",
+    "ire_r50_minus",
+    "ibov",
+    "ibov_points",
+    "ire_ibov"
+  )
 )
 
 ire <- dplyr::mutate(ire, date = lubridate::ymd(date))
 
-usethis::use_data(abecip_cgi, fgv_data, ire, internal = TRUE, overwrite = TRUE)
+usethis::use_data(
+  abecip_cgi,
+  fgv_data,
+  ire,
+  bcb_metadata,
+  internal = TRUE,
+  overwrite = TRUE
+)
