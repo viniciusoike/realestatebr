@@ -37,7 +37,7 @@ remotes::install_github("viniciusoike/realestatebr")
 
 The package now provides a modern, unified interface for accessing all datasets:
 
-```{r example}
+```{r example, eval=FALSE}
 library(realestatebr)
 
 # Discover available datasets
@@ -60,7 +60,7 @@ The unified interface provides several advantages:
 - **Easy discovery**: Use `list_datasets()` to see all available data
 - **Category filtering**: Access specific parts of complex datasets
 
-```{r}
+```{r, eval=FALSE}
 # Get specific category only
 sbpe <- get_dataset("abecip_indicators", category = "sbpe")
 head(sbpe)
@@ -97,7 +97,7 @@ The package provides access to comprehensive Brazilian real estate data from mul
 | `fgv_indicators` | FGV | Real estate market indicators | Brazil |
 | `cbic` | CBIC | Construction materials data (cement, steel, production) | Brazil |
 
-```{r datasets}
+```{r datasets, eval=FALSE}
 # See all available datasets with details
 available_data <- list_datasets()
 print(available_data[, c("name", "source", "frequency", "coverage")])

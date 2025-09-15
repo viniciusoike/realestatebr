@@ -32,7 +32,7 @@ The `realestatebr` package aims to offer real estate reports and data in a "tidy
 
 The package now provides a modern, unified interface for accessing all datasets with automatic fallback strategies and consistent data formatting:
 
-```{r unified}
+```{r unified, eval=FALSE}
 # Discover available datasets
 datasets <- list_datasets()
 head(datasets[, c("name", "source", "description")])
@@ -98,7 +98,7 @@ ggplot(radar, aes(x = date, y = value)) +
 
 The Brazilian Central Bank has a wide variety of real estate data that is stored into a single long-format csv file. This makes working with this data quite difficult. The example below shows how to find the total amount of new real estate credit in three specific states.
 
-```{r}
+```{r, eval=FALSE}
 bcb <- get_bcb_realestate(cached = TRUE)
 
 credit_south <- bcb %>%
@@ -138,7 +138,7 @@ ggplot(credit_south, aes(x = date, color = abbrev_state)) +
 
 The `category` argument allows for a more direct "query"; also, data is presented in "wide" format.
 
-```{r}
+```{r, eval=FALSE}
 index <- get_bcb_realestate("indices", cached = TRUE)
 
 index

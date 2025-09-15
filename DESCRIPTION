@@ -7,6 +7,7 @@ Maintainer: Vinicius Oike Reginatto <viniciusoike@gmail.com>
 Description: This package offers a suite of functions that import real estate 
     data from market reports in a convenient 'tidy' format in R.
 License: MIT + file LICENSE
+URL: https://viniciusoike.github.io/realestatebr/
 Encoding: UTF-8
 LazyData: true
 Depends: 
@@ -38,5 +39,6 @@ Roxygen: list(markdown = TRUE)
 Suggests: 
     ggplot2,
     knitr,
+    pkgdown,
     rmarkdown
 VignetteBuilder: knitr
