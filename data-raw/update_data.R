@@ -1,11 +1,11 @@
 # data-raw/update_data.R
+# Updated data update script using new unified architecture
 # Load required packages
 library(realestatebr)
 library(here)
 library(vroom)
 library(readr)
-# import::from(vroom, vroom_write)
-# import::from(readr, write_rds)
+library(cli)
 
 # Create log directory
 log_dir <- here("logs")
@@ -55,23 +55,63 @@ safe_write_data <- function(data, filename, write_fn = vroom_write, ...) {
   )
 }
 
-# Retrieve all data
-log_message("Starting data update process")
+# Get list of all available datasets using new unified architecture
+log_message("Starting data update process using unified architecture")
 
-data_list <- list(
-  bcb_realestate = safe_get_data(get_bcb_realestate, "all"),
-  bcb_series = safe_get_data(get_bcb_series, "all"),
-  b3_stocks = safe_get_data(get_b3_stocks),
-  abrainc = safe_get_data(get_abrainc_indicators, "all"),
-  abecip = safe_get_data(get_abecip_indicators, "all"),
-  prop_records = safe_get_data(get_property_records, "all"),
-  secovi_sp = safe_get_data(get_secovi, "all"),
-  rppi_sale = safe_get_data(get_rppi, "sale", stack = TRUE),
-  rppi_rent = safe_get_data(get_rppi, "rent", stack = TRUE),
-  bis_selected = safe_get_data(get_bis_rppi, "selected"),
-  bis_detailed = safe_get_data(get_bis_rppi, "detailed"),
-  rppi_fipe = safe_get_data(get_rppi_fipezap, city = "all")
+available_datasets <- list_datasets()
+log_message(sprintf("Found %d datasets to update", nrow(available_datasets)))
+
+# Function to get data using new unified interface
+safe_get_unified_data <- function(dataset_name, category = NULL) {
+  tryCatch({
+    cli_alert_info("Fetching {dataset_name}{if(!is.null(category)) paste0(' (', category, ')')}")
+    
+    # Force fresh download for cache updates
+    data <- get_dataset(dataset_name, source = "fresh", category = category)
+    
+    log_message(sprintf("Successfully retrieved %s%s", 
+                       dataset_name, 
+                       if(!is.null(category)) paste0(" (", category, ")") else ""))
+    
+    return(data)
+  }, error = function(e) {
+    cli_alert_danger("Failed to fetch {dataset_name}: {e$message}")
+    log_message(sprintf("Error retrieving %s: %s", dataset_name, e$message))
+    return(NULL)
+  })
+}
+
+# Retrieve all priority datasets using new architecture
+data_list <- list()
+
+# Single datasets (tibbles)
+single_datasets <- list(
+  bcb_realestate = "bcb_realestate",
+  bcb_series = "bcb_series", 
+  b3_stocks = "b3_stocks",
+  secovi_sp = "secovi",
+  bis_selected = "bis_rppi",
+  fgv_indicators = "fgv_indicators"
 )
+
+for(name in names(single_datasets)) {
+  data_list[[name]] <- safe_get_unified_data(single_datasets[[name]])
+}
+
+# Special handling for BIS detailed (different category)
+data_list[["bis_detailed"]] <- safe_get_unified_data("bis_rppi", "detailed")
+
+# Multi-category datasets (lists)
+data_list[["abrainc"]] <- safe_get_unified_data("abrainc_indicators")
+data_list[["abecip"]] <- safe_get_unified_data("abecip_indicators")
+
+# RPPI datasets
+data_list[["rppi_sale"]] <- safe_get_unified_data("rppi", "sale")
+data_list[["rppi_rent"]] <- safe_get_unified_data("rppi", "rent") 
+data_list[["rppi_fipe"]] <- safe_get_unified_data("rppi", "fipe")
+
+# Legacy datasets that may not be in unified architecture yet
+data_list[["prop_records"]] <- safe_get_data(get_property_records, "all")
 
 # Write CSV files
 csv_files <- list(

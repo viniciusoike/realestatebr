@@ -55,7 +55,7 @@ jobs:
           git add data/
           git add DESCRIPTION
           git add man/
-          git commit -m "Weekly data update: $(date +%Y-%m-%d)" || echo "No changes to commit"
+          git commit -m "Biweekly data update: $(date +%Y-%m-%d)" || echo "No changes to commit"
           git push https://$GITHUB_TOKEN@github.com/${GITHUB_REPOSITORY}.git HEAD:$GITHUB_REF || echo "No changes to push"
 
       - name: Check for errors
