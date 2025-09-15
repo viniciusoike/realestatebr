@@ -6,3 +6,6 @@
 ^doc$
 ^Meta$
 ^cached_data$
+^\.claude$
+^\.github$
+^\.DS_Store$
