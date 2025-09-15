@@ -34,7 +34,8 @@ get_b3_stocks <- function(cached = FALSE, src = "yahoo", symbol = NULL, quiet = 
 
   # Download cached data
   if (cached) {
-    stack <- import_cached("b3_stocks")
+    # Use new unified architecture for cached data
+    stack <- get_dataset("b3_stocks", source = "github")
   }
 
   # Download series using quantmod::getSymbols

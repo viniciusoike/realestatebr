@@ -54,7 +54,8 @@ get_fgv_indicators <- function(cached = TRUE) {
   # df <- stats::na.omit(df)
 
   if (cached) {
-    return(import_cached("fgv_indicators"))
+    # Use new unified architecture for cached data
+    return(get_dataset("fgv_indicators", source = "github"))
   } else {
     return(fgv_data)
   }

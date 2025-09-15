@@ -175,7 +175,7 @@ get_from_local_cache <- function(name, dataset_info, category) {
 get_from_github_cache <- function(name, dataset_info, category) {
   
   # Map dataset name to import_cached parameter
-  cached_name <- get_cached_name(name, dataset_info)
+  cached_name <- get_cached_name(name, dataset_info, category)
   
   if (is.null(cached_name)) {
     cli::cli_abort("No GitHub cache available for dataset '{name}'")
@@ -184,8 +184,8 @@ get_from_github_cache <- function(name, dataset_info, category) {
   # Use existing import_cached function
   data <- import_cached(cached_name)
   
-  # Filter by category if requested
-  if (!is.null(category) && is.list(data)) {
+  # Filter by category if requested and data is a list
+  if (!is.null(category) && is.list(data) && !inherits(data, "data.frame")) {
     if (category %in% names(data)) {
       data <- data[[category]]
     } else {
@@ -193,6 +193,8 @@ get_from_github_cache <- function(name, dataset_info, category) {
       cli::cli_abort("Category '{category}' not found. Available: {available_cats}")
     }
   }
+  # Note: For datasets with category-specific cached files (like BIS), 
+  # the category filtering is handled by get_cached_name() above
   
   return(data)
 }
@@ -241,7 +243,7 @@ get_from_legacy_function <- function(name, dataset_info, category, date_start, d
 #' Maps dataset names to the parameter names used by import_cached()
 #'
 #' @keywords internal
-get_cached_name <- function(name, dataset_info) {
+get_cached_name <- function(name, dataset_info, category = NULL) {
   
   # First, check if cached_file is specified in registry
   cached_file <- dataset_info$cached_file
@@ -252,6 +254,11 @@ get_cached_name <- function(name, dataset_info) {
       # Extract base name without extension
       return(gsub("\\.(rds|csv\\.gz)$", "", basename(cached_file)))
     } else if (is.list(cached_file)) {
+      # If category is specified and exists in cached_file list, use it
+      if (!is.null(category) && category %in% names(cached_file)) {
+        selected_file <- cached_file[[category]]
+        return(gsub("\\.(rds|csv\\.gz)$", "", basename(selected_file)))
+      }
       # For multiple files, use the first one as default
       # (specific category selection handled separately)
       first_file <- cached_file[[1]]

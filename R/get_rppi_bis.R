@@ -22,7 +22,8 @@ get_rppi_bis <- function(cached = FALSE) {
 
   # Either download the data from the GitHub repository or fetch from the BIS website
   if (cached) {
-    bis <- import_cached("bis_selected")
+    # Use new unified architecture for cached data
+    bis <- get_dataset("bis_rppi", source = "github", category = "selected")
   } else {
     bis <- get_bis_rppi_selected()
   }

@@ -135,7 +135,8 @@ get_rppi <- function(category = "sale", cached = FALSE, stack = FALSE) {
 get_rppi_ivgr <- function(cached = FALSE) {
 
   if (cached) {
-    ivgr <- import_cached("rppi_sale")
+    # Use new unified architecture for cached data  
+    ivgr <- get_dataset("rppi", source = "github", category = "sale")
     ivgr <- dplyr::filter(ivgr, source == "IVG-R")
     return(ivgr)
   }
@@ -187,7 +188,8 @@ get_rppi_ivgr <- function(cached = FALSE) {
 get_rppi_igmi <- function(cached = FALSE) {
 
   if (cached) {
-    igmi <- import_cached("rppi_sale")
+    # Use new unified architecture for cached data
+    igmi <- get_dataset("rppi", source = "github", category = "sale")
     igmi <- dplyr::filter(igmi, source == "IGMI-R")
     return(igmi)
   }
@@ -484,7 +486,8 @@ get_rppi_fipezap <- function(city = "all", cached = FALSE) {
 
   # Download cached data from the GitHub repository
   if (cached) {
-    df <- import_cached("rppi_fipe")
+    # Use new unified architecture for cached data
+    df <- get_dataset("rppi", source = "github", category = "fipe")
 
     if (city != "all" && city %in% unique(df$name_muni)) {
       df <- dplyr::filter(df, name_muni == city)
