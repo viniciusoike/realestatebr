@@ -13,6 +13,7 @@ Depends:
     R (>= 3.5)
 RoxygenNote: 7.3.2
 Imports: 
+    cli,
     dplyr,
     GetBCBData,
     glue,
@@ -27,10 +28,11 @@ Imports:
     rlang,
     rvest,
     stringr,
+    tibble,
     tidyr,
     tidyxl,
-    vroom,
     xml2,
+    yaml,
     zoo
 Roxygen: list(markdown = TRUE)
 Suggests: 

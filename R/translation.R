@@ -247,9 +247,9 @@ clean_column_name <- function(name) {
   clean <- iconv(clean, from = "UTF-8", to = "ASCII//TRANSLIT")
   
   # Replace common patterns
-  clean <- gsub("ç", "c", clean)
-  clean <- gsub("ã", "a", clean)
-  clean <- gsub("õ", "o", clean)
+  clean <- gsub("\\u00E7", "c", clean)  # ç
+  clean <- gsub("\\u00E3", "a", clean)  # ã
+  clean <- gsub("\\u00F5", "o", clean)  # õ
   
   # Replace spaces and special characters with underscores
   clean <- gsub("[^a-z0-9_]", "_", clean)
@@ -311,29 +311,29 @@ translate_state_names <- function(state_names) {
   state_translations <- list(
     "Acre" = "Acre",
     "Alagoas" = "Alagoas", 
-    "Amapá" = "Amapa",
+    "Amap\\u00E1" = "Amapa",
     "Amazonas" = "Amazonas",
     "Bahia" = "Bahia",
-    "Ceará" = "Ceara",
+    "Cear\u00E1" = "Ceara",
     "Distrito Federal" = "Federal District",
-    "Espírito Santo" = "Espirito Santo",
-    "Goiás" = "Goias", 
-    "Maranhão" = "Maranhao",
+    "Esp\u00EDrito Santo" = "Espirito Santo",
+    "Goi\u00E1s" = "Goias", 
+    "Maranh\u00E3o" = "Maranhao",
     "Mato Grosso" = "Mato Grosso",
     "Mato Grosso do Sul" = "Mato Grosso do Sul",
     "Minas Gerais" = "Minas Gerais",
-    "Pará" = "Para",
-    "Paraíba" = "Paraiba",
-    "Paraná" = "Parana",
+    "Par\u00E1" = "Para",
+    "Para\u00EDba" = "Paraiba",
+    "Paran\u00E1" = "Parana",
     "Pernambuco" = "Pernambuco",
-    "Piauí" = "Piaui",
+    "Piau\u00ED" = "Piaui",
     "Rio de Janeiro" = "Rio de Janeiro",
     "Rio Grande do Norte" = "Rio Grande do Norte", 
     "Rio Grande do Sul" = "Rio Grande do Sul",
-    "Rondônia" = "Rondonia",
+    "Rond\u00F4nia" = "Rondonia",
     "Roraima" = "Roraima",
     "Santa Catarina" = "Santa Catarina",
-    "São Paulo" = "Sao Paulo",
+    "S\u00E3o Paulo" = "Sao Paulo",
     "Sergipe" = "Sergipe",
     "Tocantins" = "Tocantins"
   )

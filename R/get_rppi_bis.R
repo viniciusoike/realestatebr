@@ -16,8 +16,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' # Download data from the GitHub Repository
 #' bis <- get_rppi_bis(cached = TRUE)
+#' }
 get_rppi_bis <- function(cached = FALSE) {
 
   # Either download the data from the GitHub repository or fetch from the BIS website

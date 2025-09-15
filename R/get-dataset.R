@@ -2,6 +2,10 @@
 #'
 #' Unified interface for accessing all realestatebr package datasets with automatic
 #' fallback between different data sources (cache, GitHub, fresh download).
+#' 
+#' @importFrom cli cli_inform cli_warn cli_abort
+#' @importFrom yaml read_yaml
+#' @importFrom tibble tibble
 #'
 #' @param name Character. Dataset name (see list_datasets() for available options)
 #' @param source Character. Data source preference:

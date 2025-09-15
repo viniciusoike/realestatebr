@@ -4,7 +4,7 @@
 \alias{get_cached_name}
 \title{Get Cached Name for import_cached Function}
 \usage{
-get_cached_name(name, dataset_info)
+get_cached_name(name, dataset_info, category = NULL)
 }
 \description{
 Maps dataset names to the parameter names used by import_cached()

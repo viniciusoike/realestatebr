@@ -27,6 +27,8 @@ The indexes follow the residential sales market in each country. Index
 methodologies may not be comparable.
 }
 \examples{
+\dontrun{
 # Download data from the GitHub Repository
 bis <- get_rppi_bis(cached = TRUE)
+}
 }
