@@ -1,49 +1,166 @@
-#' Import data from Secovi-SP.
+#' Import data from Secovi-SP
 #'
 #' Download and clean real estate information from Sao Paulo (SP) made available
-#' by SECOVI-SP.
+#' by SECOVI-SP with modern error handling, progress reporting, and robust
+#' web scraping capabilities.
 #'
-#' @param category One of `'condo'`, `'rent'`, `'launch'`, `'sale'` or `'all'`
-#' (default).
-#' @param cached If `TRUE` downloads the cached data from the GitHub repository.
-#' This is a faster option but not recommended for daily data.
+#' @details
+#' This function scrapes real estate data from SECOVI-SP website including
+#' condominium fees, rental market data, launches, and sales information.
+#' The function handles parallel processing for data cleaning while maintaining
+#' progress reporting.
 #'
-#' @return A `tibble`
+#' @section Progress Reporting:
+#' When `quiet = FALSE`, the function provides detailed progress information
+#' including web scraping status and data processing steps, even during
+#' parallel operations.
+#'
+#' @section Error Handling:
+#' The function includes retry logic for failed web scraping attempts and
+#' robust error handling for parallel data processing operations.
+#'
+#' @param category Character. One of `'condo'`, `'rent'`, `'launch'`, `'sale'` or `'all'`
+#'   (default).
+#' @param cached Logical. If `TRUE`, attempts to load data from package cache
+#'   using the unified dataset architecture.
+#' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
+#'   If `FALSE` (default), provides detailed progress reporting.
+#' @param max_retries Integer. Maximum number of retry attempts for failed
+#'   web scraping operations. Defaults to 3.
+#'
+#' @return A `tibble` with SECOVI-SP real estate data. The return includes
+#'   metadata attributes:
+#'   \describe{
+#'     \item{download_info}{List with download statistics}
+#'     \item{source}{Data source used (web or cache)}
+#'     \item{download_time}{Timestamp of download}
+#'   }
+#'
 #' @export
+#' @importFrom cli cli_inform cli_warn cli_abort
+#' @importFrom dplyr filter select bind_rows left_join
+#' @importFrom parallel mclapply
 #'
 #' @examples \dontrun{
-#' # Download all available data
-#' secovi <- get_secovi_sp()
+#' # Download all available data (with progress)
+#' secovi <- get_secovi(quiet = FALSE)
 #'
 #' # Download only a specific series
-#' sales <- get_secovi_sp("sale")
+#' sales <- get_secovi("sale")
 #'
+#' # Use cached data for faster access
+#' cached_data <- get_secovi(cached = TRUE)
+#'
+#' # Check download metadata
+#' attr(sales, "download_info")
 #' }
-get_secovi <- function(category = "all", cached = FALSE) {
+get_secovi <- function(
+  category = "all",
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+) {
+  # Input validation ----
+  valid_categories <- c("all", "condo", "launch", "rent", "sale")
 
-  # Check category argument
-  stopifnot(
-    "Category must be one of 'all', 'condo', 'launch', 'rent', or 'sale'." =
-      any(category %in% c("all", "condo", "launch", "rent", "sale"))
-  )
-
-  if (cached) {
-    # Use new unified architecture for cached data
-    tbl_secovi <- get_dataset("secovi", source = "github")
-    # Filter category if needed
-    if (category != "all") {
-      tbl_secovi <- dplyr::filter(tbl_secovi, category == category)
-    }
-    return(tbl_secovi)
+  if (!is.character(category) || length(category) != 1) {
+    cli::cli_abort(c(
+      "Invalid {.arg category} parameter",
+      "x" = "{.arg category} must be a single character string"
+    ))
   }
 
-  # Import data from SECOVI
-  message("Downloading Secovi data.")
-  scrape <- import_secovi(category)
+  if (!category %in% valid_categories) {
+    cli::cli_abort(c(
+      "Invalid category: {.val {category}}",
+      "i" = "Valid categories: {.val {valid_categories}}"
+    ))
+  }
 
-  # Clean data
-  clean_tables <- parallel::mclapply(scrape, clean_secovi)
-  names(clean_tables) <- names(scrape)
+  if (!is.logical(cached) || length(cached) != 1) {
+    cli::cli_abort("{.arg cached} must be a logical value")
+  }
+
+  if (!is.logical(quiet) || length(quiet) != 1) {
+    cli::cli_abort("{.arg quiet} must be a logical value")
+  }
+
+  if (!is.numeric(max_retries) || length(max_retries) != 1 || max_retries < 1) {
+    cli::cli_abort("{.arg max_retries} must be a positive integer")
+  }
+
+  # Handle cached data ----
+  if (cached) {
+    if (!quiet) {
+      cli::cli_inform("Loading SECOVI-SP data from cache...")
+    }
+
+    tryCatch(
+      {
+        tbl_secovi <- get_dataset("secovi", source = "github")
+
+        # Filter category if needed
+        if (category != "all") {
+          tbl_secovi <- dplyr::filter(tbl_secovi, category == !!category)
+        }
+
+        if (!quiet) {
+          cli::cli_inform(
+            "Successfully loaded {nrow(tbl_secovi)} SECOVI-SP records from cache"
+          )
+        }
+
+        # Add metadata
+        attr(tbl_secovi, "source") <- "cache"
+        attr(tbl_secovi, "download_time") <- Sys.time()
+        attr(tbl_secovi, "download_info") <- list(
+          category = category,
+          source = "cache"
+        )
+
+        return(tbl_secovi)
+      },
+      error = function(e) {
+        if (!quiet) {
+          cli::cli_warn(c(
+            "Failed to load cached data: {e$message}",
+            "i" = "Falling back to fresh download from SECOVI-SP"
+          ))
+        }
+      }
+    )
+  }
+
+  # Download and process data ----
+  if (!quiet) {
+    cli::cli_inform("Downloading SECOVI-SP data from website...")
+  }
+
+  # Import data from SECOVI with retry logic
+  scrape <- import_secovi_robust(category = category, quiet = quiet, max_retries = max_retries)
+
+  if (!quiet) {
+    cli::cli_inform("Processing {length(scrape)} data table{?s}...")
+  }
+
+  # Clean data with progress reporting for parallel operations
+  if (!quiet) {
+    # Sequential processing with progress when not quiet
+    clean_tables <- list()
+    for (i in seq_along(scrape)) {
+      table_name <- names(scrape)[i]
+      if (!quiet) {
+        cli::cli_inform("Processing table: {table_name}")
+      }
+      clean_tables[[i]] <- clean_secovi(scrape[[i]])
+    }
+    names(clean_tables) <- names(scrape)
+  } else {
+    # Parallel processing when quiet
+    clean_tables <- parallel::mclapply(scrape, clean_secovi)
+    names(clean_tables) <- names(scrape)
+  }
+
   tbl_secovi <- dplyr::bind_rows(clean_tables, .id = "variable")
   # Filter metadata table if needed
   if (category != "all") {
@@ -55,14 +172,83 @@ get_secovi <- function(category = "all", cached = FALSE) {
   tbl_secovi <- dplyr::left_join(
     tbl_secovi,
     secovi,
-    by = c("variable" = "label")
-    )
+    by = dplyr::join_by(variable == label)
+  )
   # Rearrange column order
   tbl_secovi <- tbl_secovi |>
     dplyr::select(date, category = cat, variable, name, value)
 
-  return(tbl_secovi)
+  # Add metadata attributes
+  attr(tbl_secovi, "source") <- "web"
+  attr(tbl_secovi, "download_time") <- Sys.time()
+  attr(tbl_secovi, "download_info") <- list(
+    category = category,
+    tables_processed = length(scrape),
+    source = "web"
+  )
 
+  if (!quiet) {
+    cli::cli_inform("Successfully processed SECOVI-SP data with {nrow(tbl_secovi)} records")
+  }
+
+  return(tbl_secovi)
+}
+
+#' Import SECOVI Data with Robust Error Handling
+#'
+#' Modern version of import_secovi with retry logic and progress reporting.
+#'
+#' @param category Data category to import
+#' @param quiet Logical controlling messages
+#' @param max_retries Maximum number of retry attempts
+#'
+#' @return List of scraped data tables
+#' @keywords internal
+import_secovi_robust <- function(category, quiet, max_retries) {
+  attempts <- 0
+  last_error <- NULL
+
+  while (attempts <= max_retries) {
+    attempts <- attempts + 1
+
+    tryCatch(
+      {
+        # Try the original import function
+        result <- import_secovi(category)
+
+        # Validate we got some data
+        if (length(result) > 0) {
+          return(result)
+        } else {
+          last_error <<- "No data returned from SECOVI website"
+        }
+      },
+      error = function(e) {
+        last_error <<- e$message
+
+        if (!quiet && attempts <= max_retries) {
+          cli::cli_warn(c(
+            "SECOVI web scraping failed (attempt {attempts}/{max_retries + 1})",
+            "x" = "Error: {e$message}",
+            "i" = "Retrying in {min(attempts * 0.5, 3)} second{?s}..."
+          ))
+        }
+
+        # Add delay before retry
+        if (attempts <= max_retries) {
+          Sys.sleep(min(attempts * 0.5, 3))
+        }
+      }
+    )
+  }
+
+  # All attempts failed
+  cli::cli_abort(c(
+    "Failed to download SECOVI-SP data",
+    "x" = "All {max_retries + 1} attempt{?s} failed",
+    "i" = "Last error: {last_error}",
+    "i" = "The SECOVI-SP website may be temporarily unavailable"
+  ))
 }
 
 

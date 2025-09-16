@@ -7,21 +7,38 @@
 Abrainc-Fipe available at \url{https://www.fipe.org.br/pt-br/indices/abrainc}
 }
 \usage{
-get_abrainc_indicators(category = "all", cached = FALSE)
+get_abrainc_indicators(
+  category = "all",
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+)
 }
 \arguments{
-\item{category}{One of \code{'all'} (default), \code{'indicator'}, \code{'radar'}, or
+\item{category}{Character. One of \code{'all'} (default), \code{'indicator'}, \code{'radar'}, or
 \code{'leading'}.}
 
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+downloads. Defaults to 3.}
 }
 \value{
-A named \code{list} or a \code{tibble} containing updated data of the Abrainc Fipe
-Indicators.
+Either a named \code{list} (when category is \code{'all'}) or a \code{tibble}
+(for specific categories). The return includes metadata attributes:
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (web or cache)}
+\item{download_time}{Timestamp of download}
+}
 }
 \description{
-Downloads data from the Abrainc-Fipe Indicators report. Data includes
+Downloads data from the Abrainc-Fipe Indicators report with modern error
+handling, progress reporting, and robust download capabilities. Data includes
 information on new launches, sales, delivered units, etc. in the primary
 market.
 }
@@ -46,11 +63,31 @@ varies by country so caution is advised in making international comparisons.
 Data comes from developers that are partnered with Abrainc. As of June 2023, there were
 66 real estate developers associated with Abrainc.
 }
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including download status and data processing steps.
+}
+
+\section{Error Handling}{
+
+The function includes retry logic for failed downloads and graceful fallback
+to cached data when downloads fail. Excel download errors are handled with
+automatic retries and informative error messages.
+}
+
 \examples{
 \dontrun{
+# Get all available data (with progress)
+all_data <- get_abrainc_indicators(quiet = FALSE)
+
 # Get only the Radar data
 radar <- get_abrainc_indicators(category = "radar")
-# Get all available data
-abrainc <- get_abrainc_indicators()
+
+# Use cached data for faster access
+cached_data <- get_abrainc_indicators(cached = TRUE)
+
+# Check download metadata
+attr(radar, "download_info")
 }
 }

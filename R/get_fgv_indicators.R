@@ -1,67 +1,134 @@
 #' Get FGV Confidence Indicators
 #'
 #' Download and clean construction confidence indicators estimated and released
-#' by the Getúlio Vargas Foundation (FGV).
+#' by the Getúlio Vargas Foundation (FGV) with modern error handling and
+#' progress reporting capabilities.
 #'
-#' @inheritParams get_secovi
+#' @details
+#' This function provides access to construction confidence indicators from FGV,
+#' including confidence indices, expectation indicators, and INCC price indices.
+#' The function supports both cached data access and fallback to package data.
+#'
+#' \strong{Note:} Fresh data downloads from FGV APIs are not currently supported.
+#' The function accesses cached data or internal package data objects.
+#'
+#' @section Progress Reporting:
+#' When `quiet = FALSE`, the function provides progress information
+#' about data access operations.
+#'
+#' @section Error Handling:
+#' The function includes robust error handling for data access and
+#' provides informative error messages when data is unavailable.
+#'
+#' @param cached Logical. If `TRUE` (default), loads data from package cache
+#'   using the unified dataset architecture. If `FALSE`, uses internal
+#'   package data objects.
+#' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
+#'   If `FALSE` (default), provides detailed progress reporting.
 #'
 #' @return A `tibble` containing all construction confidence indicator series from FGV.
+#'   The tibble includes metadata attributes:
+#'   \describe{
+#'     \item{download_info}{List with access statistics}
+#'     \item{source}{Data source used (cache or internal)}
+#'     \item{download_time}{Timestamp of access}
+#'   }
+#'
 #' @export
-get_fgv_indicators <- function(cached = TRUE) {
-
-  # Check if category argument is valid
-
-  # Swap vector for categories
-  # vl_category <- c(
-  #   "used_capacity" = "nuci",
-  #   "expectations" = "ie_cst",
-  #   "confidence" = "ic_cst",
-  #   "current" = "isa_cst",
-  #   "incc_brasil_di" = "incc_brasil_di",
-  #   "incc_brasil" = "incc_brasil",
-  #   "incc_brasil_10" = "incc_brasil_10",
-  #   "incc_1o_decendio" = "incc_1o_decendio",
-  #   "incc_2o_decendio" = "incc_2o_decendio",
-  #   "incc" = "incc"
-  #   )
-
-  # # Group all valid category options into a single vector
-  # cat_options <- c("all", names(vl_category))
-  # # Collapse into a single string for error output message
-  # error_msg <- paste(cat_options, collapse = ", ")
-  # # Check if 'category' is valid
-  # if (!any(category %in% cat_options)) {
-  #   stop(glue::glue("Category must be one of: {error_msg}."))
-  # }
-  # # Swap category with vars
-  # vars <- ifelse(category == "all", vl_category, vl_category[category])
-  #
-  # if (cached) {
-  #
-  #   df <- import_cached("fgv_indicators")
-  #   df <- dplyr::filter(df, name_simplified %in% vars)
-  #
-  # } else {
-  #
-  #   df <- dplyr::filter(fgv_data, name_simplified %in% vars)
-  #
-  # }
-  #
-  # if (all(names(df) %in% names(fgv_dict))) {
-  #   df <- dplyr::left_join(df, fgv_dict, by = "code_series")
-  # }
-  #
-  # df <- stats::na.omit(df)
-
-  if (cached) {
-    # Use new unified architecture for cached data
-    return(get_dataset("fgv_indicators", source = "github"))
-  } else {
-    return(fgv_data)
+#' @importFrom cli cli_inform cli_warn cli_abort
+#'
+#' @examples \dontrun{
+#' # Get FGV indicators from cache (with progress)
+#' fgv <- get_fgv_indicators(quiet = FALSE)
+#'
+#' # Use internal package data
+#' fgv <- get_fgv_indicators(cached = FALSE)
+#'
+#' # Check access metadata
+#' attr(fgv, "download_info")
+#' }
+get_fgv_indicators <- function(
+  cached = TRUE,
+  quiet = FALSE
+) {
+  # Input validation ----
+  if (!is.logical(cached) || length(cached) != 1) {
+    cli::cli_abort("{.arg cached} must be a logical value")
   }
 
-  # return(df)
+  if (!is.logical(quiet) || length(quiet) != 1) {
+    cli::cli_abort("{.arg quiet} must be a logical value")
+  }
 
+  # Handle cached data ----
+  if (cached) {
+    if (!quiet) {
+      cli::cli_inform("Loading FGV indicators from cache...")
+    }
+
+    tryCatch(
+      {
+        # Use new unified architecture for cached data
+        fgv_data <- get_dataset("fgv_indicators", source = "github")
+
+        if (!quiet) {
+          cli::cli_inform(
+            "Successfully loaded {nrow(fgv_data)} FGV indicator records from cache"
+          )
+        }
+
+        # Add metadata
+        attr(fgv_data, "source") <- "cache"
+        attr(fgv_data, "download_time") <- Sys.time()
+        attr(fgv_data, "download_info") <- list(
+          dataset = "fgv_indicators",
+          source = "cache"
+        )
+
+        return(fgv_data)
+      },
+      error = function(e) {
+        if (!quiet) {
+          cli::cli_warn(c(
+            "Failed to load FGV data from cache: {e$message}",
+            "i" = "Falling back to internal package data"
+          ))
+        }
+      }
+    )
+  }
+
+  # Use internal package data ----
+  if (!quiet) {
+    cli::cli_inform("Loading FGV indicators from internal package data...")
+  }
+
+  # Check for required data dependencies
+  if (!exists("fgv_data")) {
+    cli::cli_abort(c(
+      "Required data dependency not available",
+      "x" = "This function requires the {.pkg fgv_data} object",
+      "i" = "Please ensure all package data is properly loaded",
+      "i" = "Try using {.code cached = TRUE} to access cached data instead"
+    ))
+  }
+
+  if (!quiet) {
+    cli::cli_inform(
+      "Successfully accessed {nrow(fgv_data)} FGV indicator records from package data"
+    )
+  }
+
+  # Add metadata
+  attr(fgv_data, "source") <- "internal"
+  attr(fgv_data, "download_time") <- Sys.time()
+  attr(fgv_data, "download_info") <- list(
+    dataset = "fgv_indicators",
+    source = "internal",
+    note = "Fresh downloads not supported - using package data"
+  )
+
+  return(fgv_data)
 }
 
 fgv_dict <- data.frame(

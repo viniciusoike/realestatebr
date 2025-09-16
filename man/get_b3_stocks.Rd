@@ -2,47 +2,108 @@
 % Please edit documentation in R/get_b3_stocks.R
 \name{get_b3_stocks}
 \alias{get_b3_stocks}
-\title{Get Stock Prices}
+\title{Get B3 Stock Prices}
 \usage{
-get_b3_stocks(cached = FALSE, src = "yahoo", symbol = NULL, quiet = TRUE, ...)
+get_b3_stocks(
+  symbol = NULL,
+  src = "yahoo",
+  cached = FALSE,
+  allow_partial = TRUE,
+  retry_failed = TRUE,
+  max_retries = 3L,
+  quiet = FALSE,
+  ...
+)
 }
 \arguments{
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{symbol}{Character vector with stock ticker symbols. If \code{NULL} (default),
+downloads all symbols from \code{b3_real_estate} plus major market indices.}
 
-\item{src}{Character string specifying sourcing method (defaults to \code{'yahoo'}).}
+\item{src}{Character string specifying data source for \code{quantmod::getSymbols}.
+Defaults to "yahoo".}
 
-\item{symbol}{Optional character string with the stock tickers symbols. If
-none is provided uses all symbols in \code{b3_real_estate}.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
 
-\item{quiet}{Logical indicating if warnings should be printed to the console.}
+\item{allow_partial}{Logical. If \code{TRUE} (default), continues downloading even
+if some symbols fail. If \code{FALSE}, stops on first failure.}
 
-\item{...}{Additional arguments passed on to \code{quantmod::getSymbols}.}
+\item{retry_failed}{Logical. If \code{TRUE} (default), retries failed downloads
+up to \code{max_retries} times.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+downloads. Defaults to 3.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses all progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{...}{Additional arguments passed to \code{quantmod::getSymbols}.}
 }
 \value{
-A \code{tibble} containing stock prices for all companies.
+A \code{tibble} containing stock price data with the following structure:
+\describe{
+\item{symbol}{Stock ticker symbol}
+\item{date}{Trading date}
+\item{open, high, low, close}{OHLC price data}
+\item{volume}{Trading volume}
+\item{adjusted}{Adjusted closing price}
+}
+
+The tibble includes metadata attributes:
+\describe{
+\item{download_info}{List with download statistics and failed symbols}
+\item{source}{Data source used}
+\item{download_time}{Timestamp of download}
+}
 }
 \description{
-Imports stock prices of Brazilian real estate players. Additionally, imports
-some relevant financial indices.
+Downloads and processes stock prices for Brazilian real estate companies
+listed on B3, along with relevant market indices. Provides modern error
+handling, progress reporting, and robust download capabilities.
 }
 \details{
-Downloads and imports the stock values of the most relevant
-real estate players in Brazil via \code{quantmod::getSymbols}. A list of companies
-can be found at \code{b3_real_estate}.
-
-By default uses \code{src = 'yahoo'}.
+This function downloads stock prices from Yahoo Finance or other sources via
+\code{quantmod::getSymbols}. The complete list of available real estate companies
+can be found in \code{b3_real_estate}. The function includes retry logic for
+failed downloads and can handle partial failures gracefully.
 }
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including download status for each symbol and retry attempts.
+}
+
+\section{Error Handling}{
+
+Partial failures are handled gracefully when \code{allow_partial = TRUE}. The
+function will continue downloading other symbols and report which ones failed.
+Failed downloads can be retried automatically based on the \code{retry_failed}
+and \code{max_retries} parameters.
+}
+
 \examples{
 \dontrun{
-# Get a specific company
-cyrela <- get_b3_stocks(symbol = "CYRE3.SA")
+# Download all available companies and indices (with progress)
+stocks <- get_b3_stocks(quiet = FALSE)
 
-# Get all available companies
-stocks <- get_b3_stocks()
+# Download specific companies only
+cyrela_eztec <- get_b3_stocks(symbol = c("CYRE3.SA", "EZTC3.SA"))
 
+# Use cached data for faster access
+stocks_cached <- get_b3_stocks(cached = TRUE)
+
+# Download with strict error handling (stop on any failure)
+stocks_strict <- get_b3_stocks(allow_partial = FALSE)
+
+# Check download metadata
+attr(stocks, "download_info")
 }
+
 }
 \seealso{
-\code{\link[quantmod:getSymbols]{quantmod::getSymbols()}}
+\itemize{
+\item \code{\link[quantmod:getSymbols]{quantmod::getSymbols()}} for underlying download functionality
+\item \link{b3_real_estate} for available company symbols
+\item \code{\link[=get_dataset]{get_dataset()}} for unified data access
+}
 }

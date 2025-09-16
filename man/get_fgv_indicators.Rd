@@ -7,8 +7,8 @@
 get_fgv_indicators(cached = TRUE)
 }
 \arguments{
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
 }
 \value{
 A \code{tibble} containing all construction confidence indicator series from FGV.

@@ -4,33 +4,56 @@
 #' Indices (RPPI) panel data from the Bank for International Settlements (BIS).
 #'
 #' @details
-#' This function is a wrapper around `get_bis_rppi_selected`. It simplifies the
+#' \strong{Deprecation Notice:} This function is deprecated in favor of
+#' `get_bis_rppi(category = "selected")` which provides the same functionality
+#' with modern error handling and progress reporting. This wrapper is maintained
+#' for backward compatibility but will be removed in a future version.
+#'
+#' This function is a wrapper around `get_bis_rppi()`. It simplifies the
 #' output by filtering out observations prior to 1980. All index values are
 #' centered in 2010. Both nominal and real series are available. Note that
 #' Brazilian data becomes available only after 2001.
 #'
 #' The indexes follow the residential sales market in each country. Index
 #' methodologies may not be comparable.
-#' @inheritParams get_secovi
+#'
+#' @param cached Logical. If `TRUE`, attempts to load data from package cache.
+#' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
+#' @param max_retries Integer. Maximum number of retry attempts.
+#'
 #' @return A cross-country `tibble` with RPPIs.
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examples \dontrun{
 #' # Download data from the GitHub Repository
 #' bis <- get_rppi_bis(cached = TRUE)
+#'
+#' # Recommended: Use the modern function instead
+#' bis <- get_bis_rppi(category = "selected", cached = TRUE)
 #' }
-get_rppi_bis <- function(cached = FALSE) {
-
-  # Either download the data from the GitHub repository or fetch from the BIS website
-  if (cached) {
-    # Use new unified architecture for cached data
-    bis <- get_dataset("bis_rppi", source = "github", category = "selected")
-  } else {
-    bis <- get_bis_rppi_selected()
+get_rppi_bis <- function(
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+) {
+  # Deprecation warning
+  if (!quiet) {
+    cli::cli_warn(c(
+      "{.fn get_rppi_bis} is deprecated",
+      "i" = "Use {.fn get_bis_rppi}(category = \"selected\") instead",
+      "i" = "This function will be removed in a future version"
+    ))
   }
 
-  # Get only values from 1980 with non-NA values
+  # Use the modernized get_bis_rppi function
+  bis <- get_bis_rppi(
+    category = "selected",
+    cached = cached,
+    quiet = quiet,
+    max_retries = max_retries
+  )
+
+  # Apply the legacy filtering and transformations
   bis <- bis |>
     dplyr::filter(
       unit == "Index, 2010 = 100",
@@ -50,6 +73,9 @@ get_rppi_bis <- function(cached = FALSE) {
     ) |>
     dplyr::ungroup()
 
-  return(bis)
+  # Preserve metadata from the underlying function
+  attr(bis, "deprecated") <- TRUE
+  attr(bis, "replacement") <- "get_bis_rppi(category = 'selected')"
 
+  return(bis)
 }
