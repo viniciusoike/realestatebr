@@ -58,6 +58,61 @@ This document tracks the progress of modernizing all `get_*` functions in the re
 
 **Testing**: Input validation, cached data loading, and progress reporting verified.
 
+#### 4. get_abecip_indicators() (`R/get_abecip_indicators.R`) - COMPLETED ✅
+**Complexity**: High - Multi-source Excel data with complex processing and web scraping
+
+**Modernizations Applied**:
+- ✅ CLI-based error handling (`cli::cli_abort`, `cli::cli_warn`, `cli::cli_inform`)
+- ✅ Added `table` parameter replacing `category` with backward compatibility
+- ✅ Comprehensive input validation with informative error messages
+- ✅ Added `quiet` and `max_retries` parameters
+- ✅ Robust web scraping with retry logic (`download_abecip_file()`)
+- ✅ Progress reporting for multi-step downloads (`cli::cli_progress_bar`)
+- ✅ Helper functions with retry logic (`download_abecip_sbpe()`, `download_abecip_units()`)
+- ✅ Enhanced documentation with @section blocks (Progress Reporting, Error Handling)
+- ✅ Metadata attributes on returned data (source, download_time, download_info)
+- ✅ Integration with unified dataset architecture via `get_dataset()`
+- ✅ Graceful fallback from cache to fresh download
+- ✅ Returns single tibble by default, list only when table="all"
+
+**Testing**: Input validation, cached data loading, progress reporting, and backward compatibility verified.
+
+#### 5. get_abrainc_indicators() (`R/get_abrainc_indicators.R`) - COMPLETED ✅
+**Complexity**: Medium-High - Excel processing with multiple sheets and data cleaning
+
+**Modernizations Applied**:
+- ✅ CLI-based error handling and progress reporting
+- ✅ Added `table` parameter replacing `category` with backward compatibility
+- ✅ Comprehensive input validation with informative error messages
+- ✅ Added `quiet` and `max_retries` parameters
+- ✅ Robust Excel download with retry logic (`download_abrainc_robust()`)
+- ✅ Progress reporting for Excel processing steps
+- ✅ Helper functions for data cleaning (`clean_abrainc()`)
+- ✅ Enhanced documentation with @section blocks
+- ✅ Metadata attributes tracking processing statistics
+- ✅ Integration with unified dataset architecture
+- ✅ Returns single tibble by default (indicator table), list when table="all"
+
+**Testing**: Input validation, cached data loading, Excel processing, and backward compatibility verified.
+
+## Critical Infrastructure Improvements
+
+### ✅ Cache Directory Fix - COMPLETED ✅
+- **Issue**: `import_cached()` function couldn't locate cached data files
+- **Solution**: Moved `cached_data/` to `inst/cached_data/` for proper package structure
+- **Impact**: All cached data access now works properly throughout the package
+
+### ✅ API Parameter Standardization - COMPLETED ✅
+- **Issue**: Inconsistent parameter naming across functions (`category` vs `table`)
+- **Solution**: Standardized on `table` parameter with backward compatibility for `category`
+- **Functions Updated**: `get_abecip_indicators()`, `get_abrainc_indicators()`
+- **Impact**: Consistent API while maintaining existing code compatibility
+
+### ✅ B3 Column Name Standardization - COMPLETED ✅
+- **Issue**: Inconsistent column names in B3 stock data (open, high, low, close)
+- **Solution**: Added column name mapping in `xts_to_tibble()` helper function
+- **Impact**: Predictable column names (`price_open`, `price_high`, `price_low`, `price_close`)
+
 ## Week 2-3 Priorities (Next Steps)
 
 ### 🔄 RPPI Suite Functions (Complex - Multiple interdependent functions)
@@ -68,6 +123,14 @@ This document tracks the progress of modernizing all `get_*` functions in the re
 - [ ] `get_rppi_iqa()` - Data processing
 - [ ] `get_rppi_ivar()` - Data processing
 - [ ] `get_rppi_secovi_sp()` - Integration with SECOVI
+
+### 🔄 B3 Stock Functions
+- [x] `get_b3_stocks()` - **PARTIALLY MODERNIZED** ⚠️
+  - ✅ Column name standardization implemented
+  - ✅ Basic error handling present
+  - ❌ CLI progress reporting not yet implemented
+  - ❌ Modern parameter signature needs updating
+  - ❌ Enhanced documentation needs completion
 
 ### 🔄 Additional Functions
 - [ ] `get_bcb_series()` - BCB API calls
@@ -83,7 +146,8 @@ Each completed function now includes:
 1. **Modern Function Signature**:
 ```r
 get_function_name <- function(
-  category = "all",
+  table = "default_table",      # New standardized parameter
+  category = NULL,              # Deprecated, for backward compatibility
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
@@ -92,11 +156,26 @@ get_function_name <- function(
 
 2. **Comprehensive Input Validation**:
 ```r
-# Input validation ----
-if (!is.character(category) || length(category) != 1) {
+# Input validation and backward compatibility ----
+valid_tables <- c("table1", "table2", "all")
+
+# Handle backward compatibility: if category is provided, use it as table
+if (!is.null(category)) {
+  cli::cli_warn("The 'category' parameter is deprecated. Use 'table' instead.")
+  table <- category
+}
+
+if (!is.character(table) || length(table) != 1) {
   cli::cli_abort(c(
-    "Invalid {.arg category} parameter",
-    "x" = "{.arg category} must be a single character string"
+    "Invalid {.arg table} parameter",
+    "x" = "{.arg table} must be a single character string"
+  ))
+}
+
+if (!table %in% valid_tables) {
+  cli::cli_abort(c(
+    "Invalid table: {.val {table}}",
+    "i" = "Valid tables: {.val {valid_tables}}"
   ))
 }
 ```
@@ -177,15 +256,41 @@ For each modernized function, we verify:
 
 5. **Documentation**: Enhanced roxygen2 documentation with sections and comprehensive examples.
 
+6. **API Standardization**: Introduced `table` parameter pattern with backward compatibility for existing `category` usage.
+
+7. **Infrastructure Fixes**: Resolved critical issues with cache access, column naming, and parameter consistency.
+
+8. **Integration**: Seamless integration with unified dataset architecture (`get_dataset()`) for consistent data access patterns.
+
 ## Next Session Goals
 
-1. Continue with RPPI suite modernization (complex due to interdependencies)
-2. Handle function duplication issues (get_bis_rppi vs get_rppi_bis)
-3. Complete remaining simpler functions
-4. Comprehensive testing of all modernized functions
-5. Update any integration issues between modernized functions
+1. **Complete B3 Modernization**: Finish modernizing `get_b3_stocks()` with CLI progress reporting and enhanced error handling
+2. **RPPI Suite**: Continue with RPPI suite modernization (complex due to interdependencies)
+3. **Function Deduplication**: Handle function duplication issues (get_bis_rppi vs get_rppi_bis)
+4. **Remaining Functions**: Complete remaining simpler functions (`get_bcb_series()`, `get_nre_ire()`, `get_fgv_indicators()`)
+5. **Integration Testing**: Comprehensive testing of all modernized functions working together
+6. **Documentation Review**: Update package-level documentation to reflect new unified patterns
+
+## Testing Status
+
+### ✅ Verified Functions
+- ✅ `get_property_records()` - Full modernization verified
+- ✅ `get_bcb_realestate()` - Full modernization verified
+- ✅ `get_secovi()` - Full modernization verified
+- ✅ `get_abecip_indicators()` - Full modernization verified
+- ✅ `get_abrainc_indicators()` - Full modernization verified
+
+### 🔄 Partially Tested
+- ⚠️ `get_b3_stocks()` - Column naming fixed, needs full CLI modernization
+
+### ❌ Not Yet Modernized
+- [ ] RPPI suite functions
+- [ ] `get_bcb_series()`
+- [ ] `get_nre_ire()`
+- [ ] `get_fgv_indicators()`
 
 ---
 
-*Last Updated: 2025-01-16*
-*Phase 1 Progress: 3/9 core functions completed (33%)*
+*Last Updated: 2025-01-17*
+*Phase 1 Progress: 5/11+ core functions completed (45%)*
+*Critical Infrastructure: 3/3 major fixes completed (100%)*
