@@ -47,7 +47,7 @@ get_rppi_bis <- function(
 
   # Use the modernized get_bis_rppi function
   bis <- get_bis_rppi(
-    category = "selected",
+    table = "selected",
     cached = cached,
     quiet = quiet,
     max_retries = max_retries

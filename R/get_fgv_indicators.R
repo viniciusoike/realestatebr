@@ -20,6 +20,9 @@
 #' The function includes robust error handling for data access and
 #' provides informative error messages when data is unavailable.
 #'
+#' @param table Character. Which dataset to return: "indicators" (default) or "all".
+#' @param category Character. Deprecated parameter name for backward compatibility.
+#'   Use `table` instead.
 #' @param cached Logical. If `TRUE` (default), loads data from package cache
 #'   using the unified dataset architecture. If `FALSE`, uses internal
 #'   package data objects.
@@ -48,10 +51,39 @@
 #' attr(fgv, "download_info")
 #' }
 get_fgv_indicators <- function(
+  table = "indicators",
+  category = NULL,
   cached = TRUE,
   quiet = FALSE
 ) {
-  # Input validation ----
+  # Input validation and backward compatibility ----
+  valid_tables <- c("indicators", "all")
+
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn(c(
+      "Parameter {.arg category} is deprecated",
+      "i" = "Use {.arg table} parameter instead",
+      ">" = "This will be removed in a future version"
+    ))
+    table <- category
+  }
+
+  if (!is.character(table) || length(table) != 1) {
+    cli::cli_abort(c(
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
+
+  if (!table %in% valid_tables) {
+    cli::cli_abort(c(
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
+
   if (!is.logical(cached) || length(cached) != 1) {
     cli::cli_abort("{.arg cached} must be a logical value")
   }
@@ -81,6 +113,7 @@ get_fgv_indicators <- function(
         attr(fgv_data, "source") <- "cache"
         attr(fgv_data, "download_time") <- Sys.time()
         attr(fgv_data, "download_info") <- list(
+          table = table,
           dataset = "fgv_indicators",
           source = "cache"
         )
@@ -123,6 +156,7 @@ get_fgv_indicators <- function(
   attr(fgv_data, "source") <- "internal"
   attr(fgv_data, "download_time") <- Sys.time()
   attr(fgv_data, "download_info") <- list(
+    table = table,
     dataset = "fgv_indicators",
     source = "internal",
     note = "Fresh downloads not supported - using package data"

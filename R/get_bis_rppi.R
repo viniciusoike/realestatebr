@@ -5,11 +5,13 @@
 #' reporting, and robust Excel download capabilities.
 #'
 #' @details
-#' For the simple selected series select `category = 'selected'`. More information
+#' For the simple selected series select `table = 'selected'`. More information
 #' on these series is available at the [BIS website](https://www.bis.org/statistics/pp_selected.htm)
 #'
-#' For the full detailed dataset select `category = 'detailed'`. More information
+#' For the full detailed dataset select `table = 'detailed'`. More information
 #' on these series is available at the [BIS website](https://data.bis.org/topics/RPP)
+#'
+#' For all datasets select `table = 'all'` to return a list containing both datasets.
 #'
 #' @section Progress Reporting:
 #' When `quiet = FALSE`, the function provides detailed progress information
@@ -19,7 +21,9 @@
 #' The function includes retry logic for failed Excel downloads and robust
 #' error handling for multi-sheet processing operations.
 #'
-#' @param category One of `selected` (default) or `detailed`.
+#' @param table Character. Which dataset to return: "selected" (default), "detailed", or "all".
+@param category Character. Deprecated parameter name for backward compatibility.
+  Use `table` instead.
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
 #'   using the unified dataset architecture.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
@@ -46,31 +50,43 @@
 #' bis <- get_bis_rppi(quiet = FALSE)
 #'
 #' # For faster download time use cached data
-#' bis <- get_bis_rppi(category = "detailed", cached = TRUE)
+#' bis <- get_bis_rppi(table = "detailed", cached = TRUE)
 #'
 #' # Check download metadata
 #' attr(bis, "download_info")
 #' }
 get_bis_rppi <- function(
-  category = "selected",
+  table = "selected",
+  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Input validation ----
-  valid_categories <- c("selected", "detailed")
+  # Input validation and backward compatibility ----
+  valid_tables <- c("selected", "detailed", "all")
 
-  if (!is.character(category) || length(category) != 1) {
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn(c(
+      "Parameter {.arg category} is deprecated",
+      "i" = "Use {.arg table} parameter instead",
+      ">" = "This will be removed in a future version"
+    ))
+    table <- category
+  }
+
+  if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
-      "Invalid {.arg category} parameter",
-      "x" = "{.arg category} must be a single character string"
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string",
+      "i" = "Valid tables: {.val {valid_tables}}"
     ))
   }
 
-  if (!category %in% valid_categories) {
+  if (!table %in% valid_tables) {
     cli::cli_abort(c(
-      "Invalid category: {.val {category}}",
-      "i" = "Valid categories: {.val {valid_categories}}"
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
     ))
   }
 
@@ -95,7 +111,7 @@ get_bis_rppi <- function(
     tryCatch(
       {
         # Use new unified architecture for cached data
-        data <- get_dataset("bis_rppi", source = "github", category = category)
+        data <- get_dataset("bis_rppi", source = "github", category = table)
 
         if (!quiet) {
           total_records <- if (is.list(data)) sum(sapply(data, nrow)) else nrow(data)
@@ -108,7 +124,7 @@ get_bis_rppi <- function(
         attr(data, "source") <- "cache"
         attr(data, "download_time") <- Sys.time()
         attr(data, "download_info") <- list(
-          category = category,
+          table = table,
           source = "cache"
         )
 
@@ -127,13 +143,36 @@ get_bis_rppi <- function(
 
   # Download and process data ----
   if (!quiet) {
-    cli::cli_inform("Downloading BIS RPPI data from {category} dataset...")
+    cli::cli_inform("Downloading BIS RPPI data from {table} dataset...")
   }
 
   # Apply the appropriate function
-  if (category == "selected") {
+  # Handle "all" case by returning both datasets
+  if (table == "all") {
+    selected_data <- get_bis_rppi_selected_robust(quiet = quiet, max_retries = max_retries)
+    detailed_data <- get_bis_rppi_detailed_robust(quiet = quiet, max_retries = max_retries)
+
+    result <- list(
+      selected = selected_data,
+      detailed = detailed_data
+    )
+
+    # Add metadata attributes
+    attr(result, "source") <- "web"
+    attr(result, "download_time") <- Sys.time()
+    attr(result, "download_info") <- list(
+      table = table,
+      total_records = nrow(selected_data) + nrow(detailed_data),
+      source = "web"
+    )
+
+    return(result)
+  }
+
+  # Single dataset case
+  if (table == "selected") {
     df <- get_bis_rppi_selected_robust(quiet = quiet, max_retries = max_retries)
-  } else if (category == "detailed") {
+  } else if (table == "detailed") {
     df <- get_bis_rppi_detailed_robust(quiet = quiet, max_retries = max_retries)
   }
 
@@ -141,7 +180,7 @@ get_bis_rppi <- function(
   attr(df, "source") <- "web"
   attr(df, "download_time") <- Sys.time()
   attr(df, "download_info") <- list(
-    category = category,
+    table = table,
     source = "web"
   )
 

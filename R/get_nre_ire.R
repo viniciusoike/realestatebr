@@ -23,6 +23,9 @@
 #' The function includes robust error handling for cache access and
 #' provides informative error messages when data is unavailable.
 #'
+#' @param table Character. Which dataset to return: "indicators" (default) or "all".
+#' @param category Character. Deprecated parameter name for backward compatibility.
+#'   Use `table` instead.
 #' @param cached Logical. If `TRUE` (default), loads data from package cache
 #'   using the unified dataset architecture. This is currently the only
 #'   supported method for this dataset.
@@ -60,10 +63,39 @@
 #' attr(ire, "download_info")
 #' }
 get_nre_ire <- function(
+  table = "indicators",
+  category = NULL,
   cached = TRUE,
   quiet = FALSE
 ) {
-  # Input validation ----
+  # Input validation and backward compatibility ----
+  valid_tables <- c("indicators", "all")
+
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn(c(
+      "Parameter {.arg category} is deprecated",
+      "i" = "Use {.arg table} parameter instead",
+      ">" = "This will be removed in a future version"
+    ))
+    table <- category
+  }
+
+  if (!is.character(table) || length(table) != 1) {
+    cli::cli_abort(c(
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
+
+  if (!table %in% valid_tables) {
+    cli::cli_abort(c(
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
+
   if (!is.logical(cached) || length(cached) != 1) {
     cli::cli_abort("{.arg cached} must be a logical value")
   }
@@ -102,6 +134,7 @@ get_nre_ire <- function(
       attr(ire, "source") <- "cache"
       attr(ire, "download_time") <- Sys.time()
       attr(ire, "download_info") <- list(
+        table = table,
         dataset = "ire",
         source = "cache",
         note = "Fresh downloads not supported - data requires manual processing"
