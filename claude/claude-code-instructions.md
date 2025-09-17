@@ -10,7 +10,7 @@ R package for accessing Brazilian real estate market data. Currently transitioni
 
 ## Current Architecture Transition
 
-### Phase 1: Core Functions (Nearly Complete - 45% Modernized)
+### Phase 1: Core Functions (Nearly Complete - 47% Modernized)
 - ✅ Add `list_datasets()` and `get_dataset()` functions
 - ✅ Modernized core functions with CLI error handling and progress reporting
 - ✅ Implemented `table` parameter standardization with backward compatibility
@@ -19,14 +19,30 @@ R package for accessing Brazilian real estate market data. Currently transitioni
 - ✅ Keep existing `get_abecip_indicators()`, `get_rppi()`, `get_rppi_bis()` working
 - ✅ Improve dataset documentation
 - ✅ Create dataset registry system
+- ✅ Integrated CBIC construction materials data functionality
 
-**Modernized Functions:**
+**Fully Modernized Functions (8/17 - 47%):**
 - ✅ `get_property_records()` - Full CLI modernization
 - ✅ `get_bcb_realestate()` - Full CLI modernization
 - ✅ `get_secovi()` - Full CLI modernization
 - ✅ `get_abecip_indicators()` - Full CLI modernization + table parameter
 - ✅ `get_abrainc_indicators()` - Full CLI modernization + table parameter
-- 🔄 `get_b3_stocks()` - Column standardization (CLI pending)
+- ✅ `get_cbic_cement()` - Full CLI modernization + table parameter (NEW)
+- ✅ `get_cbic_steel()` - Full CLI modernization + table parameter (NEW)
+- ✅ `get_cbic_pim()` - Full CLI modernization + table parameter (NEW)
+
+**Partially Modernized Functions (7/17):**
+- 🔄 `get_rppi()` - CLI modernized, needs table parameter
+- 🔄 `get_rppi_bis()` - CLI modernized, needs table parameter
+- 🔄 `get_bis_rppi()` - CLI modernized, needs table parameter
+- 🔄 `get_bcb_series()` - CLI modernized, needs table parameter
+- 🔄 `get_b3_stocks()` - Column standardization, needs full CLI modernization
+- 🔄 `get_fgv_indicators()` - CLI modernized, needs table parameter
+- 🔄 `get_nre_ire()` - CLI modernized, needs table parameter
+
+**Not Yet Modernized (2/17):**
+- ❌ `get_itbi()` - No modernization
+- ❌ `get_itbi_bhe()` - No modernization
 
 ### Phase 2: Data Pipeline
 - 🔄 Implement {targets} workflow for data processing
