@@ -82,6 +82,19 @@ get_b3_stocks <- function(cached = FALSE, src = "yahoo", symbol = NULL, quiet = 
     col_names <- stringr::str_remove_all(col_names, paste(symbol, collapse = "|"))
     col_names <- stringr::str_remove(col_names, "^\\.")
     col_names <- stringr::str_to_lower(col_names)
+
+    # Standardize column names for consistency
+    col_names <- stringr::str_replace_all(
+      col_names,
+      c(
+        "^open$" = "price_open",
+        "^high$" = "price_high",
+        "^low$" = "price_low",
+        "^close$" = "price_close",
+        "^volume$" = "volume",
+        "^adjusted$" = "adjusted"
+      )
+    )
     names(tbl) <- col_names
 
     return(tbl)
