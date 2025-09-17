@@ -73,7 +73,7 @@ fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 
 All existing `get_*` functions continue to work as before:
 
-```{r legacy}
+```{r legacy, eval=FALSE}
 # Legacy interface still works
 abecip_legacy <- get_abecip_indicators(category = "sbpe", cached = TRUE)
 
@@ -111,7 +111,7 @@ print(bcb_datasets$name)
 
 There are several house price indices available in the Brazilian residential real estate market. The `get_rppi_*` functions collect all of these indices. A general `get_rppi()` function
 
-```{r}
+```{r, eval=FALSE}
 # For better plots
 library(ggplot2)
 
@@ -128,7 +128,7 @@ ggplot(rppi_brazil, aes(date, acum12m)) +
 
 International comparisons are also possible using the BIS data
 
-```{r}
+```{r, eval=FALSE}
 library(dplyr, warn.conflicts = FALSE)
 # Download simplified BIS RPPI data
 bis <- get_rppi_bis()

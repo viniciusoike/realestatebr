@@ -21,7 +21,16 @@ library(realestatebr)
 # Additional packages to facilitate data visualization.
 library(ggplot2)
 library(dplyr)
-library(tidyr)
+
+theme_series <- theme_minimal() +
+  theme(
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom",
+    axis.line = element_line(),
+    axis.title.x = element_blank()
+  )
+
+theme_set(theme_series)
 ```
 
 # General Usage
@@ -30,7 +39,7 @@ The `realestatebr` package aims to offer real estate reports and data in a "tidy
 
 ## New Unified Architecture
 
-The package now provides a modern, unified interface for accessing all datasets with automatic fallback strategies and consistent data formatting:
+The package now provides a modern, unified interface for accessing all datasets with automatic fallback strategies and consistent data formatting.
 
 ```{r unified, eval=FALSE}
 # Discover available datasets
@@ -66,6 +75,32 @@ One of the exceptions to the rule above is the `get_rppi()` function, which down
 The specific `get_rppi_*()` functions have different arguments.
 
 # Examples
+
+## Abecip
+
+Abecip is one of the backbones of the Brazilian real estate market. The data is available in two main tables: "SBPE" and "Financiamentos". The example below shows how to download both tables and plot the total amount of financing for new properties.
+
+```{r}
+abecip <- get_abecip_indicators(cached = TRUE)
+```
+
+```{r}
+sbpe <- abecip$sbpe |>
+  filter(date >= as.Date("2010-01-01")) |>
+  mutate(acum = RcppRoll::roll_sumr(sbpe_netflow, n = 12, fill = NA)) |>
+  filter(!is.na(acum))
+
+ggplot(sbpe, aes(date, acum)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_breaks = "2 year", date_labels = "%Y") +
+  scale_y_continuous(labels = scales::label_number(scale = 1e-3, suffix = "B")) +
+  labs(
+    title = "Total SBPE Net Flow (12-month rolling sum)",
+    y = "R$ (Billion)",
+    caption = "Source: Abecip"
+  )
+```
 
 ## Abrainc
 
@@ -119,7 +154,7 @@ credit_south <- credit_south %>%
   ) %>%
   ungroup()
 
-ggplot(credit_south, aes(x = date, color = abbrev_state)) + 
+ggplot(credit_south, aes(x = date, color = abbrev_state)) +
   geom_line(aes(y = total), alpha = 0.5) +
   geom_line(aes(y = trend)) +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
@@ -131,9 +166,7 @@ ggplot(credit_south, aes(x = date, color = abbrev_state)) +
     x = NULL,
     y = "R$ (Billion)",
     caption = "Source: Brazilian Central Bank (BCB)"
-  ) +
-  theme_light() +
-  theme(legend.position = "bottom")
+  )
 ```
 
 The `category` argument allows for a more direct "query"; also, data is presented in "wide" format.
@@ -174,7 +207,7 @@ The FipeZap Index has many cities and subindices.
 ```{r}
 fipe <- get_rppi_fipezap()
 
-subfipe <- fipe |> 
+subfipe <- fipe |>
   filter(
     name_muni == "São Paulo",
     market == "residential",
@@ -195,7 +228,7 @@ The Bank for International Settlements compiles RPPIs from across the world. The
 ```{r}
 bis <- get_bis_rppi()
 
-subbis <- bis |> 
+subbis <- bis |>
   filter(
     date >= as.Date("2000-01-01"),
     reference_area %in% c("World", "Japan", "United States", "Brazil"),
@@ -207,5 +240,3 @@ ggplot(subbis, aes(x = date, y = value, color = reference_area)) +
   geom_line() +
   theme_light()
 ```
-
-
