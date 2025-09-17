@@ -2,53 +2,92 @@
 % Please edit documentation in R/get_bcb_series.R
 \name{get_bcb_series}
 \alias{get_bcb_series}
-\title{Download macroeconomic time-series from BCB.}
+\title{Download macroeconomic time-series from BCB}
 \source{
 \url{https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries}
 }
 \usage{
 get_bcb_series(
-  category = "all",
+  table = "all",
+  category = NULL,
   cached = FALSE,
   date_start = as.Date("2010-01-01"),
+  quiet = FALSE,
+  max_retries = 3L,
   ...
 )
 }
 \arguments{
-\item{category}{Defaults to \code{'all'}. See \code{details} for more options.}
+\item{table}{Character. Which dataset to return: "all" (default), "credit", "exchange",
+"government", "interest-rate", "real-estate", "price", or "production".}
 
-\item{cached}{Logical indicating}
+\item{category}{Character. Deprecated parameter name for backward compatibility.
+Use \code{table} instead.}
+
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
 
 \item{date_start}{A \code{Date} argument indicating the first period to extract
 from the time series. Defaults to 2010-01-01.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+BCB API calls. Defaults to 3.}
 
 \item{...}{Additional arguments passed to \code{GetBCBData::gbcbd_get_series}.}
 }
 \value{
 A 12-column \code{tibble} with all of the selected series from BCB.
+The tibble includes metadata attributes:
+\\describe{
+\\item{download_info}{List with download statistics}
+\\item{source}{Data source used (api or cache)}
+\\item{download_time}{Timestamp of download}
+}
 }
 \description{
 Download a compilation of macroeconomic time series data from the Brazilian
-Central Bank.
+Central Bank with modern error handling, progress reporting, and robust API access.
 }
 \details{
 Using default settings, this function downloads 140 key macroeconomic indicators
 such as prices indices, interest rates, credit indicators, etc. The full list
 of variables is gathered in the \code{bcb_metadata} table.
 
-A subset of the variables can be imported using the \code{category} argument. The
-available categories are: \code{'credit'}, \code{'exchange'}, \code{'government'},
+A subset of the variables can be imported using the \code{table} argument. The
+available tables are: \code{'credit'}, \code{'exchange'}, \code{'government'},
 \code{'interest-rate'}, \code{'real-estate'},\code{'price'}, and \code{'production'}.
 
 The default value for \code{date_start} is January 2010. While arbitrary, I advise
 against setting \code{date_start} to dates prior to July 1994. To download all
 available data the user can set a date such as \verb{as.Date("1900-01-01)}.
 }
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including BCB API access status and data processing steps.
+}
+
+\section{Error Handling}{
+
+The function includes retry logic for failed BCB API calls and robust
+error handling for metadata processing and data validation.
+}
+
 \examples{
 \dontrun{
-# Get price indicators
-prices <- get_bcb_series(category = "price")
+# Get price indicators (with progress)
+prices <- get_bcb_series(table = "price", quiet = FALSE)
+
 # Get all series
 bcb_series <- get_bcb_series(date_start = as.Date("2020-01-01"))
+
+# Use cached data for faster access
+cached_data <- get_bcb_series(cached = TRUE)
+
+# Check download metadata
+attr(prices, "download_info")
 }
 }

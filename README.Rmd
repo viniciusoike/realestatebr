@@ -22,6 +22,19 @@ The goal of realestatebr is to facilitate the access to reports and indicators o
 
 **Important**: This package is still under development but can already be installed. Feedback is welcome.
 
+## What's New in v0.2.0 🎉
+
+**Phase 1 Modernization Complete** - This major release modernizes all core functions with:
+
+- **🔧 Standardized API** - All functions now use `table` parameter (replacing `category`) with backward compatibility
+- **📊 Unified Data Access** - New `list_datasets()` and `get_dataset()` functions for easy data discovery
+- **🚀 Better Performance** - Robust error handling, retry logic, and progress reporting
+- **📈 New Data Sources** - CBIC construction materials data (cement, steel, production indices)
+- **🌐 Bilingual Support** - Automatic translation between Portuguese and English
+- **✅ Comprehensive Testing** - 35+ tests ensure reliability across all functions
+
+[See full changelog](NEWS.md) for complete details.
+
 ## Installation
 
 You can install the development version of realestatebr from [GitHub](https://github.com/) with:
@@ -31,31 +44,90 @@ You can install the development version of realestatebr from [GitHub](https://gi
 remotes::install_github("viniciusoike/realestatebr")
 ```
 
-## Downloading data
+## Getting Started
 
-To get the data use one of the `get_*` functions such as `get_abecip_indicators`. 
+### New Unified Interface (Recommended)
 
-```{r example}
+The package now provides a modern, unified interface for accessing all datasets:
+
+```{r example, eval=FALSE}
 library(realestatebr)
-# Import data from Abecip
-abecip <- get_abecip_indicators()
 
+# Discover available datasets
+datasets <- list_datasets()
+head(datasets)
+
+# Get dataset information
+info <- get_dataset_info("abecip_indicators")
+str(info$categories)
+
+# Get data with automatic fallback (GitHub cache → fresh download)
+abecip <- get_dataset("abecip_indicators")
 abecip
 ```
 
-Outputs will be either a named `list` of `tibbles` or a single `tibble`. All `get_*` functions have two arguments: `category` and `cached`. The `category` argument helps to filter the final result and will always default to `'all'`. The `cached` argument is a `logical` that indicates whether to download the data directly from this GitHub repository. This option will usually be faster.
+The unified interface provides several advantages:
 
-```{r}
-sbpe <- get_abecip_indicators(category = "sbpe")
+- **Automatic fallback**: Tries GitHub cache first, then fresh download if needed
+- **Consistent naming**: All datasets use standardized English column names
+- **Easy discovery**: Use `list_datasets()` to see all available data
+- **Category filtering**: Access specific parts of complex datasets
 
-sbpe
+```{r, eval=FALSE}
+# Get specific category only
+sbpe <- get_dataset("abecip_indicators", category = "sbpe")
+head(sbpe)
+
+# Force fresh download
+fresh_data <- get_dataset("bcb_realestate", source = "fresh")
+```
+
+### Legacy Functions (Still Supported)
+
+All existing `get_*` functions continue to work as before:
+
+```{r legacy, eval=FALSE}
+# Modern function interface (recommended)
+abecip_modern <- get_abecip_indicators(table = "sbpe", cached = TRUE)
+
+# Legacy interface still works with deprecation warning
+abecip_legacy <- get_abecip_indicators(category = "sbpe", cached = TRUE)
+
+head(abecip_modern)
+```
+
+## Available Datasets
+
+The package provides access to comprehensive Brazilian real estate data from multiple sources:
+
+| Dataset | Source | Description | Geography |
+|---------|--------|-------------|-----------|
+| `abecip_indicators` | ABECIP | Housing credit data (SBPE flows, units, home equity) | Brazil |
+| `abrainc_indicators` | ABRAINC/FIPE | Primary market indicators (launches, sales, business conditions) | Brazil (major cities) |
+| `bcb_realestate` | BCB | Real estate credit and market data | Brazil (by state) |
+| `secovi` | SECOVI-SP | São Paulo market indicators (fees, rentals, launches, sales) | São Paulo |
+| `bis_rppi` | BIS | International residential property price indices | International (60+ countries) |
+| `rppi` | FIPE/ZAP | Property price indices for sales and rentals | Brazil (50+ cities) |
+| `bcb_series` | BCB | Economic time series (price indices, credit, activity) | Brazil |
+| `b3_stocks` | B3 | Real estate company stock data | Brazil |
+| `fgv_indicators` | FGV | Real estate market indicators | Brazil |
+| `cbic` | CBIC | Construction materials data (cement, steel, production) | Brazil |
+
+```{r datasets, eval=FALSE}
+# See all available datasets with details
+available_data <- list_datasets()
+print(available_data[, c("name", "source", "frequency", "coverage")])
+
+# Filter by source
+bcb_datasets <- list_datasets(source = "BCB")
+print(bcb_datasets$name)
 ```
 
 ## Residential Property Price Indexes
 
 There are several house price indices available in the Brazilian residential real estate market. The `get_rppi_*` functions collect all of these indices. A general `get_rppi()` function
 
-```{r}
+```{r, eval=FALSE}
 # For better plots
 library(ggplot2)
 
@@ -72,7 +144,7 @@ ggplot(rppi_brazil, aes(date, acum12m)) +
 
 International comparisons are also possible using the BIS data
 
-```{r}
+```{r, eval=FALSE}
 library(dplyr, warn.conflicts = FALSE)
 # Download simplified BIS RPPI data
 bis <- get_rppi_bis()

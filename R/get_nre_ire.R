@@ -1,6 +1,7 @@
 #' Get the IRE Index
 #'
-#' Imports the Real Estate Index from NRE-Poli (USP)
+#' Imports the Real Estate Index from NRE-Poli (USP) with modern error handling
+#' and progress reporting capabilities.
 #'
 #' @details
 #' The Real Estate Index (IRE) tracks the average stock price of real estate
@@ -10,8 +11,26 @@
 #' The values are indexed (100 = May/2006). Check `return` for a definition of each
 #' column.
 #'
-#' @inheritParams get_secovi
+#' \strong{Note:} This function currently only supports cached data loading.
+#' Fresh data downloads are not available as the original data source requires
+#' manual processing.
 #'
+#' @section Progress Reporting:
+#' When `quiet = FALSE`, the function provides progress information
+#' about cache loading operations.
+#'
+#' @section Error Handling:
+#' The function includes robust error handling for cache access and
+#' provides informative error messages when data is unavailable.
+#'
+#' @param table Character. Which dataset to return: "indicators" (default) or "all".
+#' @param category Character. Deprecated parameter name for backward compatibility.
+#'   Use `table` instead.
+#' @param cached Logical. If `TRUE` (default), loads data from package cache
+#'   using the unified dataset architecture. This is currently the only
+#'   supported method for this dataset.
+#' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
+#'   If `FALSE` (default), provides detailed progress reporting.
 #'
 #' @return A tibble with 8 columns where:
 #' * `ire` is the IRE Index.
@@ -21,17 +40,115 @@
 #' * `ibov` is the Ibovespa Index.
 #' * `ibov_points` is the Ibovespa Index in points.
 #' * `ire_ibov` is the ratio of the IRE Index and the Ibovespa Index.
+#'
+#' The tibble includes metadata attributes:
+#' \describe{
+#'   \item{download_info}{List with access statistics}
+#'   \item{source}{Data source used (cache)}
+#'   \item{download_time}{Timestamp of access}
+#' }
+#'
 #' @export
+#' @importFrom cli cli_inform cli_warn cli_abort
 #' @source Original series and methodology available at [https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html](https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html).
-#' @examples
-#' # Import the IRE Index
-#' ire <- get_nre_ire()
-get_nre_ire <- function(cached = FALSE) {
+#'
+#' @examples \dontrun{
+#' # Import the IRE Index (with progress)
+#' ire <- get_nre_ire(quiet = FALSE)
+#'
+#' # Import quietly
+#' ire <- get_nre_ire(cached = TRUE, quiet = TRUE)
+#'
+#' # Check access metadata
+#' attr(ire, "download_info")
+#' }
+get_nre_ire <- function(
+  table = "indicators",
+  category = NULL,
+  cached = TRUE,
+  quiet = FALSE
+) {
+  # Input validation and backward compatibility ----
+  valid_tables <- c("indicators", "all")
 
-  if (cached) {
-    ire <- import_cached("ire")
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn(c(
+      "Parameter {.arg category} is deprecated",
+      "i" = "Use {.arg table} parameter instead",
+      ">" = "This will be removed in a future version"
+    ))
+    table <- category
   }
 
-  return(ire)
+  if (!is.character(table) || length(table) != 1) {
+    cli::cli_abort(c(
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
 
+  if (!table %in% valid_tables) {
+    cli::cli_abort(c(
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
+
+  if (!is.logical(cached) || length(cached) != 1) {
+    cli::cli_abort("{.arg cached} must be a logical value")
+  }
+
+  if (!is.logical(quiet) || length(quiet) != 1) {
+    cli::cli_abort("{.arg quiet} must be a logical value")
+  }
+
+  # This function currently only supports cached data
+  if (!cached) {
+    cli::cli_abort(c(
+      "Fresh data download not supported for NRE-IRE dataset",
+      "x" = "This dataset requires manual processing from the original source",
+      "i" = "Use {.code cached = TRUE} to access the most recent cached data",
+      "i" = "See function documentation for data source information"
+    ))
+  }
+
+  # Load cached data ----
+  if (!quiet) {
+    cli::cli_inform("Loading NRE-IRE index data from cache...")
+  }
+
+  tryCatch(
+    {
+      # Use new unified architecture for cached data
+      ire <- get_dataset("ire", source = "github")
+
+      if (!quiet) {
+        cli::cli_inform(
+          "Successfully loaded {nrow(ire)} NRE-IRE records from cache"
+        )
+      }
+
+      # Add metadata
+      attr(ire, "source") <- "cache"
+      attr(ire, "download_time") <- Sys.time()
+      attr(ire, "download_info") <- list(
+        table = table,
+        dataset = "ire",
+        source = "cache",
+        note = "Fresh downloads not supported - data requires manual processing"
+      )
+
+      return(ire)
+    },
+    error = function(e) {
+      cli::cli_abort(c(
+        "Failed to load NRE-IRE data from cache",
+        "x" = "Error: {e$message}",
+        "i" = "Ensure the package data is properly installed",
+        "i" = "Try reinstalling the package if the problem persists"
+      ))
+    }
+  )
 }

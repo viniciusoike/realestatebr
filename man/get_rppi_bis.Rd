@@ -4,11 +4,14 @@
 \alias{get_rppi_bis}
 \title{Get simplified RPPI data from BIS}
 \usage{
-get_rppi_bis(cached = FALSE)
+get_rppi_bis(cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts.}
 }
 \value{
 A cross-country \code{tibble} with RPPIs.
@@ -18,7 +21,12 @@ Download and import a simplified cross-country Residential Property Price
 Indices (RPPI) panel data from the Bank for International Settlements (BIS).
 }
 \details{
-This function is a wrapper around \code{get_bis_rppi_selected}. It simplifies the
+\strong{Deprecation Notice:} This function is deprecated in favor of
+\code{get_bis_rppi(category = "selected")} which provides the same functionality
+with modern error handling and progress reporting. This wrapper is maintained
+for backward compatibility but will be removed in a future version.
+
+This function is a wrapper around \code{get_bis_rppi()}. It simplifies the
 output by filtering out observations prior to 1980. All index values are
 centered in 2010. Both nominal and real series are available. Note that
 Brazilian data becomes available only after 2001.
@@ -27,6 +35,11 @@ The indexes follow the residential sales market in each country. Index
 methodologies may not be comparable.
 }
 \examples{
+\dontrun{
 # Download data from the GitHub Repository
 bis <- get_rppi_bis(cached = TRUE)
+
+# Recommended: Use the modern function instead
+bis <- get_bis_rppi(category = "selected", cached = TRUE)
+}
 }

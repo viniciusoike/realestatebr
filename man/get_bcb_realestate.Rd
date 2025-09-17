@@ -7,14 +7,25 @@
 \url{https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario}
 }
 \usage{
-get_bcb_realestate(category = "all", cached = FALSE)
+get_bcb_realestate(
+  category = "all",
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+)
 }
 \arguments{
-\item{category}{One of \code{'accounting'}, \code{'application'}, \code{'indices'},
+\item{category}{Character. One of \code{'accounting'}, \code{'application'}, \code{'indices'},
 \code{'sources'}, \code{'units'}, or \code{'all'} (default).}
 
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+API calls. Defaults to 3.}
 }
 \value{
 If \code{category = 'all'} returns a \code{tibble} with 13 columns where:
@@ -25,11 +36,19 @@ If \code{category = 'all'} returns a \code{tibble} with 13 columns where:
 \item \code{v1} to \code{v5}: elements of \code{series_info}.
 \item \code{value}: numeric value of the series.
 \item \code{abbrev_state}: two letter state abbreviation.
+
+The tibble includes metadata attributes:
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (api or cache)}
+\item{download_time}{Timestamp of download}
+}
 }
 }
 \description{
 Imports and cleans real estate data published monthly by the Brazilian Central
-Bank. Includes credit sources, credit applications, credit operations, financed
+Bank with modern error handling, progress reporting, and robust API access.
+Includes credit sources, credit applications, credit operations, financed
 units, real estate indices.
 }
 \details{
@@ -43,13 +62,31 @@ Other choices of \code{category} return a wide \code{tibble} with informative co
 names. Available options are: \code{'accounting'}, \code{'application'}, \code{'indices'},
 \code{'sources'}, \code{'units'}, or \code{'all'}.
 }
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including API access status and data processing steps.
+}
+
+\section{Error Handling}{
+
+The function includes retry logic for failed API calls and graceful fallback
+to cached data when API access fails. BCB API errors are handled with
+automatic retries and informative error messages.
+}
+
 \examples{
 \dontrun{
-# Download all data in long format
-bcb <- get_bcb_realestate()
+# Download all data in long format (with progress)
+bcb <- get_bcb_realestate(quiet = FALSE)
 
 # Get only data on financed units
 units <- get_bcb_realestate("units")
 
+# Use cached data for faster access
+cached_data <- get_bcb_realestate(cached = TRUE)
+
+# Check download metadata
+attr(units, "download_info")
 }
 }

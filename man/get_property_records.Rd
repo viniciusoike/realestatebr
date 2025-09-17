@@ -4,28 +4,67 @@
 \alias{get_property_records}
 \title{Get Property Records data for major cities}
 \usage{
-get_property_records(category = "all", cached = FALSE)
+get_property_records(
+  category = "all",
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+)
 }
 \arguments{
-\item{category}{One of \code{'capitals'}, \code{'aggregates'}, or \code{'all'} (default)}
+\item{category}{Character. One of \code{'capitals'}, \code{'aggregates'}, or \code{'all'} (default).}
 
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+downloads. Defaults to 3.}
 }
 \value{
-A named \code{list} with property records data
+A named \code{list} with property records data. The return includes
+metadata attributes:
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (web or cache)}
+\item{download_time}{Timestamp of download}
+}
 }
 \description{
 Imports and cleans the most up to date property transaction records available
-from Registro de Imoveis.
+from Registro de Imoveis with modern error handling, progress reporting,
+and robust download capabilities.
 }
+\details{
+This function scrapes download links from the Registro de Imoveis website
+and processes Excel files containing property transaction data. The function
+handles multiple data categories and includes comprehensive data cleaning.
+}
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including web scraping status, download progress, and data processing steps.
+}
+
+\section{Error Handling}{
+
+The function includes retry logic for failed downloads and robust error
+handling for web scraping and Excel processing operations.
+}
+
 \examples{
 \dontrun{
-# Get property records
-records <- get_property_records()
+# Get all property records (with progress)
+records <- get_property_records(quiet = FALSE)
 
 # Only for capitals and selected cities
 cities <- get_property_records("capitals")
 
+# Use cached data for faster access
+cached_records <- get_property_records(cached = TRUE)
+
+# Check download metadata
+attr(records, "download_info")
 }
 }

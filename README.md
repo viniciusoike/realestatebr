@@ -4,6 +4,7 @@
 # Brazilian Real Estate
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 The goal of realestatebr is to facilitate the access to reports and
@@ -13,6 +14,26 @@ encompass other real estate markets.
 
 **Important**: This package is still under development but can already
 be installed. Feedback is welcome.
+
+## What’s New in v0.2.0 🎉
+
+**Phase 1 Modernization Complete** - This major release modernizes all
+core functions with:
+
+- **🔧 Standardized API** - All functions now use `table` parameter
+  (replacing `category`) with backward compatibility
+- **📊 Unified Data Access** - New `list_datasets()` and `get_dataset()`
+  functions for easy data discovery
+- **🚀 Better Performance** - Robust error handling, retry logic, and
+  progress reporting
+- **📈 New Data Sources** - CBIC construction materials data (cement,
+  steel, production indices)
+- **🌐 Bilingual Support** - Automatic translation between Portuguese
+  and English
+- **✅ Comprehensive Testing** - 35+ tests ensure reliability across all
+  functions
+
+[See full changelog](NEWS.md) for complete details.
 
 ## Installation
 
@@ -24,104 +45,87 @@ You can install the development version of realestatebr from
 remotes::install_github("viniciusoike/realestatebr")
 ```
 
-## Downloading data
+## Getting Started
 
-To get the data use one of the `get_*` functions such as
-`get_abecip_indicators`.
+### New Unified Interface (Recommended)
+
+The package now provides a modern, unified interface for accessing all
+datasets:
 
 ``` r
 library(realestatebr)
-# Import data from Abecip
-abecip <- get_abecip_indicators()
-#> Downloading data from Abecip.
 
+# Discover available datasets
+datasets <- list_datasets()
+head(datasets)
+
+# Get dataset information
+info <- get_dataset_info("abecip_indicators")
+str(info$categories)
+
+# Get data with automatic fallback (GitHub cache → fresh download)
+abecip <- get_dataset("abecip_indicators")
 abecip
-#> $sbpe
-#> # A tibble: 504 × 15
-#>    date       sbpe_inflow sbpe_outflow sbpe_netflow sbpe_netflow_pct sbpe_yield
-#>    <date>           <dbl>        <dbl>        <dbl>            <dbl>      <dbl>
-#>  1 1982-01-01     238234.      261523.       -23289         -0.00939     417103
-#>  2 1982-02-01     224080.      161176.        62904          0.0219           0
-#>  3 1982-03-01     247219.      118663.       128556          0.0438           0
-#>  4 1982-04-01     264925.      378395.      -113470         -0.0370      485995
-#>  5 1982-05-01     227636.      137201.        90435          0.0263           0
-#>  6 1982-06-01     319539.      154800.       164739          0.0467           0
-#>  7 1982-07-01     396888.      496231.       -99343         -0.0269      642432
-#>  8 1982-08-01     435464.      300647.       134817          0.0318           0
-#>  9 1982-09-01     450127.      235290.       214837          0.0491           0
-#> 10 1982-10-01     553766.      796712.      -242946         -0.0530      957944
-#> # ℹ 494 more rows
-#> # ℹ 9 more variables: sbpe_stock <dbl>, rural_inflow <dbl>,
-#> #   rural_outflow <dbl>, rural_netflow <dbl>, rural_netflow_pct <dbl>,
-#> #   rural_yield <dbl>, rural_stock <dbl>, total_stock <dbl>,
-#> #   total_netflow <dbl>
-#> 
-#> $units
-#> # A tibble: 258 × 7
-#>    date       units_construction units_acquisition units_total
-#>    <date>                  <dbl>             <dbl>       <dbl>
-#>  1 2002-01-01                200              1455        1655
-#>  2 2002-02-01                483              1456        1939
-#>  3 2002-03-01               1049              1522        2571
-#>  4 2002-04-01                684              1723        2407
-#>  5 2002-05-01                571              1536        2107
-#>  6 2002-06-01               1109              1536        2645
-#>  7 2002-07-01                216              1706        1922
-#>  8 2002-08-01                506              1838        2344
-#>  9 2002-09-01               1698              1568        3266
-#> 10 2002-10-01                337              1687        2024
-#> # ℹ 248 more rows
-#> # ℹ 3 more variables: currency_construction <dbl>, currency_acquisition <dbl>,
-#> #   currency_total <dbl>
-#> 
-#> $cgi
-#> # A tibble: 74 × 8
-#>     year date       new_contracts stock_contracts       loan outstanding_balance
-#>    <dbl> <date>             <dbl>           <dbl>      <dbl>               <dbl>
-#>  1  2017 2017-01-01          1323          108661 181295778.         12725110368
-#>  2  2017 2017-02-01          1197          101825 157080758.         11120992240
-#>  3  2017 2017-03-01          1324           99712 195053012.         10598834209
-#>  4  2017 2017-04-01           809           99340 132217320.         10514921327
-#>  5  2017 2017-05-01           926          102869 174307187.         10385660359
-#>  6  2017 2017-06-01           982           98730 187235000.         10447518680
-#>  7  2017 2017-07-01           928           98359 193399742.         10352878117
-#>  8  2017 2017-08-01           905           97960 185871532.         10281067567
-#>  9  2017 2017-09-01           781           97438 156978364.         10213587373
-#> 10  2017 2017-10-01           808           96938 173597857.         10175771850
-#> # ℹ 64 more rows
-#> # ℹ 2 more variables: average_term <dbl>, default_rate <dbl>
 ```
 
-Outputs will be either a named `list` of `tibbles` or a single `tibble`.
-All `get_*` functions have two arguments: `category` and `cached`. The
-`category` argument helps to filter the final result and will always
-default to `'all'`. The `cached` argument is a `logical` that indicates
-whether to download the data directly from this GitHub repository. This
-option will usually be faster.
+The unified interface provides several advantages:
+
+- **Automatic fallback**: Tries GitHub cache first, then fresh download
+  if needed
+- **Consistent naming**: All datasets use standardized English column
+  names
+- **Easy discovery**: Use `list_datasets()` to see all available data
+- **Category filtering**: Access specific parts of complex datasets
 
 ``` r
-sbpe <- get_abecip_indicators(category = "sbpe")
-#> Downloading data from Abecip.
+# Get specific category only
+sbpe <- get_dataset("abecip_indicators", category = "sbpe")
+head(sbpe)
 
-sbpe
-#> # A tibble: 504 × 15
-#>    date       sbpe_inflow sbpe_outflow sbpe_netflow sbpe_netflow_pct sbpe_yield
-#>    <date>           <dbl>        <dbl>        <dbl>            <dbl>      <dbl>
-#>  1 1982-01-01     238234.      261523.       -23289         -0.00939     417103
-#>  2 1982-02-01     224080.      161176.        62904          0.0219           0
-#>  3 1982-03-01     247219.      118663.       128556          0.0438           0
-#>  4 1982-04-01     264925.      378395.      -113470         -0.0370      485995
-#>  5 1982-05-01     227636.      137201.        90435          0.0263           0
-#>  6 1982-06-01     319539.      154800.       164739          0.0467           0
-#>  7 1982-07-01     396888.      496231.       -99343         -0.0269      642432
-#>  8 1982-08-01     435464.      300647.       134817          0.0318           0
-#>  9 1982-09-01     450127.      235290.       214837          0.0491           0
-#> 10 1982-10-01     553766.      796712.      -242946         -0.0530      957944
-#> # ℹ 494 more rows
-#> # ℹ 9 more variables: sbpe_stock <dbl>, rural_inflow <dbl>,
-#> #   rural_outflow <dbl>, rural_netflow <dbl>, rural_netflow_pct <dbl>,
-#> #   rural_yield <dbl>, rural_stock <dbl>, total_stock <dbl>,
-#> #   total_netflow <dbl>
+# Force fresh download
+fresh_data <- get_dataset("bcb_realestate", source = "fresh")
+```
+
+### Legacy Functions (Still Supported)
+
+All existing `get_*` functions continue to work as before:
+
+``` r
+# Modern function interface (recommended)
+abecip_modern <- get_abecip_indicators(table = "sbpe", cached = TRUE)
+
+# Legacy interface still works with deprecation warning
+abecip_legacy <- get_abecip_indicators(category = "sbpe", cached = TRUE)
+
+head(abecip_modern)
+```
+
+## Available Datasets
+
+The package provides access to comprehensive Brazilian real estate data
+from multiple sources:
+
+| Dataset | Source | Description | Geography |
+|----|----|----|----|
+| `abecip_indicators` | ABECIP | Housing credit data (SBPE flows, units, home equity) | Brazil |
+| `abrainc_indicators` | ABRAINC/FIPE | Primary market indicators (launches, sales, business conditions) | Brazil (major cities) |
+| `bcb_realestate` | BCB | Real estate credit and market data | Brazil (by state) |
+| `secovi` | SECOVI-SP | São Paulo market indicators (fees, rentals, launches, sales) | São Paulo |
+| `bis_rppi` | BIS | International residential property price indices | International (60+ countries) |
+| `rppi` | FIPE/ZAP | Property price indices for sales and rentals | Brazil (50+ cities) |
+| `bcb_series` | BCB | Economic time series (price indices, credit, activity) | Brazil |
+| `b3_stocks` | B3 | Real estate company stock data | Brazil |
+| `fgv_indicators` | FGV | Real estate market indicators | Brazil |
+| `cbic` | CBIC | Construction materials data (cement, steel, production) | Brazil |
+
+``` r
+# See all available datasets with details
+available_data <- list_datasets()
+print(available_data[, c("name", "source", "frequency", "coverage")])
+
+# Filter by source
+bcb_datasets <- list_datasets(source = "BCB")
+print(bcb_datasets$name)
 ```
 
 ## Residential Property Price Indexes
@@ -145,8 +149,6 @@ ggplot(rppi_brazil, aes(date, acum12m)) +
   theme_light()
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
-
 International comparisons are also possible using the BIS data
 
 ``` r
@@ -167,5 +169,3 @@ ggplot(bis_brasil, aes(date, index)) +
   theme_light() +
   theme(legend.position = "top")
 ```
-
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />

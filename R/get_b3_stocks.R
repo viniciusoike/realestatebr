@@ -1,6 +1,7 @@
 #' Get Stock Prices
 #'
-#' Imports stock prices of Brazilian real estate players. Additionally, imports
+#' Imports stock prices of Brazilian real estate players with modern error handling,
+#' progress reporting, and robust download capabilities. Additionally, imports
 #' some relevant financial indices.
 #'
 #' @details
@@ -10,86 +11,257 @@
 #'
 #' By default uses `src = 'yahoo'`.
 #'
-#' @inheritParams get_secovi
+#' @section Progress Reporting:
+#' When `quiet = FALSE`, the function provides detailed progress information
+#' about financial data downloads and processing steps.
+#'
+#' @section Error Handling:
+#' The function includes retry logic for failed downloads and robust error
+#' handling for financial data access operations.
+#'
+#' @param table Character. Which dataset to return: "stocks" (default) or "all".
+#' @param category Character. Deprecated parameter name for backward compatibility.
+#'   Use `table` instead.
+#' @param cached Logical. If TRUE, loads data from package cache using the unified dataset architecture.
 #' @param symbol Optional character string with the stock tickers symbols. If
-#' none is provided uses all symbols in `b3_real_estate`.
+#'   none is provided uses all symbols in `b3_real_estate`.
 #' @param src Character string specifying sourcing method (defaults to `'yahoo'`).
-#' @param quiet Logical indicating if warnings should be printed to the console.
+#' @param quiet Logical. If TRUE, suppresses progress messages and warnings.
+#'   If FALSE (default), provides detailed progress reporting.
+#' @param max_retries Integer. Maximum number of retry attempts for failed
+#'   download operations. Defaults to 3.
 #' @param ... Additional arguments passed on to `quantmod::getSymbols`.
 #'
 #' @seealso [quantmod::getSymbols()]
 #'
 #' @return A `tibble` containing stock prices for all companies.
+#'   The tibble includes metadata attributes:
+#'   \describe{
+#'     \item{download_info}{List with download statistics}
+#'     \item{source}{Data source used (web or cache)}
+#'     \item{download_time}{Timestamp of download}
+#'   }
+#'
 #' @export
 #' @importFrom quantmod getSymbols
+#' @importFrom cli cli_inform cli_warn cli_abort cli_progress_bar
 #' @examples \dontrun{
+#' # Get all available companies (with progress)
+#' stocks <- get_b3_stocks(quiet = FALSE)
+#'
 #' # Get a specific company
-#' cyrela <- get_b3_stocks(symbol = "CYRE3.SA")
+#' cyrela <- get_b3_stocks(symbol = "CYRE3.SA", quiet = FALSE)
 #'
-#' # Get all available companies
-#' stocks <- get_b3_stocks()
+#' # Use cached data for faster access
+#' stocks <- get_b3_stocks(cached = TRUE)
 #'
+#' # Check download metadata
+#' attr(stocks, "download_info")
 #' }
-get_b3_stocks <- function(cached = FALSE, src = "yahoo", symbol = NULL, quiet = TRUE, ...) {
+get_b3_stocks <- function(
+  table = "stocks",
+  category = NULL,
+  cached = FALSE,
+  symbol = NULL,
+  src = "yahoo",
+  quiet = FALSE,
+  max_retries = 3L,
+  ...
+) {
+  # Input validation and backward compatibility ----
+  valid_tables <- c("stocks", "all")
 
-  # Download cached data
-  if (cached) {
-    stack <- import_cached("b3_stocks")
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn(c(
+      "Parameter {.arg category} is deprecated",
+      "i" = "Use {.arg table} parameter instead",
+      ">" = "This will be removed in a future version"
+    ))
+    table <- category
   }
 
-  # Download series using quantmod::getSymbols
+  if (!is.character(table) || length(table) != 1) {
+    cli::cli_abort(c(
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
 
-  # Stock Symbols
+  if (!table %in% valid_tables) {
+    cli::cli_abort(c(
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
 
+  if (!is.logical(cached) || length(cached) != 1) {
+    cli::cli_abort("{.arg cached} must be a logical value")
+  }
+
+  if (!is.logical(quiet) || length(quiet) != 1) {
+    cli::cli_abort("{.arg quiet} must be a logical value")
+  }
+
+  # Handle cached data ----
+  if (cached) {
+    if (!quiet) {
+      cli::cli_inform("Loading B3 stock data from cache...")
+    }
+
+    tryCatch({
+      # Use new unified architecture for cached data
+      stack <- get_dataset("b3_stocks", source = "github")
+
+      if (!quiet) {
+        cli::cli_inform(
+          "Successfully loaded {nrow(stack)} B3 stock records from cache"
+        )
+      }
+
+      # Add metadata
+      attr(stack, "source") <- "cache"
+      attr(stack, "download_time") <- Sys.time()
+      attr(stack, "download_info") <- list(
+        table = table,
+        source = "cache"
+      )
+
+      return(stack)
+    }, error = function(e) {
+      if (!quiet) {
+        cli::cli_warn(c(
+          "Failed to load B3 data from cache: {e$message}",
+          "i" = "Falling back to fresh download"
+        ))
+      }
+    })
+  }
+
+  # Validate and prepare symbols ----
   if (is.null(symbol)) {
     # Get real estate companies symbols
     symbol <- b3_real_estate$symbol
-    # Indexes
+    # Add relevant financial indices
     symbol <- c(symbol, "^BVSP", "^IBX50", "EWZ", "EEM", "DBC", "IFIX")
   } else {
-    stopifnot(is.character(symbol))
-    stopifnot(any(symbol %in% b3_real_estate$symbol))
+    if (!is.character(symbol)) {
+      cli::cli_abort("{.arg symbol} must be a character vector")
+    }
+    # Validate symbols against available options
+    available_symbols <- c(b3_real_estate$symbol, "^BVSP", "^IBX50", "EWZ", "EEM", "DBC", "IFIX")
+    if (!any(symbol %in% available_symbols)) {
+      cli::cli_abort(c(
+        "No valid symbols provided",
+        "x" = "None of the provided symbols are available",
+        "i" = "Available symbols in {.val b3_real_estate$symbol} and indices"
+      ))
+    }
   }
 
-  # Download series
-  message("Financial series: downloading.")
-
-  if (quiet) {
-    imob <- try(suppressWarnings(quantmod::getSymbols(symbol, src = src, ...)))
-  } else {
-    imob <- try(quantmod::getSymbols(symbol, src = src, ...))
+  # Download financial data with retry logic ----
+  if (!quiet) {
+    cli::cli_inform("Downloading {length(symbol)} financial series...")
+    cli::cli_progress_bar(
+      "Downloading",
+      total = 1,
+      format = "{cli::pb_name} {cli::pb_percent} [{cli::pb_bar}]"
+    )
   }
 
-  if (inherits(imob, "try-error")) {
-    stop("Error: failed to download series. Check internet connection or change provider.")
+  attempts <- 0
+  imob <- NULL
+
+  while (attempts <= max_retries && is.null(imob)) {
+    attempts <- attempts + 1
+
+    tryCatch({
+      if (quiet) {
+        imob <- suppressWarnings(quantmod::getSymbols(symbol, src = src, auto.assign = TRUE, ...))
+      } else {
+        imob <- quantmod::getSymbols(symbol, src = src, auto.assign = TRUE, ...)
+      }
+    }, error = function(e) {
+      if (attempts > max_retries) {
+        cli::cli_abort(c(
+          "Failed to download financial data after {max_retries} attempts",
+          "x" = "Error: {e$message}",
+          "i" = "Check your internet connection or try a different provider",
+          "i" = "Available providers: 'yahoo', 'google', 'FRED'"
+        ))
+      }
+
+      if (!quiet) {
+        cli::cli_warn("Download attempt {attempts} failed, retrying...")
+      }
+
+      # Exponential backoff
+      Sys.sleep(min(attempts * 1, 5))
+    })
   }
 
-  message("Financial series: download complete.")
+  if (!quiet) {
+    cli::cli_progress_done()
+    cli::cli_inform("Financial data download complete")
+  }
 
-  # Stack series
-  series <- mget(imob)
+  # Process downloaded data ----
+  if (!quiet) {
+    cli::cli_inform("Processing and standardizing data...")
+  }
 
-  # Convert from xts to tibble
-  # Helper function
-  xts_to_tibble <- function(x) {
+  # Get the downloaded series from the global environment
+  series <- mget(imob, envir = .GlobalEnv)
+
+  # Helper function to convert xts to tibble with standardized column names
+  convert_xts_to_tibble <- function(x) {
     # Convert xts to data.frame and then to tibble
     df <- data.frame(date = zoo::index(x), zoo::coredata(x))
-    tbl <- tidyr::as_tibble(df)
-    # Adjust column names
+    tbl <- tibble::as_tibble(df)
+
+    # Standardize column names
     col_names <- names(tbl)
-    # Removes symbols from column names, removes a trailing dot
+    # Remove symbol names from column names and clean up
     col_names <- stringr::str_remove_all(col_names, paste(symbol, collapse = "|"))
     col_names <- stringr::str_remove(col_names, "^\\.")
     col_names <- stringr::str_to_lower(col_names)
+
+    # Standardize column names for consistency across all downloads
+    col_names <- stringr::str_replace_all(
+      col_names,
+      c(
+        "^open$" = "price_open",
+        "^high$" = "price_high",
+        "^low$" = "price_low",
+        "^close$" = "price_close",
+        "^volume$" = "volume",
+        "^adjusted$" = "adjusted"
+      )
+    )
     names(tbl) <- col_names
 
     return(tbl)
-
   }
+
   # Convert all series to tibble and stack
-  series <- lapply(series, xts_to_tibble)
+  series <- lapply(series, convert_xts_to_tibble)
   stack <- dplyr::bind_rows(series, .id = "symbol")
 
-  return(stack)
+  # Add metadata attributes ----
+  attr(stack, "source") <- "web"
+  attr(stack, "download_time") <- Sys.time()
+  attr(stack, "download_info") <- list(
+    table = table,
+    total_records = nrow(stack),
+    symbols_downloaded = length(symbol),
+    retry_attempts = attempts,
+    source = src
+  )
 
+  if (!quiet) {
+    cli::cli_inform("Successfully processed {nrow(stack)} stock price records")
+  }
+
+  return(stack)
 }

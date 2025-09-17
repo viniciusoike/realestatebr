@@ -4,11 +4,17 @@
 \alias{get_rppi_igmi}
 \title{Get the IGMI Sales Index}
 \usage{
-get_rppi_igmi(cached = FALSE)
+get_rppi_igmi(cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+web scraping and download operations. Defaults to 3.}
 }
 \value{
 A \code{tibble} stacking data for all cities. The national IGMI-R is defined
@@ -18,9 +24,17 @@ as the series with \code{name_muni == 'Brazil'}.
 \item \code{chg} is the monthly change.
 \item \code{acum12m} is the year-on-year change.
 }
+
+The tibble includes metadata attributes:
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (web or cache)}
+\item{download_time}{Timestamp of download}
+}
 }
 \description{
-Imports the IGMI sales index for all cities available.
+Imports the IGMI sales index for all cities available with modern error
+handling, progress reporting, and robust Excel download and processing capabilities.
 }
 \details{
 The IGMI-R, or Residential Real Estate Index, is a hedonic sales index based on
@@ -30,7 +44,27 @@ Hedonic prices indices account for both composition bias and quality
 differentials across the housing stock. The index is maintained by Abecip in
 parternship with FGV.
 }
-\examples{
-# get_abecip_igmi()
+\section{Progress Reporting}{
 
+When \code{quiet = FALSE}, the function provides detailed progress information
+including web scraping, Excel download status, and data processing steps.
+}
+
+\section{Error Handling}{
+
+The function includes retry logic for failed web scraping and Excel download
+operations, with robust error handling for multi-city data processing.
+}
+
+\examples{
+\dontrun{
+# Get IGMI index (with progress)
+igmi <- get_rppi_igmi(quiet = FALSE)
+
+# Use cached data for faster access
+cached_data <- get_rppi_igmi(cached = TRUE)
+
+# Check download metadata
+attr(igmi, "download_info")
+}
 }

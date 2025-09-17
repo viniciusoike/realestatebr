@@ -8,4 +8,11 @@
 \description{
 This package offers a suite of functions that import real estate data from market reports in a convenient 'tidy' format in R.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://viniciusoike.github.io/realestatebr/}
+}
+
+}
 \keyword{internal}

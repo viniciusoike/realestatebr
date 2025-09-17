@@ -4,23 +4,46 @@
 \alias{get_rppi}
 \title{Get Residential Property Price Index Data}
 \usage{
-get_rppi(category = "sale", cached = FALSE, stack = FALSE)
+get_rppi(
+  table = "sale",
+  category = NULL,
+  cached = FALSE,
+  stack = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+)
 }
 \arguments{
-\item{category}{One of \code{'rent'} or \code{'sale'} (default).}
+\item{table}{Character. Which dataset to return: "sale" (default), "rent", or "all".}
+
+\item{category}{Character. Deprecated parameter name for backward compatibility.
+Use \code{table} instead.}
 
 \item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
 This is a faster option but not recommended for daily data.}
 
 \item{stack}{If \code{TRUE} returns a single \code{tibble} identified by a \code{source} column.
 If \code{FALSE} returns a named \code{list} (default).}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting across all sources.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+operations across all RPPI data sources. Defaults to 3.}
 }
 \value{
 Either a named \code{list} or a \code{tibble} (if \code{stack = TRUE}).
+The return includes metadata attributes when stacked:
+\\describe{
+\\item{download_info}{List with coordination statistics}
+\\item{source}{Data source coordination method}
+\\item{download_time}{Timestamp of coordination}
+}
 }
 \description{
-Quickly import all Residential Price Indexes in Brazil. This function returns
-a convenient standardized output.
+Quickly import all Residential Price Indexes in Brazil with modern error
+handling, progress reporting, and robust data coordination across multiple sources.
+This function returns a convenient standardized output.
 }
 \details{
 There are several residential property price indexes in Brazil. This function
@@ -31,13 +54,30 @@ accumulated variation in the index number.
 
 It's important to note the IQA Index is a raw price and not a index-number.
 }
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including coordination status across multiple RPPI data sources.
+}
+
+\section{Error Handling}{
+
+The function includes comprehensive error handling for coordinating multiple
+data sources and standardizing outputs across different RPPI functions.
+}
+
 \examples{
 \dontrun{
-# Get RPPI sales data
-sales <- get_rppi("sale")
+# Get RPPI sales data (with progress)
+sales <- get_rppi("sale", quiet = FALSE)
 
 # Get RPPI rent data
 rent <- get_rppi("rent")
 
+# Get stacked data for easier analysis
+all_data <- get_rppi("sale", stack = TRUE)
+
+# Check coordination metadata
+attr(all_data, "download_info")
 }
 }

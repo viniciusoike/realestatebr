@@ -7,34 +7,73 @@
 \url{https://data.bis.org/topics/RPP}
 }
 \usage{
-get_bis_rppi(category = "selected", cached = FALSE)
+get_bis_rppi(
+  table = "selected",
+  category = NULL,
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+)
 }
 \arguments{
-\item{category}{One of \code{selected} (default) or \code{detailed}.}
+\item{table}{Character. Which dataset to return: "selected" (default), "detailed", or "all".}
 
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{category}{Character. Deprecated parameter name for backward compatibility.
+Use \code{table} instead.}
+
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+Excel download operations. Defaults to 3.}
 }
 \value{
 A \code{tibble} or a named \code{list} with all RPPIs from BIS.
+The return includes metadata attributes:
+\\describe{
+\\item{download_info}{List with download statistics}
+\\item{source}{Data source used (web or cache)}
+\\item{download_time}{Timestamp of download}
+}
 }
 \description{
 Get the Residential Property Price Indices series from the Bank for
-International Settlements (BIS).
+International Settlements (BIS) with modern error handling, progress
+reporting, and robust Excel download capabilities.
 }
 \details{
-For the simple selected series select \code{category = 'selected'}. More information
+For the simple selected series select \code{table = 'selected'}. More information
 on these series is available at the \href{https://www.bis.org/statistics/pp_selected.htm}{BIS website}
 
-For the full detailed dataset select \code{category = 'detailed'}. More information
+For the full detailed dataset select \code{table = 'detailed'}. More information
 on these series is available at the \href{https://data.bis.org/topics/RPP}{BIS website}
+
+For all datasets select \code{table = 'all'} to return a list containing both datasets.
 }
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including Excel download status and data processing steps.
+}
+
+\section{Error Handling}{
+
+The function includes retry logic for failed Excel downloads and robust
+error handling for multi-sheet processing operations.
+}
+
 \examples{
 \dontrun{
-# Download selected RPPI data from BIS
-bis <- get_bis_rppi()
+# Download selected RPPI data from BIS (with progress)
+bis <- get_bis_rppi(quiet = FALSE)
 
 # For faster download time use cached data
-bis <- get_bis_rppi(category = "detailed", cached = TRUE)
+bis <- get_bis_rppi(table = "detailed", cached = TRUE)
+
+# Check download metadata
+attr(bis, "download_info")
 }
 }

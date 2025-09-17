@@ -1,18 +1,20 @@
 Package: realestatebr
 Type: Package
 Title: Import Brazilian Real Estate Data into R
-Version: 0.1.5
+Version: 0.2.0
 Author: Vinicius Oike Reginatto
 Maintainer: Vinicius Oike Reginatto <viniciusoike@gmail.com>
-Description: This package offers a suite of functions that import real estate 
+Description: This package offers a suite of functions that import real estate
     data from market reports in a convenient 'tidy' format in R.
 License: MIT + file LICENSE
+URL: https://viniciusoike.github.io/realestatebr/
 Encoding: UTF-8
 LazyData: true
-Depends: 
+Depends:
     R (>= 3.5)
 RoxygenNote: 7.3.3
-Imports: 
+Imports:
+    cli,
     dplyr,
     GetBCBData,
     glue,
@@ -27,14 +29,18 @@ Imports:
     rlang,
     rvest,
     stringr,
+    tibble,
     tidyr,
     tidyxl,
-    vroom,
     xml2,
+    yaml,
     zoo
 Roxygen: list(markdown = TRUE)
-Suggests: 
+Suggests:
     ggplot2,
     knitr,
-    rmarkdown
+    pkgdown,
+    rmarkdown,
+    scales,
+    RcppRoll
 VignetteBuilder: knitr

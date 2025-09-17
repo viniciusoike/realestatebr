@@ -1,15 +1,23 @@
 ## code to prepare `DATASET` dataset goes here
+library(dplyr)
 
 main_cities <- readr::read_rds("data-raw/main_cities.rds")
 
 code_main_cities <- unique(main_cities$code_muni)
 
 # Import city shapefile with official IBGE identifiers
-# dim_city <- geobr::read_municipality(year = 2020)
-# # Drop geometry
-# dim_city <- sf::st_drop_geometry(dim_city)
-# dim_city <- tibble::as_tibble(dim_city)
-# readr::write_csv(dim_city, "data-raw/dim_city.csv")
+dim_city <- geobr::read_municipality(year = 2020)
+# Drop geometry
+dim_city <- sf::st_drop_geometry(dim_city)
+dim_city <- tibble::as_tibble(dim_city)
+# Fix Espirito Santo state name
+
+dim_city <- dim_city |>
+  dplyr::mutate(
+    name_state = dplyr::if_else(code_state == 32, "Espírito Santo", name_state)
+  )
+
+readr::write_csv(dim_city, "data-raw/dim_city.csv")
 
 dim_city <- readr::read_csv("data-raw/dim_city.csv", show_col_types = FALSE)
 # Convert code_state to numeric
@@ -24,15 +32,28 @@ dim_city <- dim_city |>
     name_simplified = stringr::str_replace_all(name_simplified, " ", "_")
   )
 
-b3_real_estate <- readxl::read_excel(
+real_estate_symbols <- readxl::read_excel(
   "data-raw/b3_real_estate.xlsx",
-  range = "A2:C39",
-  col_names = c("symbol", "name", "name_short")
+  col_names = c(
+    "symbol",
+    "name",
+    "name_short",
+    "category",
+    "segment",
+    "mkt_value",
+    "is_ire",
+    "is_irebi",
+    "is_imob"
+  )
 )
+
+b3_real_estate <- real_estate_symbols |>
+  select(symbol, name, name_short, category, segment)
 
 usethis::use_data(main_cities, overwrite = TRUE)
 usethis::use_data(dim_city, overwrite = TRUE)
 usethis::use_data(b3_real_estate, overwrite = TRUE)
+usethis::use_data(real_estate_symbols, internal = TRUE, overwrite = TRUE)
 
 source("data-raw/abecip_cgi.R")
 source("data-raw/fgv_clean.R")
@@ -40,8 +61,26 @@ source("data-raw/fgv_clean.R")
 ire <- readxl::read_excel(
   "data-raw/nre_ire.xlsx",
   skip = 1,
-  col_types = c("date", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"),
-  col_names = c("date", "ire", "ire_r50_plus", "ire_bi", "ire_r50_minus", "ibov", "ibov_points", "ire_ibov")
+  col_types = c(
+    "date",
+    "numeric",
+    "numeric",
+    "numeric",
+    "numeric",
+    "numeric",
+    "numeric",
+    "numeric"
+  ),
+  col_names = c(
+    "date",
+    "ire",
+    "ire_r50_plus",
+    "ire_bi",
+    "ire_r50_minus",
+    "ibov",
+    "ibov_points",
+    "ire_ibov"
+  )
 )
 
 ire <- dplyr::mutate(ire, date = lubridate::ymd(date))

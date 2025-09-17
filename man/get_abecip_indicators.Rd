@@ -7,20 +7,41 @@
 \url{https://www.abecip.org.br}
 }
 \usage{
-get_abecip_indicators(category = "all", cached = FALSE)
+get_abecip_indicators(
+  table = "sbpe",
+  category = NULL,
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+)
 }
 \arguments{
-\item{category}{One of \code{'sbpe'}, \code{'units'}, \code{'cgi'} or \code{'all'} (default).}
+\item{table}{Character. One of \code{'sbpe'} (default), \code{'units'}, \code{'cgi'} or \code{'all'}.}
 
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{category}{Character. \strong{Deprecated}. Use \code{table} parameter instead.}
+
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+downloads. Defaults to 3.}
 }
 \value{
-Either a named \code{list} or a \code{tibble}.
+Either a named \code{list} (when table is \code{'all'}) or a \code{tibble}
+(for specific tables). The return includes metadata attributes:
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (web or cache)}
+\item{download_time}{Timestamp of download}
+}
 }
 \description{
 Downloads updated housing credit data from Abecip. Abecip represents the major
 financial institutions that integrate Brazil's finance housing system (SFH).
+Provides modern error handling, progress reporting, and robust download capabilities.
 }
 \details{
 This function returns three tables:
@@ -39,13 +60,31 @@ since January 2017. All columns are in absolute/nominal units except \code{defau
 is in percentage and \code{average_term} which is in months.
 }
 }
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including download status and data processing steps.
+}
+
+\section{Error Handling}{
+
+The function includes retry logic for failed downloads and graceful fallback
+to cached data when downloads fail. Web scraping errors are handled with
+automatic retries and informative error messages.
+}
+
 \examples{
 \dontrun{
-# SBPE financed units
+# Download all available data (with progress)
+all_data <- get_abecip_indicators(quiet = FALSE)
+
+# Get specific table
 units <- get_abecip_indicators("units")
 
-# Download all available data
-sbpe <- get_abecip_indicators()
+# Use cached data for faster access
+cached_data <- get_abecip_indicators(cached = TRUE)
 
+# Check download metadata
+attr(units, "download_info")
 }
 }

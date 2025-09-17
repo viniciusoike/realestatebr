@@ -7,11 +7,25 @@
 Original series and methodology available at \url{https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html}.
 }
 \usage{
-get_nre_ire(cached = FALSE)
+get_nre_ire(
+  table = "indicators",
+  category = NULL,
+  cached = TRUE,
+  quiet = FALSE
+)
 }
 \arguments{
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{table}{Character. Which dataset to return: "indicators" (default) or "all".}
+
+\item{category}{Character. Deprecated parameter name for backward compatibility.
+Use \code{table} instead.}
+
+\item{cached}{Logical. If \code{TRUE} (default), loads data from package cache
+using the unified dataset architecture. This is currently the only
+supported method for this dataset.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
 }
 \value{
 A tibble with 8 columns where:
@@ -24,9 +38,17 @@ A tibble with 8 columns where:
 \item \code{ibov_points} is the Ibovespa Index in points.
 \item \code{ire_ibov} is the ratio of the IRE Index and the Ibovespa Index.
 }
+
+The tibble includes metadata attributes:
+\describe{
+\item{download_info}{List with access statistics}
+\item{source}{Data source used (cache)}
+\item{download_time}{Timestamp of access}
+}
 }
 \description{
-Imports the Real Estate Index from NRE-Poli (USP)
+Imports the Real Estate Index from NRE-Poli (USP) with modern error handling
+and progress reporting capabilities.
 }
 \details{
 The Real Estate Index (IRE) tracks the average stock price of real estate
@@ -35,8 +57,32 @@ Group by the Polytechnich School of the University of São Paulo (NRE-Poli-USP).
 
 The values are indexed (100 = May/2006). Check \code{return} for a definition of each
 column.
+
+\strong{Note:} This function currently only supports cached data loading.
+Fresh data downloads are not available as the original data source requires
+manual processing.
 }
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides progress information
+about cache loading operations.
+}
+
+\section{Error Handling}{
+
+The function includes robust error handling for cache access and
+provides informative error messages when data is unavailable.
+}
+
 \examples{
-# Import the IRE Index
-ire <- get_nre_ire()
+\dontrun{
+# Import the IRE Index (with progress)
+ire <- get_nre_ire(quiet = FALSE)
+
+# Import quietly
+ire <- get_nre_ire(cached = TRUE, quiet = TRUE)
+
+# Check access metadata
+attr(ire, "download_info")
+}
 }

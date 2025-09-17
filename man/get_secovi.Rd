@@ -2,31 +2,68 @@
 % Please edit documentation in R/get_secovi.R
 \name{get_secovi}
 \alias{get_secovi}
-\title{Import data from Secovi-SP.}
+\title{Import data from Secovi-SP}
 \usage{
-get_secovi(category = "all", cached = FALSE)
+get_secovi(category = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{category}{One of \code{'condo'}, \code{'rent'}, \code{'launch'}, \code{'sale'} or \code{'all'}
+\item{category}{Character. One of \code{'condo'}, \code{'rent'}, \code{'launch'}, \code{'sale'} or \code{'all'}
 (default).}
 
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+web scraping operations. Defaults to 3.}
 }
 \value{
-A \code{tibble}
+A \code{tibble} with SECOVI-SP real estate data. The return includes
+metadata attributes:
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (web or cache)}
+\item{download_time}{Timestamp of download}
+}
 }
 \description{
 Download and clean real estate information from Sao Paulo (SP) made available
-by SECOVI-SP.
+by SECOVI-SP with modern error handling, progress reporting, and robust
+web scraping capabilities.
 }
+\details{
+This function scrapes real estate data from SECOVI-SP website including
+condominium fees, rental market data, launches, and sales information.
+The function handles parallel processing for data cleaning while maintaining
+progress reporting.
+}
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including web scraping status and data processing steps, even during
+parallel operations.
+}
+
+\section{Error Handling}{
+
+The function includes retry logic for failed web scraping attempts and
+robust error handling for parallel data processing operations.
+}
+
 \examples{
 \dontrun{
-# Download all available data
-secovi <- get_secovi_sp()
+# Download all available data (with progress)
+secovi <- get_secovi(quiet = FALSE)
 
 # Download only a specific series
-sales <- get_secovi_sp("sale")
+sales <- get_secovi("sale")
 
+# Use cached data for faster access
+cached_data <- get_secovi(cached = TRUE)
+
+# Check download metadata
+attr(sales, "download_info")
 }
 }

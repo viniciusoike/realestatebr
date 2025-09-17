@@ -1,0 +1,72 @@
+url: https://viniciusoike.github.io/realestatebr/
+template:
+  bootstrap: 5
+
+development:
+  mode: auto
+
+home:
+  title: realestatebr - Brazilian Real Estate Data in R
+  description: >
+    Import Brazilian real estate data from multiple sources into R with 
+    a unified, tidy interface. Access data from BCB, B3, FIPE, SECOVI, 
+    ABRAINC, ABECIP, and international sources like BIS.
+
+navbar:
+  structure:
+    left: [intro, reference, articles, tutorials]
+    right: [search, github]
+  components:
+    home:
+      icon: fa-home fa-lg
+      href: index.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    articles:
+      text: Articles
+      menu:
+      - text: Getting Started
+        href: articles/getting-started.html
+    github:
+      icon: fab fa-github fa-lg
+      href: https://github.com/viniciusoike/realestatebr
+      aria-label: GitHub
+
+reference:
+- title: "Unified Architecture"
+  desc: "New unified interface for accessing all datasets"
+  contents:
+  - list_datasets
+  - get_dataset
+  - get_dataset_info
+
+- title: "Data Sources"
+  desc: "Functions to get data from specific sources"
+  contents:
+  - starts_with("get_")
+  - -get_dataset
+  - -get_dataset_info
+
+- title: "Cache Management"
+  desc: "Functions for managing cached data"
+  contents:
+  - import_cached
+  - get_cache_path
+  - check_cache_status
+
+- title: "Internal Data"
+  desc: "Package datasets and metadata"
+  contents:
+  - has_keyword("datasets")
+
+articles:
+- title: Getting Started
+  navbar: ~
+  contents:
+  - getting-started
+
+footer:
+  structure:
+    left: developed_by
+    right: built_with

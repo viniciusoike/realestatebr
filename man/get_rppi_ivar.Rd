@@ -4,11 +4,17 @@
 \alias{get_rppi_ivar}
 \title{Get the IVAR rent Index}
 \usage{
-get_rppi_ivar(cached = FALSE)
+get_rppi_ivar(cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+data processing operations. Defaults to 3.}
 }
 \value{
 A \code{tibble} stacking data for all cities. The national IVAR is defined
@@ -18,9 +24,17 @@ as the series with \code{name_muni == 'Brazil'}.
 \item \code{chg} is the monthly change.
 \item \code{acum12m} is the year-on-year change.
 }
+
+The tibble includes metadata attributes:
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (web or cache)}
+\item{download_time}{Timestamp of download}
+}
 }
 \description{
-Imports the IVAR rent index for all cities available.
+Imports the IVAR rent index for all cities available with modern
+error handling, progress reporting, and robust data processing capabilities.
 }
 \details{
 The IVAR, or Residential Rent Variation Index, is a repeat-rent index, meaning
@@ -33,12 +47,32 @@ Although other price indices such as the IGP-M are commonly used in rental
 contracts in Brazil, the IVAR is theoretically more appropriate since it
 measures only rent prices.
 }
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including data processing and calculation steps.
+}
+
+\section{Error Handling}{
+
+The function includes robust error handling for data processing operations
+and validation of required data dependencies.
+}
+
 \examples{
-# Get the IVAR index
-ivar <- get_rppi_ivar()
+\dontrun{
+# Get the IVAR index (with progress)
+ivar <- get_rppi_ivar(quiet = FALSE)
 
 # Subset national index
 brasil <- subset(ivar, name_muni == "Brazil")
+
+# Use cached data for faster access
+cached_data <- get_rppi_ivar(cached = TRUE)
+
+# Check download metadata
+attr(ivar, "download_info")
+}
 }
 \seealso{
 \code{\link[=get_rppi]{get_rppi()}}
