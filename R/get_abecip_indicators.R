@@ -28,7 +28,8 @@
 #' to cached data when downloads fail. Web scraping errors are handled with
 #' automatic retries and informative error messages.
 #'
-#' @param category Character. One of `'sbpe'`, `'units'`, `'cgi'` or `'all'` (default).
+#' @param table Character. One of `'sbpe'` (default), `'units'`, `'cgi'` or `'all'`.
+#' @param category Character. **Deprecated**. Use `table` parameter instead.
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
 #'   using the unified dataset architecture.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
@@ -36,8 +37,8 @@
 #' @param max_retries Integer. Maximum number of retry attempts for failed
 #'   downloads. Defaults to 3.
 #'
-#' @return Either a named `list` (when category is `'all'`) or a `tibble`
-#'   (for specific categories). The return includes metadata attributes:
+#' @return Either a named `list` (when table is `'all'`) or a `tibble`
+#'   (for specific tables). The return includes metadata attributes:
 #'   \describe{
 #'     \item{download_info}{List with download statistics}
 #'     \item{source}{Data source used (web or cache)}
@@ -57,7 +58,7 @@
 #' # Download all available data (with progress)
 #' all_data <- get_abecip_indicators(quiet = FALSE)
 #'
-#' # Get specific category
+#' # Get specific table
 #' units <- get_abecip_indicators("units")
 #'
 #' # Use cached data for faster access
@@ -67,25 +68,32 @@
 #' attr(units, "download_info")
 #' }
 get_abecip_indicators <- function(
-  category = "all",
+  table = "sbpe",
+  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Input validation ----
-  valid_categories <- c("sbpe", "cgi", "units", "all")
+  # Input validation and backward compatibility ----
+  valid_tables <- c("sbpe", "cgi", "units", "all")
 
-  if (!is.character(category) || length(category) != 1) {
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn("The 'category' parameter is deprecated. Use 'table' instead.")
+    table <- category
+  }
+
+  if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
-      "Invalid {.arg category} parameter",
-      "x" = "{.arg category} must be a single character string"
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string"
     ))
   }
 
-  if (!category %in% valid_categories) {
+  if (!table %in% valid_tables) {
     cli::cli_abort(c(
-      "Invalid category: {.val {category}}",
-      "i" = "Valid categories: {.val {valid_categories}}"
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
     ))
   }
 
@@ -109,11 +117,11 @@ get_abecip_indicators <- function(
 
     tryCatch(
       {
-        # Map category to unified architecture
-        if (category == "all") {
+        # Map table to unified architecture
+        if (table == "all") {
           data <- get_dataset("abecip_indicators", source = "github")
         } else {
-          data <- get_dataset("abecip_indicators", source = "github", category = category)
+          data <- get_dataset("abecip_indicators", source = "github", category = table)
         }
 
         if (!quiet) {
@@ -125,7 +133,7 @@ get_abecip_indicators <- function(
         attr(data, "download_time") <- Sys.time()
         attr(data, "download_info") <- list(
           source = "cache",
-          category = category
+          category = table
         )
 
         return(data)
@@ -150,27 +158,27 @@ get_abecip_indicators <- function(
   abecip <- NULL
   download_info <- list(
     source = "web",
-    category = category,
+    category = table,
     attempts = 0,
     errors = character()
   )
 
   # Download based on category
-  if (category == "sbpe") {
+  if (table == "sbpe") {
     abecip <- download_abecip_sbpe(
       quiet = quiet,
       max_retries = max_retries
     )
   }
 
-  if (category == "units") {
+  if (table == "units") {
     abecip <- download_abecip_units(
       quiet = quiet,
       max_retries = max_retries
     )
   }
 
-  if (category == "cgi") {
+  if (table == "cgi") {
     # CGI data is currently static
     abecip <- abecip_cgi
     if (!quiet) {
@@ -178,7 +186,7 @@ get_abecip_indicators <- function(
     }
   }
 
-  if (category == "all") {
+  if (table == "all") {
     if (!quiet) {
       cli::cli_progress_bar(
         name = "Downloading all Abecip datasets",

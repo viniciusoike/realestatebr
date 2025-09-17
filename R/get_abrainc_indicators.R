@@ -36,8 +36,8 @@
 #' to cached data when downloads fail. Excel download errors are handled with
 #' automatic retries and informative error messages.
 #'
-#' @param category Character. One of `'all'` (default), `'indicator'`, `'radar'`, or
-#'   `'leading'`.
+#' @param table Character. One of `'indicator'` (default), `'radar'`, `'leading'`, or `'all'`.
+#' @param category Character. **Deprecated**. Use `table` parameter instead.
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
 #'   using the unified dataset architecture.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
@@ -45,8 +45,8 @@
 #' @param max_retries Integer. Maximum number of retry attempts for failed
 #'   downloads. Defaults to 3.
 #'
-#' @return Either a named `list` (when category is `'all'`) or a `tibble`
-#'   (for specific categories). The return includes metadata attributes:
+#' @return Either a named `list` (when table is `'all'`) or a `tibble`
+#'   (for specific tables). The return includes metadata attributes:
 #'   \describe{
 #'     \item{download_info}{List with download statistics}
 #'     \item{source}{Data source used (web or cache)}
@@ -66,7 +66,7 @@
 #' all_data <- get_abrainc_indicators(quiet = FALSE)
 #'
 #' # Get only the Radar data
-#' radar <- get_abrainc_indicators(category = "radar")
+#' radar <- get_abrainc_indicators(table = "radar")
 #'
 #' # Use cached data for faster access
 #' cached_data <- get_abrainc_indicators(cached = TRUE)
@@ -75,25 +75,32 @@
 #' attr(radar, "download_info")
 #' }
 get_abrainc_indicators <- function(
-  category = "all",
+  table = "indicator",
+  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Input validation ----
-  valid_categories <- c("all", "indicator", "radar", "leading")
+  # Input validation and backward compatibility ----
+  valid_tables <- c("all", "indicator", "radar", "leading")
 
-  if (!is.character(category) || length(category) != 1) {
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn("The 'category' parameter is deprecated. Use 'table' instead.")
+    table <- category
+  }
+
+  if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
-      "Invalid {.arg category} parameter",
-      "x" = "{.arg category} must be a single character string"
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string"
     ))
   }
 
-  if (!category %in% valid_categories) {
+  if (!table %in% valid_tables) {
     cli::cli_abort(c(
-      "Invalid category: {.val {category}}",
-      "i" = "Valid categories: {.val {valid_categories}}"
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
     ))
   }
 
@@ -118,13 +125,13 @@ get_abrainc_indicators <- function(
     tryCatch(
       {
         # Map category to unified architecture
-        if (category == "all") {
+        if (table == "all") {
           data <- get_dataset("abrainc_indicators", source = "github")
         } else {
           data <- get_dataset(
             "abrainc_indicators",
             source = "github",
-            category = category
+            category = table
           )
         }
 
@@ -138,7 +145,7 @@ get_abrainc_indicators <- function(
         attr(data, "source") <- "cache"
         attr(data, "download_time") <- Sys.time()
         attr(data, "download_info") <- list(
-          category = category,
+          category = table,
           source = "cache"
         )
 
@@ -184,7 +191,7 @@ get_abrainc_indicators <- function(
 
   # Helper function to import the data from the spreadsheet
   import_abrainc <- function(category) {
-    if (category == "all") {
+    if (table == "all") {
       sheet_name <- vl
     } else {
       sheet_name <- vl[[category]]
@@ -207,7 +214,7 @@ get_abrainc_indicators <- function(
   # Clean all sheets
 
   # Name each element of the list
-  if (category == "all") {
+  if (table == "all") {
     category <- names(vl)
   }
   names(abrainc) <- category
@@ -226,7 +233,7 @@ get_abrainc_indicators <- function(
   attr(out, "source") <- "web"
   attr(out, "download_time") <- Sys.time()
   attr(out, "download_info") <- list(
-    category = category,
+    category = table,
     retry_attempts = download_result$attempts,
     source = "web"
   )
@@ -375,7 +382,7 @@ clean_abrainc <- function(ls, category) {
   # Clean the tibble
   clean_df <- abrainc_basic_clean(df, subcategories[[category]])
 
-  if (category == "indicator") {
+  if (table == "indicator") {
     # Join final table with labels for variables
     clean_df <- dplyr::left_join(
       clean_df,
@@ -384,7 +391,7 @@ clean_abrainc <- function(ls, category) {
     )
   }
 
-  if (category == "leading") {
+  if (table == "leading") {
     clean_df <- clean_df |>
       # Fix the Zone column and join with variable labels
       dplyr::mutate(
@@ -394,7 +401,7 @@ clean_abrainc <- function(ls, category) {
       dplyr::left_join(labels, by = dplyr::join_by(variable))
   }
 
-  if (category == "radar") {
+  if (table == "radar") {
     clean_df <- clean_df |>
       # Compute yearly averages for categories and variables
       dplyr::mutate(

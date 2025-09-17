@@ -217,9 +217,15 @@ get_from_legacy_function <- function(name, dataset_info, category, date_start, d
   # Build arguments for legacy function
   args <- list(...)
   
-  # Add category if provided and function supports it
+  # Add category/table parameter based on function requirements
   if (!is.null(category)) {
-    args$category <- category
+    if (legacy_function %in% c("get_abecip_indicators", "get_abrainc_indicators")) {
+      args$table <- category
+    } else if (legacy_function == "get_rppi") {
+      args$category <- category
+    } else if (supports_category_all(legacy_function)) {
+      args$category <- category
+    }
   } else if (supports_category_all(legacy_function)) {
     args$category <- "all"
   }
