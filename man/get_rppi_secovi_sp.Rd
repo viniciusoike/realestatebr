@@ -4,11 +4,14 @@
 \alias{get_rppi_secovi_sp}
 \title{Get the Secovi-SP Rent Index}
 \usage{
-get_rppi_secovi_sp(cached = FALSE)
+get_rppi_secovi_sp(cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts.}
 }
 \value{
 A \code{tibble} with the Secovi Rent Index where:
@@ -19,5 +22,6 @@ A \code{tibble} with the Secovi Rent Index where:
 }
 }
 \description{
-Imports the Secovi-SP rent index for São Paulo.
+Imports the Secovi-SP rent index for São Paulo with modern error handling
+and progress reporting capabilities.
 }

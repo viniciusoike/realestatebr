@@ -4,14 +4,20 @@
 \alias{get_rppi_fipezap}
 \title{Get the FipeZap RPPI}
 \usage{
-get_rppi_fipezap(city = "all", cached = FALSE)
+get_rppi_fipezap(city = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
 \arguments{
 \item{city}{Either the name of the city or \code{'all'} (default). If the chosen
 city name is not available the full table will be returned.}
 
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+Excel download operations. Defaults to 3.}
 }
 \value{
 A \code{tibble} with RPPI data for all selected cities where:
@@ -23,9 +29,17 @@ A \code{tibble} with RPPI data for all selected cities where:
 }
 
 The national index is defined as the series with \code{name_muni == 'Índice Fipezap+'}.
+
+The tibble includes metadata attributes:
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (web or cache)}
+\item{download_time}{Timestamp of download}
+}
 }
 \description{
-Import residential and commercial prices indices from FipeZap
+Import residential and commercial prices indices from FipeZap with modern
+error handling, progress reporting, and robust Excel download capabilities.
 }
 \details{
 The FipeZap Index is a monthly median stratified index calculated across several
@@ -39,17 +53,32 @@ The residential Index includes only apartments and similar units such as studios
 Choosing a specific city will only filter the final results and will not save
 processing/downloading time.
 }
-\examples{
-\dontrun{ if (interactive) {
+\section{Progress Reporting}{
 
-# Get all the available indices
-# fz <- get_rppi_fipezap()
+When \code{quiet = FALSE}, the function provides detailed progress information
+including Excel download status and data processing steps for multiple sheets.
+}
+
+\section{Error Handling}{
+
+The function includes retry logic for failed Excel downloads and robust
+error handling for multi-sheet Excel processing operations.
+}
+
+\examples{
+\dontrun{
+# Get all the available indices (with progress)
+fz <- get_rppi_fipezap(quiet = FALSE)
 
 # Get all indices available for Porto Alegre
-# poa <- get_rppi_fipezap(city = "Porto Alegre")
+poa <- get_rppi_fipezap(city = "Porto Alegre")
 
-}}
+# Use cached data for faster access
+cached_data <- get_rppi_fipezap(cached = TRUE)
 
+# Check download metadata
+attr(fz, "download_info")
+}
 }
 \seealso{
 \code{\link[=get_rppi]{get_rppi()}}

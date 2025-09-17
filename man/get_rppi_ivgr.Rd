@@ -4,22 +4,36 @@
 \alias{get_rppi_ivgr}
 \title{Get the IVGR Sales Index}
 \usage{
-get_rppi_ivgr(cached = FALSE)
+get_rppi_ivgr(cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
-This is a faster option but not recommended for daily data.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+BCB API calls. Defaults to 3.}
 }
 \value{
-A \code{tibble} with the IVAR Index where:
+A \code{tibble} with the IVGR Index where:
 \itemize{
 \item \code{index} is the index-number.
 \item \code{chg} is the monthly change.
 \item \code{acum12m} is the year-on-year change.
 }
+
+The tibble includes metadata attributes:
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (api or cache)}
+\item{download_time}{Timestamp of download}
+}
 }
 \description{
-Imports the IVG-R sales index
+Imports the IVG-R sales index with modern error handling, progress reporting,
+and robust BCB API access capabilities.
 }
 \details{
 The IVG-R, or Residential Real Estate Collateral Value Index, is a monthly median
@@ -32,8 +46,29 @@ applied to each city. The IVG-R is a weighted average of these price trends.
 Median property price indices suffer from composition bias and cannot account
 for quality changes across the housing stock.
 }
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including BCB API access status and data processing steps.
+}
+
+\section{Error Handling}{
+
+The function includes retry logic for failed BCB API calls and robust
+error handling for data processing operations.
+}
+
 \examples{
-ivgr <- get_rppi_ivgr()
+\dontrun{
+# Get IVGR index (with progress)
+ivgr <- get_rppi_ivgr(quiet = FALSE)
+
+# Use cached data for faster access
+cached_data <- get_rppi_ivgr(cached = TRUE)
+
+# Check download metadata
+attr(ivgr, "download_info")
+}
 }
 \references{
 Banco Central do Brasil (2018) "Índice de Valores de Garantia de Imóveis Residenciais Financiados (IVG-R). Seminário de Metodologia do IBGE."

@@ -8,14 +8,17 @@
 }
 \usage{
 get_abecip_indicators(
-  category = "all",
+  table = "sbpe",
+  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 )
 }
 \arguments{
-\item{category}{Character. One of \code{'sbpe'}, \code{'units'}, \code{'cgi'} or \code{'all'} (default).}
+\item{table}{Character. One of \code{'sbpe'} (default), \code{'units'}, \code{'cgi'} or \code{'all'}.}
+
+\item{category}{Character. \strong{Deprecated}. Use \code{table} parameter instead.}
 
 \item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
 using the unified dataset architecture.}
@@ -27,8 +30,8 @@ If \code{FALSE} (default), provides detailed progress reporting.}
 downloads. Defaults to 3.}
 }
 \value{
-Either a named \code{list} (when category is \code{'all'}) or a \code{tibble}
-(for specific categories). The return includes metadata attributes:
+Either a named \code{list} (when table is \code{'all'}) or a \code{tibble}
+(for specific tables). The return includes metadata attributes:
 \describe{
 \item{download_info}{List with download statistics}
 \item{source}{Data source used (web or cache)}
@@ -75,7 +78,7 @@ automatic retries and informative error messages.
 # Download all available data (with progress)
 all_data <- get_abecip_indicators(quiet = FALSE)
 
-# Get specific category
+# Get specific table
 units <- get_abecip_indicators("units")
 
 # Use cached data for faster access

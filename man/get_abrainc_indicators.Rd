@@ -8,15 +8,17 @@ Abrainc-Fipe available at \url{https://www.fipe.org.br/pt-br/indices/abrainc}
 }
 \usage{
 get_abrainc_indicators(
-  category = "all",
+  table = "indicator",
+  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 )
 }
 \arguments{
-\item{category}{Character. One of \code{'all'} (default), \code{'indicator'}, \code{'radar'}, or
-\code{'leading'}.}
+\item{table}{Character. One of \code{'indicator'} (default), \code{'radar'}, \code{'leading'}, or \code{'all'}.}
+
+\item{category}{Character. \strong{Deprecated}. Use \code{table} parameter instead.}
 
 \item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
 using the unified dataset architecture.}
@@ -28,8 +30,8 @@ If \code{FALSE} (default), provides detailed progress reporting.}
 downloads. Defaults to 3.}
 }
 \value{
-Either a named \code{list} (when category is \code{'all'}) or a \code{tibble}
-(for specific categories). The return includes metadata attributes:
+Either a named \code{list} (when table is \code{'all'}) or a \code{tibble}
+(for specific tables). The return includes metadata attributes:
 \describe{
 \item{download_info}{List with download statistics}
 \item{source}{Data source used (web or cache)}
@@ -82,7 +84,7 @@ automatic retries and informative error messages.
 all_data <- get_abrainc_indicators(quiet = FALSE)
 
 # Get only the Radar data
-radar <- get_abrainc_indicators(category = "radar")
+radar <- get_abrainc_indicators(table = "radar")
 
 # Use cached data for faster access
 cached_data <- get_abrainc_indicators(cached = TRUE)

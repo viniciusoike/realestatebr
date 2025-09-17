@@ -15,6 +15,26 @@ encompass other real estate markets.
 **Important**: This package is still under development but can already
 be installed. Feedback is welcome.
 
+## What’s New in v0.2.0 🎉
+
+**Phase 1 Modernization Complete** - This major release modernizes all
+core functions with:
+
+- **🔧 Standardized API** - All functions now use `table` parameter
+  (replacing `category`) with backward compatibility
+- **📊 Unified Data Access** - New `list_datasets()` and `get_dataset()`
+  functions for easy data discovery
+- **🚀 Better Performance** - Robust error handling, retry logic, and
+  progress reporting
+- **📈 New Data Sources** - CBIC construction materials data (cement,
+  steel, production indices)
+- **🌐 Bilingual Support** - Automatic translation between Portuguese
+  and English
+- **✅ Comprehensive Testing** - 35+ tests ensure reliability across all
+  functions
+
+[See full changelog](NEWS.md) for complete details.
+
 ## Installation
 
 You can install the development version of realestatebr from
@@ -71,10 +91,13 @@ fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 All existing `get_*` functions continue to work as before:
 
 ``` r
-# Legacy interface still works
+# Modern function interface (recommended)
+abecip_modern <- get_abecip_indicators(table = "sbpe", cached = TRUE)
+
+# Legacy interface still works with deprecation warning
 abecip_legacy <- get_abecip_indicators(category = "sbpe", cached = TRUE)
 
-sbpe
+head(abecip_modern)
 ```
 
 ## Available Datasets
