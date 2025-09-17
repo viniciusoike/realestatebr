@@ -8,8 +8,8 @@
 #' such as prices indices, interest rates, credit indicators, etc. The full list
 #' of variables is gathered in the `bcb_metadata` table.
 #'
-#' A subset of the variables can be imported using the `category` argument. The
-#' available categories are: `'credit'`, `'exchange'`, `'government'`,
+#' A subset of the variables can be imported using the `table` argument. The
+#' available tables are: `'credit'`, `'exchange'`, `'government'`,
 #' `'interest-rate'`, `'real-estate'`,`'price'`, and `'production'`.
 #'
 #' The default value for `date_start` is January 2010. While arbitrary, I advise
@@ -24,7 +24,10 @@
 #' The function includes retry logic for failed BCB API calls and robust
 #' error handling for metadata processing and data validation.
 #'
-#' @param category Defaults to `'all'`. See `details` for more options.
+#' @param table Character. Which dataset to return: "all" (default), "credit", "exchange",
+#'   "government", "interest-rate", "real-estate", "price", or "production".
+#' @param category Character. Deprecated parameter name for backward compatibility.
+#'   Use `table` instead.
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
 #'   using the unified dataset architecture.
 #' @param date_start A `Date` argument indicating the first period to extract
@@ -50,7 +53,7 @@
 #'
 #' @examples \dontrun{
 #' # Get price indicators (with progress)
-#' prices <- get_bcb_series(category = "price", quiet = FALSE)
+#' prices <- get_bcb_series(table = "price", quiet = FALSE)
 #'
 #' # Get all series
 #' bcb_series <- get_bcb_series(date_start = as.Date("2020-01-01"))
@@ -62,14 +65,25 @@
 #' attr(prices, "download_info")
 #' }
 get_bcb_series <- function(
-  category = "all",
+  table = "all",
+  category = NULL,
   cached = FALSE,
   date_start = as.Date("2010-01-01"),
   quiet = FALSE,
   max_retries = 3L,
   ...
 ) {
-  # Input validation ----
+  # Input validation and backward compatibility ----
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn(c(
+      "Parameter {.arg category} is deprecated",
+      "i" = "Use {.arg table} parameter instead",
+      ">" = "This will be removed in a future version"
+    ))
+    table <- category
+  }
+
   # Check for required data dependencies
   if (!exists("bcb_metadata")) {
     cli::cli_abort(c(
@@ -79,19 +93,20 @@ get_bcb_series <- function(
     ))
   }
 
-  check_cats <- c(unique(bcb_metadata$bcb_category), "all")
+  valid_tables <- c(unique(bcb_metadata$bcb_category), "all")
 
-  if (!is.character(category) || length(category) != 1) {
+  if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
-      "Invalid {.arg category} parameter",
-      "x" = "{.arg category} must be a single character string"
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string",
+      "i" = "Valid tables: {.val {valid_tables}}"
     ))
   }
 
-  if (!category %in% check_cats) {
+  if (!table %in% valid_tables) {
     cli::cli_abort(c(
-      "Invalid category: {.val {category}}",
-      "i" = "Valid categories: {.val {check_cats}}"
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
     ))
   }
 
@@ -127,17 +142,17 @@ get_bcb_series <- function(
     cli::cli_inform("Preparing BCB series metadata...")
   }
 
-  # Subset metadata based on categories
-  if (category != "all") {
-    # Subset the metadata to the specific category
-    codes_bcb <- subset(bcb_metadata, bcb_category %in% category)$code_bcb
+  # Subset metadata based on tables
+  if (table != "all") {
+    # Subset the metadata to the specific table
+    codes_bcb <- subset(bcb_metadata, bcb_category %in% table)$code_bcb
   } else {
-    # Use all available categories
+    # Use all available tables
     codes_bcb <- bcb_metadata$code_bcb
   }
 
   if (!quiet) {
-    cli::cli_inform("Selected {length(codes_bcb)} BCB series for category: {category}")
+    cli::cli_inform("Selected {length(codes_bcb)} BCB series for table: {table}")
   }
 
   # Handle cached data ----
@@ -162,7 +177,7 @@ get_bcb_series <- function(
         attr(bcb_series, "source") <- "cache"
         attr(bcb_series, "download_time") <- Sys.time()
         attr(bcb_series, "download_info") <- list(
-          category = category,
+          table = table,
           series_count = length(codes_bcb),
           date_start = date_start,
           source = "cache"
@@ -210,7 +225,7 @@ get_bcb_series <- function(
   attr(bcb_series, "source") <- "api"
   attr(bcb_series, "download_time") <- Sys.time()
   attr(bcb_series, "download_info") <- list(
-    category = category,
+    table = table,
     series_count = length(codes_bcb),
     date_start = date_start,
     source = "api"

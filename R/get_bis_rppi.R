@@ -22,8 +22,8 @@
 #' error handling for multi-sheet processing operations.
 #'
 #' @param table Character. Which dataset to return: "selected" (default), "detailed", or "all".
-@param category Character. Deprecated parameter name for backward compatibility.
-  Use `table` instead.
+#' @param category Character. Deprecated parameter name for backward compatibility.
+#'   Use `table` instead.
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
 #'   using the unified dataset architecture.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.

@@ -21,7 +21,9 @@
 #' The function includes comprehensive error handling for coordinating multiple
 #' data sources and standardizing outputs across different RPPI functions.
 #'
-#' @param category One of `'rent'` or `'sale'` (default).
+#' @param table Character. Which dataset to return: "sale" (default), "rent", or "all".
+#' @param category Character. Deprecated parameter name for backward compatibility.
+#'   Use `table` instead.
 #' @param cached If `TRUE` downloads the cached data from the GitHub repository.
 #'   This is a faster option but not recommended for daily data.
 #' @param stack If `TRUE` returns a single `tibble` identified by a `source` column.
@@ -58,26 +60,38 @@
 #' attr(all_data, "download_info")
 #' }
 get_rppi <- function(
-  category = "sale",
+  table = "sale",
+  category = NULL,
   cached = FALSE,
   stack = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Input validation ----
-  valid_categories <- c("sale", "rent")
+  # Input validation and backward compatibility ----
+  valid_tables <- c("sale", "rent", "all")
 
-  if (!is.character(category) || length(category) != 1) {
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn(c(
+      "Parameter {.arg category} is deprecated",
+      "i" = "Use {.arg table} parameter instead",
+      ">" = "This will be removed in a future version"
+    ))
+    table <- category
+  }
+
+  if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
-      "Invalid {.arg category} parameter",
-      "x" = "{.arg category} must be a single character string"
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string",
+      "i" = "Valid tables: {.val {valid_tables}}"
     ))
   }
 
-  if (!category %in% valid_categories) {
+  if (!table %in% valid_tables) {
     cli::cli_abort(c(
-      "Invalid category: {.val {category}}",
-      "i" = "Valid categories: {.val {valid_categories}}"
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
     ))
   }
 
@@ -117,7 +131,7 @@ get_rppi <- function(
     # Select only the residential index and filter by operation
     dplyr::filter(
       market == "residential",
-      rent_sale == category,
+      rent_sale == table,
       variable %in% c("index", "chg", "acum12m"),
       rooms == "total"
     ) |>
@@ -132,7 +146,49 @@ get_rppi <- function(
       name_muni = ifelse(name_muni == "Índice Fipezap+", "Brazil", name_muni)
     )
 
-  if (category == "rent") {
+  # Handle "all" case by returning both rent and sale data
+  if (table == "all") {
+    if (!quiet) {
+      cli::cli_inform("Fetching all RPPI data sources (rent and sale)...")
+    }
+
+    # Get both rent and sale data
+    rent_data <- get_rppi(table = "rent", cached = cached, stack = stack, quiet = quiet, max_retries = max_retries)
+    sale_data <- get_rppi(table = "sale", cached = cached, stack = stack, quiet = quiet, max_retries = max_retries)
+
+    result <- list(
+      rent = rent_data,
+      sale = sale_data
+    )
+
+    # Add metadata for "all" case
+    if (stack) {
+      # If stacked, combine both datasets
+      result <- dplyr::bind_rows(
+        dplyr::mutate(rent_data, transaction_type = "rent"),
+        dplyr::mutate(sale_data, transaction_type = "sale")
+      )
+
+      attr(result, "source") <- "coordinated"
+      attr(result, "download_time") <- Sys.time()
+      attr(result, "download_info") <- list(
+        table = table,
+        total_records = nrow(result),
+        transaction_types = c("rent", "sale")
+      )
+    } else {
+      attr(result, "source") <- "coordinated"
+      attr(result, "download_time") <- Sys.time()
+      attr(result, "download_info") <- list(
+        table = table,
+        sources = c("rent", "sale")
+      )
+    }
+
+    return(result)
+  }
+
+  if (table == "rent") {
     if (!quiet) {
       cli::cli_inform("Fetching rent-specific RPPI data sources...")
     }
@@ -184,7 +240,7 @@ get_rppi <- function(
       attr(rppi, "source") <- "coordinated"
       attr(rppi, "download_time") <- Sys.time()
       attr(rppi, "download_info") <- list(
-        category = category,
+        table = table,
         sources_coordinated = c("IQA", "IVAR", "Secovi-SP", "FipeZap"),
         coordination_method = "stacked"
       )
@@ -194,7 +250,7 @@ get_rppi <- function(
     }
   }
 
-  if (category == "sale") {
+  if (table == "sale") {
     if (!quiet) {
       cli::cli_inform("Fetching sales-specific RPPI data sources...")
     }
@@ -238,7 +294,7 @@ get_rppi <- function(
       attr(rppi, "source") <- "coordinated"
       attr(rppi, "download_time") <- Sys.time()
       attr(rppi, "download_info") <- list(
-        category = category,
+        table = table,
         sources_coordinated = c("IGMI-R", "IVG-R", "FipeZap"),
         coordination_method = "stacked"
       )
@@ -251,10 +307,10 @@ get_rppi <- function(
   # Final coordination reporting
   if (!quiet) {
     if (stack) {
-      cli::cli_inform("Successfully coordinated {category} RPPI data with {nrow(rppi)} total records")
+      cli::cli_inform("Successfully coordinated {table} RPPI data with {nrow(rppi)} total records")
     } else {
       sources_count <- length(rppi)
-      cli::cli_inform("Successfully coordinated {category} RPPI data from {sources_count} source{?s}")
+      cli::cli_inform("Successfully coordinated {table} RPPI data from {sources_count} source{?s}")
     }
   }
 
