@@ -108,7 +108,7 @@ from multiple sources:
 | `bcb_realestate` | BCB | Real estate credit and market data | Brazil (by state) |
 | `secovi` | SECOVI-SP | São Paulo market indicators (fees, rentals, launches, sales) | São Paulo |
 | `bis_rppi` | BIS | International residential property price indices | International (60+ countries) |
-| `rppi` | FIPE/ZAP | Property price indices for sales and rentals | Brazil (50+ cities) |
+| `rppi` | Multiple | Property price indices for sales and rentals | Brazil (50+ cities) |
 | `bcb_series` | BCB | Economic time series (price indices, credit, activity) | Brazil |
 | `b3_stocks` | B3 | Real estate company stock data | Brazil |
 | `fgv_indicators` | FGV | Real estate market indicators | Brazil |
