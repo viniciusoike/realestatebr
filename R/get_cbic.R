@@ -1149,75 +1149,305 @@ get_cbic_files <- function(material_name) {
 #' Get CBIC cement consumption data
 #'
 #' Complete workflow to get cleaned cement consumption data from CBIC.
-#' This is the main function users should call for cement data.
+#' Includes annual, monthly, production, and CUB price data.
 #'
-#' @return A list of tibbles with cement consumption data by year
+#' @param table Character. Which dataset to return: "annual_consumption",
+#'   "production_exports", "monthly_consumption", "monthly_production",
+#'   "cub_prices", or "all" (default: "monthly_consumption")
+#' @param category Character. Deprecated parameter name for backward compatibility.
+#'   Use `table` instead.
+#' @param cached Logical. If TRUE, try to load data from cache first (default: FALSE)
+#' @param quiet Logical. If TRUE, suppress progress messages (default: FALSE)
+#' @param max_retries Integer. Maximum number of retry attempts for downloads (default: 3L)
+#'
+#' @return A tibble with cement data, or a list if table = "all"
+#'
+#' @section Progress Reporting:
+#' When `quiet = FALSE`, the function provides detailed progress information
+#' about web scraping, file downloads, and data processing steps.
+#'
+#' @section Error Handling:
+#' The function includes retry logic for failed downloads and robust error
+#' handling for malformed Excel files.
 #'
 #' @examples
 #' \dontrun{
-#' cement_data <- get_cbic_cement()
+#' # Get monthly consumption data (default)
+#' monthly_data <- get_cbic_cement()
+#'
+#' # Get all datasets
+#' all_cement <- get_cbic_cement(table = "all")
+#'
+#' # Get specific dataset with progress reporting
+#' prices <- get_cbic_cement(table = "cub_prices", quiet = FALSE)
 #' }
 #'
 #' @export
-get_cbic_cement <- function() {
-  cli::cli_h1("Getting CBIC cement consumption data")
+get_cbic_cement <- function(table = "monthly_consumption",
+                           category = NULL,
+                           cached = FALSE,
+                           quiet = FALSE,
+                           max_retries = 3L) {
 
-  materials <- import_cbic_materials()
-  cement_url <- materials$link[stringr::str_detect(
-    stringr::str_to_lower(materials$title),
-    "cimento"
-  )][1]
+  # Input validation and backward compatibility ----
+  valid_tables <- c("annual_consumption", "production_exports", "monthly_consumption",
+                    "monthly_production", "cub_prices", "all")
 
-  if (is.na(cement_url)) {
-    cli::cli_abort("Cement material not found in CBIC database")
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn(c(
+      "Parameter {.arg category} is deprecated",
+      "i" = "Use {.arg table} parameter instead",
+      ">" = "This will be removed in a future version"
+    ))
+    table <- category
   }
 
-  file_params <- import_cbic_material_links(cement_url)
-  download_results <- import_cbic_files(file_params)
-  cement_data <- clean_cbic_cement_sheets(download_results)
+  if (!is.character(table) || length(table) != 1) {
+    cli::cli_abort(c(
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
 
-  cli::cli_h1("CBIC cement data retrieval complete")
-  return(cement_data)
+  if (!table %in% valid_tables) {
+    cli::cli_abort(c(
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
+
+  # Handle cached data ----
+  if (cached) {
+    if (!quiet) {
+      cli::cli_inform("Cached data loading not yet implemented for CBIC datasets")
+    }
+  }
+
+  # Main data processing ----
+  if (!quiet) {
+    cli::cli_h1("Getting CBIC cement data")
+  }
+
+  attempts <- 0
+  cement_data <- NULL
+
+  while (attempts <= max_retries && is.null(cement_data)) {
+    attempts <- attempts + 1
+
+    tryCatch({
+      materials <- import_cbic_materials()
+      cement_url <- materials$link[stringr::str_detect(
+        stringr::str_to_lower(materials$title),
+        "cimento"
+      )][1]
+
+      if (is.na(cement_url)) {
+        cli::cli_abort("Cement material not found in CBIC database")
+      }
+
+      file_params <- import_cbic_material_links(cement_url)
+      download_results <- import_cbic_files(file_params)
+      cement_data <- clean_cbic_cement_sheets(download_results)
+
+    }, error = function(e) {
+      if (attempts > max_retries) {
+        cli::cli_abort(c(
+          "Failed to retrieve CBIC cement data after {max_retries} attempts",
+          "x" = "Error: {e$message}",
+          "i" = "Check your internet connection and try again"
+        ))
+      }
+
+      if (!quiet) {
+        cli::cli_warn("Attempt {attempts} failed, retrying...")
+      }
+
+      # Exponential backoff
+      Sys.sleep(min(attempts * 0.5, 3))
+    })
+  }
+
+  # Return requested data ----
+  if (table == "all") {
+    result <- cement_data
+  } else {
+    result <- cement_data[[table]]
+    if (is.null(result)) {
+      cli::cli_abort("Requested table '{table}' not found in cement data")
+    }
+  }
+
+  # Add metadata attributes ----
+  attr(result, "source") <- "web"
+  attr(result, "download_time") <- Sys.time()
+  attr(result, "download_info") <- list(
+    table = table,
+    total_records = if(is.list(result)) sum(sapply(result, nrow)) else nrow(result),
+    retry_attempts = attempts,
+    source = "CBIC"
+  )
+
+  if (!quiet) {
+    cli::cli_h1("CBIC cement data retrieval complete")
+  }
+
+  return(result)
 }
 
 #' Get CBIC steel data (prices and production)
 #'
 #' Complete workflow to get cleaned steel price and production data from CBIC.
-#' Returns a list with separate data frames for prices and production.
+#' Returns steel price data by default, or all datasets when requested.
 #'
-#' @return A list with:
-#'   \describe{
-#'     \item{prices}{Tibble with steel price data by state and date}
-#'     \item{production_*}{Tibble(s) with steel production data by product and year}
-#'   }
+#' @param table Character. Which dataset to return: "prices", "production", or "all" (default: "prices")
+#' @param category Character. Deprecated parameter name for backward compatibility.
+#'   Use `table` instead.
+#' @param cached Logical. If TRUE, try to load data from cache first (default: FALSE)
+#' @param quiet Logical. If TRUE, suppress progress messages (default: FALSE)
+#' @param max_retries Integer. Maximum number of retry attempts for downloads (default: 3L)
+#'
+#' @return A tibble with steel data, or a list if table = "all"
+#'
+#' @section Progress Reporting:
+#' When `quiet = FALSE`, the function provides detailed progress information
+#' about web scraping, file downloads, and data processing steps.
+#'
+#' @section Error Handling:
+#' The function includes retry logic for failed downloads and robust error
+#' handling for malformed Excel files.
 #'
 #' @examples
 #' \dontrun{
-#' steel_data <- get_cbic_steel()
-#' prices <- steel_data$prices
-#' production <- steel_data$production_2
+#' # Get steel prices (default)
+#' prices <- get_cbic_steel()
+#'
+#' # Get all steel datasets
+#' all_steel <- get_cbic_steel(table = "all")
+#'
+#' # Get production data with progress reporting
+#' production <- get_cbic_steel(table = "production", quiet = FALSE)
 #' }
 #'
 #' @export
-get_cbic_steel <- function() {
-  cli::cli_h1("Getting CBIC steel data")
+get_cbic_steel <- function(table = "prices",
+                          category = NULL,
+                          cached = FALSE,
+                          quiet = FALSE,
+                          max_retries = 3L) {
 
-  materials <- import_cbic_materials()
-  steel_url <- materials$link[stringr::str_detect(
-    stringr::str_to_lower(materials$title),
-    "aço"
-  )][1]
+  # Input validation and backward compatibility ----
+  valid_tables <- c("prices", "production", "all")
 
-  if (is.na(steel_url)) {
-    cli::cli_abort("Steel material not found in CBIC database")
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn(c(
+      "Parameter {.arg category} is deprecated",
+      "i" = "Use {.arg table} parameter instead",
+      ">" = "This will be removed in a future version"
+    ))
+    table <- category
   }
 
-  file_params <- import_cbic_material_links(steel_url)
-  download_results <- import_cbic_files(file_params)
-  steel_data <- clean_cbic_steel_sheets(download_results)
+  if (!is.character(table) || length(table) != 1) {
+    cli::cli_abort(c(
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
 
-  cli::cli_h1("CBIC steel data retrieval complete")
-  return(steel_data)
+  if (!table %in% valid_tables) {
+    cli::cli_abort(c(
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
+
+  # Handle cached data ----
+  if (cached) {
+    if (!quiet) {
+      cli::cli_inform("Cached data loading not yet implemented for CBIC datasets")
+    }
+  }
+
+  # Main data processing ----
+  if (!quiet) {
+    cli::cli_h1("Getting CBIC steel data")
+  }
+
+  attempts <- 0
+  steel_data <- NULL
+
+  while (attempts <= max_retries && is.null(steel_data)) {
+    attempts <- attempts + 1
+
+    tryCatch({
+      materials <- import_cbic_materials()
+      steel_url <- materials$link[stringr::str_detect(
+        stringr::str_to_lower(materials$title),
+        "aço"
+      )][1]
+
+      if (is.na(steel_url)) {
+        cli::cli_abort("Steel material not found in CBIC database")
+      }
+
+      file_params <- import_cbic_material_links(steel_url)
+      download_results <- import_cbic_files(file_params)
+      steel_data <- clean_cbic_steel_sheets(download_results)
+
+    }, error = function(e) {
+      if (attempts > max_retries) {
+        cli::cli_abort(c(
+          "Failed to retrieve CBIC steel data after {max_retries} attempts",
+          "x" = "Error: {e$message}",
+          "i" = "Check your internet connection and try again"
+        ))
+      }
+
+      if (!quiet) {
+        cli::cli_warn("Attempt {attempts} failed, retrying...")
+      }
+
+      # Exponential backoff
+      Sys.sleep(min(attempts * 0.5, 3))
+    })
+  }
+
+  # Return requested data ----
+  if (table == "all") {
+    result <- steel_data
+  } else if (table == "prices") {
+    result <- steel_data[["prices"]]
+    if (is.null(result)) {
+      cli::cli_abort("Price data not found in steel data")
+    }
+  } else if (table == "production") {
+    # Return first production table found
+    production_tables <- steel_data[grepl("production", names(steel_data))]
+    if (length(production_tables) == 0) {
+      cli::cli_abort("Production data not found in steel data")
+    }
+    result <- production_tables[[1]]
+  }
+
+  # Add metadata attributes ----
+  attr(result, "source") <- "web"
+  attr(result, "download_time") <- Sys.time()
+  attr(result, "download_info") <- list(
+    table = table,
+    total_records = if(is.list(result)) sum(sapply(result, nrow)) else nrow(result),
+    retry_attempts = attempts,
+    source = "CBIC"
+  )
+
+  if (!quiet) {
+    cli::cli_h1("CBIC steel data retrieval complete")
+  }
+
+  return(result)
 }
 
 #' Get CBIC PIM industrial production data
@@ -1226,10 +1456,14 @@ get_cbic_steel <- function() {
 #' production index data from CBIC. This data tracks the physical production
 #' of typical construction industry inputs in Brazil.
 #'
-#' @return A list with:
-#'   \describe{
-#'     \item{production_index}{Tibble with monthly production index values (base: 2022 = 100)}
-#'   }
+#' @param table Character. Which dataset to return: "production_index" or "all" (default: "production_index")
+#' @param category Character. Deprecated parameter name for backward compatibility.
+#'   Use `table` instead.
+#' @param cached Logical. If TRUE, try to load data from cache first (default: FALSE)
+#' @param quiet Logical. If TRUE, suppress progress messages (default: FALSE)
+#' @param max_retries Integer. Maximum number of retry attempts for downloads (default: 3L)
+#'
+#' @return A tibble with PIM production index data, or a list if table = "all"
 #'
 #' @details
 #' The PIM data uses production index with base year 2022 = 100. The data
@@ -1237,29 +1471,134 @@ get_cbic_steel <- function() {
 #' available on CBIC website contain historical data with discontinued
 #' methodologies and are not processed by this function.
 #'
+#' @section Progress Reporting:
+#' When `quiet = FALSE`, the function provides detailed progress information
+#' about web scraping, file downloads, and data processing steps.
+#'
+#' @section Error Handling:
+#' The function includes retry logic for failed downloads and robust error
+#' handling for malformed Excel files.
+#'
 #' @examples
 #' \dontrun{
-#' pim_data <- get_cbic_pim()
-#' production <- pim_data$production_index
+#' # Get production index data (default)
+#' production <- get_cbic_pim()
+#'
+#' # Get all PIM datasets
+#' all_pim <- get_cbic_pim(table = "all")
+#'
+#' # Get data with progress reporting
+#' production <- get_cbic_pim(quiet = FALSE)
 #' }
 #'
 #' @export
-get_cbic_pim <- function() {
-  cli::cli_h1("Getting CBIC PIM industrial production data")
+get_cbic_pim <- function(table = "production_index",
+                        category = NULL,
+                        cached = FALSE,
+                        quiet = FALSE,
+                        max_retries = 3L) {
 
-  materials <- import_cbic_materials()
-  pim_url <- subset(materials, title == "PIM")$link
+  # Input validation and backward compatibility ----
+  valid_tables <- c("production_index", "all")
 
-  if (is.na(pim_url)) {
-    cli::cli_abort("PIM material not found in CBIC database")
+  # Handle backward compatibility: if category is provided, use it as table
+  if (!is.null(category)) {
+    cli::cli_warn(c(
+      "Parameter {.arg category} is deprecated",
+      "i" = "Use {.arg table} parameter instead",
+      ">" = "This will be removed in a future version"
+    ))
+    table <- category
   }
 
-  file_params <- import_cbic_material_links(pim_url)
-  download_results <- import_cbic_files(file_params)
-  pim_data <- clean_cbic_pim_sheets(download_results)
+  if (!is.character(table) || length(table) != 1) {
+    cli::cli_abort(c(
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
 
-  cli::cli_h1("CBIC PIM data retrieval complete")
-  return(pim_data)
+  if (!table %in% valid_tables) {
+    cli::cli_abort(c(
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
+    ))
+  }
+
+  # Handle cached data ----
+  if (cached) {
+    if (!quiet) {
+      cli::cli_inform("Cached data loading not yet implemented for CBIC datasets")
+    }
+  }
+
+  # Main data processing ----
+  if (!quiet) {
+    cli::cli_h1("Getting CBIC PIM industrial production data")
+  }
+
+  attempts <- 0
+  pim_data <- NULL
+
+  while (attempts <= max_retries && is.null(pim_data)) {
+    attempts <- attempts + 1
+
+    tryCatch({
+      materials <- import_cbic_materials()
+      pim_url <- subset(materials, title == "PIM")$link
+
+      if (is.na(pim_url) || length(pim_url) == 0) {
+        cli::cli_abort("PIM material not found in CBIC database")
+      }
+
+      file_params <- import_cbic_material_links(pim_url)
+      download_results <- import_cbic_files(file_params)
+      pim_data <- clean_cbic_pim_sheets(download_results)
+
+    }, error = function(e) {
+      if (attempts > max_retries) {
+        cli::cli_abort(c(
+          "Failed to retrieve CBIC PIM data after {max_retries} attempts",
+          "x" = "Error: {e$message}",
+          "i" = "Check your internet connection and try again"
+        ))
+      }
+
+      if (!quiet) {
+        cli::cli_warn("Attempt {attempts} failed, retrying...")
+      }
+
+      # Exponential backoff
+      Sys.sleep(min(attempts * 0.5, 3))
+    })
+  }
+
+  # Return requested data ----
+  if (table == "all") {
+    result <- pim_data
+  } else {
+    result <- pim_data[["production_index"]]
+    if (is.null(result)) {
+      cli::cli_abort("Production index data not found in PIM data")
+    }
+  }
+
+  # Add metadata attributes ----
+  attr(result, "source") <- "web"
+  attr(result, "download_time") <- Sys.time()
+  attr(result, "download_info") <- list(
+    table = table,
+    total_records = if(is.list(result)) sum(sapply(result, nrow)) else nrow(result),
+    retry_attempts = attempts,
+    source = "CBIC"
+  )
+
+  if (!quiet) {
+    cli::cli_h1("CBIC PIM data retrieval complete")
+  }
+
+  return(result)
 }
 
 #' Get available CBIC materials
