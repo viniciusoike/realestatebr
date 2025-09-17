@@ -20,18 +20,14 @@ be installed. Feedback is welcome.
 **Phase 1 Modernization Complete** - This major release modernizes all
 core functions with:
 
-- **🔧 Standardized API** - All functions now use `table` parameter
-  (replacing `category`) with backward compatibility
-- **📊 Unified Data Access** - New `list_datasets()` and `get_dataset()`
-  functions for easy data discovery
-- **🚀 Better Performance** - Robust error handling, retry logic, and
-  progress reporting
-- **📈 New Data Sources** - CBIC construction materials data (cement,
-  steel, production indices)
-- **🌐 Bilingual Support** - Automatic translation between Portuguese
-  and English
-- **✅ Comprehensive Testing** - 35+ tests ensure reliability across all
-  functions
+- **Standardized API** - All functions now use `table` parameter.
+  (replacing `category`) with backward compatibility. All functions now return `tibble` by default.
+- **Unified Data Access** - New `list_datasets()` and `get_dataset()`
+  functions for easy data discovery.
+- **Better Performance** - Robust error handling, retry logic, and
+  progress reporting.
+- **New Data Sources** - CBIC construction materials data (cement,
+  steel, production indices).
 
 [See full changelog](NEWS.md) for complete details.
 
