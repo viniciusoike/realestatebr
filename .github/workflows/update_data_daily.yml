@@ -1,0 +1,141 @@
+name: Daily Data Updates
+
+on:
+  schedule:
+    # 6 AM Brazil time (UTC-3) = 9 AM UTC
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update even if data is recent'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  update-daily-data:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - name: Setup R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::targets
+            any::tarchetypes
+            any::cli
+            any::here
+            any::readr
+            any::dplyr
+            any::purrr
+
+      - name: Install package
+        run: |
+          Rscript -e 'remotes::install_local(".", dependencies = TRUE)'
+
+      - name: Create required directories
+        run: |
+          mkdir -p inst/cached_data
+          mkdir -p inst/reports
+          mkdir -p _targets
+
+      - name: Check current cache status
+        run: |
+          Rscript -e 'source("data-raw/generate_report.R"); generate_quick_status()'
+
+      - name: Run daily targets pipeline
+        run: |
+          Rscript -e '
+            library(targets)
+
+            # Run only daily targets (B3 stocks only)
+            daily_targets <- c(
+              "b3_stocks_data",
+              "cache_daily_data"
+            )
+
+            cli::cli_h1("Running daily data pipeline")
+            cli::cli_inform("Targets: {paste(daily_targets, collapse=\", \")}")
+
+            tar_make(names = all_of(daily_targets))
+
+            cli::cli_alert_success("Daily pipeline completed")
+          '
+
+      - name: Validate updated data
+        run: |
+          Rscript -e '
+            source("data-raw/validation.R")
+            source("data-raw/targets_helpers.R")
+
+            # Validate cache integrity
+            cache_valid <- validate_cache_integrity()
+
+            if (!cache_valid) {
+              cli::cli_alert_danger("Cache validation failed!")
+              quit(status = 1)
+            }
+
+            cli::cli_alert_success("Cache validation passed")
+          '
+
+      - name: Generate status report
+        run: |
+          Rscript -e 'source("data-raw/generate_report.R"); generate_pipeline_report()'
+
+      - name: Check if there are changes to commit
+        id: verify-changed-files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+
+          # Add all changes
+          git add inst/cached_data/
+          git add inst/reports/
+          git add _targets/
+
+          # Create commit message with timestamp
+          commit_msg="Daily data update: $(date +'%Y-%m-%d %H:%M UTC')"
+
+          # Add summary of updated datasets
+          if [ -f "inst/reports/pipeline_status.md" ]; then
+            commit_msg="$commit_msg
+
+Updated datasets:
+- B3 Stock prices (daily updates)
+
+Report: inst/reports/pipeline_status.md"
+          fi
+
+          git commit -m "$commit_msg"
+          git push
+
+      - name: Report completion status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Daily update completed successfully"
+          else
+            echo "❌ Daily update failed"
+            exit 1
+          fi

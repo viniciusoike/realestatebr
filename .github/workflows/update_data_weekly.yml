@@ -1,0 +1,189 @@
+name: Weekly Data Updates
+
+on:
+  schedule:
+    # Mondays at 7 AM Brazil time (UTC-3) = 10 AM UTC
+    - cron: '0 10 * * 1'
+  workflow_dispatch:
+    inputs:
+      target_group:
+        description: 'Target group to update'
+        required: false
+        default: 'weekly'
+        type: choice
+        options:
+          - weekly
+          - monthly
+          - all
+
+jobs:
+  update-weekly-data:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - name: Setup R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::targets
+            any::tarchetypes
+            any::cli
+            any::here
+            any::readr
+            any::dplyr
+            any::purrr
+
+      - name: Install package
+        run: |
+          Rscript -e 'remotes::install_local(".", dependencies = TRUE)'
+
+      - name: Create required directories
+        run: |
+          mkdir -p inst/cached_data
+          mkdir -p inst/reports
+          mkdir -p _targets
+
+      - name: Check current cache status
+        run: |
+          Rscript -e 'source("data-raw/generate_report.R"); generate_quick_status()'
+
+      - name: Determine targets to run
+        id: determine-targets
+        run: |
+          target_group="${{ github.event.inputs.target_group || 'weekly' }}"
+
+          if [ "$target_group" == "weekly" ]; then
+            targets="bcb_series_data,bcb_realestate_data,fgv_indicators_data,abecip_data,abrainc_data,secovi_data,rppi_sale_data,rppi_rent_data,cache_weekly_data"
+          elif [ "$target_group" == "monthly" ]; then
+            targets="bis_rppi_data,cbic_data,property_records_data,nre_ire_data,cache_monthly_data"
+          elif [ "$target_group" == "all" ]; then
+            targets="bcb_series_data,bcb_realestate_data,fgv_indicators_data,abecip_data,abrainc_data,secovi_data,rppi_sale_data,rppi_rent_data,bis_rppi_data,cbic_data,property_records_data,nre_ire_data,cache_weekly_data,cache_monthly_data"
+          fi
+
+          echo "targets=$targets" >> $GITHUB_OUTPUT
+          echo "group=$target_group" >> $GITHUB_OUTPUT
+
+      - name: Run selected targets pipeline
+        run: |
+          Rscript -e '
+            library(targets)
+
+            target_list <- unlist(strsplit("${{ steps.determine-targets.outputs.targets }}", ","))
+            target_group <- "${{ steps.determine-targets.outputs.group }}"
+
+            cli::cli_h1("Running {target_group} data pipeline")
+            cli::cli_inform("Targets: {paste(target_list, collapse=\", \")}")
+
+            # Run targets with extended timeout for slower sources
+            options(timeout = 600)  # 10 minutes per target
+
+            tar_make(names = all_of(target_list))
+
+            cli::cli_alert_success("{target_group} pipeline completed")
+          '
+
+      - name: Validate updated data
+        run: |
+          Rscript -e '
+            source("data-raw/validation.R")
+            source("data-raw/targets_helpers.R")
+
+            # Validate cache integrity
+            cache_valid <- validate_cache_integrity()
+
+            if (!cache_valid) {
+              cli::cli_alert_danger("Cache validation failed!")
+              quit(status = 1)
+            }
+
+            # Get cache summary for validation
+            cache_summary <- get_cache_summary()
+            cli::cli_inform("Cache summary:")
+            print(cache_summary)
+
+            cli::cli_alert_success("Cache validation passed")
+          '
+
+      - name: Generate comprehensive report
+        run: |
+          Rscript -e 'source("data-raw/generate_report.R"); generate_pipeline_report()'
+
+      - name: Check if there are changes to commit
+        id: verify-changed-files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+
+          # Add all changes
+          git add inst/cached_data/
+          git add inst/reports/
+          git add _targets/
+
+          # Create detailed commit message
+          target_group="${{ steps.determine-targets.outputs.group }}"
+          commit_msg="Weekly data update ($target_group): $(date +'%Y-%m-%d %H:%M UTC')"
+
+          # Add summary based on target group
+          if [ "$target_group" == "weekly" ]; then
+            commit_msg="$commit_msg
+
+Updated datasets:
+- ABECIP housing indicators
+- ABRAINC real estate indicators
+- SECOVI market data
+- RPPI sale and rent indices
+
+Report: inst/reports/pipeline_status.md"
+
+          elif [ "$target_group" == "monthly" ]; then
+            commit_msg="$commit_msg
+
+Updated datasets:
+- BIS international RPPI data
+- CBIC construction indicators
+- Property registration records
+- NRE-IRE investment data
+
+Report: inst/reports/pipeline_status.md"
+
+          elif [ "$target_group" == "all" ]; then
+            commit_msg="$commit_msg
+
+Comprehensive update of all weekly and monthly datasets.
+
+Report: inst/reports/pipeline_status.md"
+          fi
+
+          git commit -m "$commit_msg"
+          git push
+
+      - name: Report completion status
+        if: always()
+        run: |
+          target_group="${{ steps.determine-targets.outputs.group }}"
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ $target_group update completed successfully"
+          else
+            echo "❌ $target_group update failed"
+            exit 1
+          fi
