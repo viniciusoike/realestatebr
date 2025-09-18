@@ -24,6 +24,7 @@ datasets:
         name: "Home Equity Loans (CGI)"
         description: "Summary data on home equity loans including default rates and average terms"
         coverage: "January 2017-present"
+    internal_function: "fetch_abecip"
     legacy_function: "get_abecip_indicators"
     data_type: "list"
     cached_file: "abecip.rds"
@@ -48,6 +49,7 @@ datasets:
       leading:
         name: "Leading Indicator"
         description: "Building permits in São Paulo as real estate leading indicator"
+    internal_function: "fetch_abrainc"
     legacy_function: "get_abrainc_indicators"
     data_type: "list"
     cached_file: "abrainc.rds"
@@ -78,6 +80,7 @@ datasets:
       units:
         name: "Financed Units"
         description: "Number and value of financed units"
+    internal_function: "fetch_bcb_realestate"
     legacy_function: "get_bcb_realestate"
     data_type: "tibble"
     cached_file: "bcb_realestate.csv.gz"
@@ -105,6 +108,7 @@ datasets:
       sale:
         name: "Sales Market"
         description: "Sales prices and transaction volumes"
+    internal_function: "fetch_secovi"
     legacy_function: "get_secovi"
     data_type: "tibble"
     cached_file: "secovi_sp.csv.gz"
@@ -128,36 +132,85 @@ datasets:
         name: "Detailed Dataset"
         description: "Full RPPI dataset with all available series"
         url: "https://data.bis.org/topics/RPP"
+    internal_function: "fetch_bis"
     legacy_function: "get_bis_rppi"
     data_type: "mixed"
-    cached_file: 
+    cached_file:
       selected: "bis_selected.csv.gz"
       detailed: "bis_detailed.rds"
     translation_notes: "International data; minimal translation needed"
 
   rppi:
-    name: "FIPE Residential Property Price Index"
-    name_pt: "Índice FipeZap de Preços de Imóveis"
-    description: "Residential property price indices for sales and rentals in Brazilian cities"
-    source: "FIPE/ZAP Imóveis"
-    url: "https://www.fipe.org.br/pt-br/indices/fipezap"
-    geography: "Brazil (50+ cities)"
+    name: "Brazilian Residential Property Price Indices"
+    name_pt: "Índices de Preços Residenciais Brasileiros"
+    description: "Comprehensive collection of all Brazilian residential property price indices"
+    source: "Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IVAR, SECOVI-SP)"
+    url: "varies by index"
+    geography: "Brazil"
     frequency: "monthly"
-    coverage: "2008-present"
+    coverage: "varies by index"
     categories:
-      sale:
-        name: "Sales Index"
-        description: "Property sales price index by city"
+      # Individual indices
+      fipezap:
+        name: "FIPE-ZAP Index"
+        description: "FIPE-ZAP residential property price index"
+        type: "sales"
+        coverage: "Major cities"
+        source: "FIPE/ZAP Imóveis"
+      ivgr:
+        name: "IVGR - Índice de Valores Gerais Residenciais"
+        description: "General residential values index"
+        type: "sales"
+        coverage: "National"
+        source: "IVGR"
+      igmi:
+        name: "IGMI - Índice Geral do Mercado Imobiliário"
+        description: "General real estate market index"
+        type: "sales"
+        coverage: "São Paulo"
+        source: "IGMI"
+      iqa:
+        name: "IQA - Índice QuintoAndar"
+        description: "QuintoAndar rent price index"
+        type: "rent"
+        coverage: "Major cities"
+        source: "QuintoAndar"
+      ivar:
+        name: "IVAR - Índice de Valores de Aluguéis Residenciais"
+        description: "Residential rent values index"
+        type: "rent"
+        coverage: "National"
+        source: "IVAR"
+      secovi_sp:
+        name: "SECOVI-SP Index"
+        description: "São Paulo real estate syndicate index"
+        type: "both"
+        coverage: "São Paulo"
+        source: "SECOVI-SP"
+      # Aggregation categories
+      sales:
+        name: "All Sales Indices"
+        description: "Aggregate of all sales-related indices"
+        includes: ["fipezap", "ivgr", "igmi", "secovi_sp"]
       rent:
-        name: "Rental Index"
-        description: "Property rental price index by city"
+        name: "All Rent Indices"
+        description: "Aggregate of all rent-related indices"
+        includes: ["iqa", "ivar", "secovi_sp"]
+      all:
+        name: "All Indices"
+        description: "All available RPPI indices"
+        includes: ["fipezap", "ivgr", "igmi", "iqa", "ivar", "secovi_sp"]
+    internal_function: "fetch_rppi"
     legacy_function: "get_rppi"
-    data_type: "tibble"
+    data_type: "mixed"
     cached_file:
-      sale: "rppi_sale.csv.gz"
-      rent: "rppi_rent.csv.gz"
-      fipe: "rppi_fipe.csv.gz"
-    translation_notes: "City names standardized; property types translated"
+      fipezap: "rppi_fipe.csv.gz"
+      ivgr: "rppi_ivgr.csv.gz"
+      igmi: "rppi_igmi.csv.gz"
+      iqa: "rppi_iqa.csv.gz"
+      ivar: "rppi_ivar.csv.gz"
+      secovi_sp: "secovi_sp.csv.gz"
+    translation_notes: "Index methodologies vary by source; base periods normalized where possible"
 
   bcb_series:
     name: "BCB Economic Series"
@@ -178,6 +231,7 @@ datasets:
       activity:
         name: "Economic Activity"
         description: "Economic activity indicators"
+    internal_function: "fetch_bcb_series"
     legacy_function: "get_bcb_series"
     data_type: "tibble"
     cached_file: "bcb_series.csv.gz"
@@ -193,6 +247,7 @@ datasets:
     geography: "Brazil"
     frequency: "daily"
     coverage: "2010-present"
+    internal_function: "fetch_b3"
     legacy_function: "get_b3_stocks"
     data_type: "tibble"
     cached_file: "b3_stocks.csv.gz"
@@ -208,6 +263,7 @@ datasets:
     geography: "Brazil"
     frequency: "monthly"
     coverage: "2010-present"
+    internal_function: "fetch_fgv"
     legacy_function: "get_fgv_indicators"
     data_type: "tibble"
     cached_file: "fgv_indicators.csv.gz"
@@ -232,8 +288,10 @@ datasets:
       pim:
         name: "Industrial Production (PIM)"
         description: "Industrial production index for construction materials"
-    legacy_function: "get_cbic_*"
+    internal_function: "fetch_cbic"
+    legacy_function: "get_cbic"
     data_type: "list"
+    cached_file: "cbic.rds"
     translation_notes: "Material types and units translated; regional data preserved"
 
   nre_ire:
@@ -245,6 +303,7 @@ datasets:
     geography: "Brazil"
     frequency: "monthly"
     coverage: "May 2006-present"
+    internal_function: "fetch_nre"
     legacy_function: "get_nre_ire"
     data_type: "tibble"
     cached_file: "ire.rds"
@@ -260,8 +319,10 @@ datasets:
     geography: "Brazil (varies by municipality)"
     frequency: "transaction-level (real-time)"
     coverage: "varies by municipality"
+    internal_function: "fetch_registro"
     legacy_function: "get_property_records"
     data_type: "tibble"
+    cached_file: "property_records.csv.gz"
     translation_notes: "Property types and addresses preserved; transaction values in local currency"
 
   itbi_summary:
@@ -273,44 +334,9 @@ datasets:
     geography: "Brazil (varies by municipality)"
     frequency: "monthly/quarterly"
     coverage: "varies by municipality"
+    internal_function: "fetch_itbi"
     legacy_function: "get_itbi"
     data_type: "tibble"
+    cached_file: "itbi_summary.csv.gz"
     translation_notes: "Municipality names standardized; property classifications harmonized"
 
-  rppi_indices:
-    name: "Multiple RPPI Index Sources"
-    name_pt: "Múltiplas Fontes de Índices RPPI"
-    description: "Collection of residential property price indices from various sources including FIPE-ZAP, IGMI, IVA-R, etc."
-    source: "Multiple (FIPE, IGMI, IVAR, etc.)"
-    url: "varies by source"
-    geography: "Brazil (varies by index)"
-    frequency: "monthly"
-    coverage: "varies by index"
-    categories:
-      fipezap:
-        name: "FIPE-ZAP Index"
-        description: "FIPE-ZAP residential property price index"
-        source: "FIPE/ZAP"
-      igmi:
-        name: "IGMI Index"
-        description: "Índice Geral do Mercado Imobiliário"
-        source: "IGMI"
-      iqa:
-        name: "IQA Index"
-        description: "Índice de Qualidade Ambiental"
-        source: "IQA"
-      ivar:
-        name: "IVAR Index"
-        description: "Índice de Valores de Aluguéis Residenciais"
-        source: "IVAR"
-      ivgr:
-        name: "IVGR Index"
-        description: "Índice de Valores Gerais Residenciais"
-        source: "IVGR"
-      secovi_sp:
-        name: "SECOVI-SP Index"
-        description: "SECOVI-SP property price index"
-        source: "SECOVI-SP"
-    legacy_function: "get_rppi_*"
-    data_type: "tibble"
-    translation_notes: "Index methodologies vary by source; base periods normalized where possible"

@@ -2,11 +2,12 @@
 % Please edit documentation in R/get-dataset.R
 \name{get_from_legacy_function}
 \alias{get_from_legacy_function}
-\title{Get Data from Legacy Function}
+\title{Get Data from Internal Function}
 \usage{
 get_from_legacy_function(name, dataset_info, table, date_start, date_end, ...)
 }
 \description{
-Get Data from Legacy Function
+Uses the new internal fetch functions instead of legacy functions for
+fresh data downloads. This is the core implementation for the 0.4.0 architecture.
 }
 \keyword{internal}

@@ -1,3 +1,127 @@
+# realestatebr 0.4.0
+
+## Major Breaking Changes - API Consolidation
+
+### 🎯 Unified Data Interface
+
+This release implements a **major breaking change** that consolidates 15+ individual `get_*()` functions into a single, unified `get_dataset()` interface. This dramatically simplifies the package API while maintaining full functionality.
+
+**BREAKING CHANGE**: All individual `get_*()` functions have been removed:
+- `get_abecip_indicators()`, `get_abrainc_indicators()`, `get_rppi()`, `get_bcb_realestate()`, etc.
+- **Migration**: Use `get_dataset("dataset_name")` instead
+
+### 🏗️ New Internal Architecture
+
+- **Internal fetch functions**: Created 12 new `fetch_*()` functions with `@keywords internal`
+- **Registry-driven**: All datasets managed through centralized `inst/extdata/datasets.yaml`
+- **Hierarchical RPPI**: Consolidated `rppi` and `rppi_indices` into single hierarchical structure
+- **Consistent parameters**: All internal functions use standardized `table`, `cached`, `quiet`, `max_retries`
+
+### 📋 Simplified Public API
+
+**New unified interface:**
+```r
+# Get data from any dataset
+data <- get_dataset("abecip")               # Default table
+data <- get_dataset("abecip", table = "sbpe")  # Specific table
+data <- get_dataset("rppi", table = "fipezap")  # Hierarchical access
+
+# Discover datasets
+datasets <- list_datasets()
+info <- get_dataset_info("rppi")
+```
+
+**Removed functions (now internal):**
+- `get_abecip_indicators()` → `get_dataset("abecip")`
+- `get_abrainc_indicators()` → `get_dataset("abrainc")`
+- `get_rppi()` → `get_dataset("rppi")`
+- `get_bcb_realestate()` → `get_dataset("bcb_realestate")`
+- `get_bcb_series()` → `get_dataset("bcb_series")`
+- Plus 10 more functions
+
+### 🔧 Enhanced Data Access
+
+- **Smart fallback**: Auto fallback from GitHub cache → fresh download
+- **Source control**: Explicit `source = "cache"/"github"/"fresh"` options
+- **Better error messages**: Detailed troubleshooting information
+- **Metadata preservation**: All data includes source tracking and download info
+
+### 🧪 Comprehensive Testing
+
+- **New test suite**: `test-internal-functions-0.4.0.R` with 100 tests
+- **Registry validation**: Ensures all datasets have proper internal function mappings
+- **Parameter consistency**: Validates all internal functions follow standard interface
+- **Hierarchical testing**: Comprehensive RPPI access pattern validation
+
+## Migration Guide
+
+### For Existing Code (Breaking Changes)
+
+```r
+# OLD (0.3.x) - Will no longer work
+data <- get_abecip_indicators(table = "sbpe")
+data <- get_rppi(table = "fipezap")
+data <- get_bcb_realestate(table = "all")
+
+# NEW (0.4.0) - Required migration
+data <- get_dataset("abecip", table = "sbpe")
+data <- get_dataset("rppi", table = "fipezap")
+data <- get_dataset("bcb_realestate", table = "all")
+```
+
+### Dataset Name Mapping
+
+| Old Function | New get_dataset() Name |
+|-------------|---------------------|
+| `get_abecip_indicators()` | `"abecip"` |
+| `get_abrainc_indicators()` | `"abrainc"` |
+| `get_rppi()` | `"rppi"` |
+| `get_bcb_realestate()` | `"bcb_realestate"` |
+| `get_bcb_series()` | `"bcb_series"` |
+| `get_bis_rppi()` | `"bis_rppi"` |
+| `get_secovi()` | `"secovi"` |
+| `get_fgv_indicators()` | `"fgv_indicators"` |
+| `get_b3_stocks()` | `"b3_stocks"` |
+| `get_nre_ire()` | `"nre_ire"` |
+| `get_cbic_*()` | `"cbic"` |
+| `get_itbi()` | `"itbi"` |
+| `get_property_records()` | `"registro"` |
+
+### RPPI Consolidation
+
+```r
+# OLD - Multiple functions
+fipezap <- get_rppi_fipezap()
+igmi <- get_rppi_igmi()
+bis <- get_rppi_bis()
+
+# NEW - Unified hierarchical access
+fipezap <- get_dataset("rppi", table = "fipezap")
+igmi <- get_dataset("rppi", table = "igmi")
+bis <- get_dataset("rppi", table = "bis")
+```
+
+## Technical Implementation
+
+### Internal Architecture
+- **12 internal fetch functions**: `fetch_rppi()`, `fetch_abecip()`, etc.
+- **Registry system**: Complete mapping in `datasets.yaml`
+- **Fallback mechanism**: `get_from_internal_function()` → `get_from_legacy_function()`
+- **NAMESPACE cleanup**: Only exports `get_dataset()`, `list_datasets()`, utilities
+
+### Backward Compatibility
+- **Phase 1**: Internal functions call legacy functions for gradual transition
+- **Testing**: Comprehensive test coverage ensures functionality preservation
+- **Error handling**: Graceful degradation with informative error messages
+
+---
+
+*This release represents a major architectural shift toward a unified, maintainable API. While it introduces breaking changes, the new interface is significantly simpler and more powerful.*
+
+**Full Changelog**: https://github.com/viniciusoike/realestatebr/compare/v0.3.0...v0.4.0
+
+---
+
 # realestatebr 0.2.0
 
 ## Major Features and Improvements
