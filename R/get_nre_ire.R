@@ -104,51 +104,40 @@ get_nre_ire <- function(
     cli::cli_abort("{.arg quiet} must be a logical value")
   }
 
-  # This function currently only supports cached data
-  if (!cached) {
-    cli::cli_abort(c(
-      "Fresh data download not supported for NRE-IRE dataset",
-      "x" = "This dataset requires manual processing from the original source",
-      "i" = "Use {.code cached = TRUE} to access the most recent cached data",
-      "i" = "See function documentation for data source information"
-    ))
-  }
+  # Note: Fresh downloads not supported, but we can fall back to internal data
 
-  # Load cached data ----
-  if (!quiet) {
-    cli::cli_inform("Loading NRE-IRE index data from cache...")
-  }
-
-  tryCatch(
-    {
-      # Use new unified architecture for cached data
-      ire <- get_dataset("ire", source = "github")
-
-      if (!quiet) {
-        cli::cli_inform(
-          "Successfully loaded {nrow(ire)} NRE-IRE records from cache"
-        )
-      }
-
-      # Add metadata
-      attr(ire, "source") <- "cache"
-      attr(ire, "download_time") <- Sys.time()
-      attr(ire, "download_info") <- list(
-        table = table,
-        dataset = "ire",
-        source = "cache",
-        note = "Fresh downloads not supported - data requires manual processing"
-      )
-
-      return(ire)
-    },
-    error = function(e) {
-      cli::cli_abort(c(
-        "Failed to load NRE-IRE data from cache",
-        "x" = "Error: {e$message}",
-        "i" = "Ensure the package data is properly installed",
-        "i" = "Try reinstalling the package if the problem persists"
-      ))
+  # Handle cached data ----
+  # Note: NRE-IRE is static data from Excel file, so we skip cache and
+  # go directly to internal package data
+  if (cached) {
+    if (!quiet) {
+      cli::cli_inform("NRE-IRE uses static package data (no cache needed)")
     }
+  }
+
+  # Use internal package data ----
+  if (!quiet) {
+    cli::cli_inform("Loading NRE-IRE index data from internal package data...")
+  }
+
+  # Load internal data (ire should be available from sysdata.rda)
+  # No need to check exists() since it's internal package data
+
+  if (!quiet) {
+    cli::cli_inform(
+      "Successfully accessed {nrow(ire)} NRE-IRE records from package data"
+    )
+  }
+
+  # Add metadata
+  attr(ire, "source") <- "internal"
+  attr(ire, "download_time") <- Sys.time()
+  attr(ire, "download_info") <- list(
+    table = table,
+    dataset = "nre_ire",
+    source = "internal",
+    note = "Fresh downloads not supported - data requires manual processing"
   )
+
+  return(ire)
 }

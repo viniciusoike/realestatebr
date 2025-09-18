@@ -209,7 +209,7 @@ get_abrainc_indicators <- function(
   }
 
   # Import all sheets
-  abrainc <- suppressMessages(import_abrainc(category))
+  abrainc <- suppressMessages(import_abrainc(table))
 
   # Clean all sheets
 

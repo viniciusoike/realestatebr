@@ -279,14 +279,15 @@ get_cached_name <- function(name, dataset_info, category = NULL) {
   # Fallback to mapping based on name
   name_mapping <- list(
     "abecip_indicators" = "abecip",
-    "abrainc_indicators" = "abrainc", 
+    "abrainc_indicators" = "abrainc",
     "bcb_realestate" = "bcb_realestate",
     "secovi" = "secovi_sp",
     "bis_rppi" = "bis_selected",
     "rppi" = "rppi_sale",
     "bcb_series" = "bcb_series",
     "b3_stocks" = "b3_stocks",
-    "fgv_indicators" = "fgv_indicators"
+    "fgv_indicators" = "fgv_indicators",
+    "nre_ire" = "ire"
   )
   
   return(name_mapping[[name]])

@@ -85,4 +85,6 @@ ire <- readxl::read_excel(
 
 ire <- dplyr::mutate(ire, date = lubridate::ymd(date))
 
-usethis::use_data(abecip_cgi, fgv_data, ire, internal = TRUE, overwrite = TRUE)
+usethis::use_data(abecip_cgi, internal = TRUE, overwrite = TRUE)
+usethis::use_data(fgv_data, internal = TRUE, overwrite = TRUE)
+usethis::use_data(ire, internal = TRUE, overwrite = TRUE)

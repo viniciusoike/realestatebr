@@ -163,9 +163,9 @@ load_file_by_extension <- function(file_path, extension, quiet) {
       "csv.gz" = readr::read_csv(file_path, show_col_types = FALSE),
       "csv" = readr::read_csv(file_path, show_col_types = FALSE)
     )
-    
+
     return(data)
-    
+
   }, error = function(e) {
     if (!quiet) {
       cli::cli_warn("Failed to load {basename(file_path)}: {e$message}")
@@ -173,6 +173,7 @@ load_file_by_extension <- function(file_path, extension, quiet) {
     return(NULL)
   })
 }
+
 
 #' Check Cache Status
 #'
