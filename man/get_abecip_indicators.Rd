@@ -39,9 +39,7 @@ Either a named \code{list} (when table is \code{'all'}) or a \code{tibble}
 }
 }
 \description{
-Downloads updated housing credit data from Abecip. Abecip represents the major
-financial institutions that integrate Brazil's finance housing system (SFH).
-Provides modern error handling, progress reporting, and robust download capabilities.
+Get Credit Indicators from Abecip
 }
 \details{
 This function returns three tables:
@@ -60,6 +58,15 @@ since January 2017. All columns are in absolute/nominal units except \code{defau
 is in percentage and \code{average_term} which is in months.
 }
 }
+\section{Deprecation}{
+
+This function is deprecated. Use \code{\link{get_dataset}("abecip_indicators")} instead.
+
+Downloads updated housing credit data from Abecip. Abecip represents the major
+financial institutions that integrate Brazil's finance housing system (SFH).
+Provides modern error handling, progress reporting, and robust download capabilities.
+}
+
 \section{Progress Reporting}{
 
 When \code{quiet = FALSE}, the function provides detailed progress information

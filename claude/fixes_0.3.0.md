@@ -198,9 +198,8 @@ get_abecip_indicators <- function(table = "all") {
 |--------------|----------|-----------|
 | abecip_indicators | abecip | Consistency, brevity |
 | abrainc_indicators | abrainc | Consistency, brevity |
-| bcb_series | bcb_macroeconomic | More descriptive |
+| bcb_series | macroeconomic | More descriptive |
 | fgv_indicators | fgv_ibre | More specific |
-| rppi | fipezap | Match data source |
 
 #### Impact Analysis
 - Update `inst/extdata/datasets.yaml`

@@ -27,16 +27,16 @@
 #' @examples
 #' \dontrun{
 #' # Get all ABECIP indicators
-#' abecip_data <- get_dataset("abecip_indicators")
+#' abecip_data <- get_dataset("abecip")
 #'
 #' # Get only SBPE data from ABECIP
-#' sbpe_data <- get_dataset("abecip_indicators", table = "sbpe")
+#' sbpe_data <- get_dataset("abecip", table = "sbpe")
 #'
 #' # Force fresh download
 #' fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 #'
 #' # Get BCB data for specific time period
-#' bcb_recent <- get_dataset("bcb_series", 
+#' bcb_recent <- get_dataset("bcb_series",
 #'                          date_start = as.Date("2020-01-01"))
 #' }
 #'
@@ -231,12 +231,13 @@ get_from_legacy_function <- function(name, dataset_info, table, date_start, date
     if (legacy_function %in% c("get_abecip_indicators", "get_abrainc_indicators")) {
       args$table <- table
     } else if (legacy_function == "get_rppi") {
+      # get_rppi still uses category parameter for backward compatibility
       args$category <- table
     } else if (supports_table_all(legacy_function)) {
-      args$category <- table
+      args$table <- table
     }
   } else if (supports_table_all(legacy_function)) {
-    args$category <- "all"
+    args$table <- "all"
   }
   
   # Add date arguments if provided
@@ -312,7 +313,11 @@ supports_table_all <- function(func_name) {
     "get_bcb_realestate",
     "get_secovi",
     "get_bis_rppi",
-    "get_bcb_series"
+    "get_bcb_series",
+    "get_cbic",
+    "get_fgv_indicators",
+    "get_bcb_series",
+    "get_b3_stocks"
   )
 
   return(func_name %in% functions_with_table)

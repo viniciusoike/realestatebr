@@ -39,10 +39,7 @@ Either a named \code{list} (when table is \code{'all'}) or a \code{tibble}
 }
 }
 \description{
-Downloads data from the Abrainc-Fipe Indicators report with modern error
-handling, progress reporting, and robust download capabilities. Data includes
-information on new launches, sales, delivered units, etc. in the primary
-market.
+Import Indicators from the Abrainc-Fipe Report
 }
 \details{
 The data in \code{'indicator'} gives broad numbers of launches, sales, supply, etc.
@@ -65,6 +62,16 @@ varies by country so caution is advised in making international comparisons.
 Data comes from developers that are partnered with Abrainc. As of June 2023, there were
 66 real estate developers associated with Abrainc.
 }
+\section{Deprecation}{
+
+This function is deprecated. Use \code{\link{get_dataset}("abrainc_indicators")} instead.
+
+Downloads data from the Abrainc-Fipe Indicators report with modern error
+handling, progress reporting, and robust download capabilities. Data includes
+information on new launches, sales, delivered units, etc. in the primary
+market.
+}
+
 \section{Progress Reporting}{
 
 When \code{quiet = FALSE}, the function provides detailed progress information

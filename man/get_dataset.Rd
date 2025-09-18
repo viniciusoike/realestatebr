@@ -44,16 +44,16 @@ fallback between different data sources (cache, GitHub, fresh download).
 \examples{
 \dontrun{
 # Get all ABECIP indicators
-abecip_data <- get_dataset("abecip_indicators")
+abecip_data <- get_dataset("abecip")
 
 # Get only SBPE data from ABECIP
-sbpe_data <- get_dataset("abecip_indicators", table = "sbpe")
+sbpe_data <- get_dataset("abecip", table = "sbpe")
 
 # Force fresh download
 fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 
 # Get BCB data for specific time period
-bcb_recent <- get_dataset("bcb_series", 
+bcb_recent <- get_dataset("bcb_series",
                          date_start = as.Date("2020-01-01"))
 }
 

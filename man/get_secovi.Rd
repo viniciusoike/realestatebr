@@ -29,9 +29,7 @@ metadata attributes:
 }
 }
 \description{
-Download and clean real estate information from Sao Paulo (SP) made available
-by SECOVI-SP with modern error handling, progress reporting, and robust
-web scraping capabilities.
+Import data from Secovi-SP
 }
 \details{
 This function scrapes real estate data from SECOVI-SP website including
@@ -39,6 +37,15 @@ condominium fees, rental market data, launches, and sales information.
 The function handles parallel processing for data cleaning while maintaining
 progress reporting.
 }
+\section{Deprecation}{
+
+This function is deprecated. Use \code{\link{get_dataset}("secovi")} instead.
+
+Download and clean real estate information from Sao Paulo (SP) made available
+by SECOVI-SP with modern error handling, progress reporting, and robust
+web scraping capabilities.
+}
+
 \section{Progress Reporting}{
 
 When \code{quiet = FALSE}, the function provides detailed progress information

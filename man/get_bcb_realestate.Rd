@@ -46,10 +46,7 @@ The tibble includes metadata attributes:
 }
 }
 \description{
-Imports and cleans real estate data published monthly by the Brazilian Central
-Bank with modern error handling, progress reporting, and robust API access.
-Includes credit sources, credit applications, credit operations, financed
-units, real estate indices.
+Import Real Estate data from the Brazilian Central Bank
 }
 \details{
 If \code{category = 'all'} a tidy long \code{tibble} will be returned with all available
@@ -62,6 +59,16 @@ Other choices of \code{category} return a wide \code{tibble} with informative co
 names. Available options are: \code{'accounting'}, \code{'application'}, \code{'indices'},
 \code{'sources'}, \code{'units'}, or \code{'all'}.
 }
+\section{Deprecation}{
+
+This function is deprecated. Use \code{\link{get_dataset}("bcb_realestate")} instead.
+
+Imports and cleans real estate data published monthly by the Brazilian Central
+Bank with modern error handling, progress reporting, and robust API access.
+Includes credit sources, credit applications, credit operations, financed
+units, real estate indices.
+}
+
 \section{Progress Reporting}{
 
 When \code{quiet = FALSE}, the function provides detailed progress information

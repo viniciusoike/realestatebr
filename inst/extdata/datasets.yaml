@@ -2,7 +2,7 @@
 # This file contains metadata for all available datasets
 
 datasets:
-  abecip_indicators:
+  abecip:
     name: "ABECIP Housing Credit Indicators"
     name_pt: "Indicadores de Crédito Habitacional ABECIP"
     description: "Housing credit data from Brazilian housing finance system (SFH) including SBPE flows, financed units, and home equity loans"
@@ -28,8 +28,8 @@ datasets:
     data_type: "list"
     cached_file: "abecip.rds"
     translation_notes: "Column names translated from Portuguese to English following standard patterns"
-    
-  abrainc_indicators:
+
+  abrainc:
     name: "ABRAINC-FIPE Primary Market Indicators"
     name_pt: "Indicadores ABRAINC-FIPE do Mercado Primário"
     description: "Primary real estate market indicators including launches, sales, and business conditions from 66+ partnered developers"
@@ -52,7 +52,7 @@ datasets:
     data_type: "list"
     cached_file: "abrainc.rds"
     translation_notes: "Social Housing (MCMV) refers to Minha Casa Minha Vida and Casa Verde Amarela programs"
-    
+
   bcb_realestate:
     name: "BCB Real Estate Market Data"
     name_pt: "Dados do Mercado Imobiliário BCB"
@@ -250,3 +250,67 @@ datasets:
     cached_file: "ire.rds"
     cached_only: true
     translation_notes: "Index values (100 = May 2006); includes IRE, IRE-BI, and Ibovespa comparison"
+
+  property_records:
+    name: "ITBI Property Transaction Records"
+    name_pt: "Registros de Transações ITBI"
+    description: "Individual property transaction records from ITBI (real estate transfer tax) databases"
+    source: "Municipal governments"
+    url: "varies by municipality"
+    geography: "Brazil (varies by municipality)"
+    frequency: "transaction-level (real-time)"
+    coverage: "varies by municipality"
+    legacy_function: "get_property_records"
+    data_type: "tibble"
+    translation_notes: "Property types and addresses preserved; transaction values in local currency"
+
+  itbi_summary:
+    name: "ITBI Tax Summary Statistics"
+    name_pt: "Estatísticas Resumo ITBI"
+    description: "Aggregated statistics from ITBI real estate transfer tax data"
+    source: "Municipal governments"
+    url: "varies by municipality"
+    geography: "Brazil (varies by municipality)"
+    frequency: "monthly/quarterly"
+    coverage: "varies by municipality"
+    legacy_function: "get_itbi"
+    data_type: "tibble"
+    translation_notes: "Municipality names standardized; property classifications harmonized"
+
+  rppi_indices:
+    name: "Multiple RPPI Index Sources"
+    name_pt: "Múltiplas Fontes de Índices RPPI"
+    description: "Collection of residential property price indices from various sources including FIPE-ZAP, IGMI, IVA-R, etc."
+    source: "Multiple (FIPE, IGMI, IVAR, etc.)"
+    url: "varies by source"
+    geography: "Brazil (varies by index)"
+    frequency: "monthly"
+    coverage: "varies by index"
+    categories:
+      fipezap:
+        name: "FIPE-ZAP Index"
+        description: "FIPE-ZAP residential property price index"
+        source: "FIPE/ZAP"
+      igmi:
+        name: "IGMI Index"
+        description: "Índice Geral do Mercado Imobiliário"
+        source: "IGMI"
+      iqa:
+        name: "IQA Index"
+        description: "Índice de Qualidade Ambiental"
+        source: "IQA"
+      ivar:
+        name: "IVAR Index"
+        description: "Índice de Valores de Aluguéis Residenciais"
+        source: "IVAR"
+      ivgr:
+        name: "IVGR Index"
+        description: "Índice de Valores Gerais Residenciais"
+        source: "IVGR"
+      secovi_sp:
+        name: "SECOVI-SP Index"
+        description: "SECOVI-SP property price index"
+        source: "SECOVI-SP"
+    legacy_function: "get_rppi_*"
+    data_type: "tibble"
+    translation_notes: "Index methodologies vary by source; base periods normalized where possible"
