@@ -56,3 +56,10 @@ inst/doc
 /Meta/
 logs/
 /data-raw/rb3
+
+# targets
+_targets/
+rb3/
+
+# Backup directory
+backup/

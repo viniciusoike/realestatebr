@@ -122,6 +122,87 @@ bis <- get_dataset("rppi", table = "bis")
 
 ---
 
+# realestatebr 0.3.0
+
+## Major Features and Improvements
+
+### 🎯 Phase 2: Data Pipeline Implementation Complete
+
+- **{targets} Pipeline Framework**: Implemented comprehensive targets workflow for automated data processing and validation
+- **Automated Data Workflows**: Added daily and weekly GitHub Actions workflows using the targets pipeline
+- **Data Validation Infrastructure**: Added comprehensive validation rules and reporting for all datasets
+- **Pipeline Performance Monitoring**: Added automated report generation and validation status tracking
+
+### 📊 Enhanced Data Processing
+
+- **Targets Pipeline**: `_targets.R` workflow with automated dependency management and parallel processing
+- **Validation System**: Comprehensive data validation rules with automated quality checks
+- **Pipeline Helpers**: Centralized helper functions for consistent data processing across all sources
+- **Report Generation**: Automated pipeline status reports and data quality summaries
+
+### 🔧 Improved Function Reliability
+
+- **Error Handling**: Enhanced error handling in `cache.R` with better fallback mechanisms
+- **Function Fixes**: Fixed parameter bugs in `get_abrainc_indicators()` (category → table)
+- **Data Access**: Improved `get_nre_ire()` to use internal package data directly
+- **Internal Data**: Updated `sysdata.rda` with latest processed datasets
+
+### 🚀 Infrastructure Improvements
+
+- **Workflow Automation**: Replaced single update workflow with focused daily/weekly pipelines
+- **Cache Management**: Improved cache validation and fallback strategies
+- **Data Source Updates**: Enhanced FGV data cleaning with improved formatting
+- **Dependency Updates**: Added `targets` and `tarchetypes` to package dependencies
+
+### 📈 New Data Sources
+
+- **B3 Stocks**: Added enhanced B3 stock data processing with standardized formatting
+- **FGV Indicators**: Improved FGV consultation data processing and validation
+- **Industrial Production**: Enhanced CBIC PIM data integration
+- **Construction Materials**: Updated CBIC cement and steel data processing
+
+## Technical Implementation
+
+### Targets Pipeline Architecture
+- **Automated Processing**: All datasets now processed through unified targets pipeline
+- **Quality Assurance**: Built-in validation and quality checks for all data sources
+- **Performance Monitoring**: Real-time pipeline status and error reporting
+- **Dependency Management**: Automatic detection of data updates and re-processing
+
+### Enhanced Error Handling
+- **Graceful Degradation**: Improved fallback mechanisms for failed data retrievals
+- **Better Diagnostics**: Enhanced error messages and troubleshooting information
+- **Retry Logic**: Smart retry mechanisms with exponential backoff
+- **Progress Reporting**: Real-time progress updates during long-running operations
+
+### Data Quality Improvements
+- **Validation Rules**: Comprehensive validation for all datasets
+- **Metadata Tracking**: Enhanced metadata preservation and source tracking
+- **Format Standardization**: Consistent data formatting across all sources
+- **Quality Metrics**: Automated quality assessment and reporting
+
+## Migration Notes
+
+### For Existing Users
+- All existing functions continue to work unchanged
+- Enhanced reliability and performance with new pipeline backend
+- Improved error messages and troubleshooting information
+- Better cache management and fallback strategies
+
+### For Developers
+- New targets pipeline provides foundation for custom data workflows
+- Enhanced validation framework for quality assurance
+- Standardized helper functions for consistent data processing
+- Comprehensive pipeline documentation and examples
+
+---
+
+*This release establishes the foundation for automated data processing and validation, setting the stage for Phase 3 implementation with large dataset support.*
+
+**Full Changelog**: https://github.com/viniciusoike/realestatebr/compare/v0.2.0...v0.3.0
+
+---
+
 # realestatebr 0.2.0
 
 ## Major Features and Improvements

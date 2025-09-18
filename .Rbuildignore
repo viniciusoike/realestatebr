@@ -9,3 +9,4 @@
 ^\.claude$
 ^\.github$
 ^\.DS_Store$
+^backup$
