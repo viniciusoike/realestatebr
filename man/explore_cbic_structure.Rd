@@ -25,3 +25,4 @@ explore_cbic_structure(files$file_path[1])
 }
 
 }
+\keyword{internal}

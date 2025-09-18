@@ -25,3 +25,4 @@ A tibble with columns:
 \strong{WARNING: This function only works for monthly production tables (tabela_07.A.04).}
 Similar to consumption but uses "..." for missing data.
 }
+\keyword{internal}

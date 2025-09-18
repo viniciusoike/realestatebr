@@ -8,7 +8,7 @@ get_dataset_from_source(
   name,
   dataset_info,
   source,
-  category,
+  table,
   date_start,
   date_end,
   ...
@@ -21,7 +21,7 @@ get_dataset_from_source(
 
 \item{source}{Source type ("cache", "github", "fresh")}
 
-\item{category}{Optional category}
+\item{table}{Optional table}
 
 \item{date_start}{Optional start date}
 

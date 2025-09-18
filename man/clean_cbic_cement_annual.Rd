@@ -23,3 +23,4 @@ A tibble with columns:
 \description{
 Clean CBIC cement annual consumption data (tabela_07.A.01)
 }
+\keyword{internal}

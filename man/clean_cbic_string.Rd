@@ -15,3 +15,4 @@ Cleaned character vector
 \description{
 Helper function to clean strings for CBIC column names
 }
+\keyword{internal}

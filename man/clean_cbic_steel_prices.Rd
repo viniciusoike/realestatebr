@@ -31,3 +31,4 @@ steel_files <- get_cbic_files("aço")
 prices <- clean_cbic_steel_prices(steel_files$file_path[1])
 }
 }
+\keyword{internal}

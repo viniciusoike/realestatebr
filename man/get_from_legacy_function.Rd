@@ -4,14 +4,7 @@
 \alias{get_from_legacy_function}
 \title{Get Data from Legacy Function}
 \usage{
-get_from_legacy_function(
-  name,
-  dataset_info,
-  category,
-  date_start,
-  date_end,
-  ...
-)
+get_from_legacy_function(name, dataset_info, table, date_start, date_end, ...)
 }
 \description{
 Get Data from Legacy Function

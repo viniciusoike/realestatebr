@@ -20,6 +20,7 @@
 #'     \item{frequency}{Update frequency}
 #'     \item{coverage}{Time period coverage}
 #'     \item{categories}{Number of categories/subtables}
+#'     \item{available_tables}{Names of available tables (for multi-table datasets)}
 #'     \item{data_type}{Type of data structure (tibble/list)}
 #'     \item{legacy_function}{Original function name for backward compatibility}
 #'   }
@@ -35,8 +36,11 @@
 #' # Filter by geography
 #' sao_paulo_data <- list_datasets(geography = "São Paulo")
 #'
-#' # View dataset structure
-#' View(list_datasets())
+#' # View available tables for multi-table datasets
+#' View(list_datasets()$available_tables)
+#'
+#' # Get specific table from multi-table dataset
+#' abecip_sbpe <- get_dataset("abecip_indicators", table = "sbpe")
 #' }
 #'
 #' @seealso \code{\link{get_dataset}} for retrieving the actual data
@@ -118,13 +122,15 @@ registry_to_tibble <- function(registry) {
   dataset_info <- purrr::map_dfr(names(datasets), function(name) {
     dataset <- datasets[[name]]
     
-    # Count categories
-    n_categories <- if (!is.null(dataset$categories)) {
-      length(dataset$categories)
+    # Count categories and extract table names
+    if (!is.null(dataset$categories)) {
+      n_categories <- length(dataset$categories)
+      available_tables <- paste(names(dataset$categories), collapse = ", ")
     } else {
-      1
+      n_categories <- 1
+      available_tables <- "(single table)"
     }
-    
+
     # Create row
     tibble::tibble(
       name = name,
@@ -136,6 +142,7 @@ registry_to_tibble <- function(registry) {
       frequency = dataset$frequency %||% "",
       coverage = dataset$coverage %||% "",
       categories = n_categories,
+      available_tables = available_tables,
       data_type = dataset$data_type %||% "unknown",
       legacy_function = dataset$legacy_function %||% "",
       url = dataset$url %||% ""

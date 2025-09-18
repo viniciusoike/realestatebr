@@ -1,5 +1,8 @@
 #' Import data from Secovi-SP
 #'
+#' @section Deprecation:
+#' This function is deprecated. Use \code{\link{get_dataset}("secovi")} instead.
+#'
 #' Download and clean real estate information from Sao Paulo (SP) made available
 #' by SECOVI-SP with modern error handling, progress reporting, and robust
 #' web scraping capabilities.
@@ -19,7 +22,7 @@
 #' The function includes retry logic for failed web scraping attempts and
 #' robust error handling for parallel data processing operations.
 #'
-#' @param category Character. One of `'condo'`, `'rent'`, `'launch'`, `'sale'` or `'all'`
+#' @param table Character. One of `'condo'`, `'rent'`, `'launch'`, `'sale'` or `'all'`
 #'   (default).
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
 #'   using the unified dataset architecture.
@@ -55,24 +58,28 @@
 #' attr(sales, "download_info")
 #' }
 get_secovi <- function(
-  category = "all",
+  table = "all",
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Input validation ----
-  valid_categories <- c("all", "condo", "launch", "rent", "sale")
+  # Deprecation warning ----
+  .Deprecated("get_dataset",
+             msg = "get_secovi() is deprecated. Use get_dataset('secovi') instead.")
 
-  if (!is.character(category) || length(category) != 1) {
+  # Input validation ----
+  valid_tables <- c("all", "condo", "launch", "rent", "sale")
+
+  if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
-      "Invalid {.arg category} parameter",
-      "x" = "{.arg category} must be a single character string"
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string"
     ))
   }
 
-  if (!category %in% valid_categories) {
+  if (!table %in% valid_tables) {
     cli::cli_abort(c(
-      "Invalid category: {.val {category}}",
+      "Invalid table: {.val {table}}",
       "i" = "Valid categories: {.val {valid_categories}}"
     ))
   }
@@ -100,8 +107,8 @@ get_secovi <- function(
         tbl_secovi <- get_dataset("secovi", source = "github")
 
         # Filter category if needed
-        if (category != "all") {
-          tbl_secovi <- dplyr::filter(tbl_secovi, category == !!category)
+        if (table != "all") {
+          tbl_secovi <- dplyr::filter(tbl_secovi, category == !!table)
         }
 
         if (!quiet) {
@@ -114,7 +121,7 @@ get_secovi <- function(
         attr(tbl_secovi, "source") <- "cache"
         attr(tbl_secovi, "download_time") <- Sys.time()
         attr(tbl_secovi, "download_info") <- list(
-          category = category,
+          table = table,
           source = "cache"
         )
 
@@ -137,7 +144,7 @@ get_secovi <- function(
   }
 
   # Import data from SECOVI with retry logic
-  scrape <- import_secovi_robust(category = category, quiet = quiet, max_retries = max_retries)
+  scrape <- import_secovi_robust(table = table, quiet = quiet, max_retries = max_retries)
 
   if (!quiet) {
     cli::cli_inform("Processing {length(scrape)} data table{?s}...")
@@ -163,8 +170,8 @@ get_secovi <- function(
 
   tbl_secovi <- dplyr::bind_rows(clean_tables, .id = "variable")
   # Filter metadata table if needed
-  if (category != "all") {
-    secovi <- subset(secovi_metadata, cat == category)
+  if (table != "all") {
+    secovi <- subset(secovi_metadata, cat == table)
   } else {
     secovi <- secovi_metadata
   }
@@ -182,7 +189,7 @@ get_secovi <- function(
   attr(tbl_secovi, "source") <- "web"
   attr(tbl_secovi, "download_time") <- Sys.time()
   attr(tbl_secovi, "download_info") <- list(
-    category = category,
+    table = table,
     tables_processed = length(scrape),
     source = "web"
   )
@@ -198,13 +205,13 @@ get_secovi <- function(
 #'
 #' Modern version of import_secovi with retry logic and progress reporting.
 #'
-#' @param category Data category to import
+#' @param table Data table to import
 #' @param quiet Logical controlling messages
 #' @param max_retries Maximum number of retry attempts
 #'
 #' @return List of scraped data tables
 #' @keywords internal
-import_secovi_robust <- function(category, quiet, max_retries) {
+import_secovi_robust <- function(table, quiet, max_retries) {
   attempts <- 0
   last_error <- NULL
 
@@ -214,7 +221,7 @@ import_secovi_robust <- function(category, quiet, max_retries) {
     tryCatch(
       {
         # Try the original import function
-        result <- import_secovi(category)
+        result <- import_secovi(table)
 
         # Validate we got some data
         if (length(result) > 0) {
@@ -275,14 +282,14 @@ secovi_metadata <- dplyr::tribble(
 #'
 #' @inheritParams get_secovi
 #' @noRd
-import_secovi <- function(category) {
+import_secovi <- function(table) {
 
   message("Scraping data from http://indiceseconomicos.secovi.com.br/")
 
   url <- "http://indiceseconomicos.secovi.com.br/indicadormensal.php?idindicador="
 
-  if (category != "all") {
-    secovi <- subset(secovi_metadata, cat == category)
+  if (table != "all") {
+    secovi <- subset(secovi_metadata, cat == table)
   } else {
     secovi <- secovi_metadata
   }

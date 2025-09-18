@@ -1,5 +1,8 @@
 #' Import Real Estate data from the Brazilian Central Bank
 #'
+#' @section Deprecation:
+#' This function is deprecated. Use \code{\link{get_dataset}("bcb_realestate")} instead.
+#'
 #' Imports and cleans real estate data published monthly by the Brazilian Central
 #' Bank with modern error handling, progress reporting, and robust API access.
 #' Includes credit sources, credit applications, credit operations, financed
@@ -74,6 +77,10 @@ get_bcb_realestate <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
+  # Deprecation warning ----
+  .Deprecated("get_dataset",
+             msg = "get_bcb_realestate() is deprecated. Use get_dataset('bcb_realestate') instead.")
+
   # Input validation ----
   valid_categories <- c("all", "accounting", "application", "indices", "sources", "units")
 

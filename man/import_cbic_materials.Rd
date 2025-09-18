@@ -23,3 +23,4 @@ all available construction materials data.
 materials <- import_cbic_materials()
 }
 }
+\keyword{internal}

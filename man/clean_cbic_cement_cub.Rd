@@ -22,3 +22,4 @@ A tibble with columns:
 \strong{WARNING: This function only works for CUB price tables (tabela_07.A.05).}
 Year and month in first two columns, states as remaining columns.
 }
+\keyword{internal}

@@ -4,10 +4,10 @@
 \alias{import_secovi_robust}
 \title{Import SECOVI Data with Robust Error Handling}
 \usage{
-import_secovi_robust(category, quiet, max_retries)
+import_secovi_robust(table, quiet, max_retries)
 }
 \arguments{
-\item{category}{Data category to import}
+\item{table}{Data table to import}
 
 \item{quiet}{Logical controlling messages}
 

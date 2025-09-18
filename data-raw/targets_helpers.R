@@ -36,7 +36,7 @@ save_dataset_to_cache <- function(data, name, format = "auto") {
     cli::cli_inform("Saved {name} as compressed RDS ({file.size(file_path)} bytes)")
   } else if (format == "csv") {
     file_path <- file.path(cache_dir, paste0(name, ".csv.gz"))
-    readr::write_csv(data, file_path)
+    readr::write_delim(data, file_path, delim = ",")
     cli::cli_inform("Saved {name} as compressed CSV ({file.size(file_path)} bytes)")
   }
 

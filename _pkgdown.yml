@@ -47,6 +47,7 @@ reference:
   - starts_with("get_")
   - -get_dataset
   - -get_dataset_info
+  - explore_cbic_structure
 
 - title: "Cache Management"
   desc: "Functions for managing cached data"

@@ -4,10 +4,10 @@
 \alias{get_secovi}
 \title{Import data from Secovi-SP}
 \usage{
-get_secovi(category = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_secovi(table = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{category}{Character. One of \code{'condo'}, \code{'rent'}, \code{'launch'}, \code{'sale'} or \code{'all'}
+\item{table}{Character. One of \code{'condo'}, \code{'rent'}, \code{'launch'}, \code{'sale'} or \code{'all'}
 (default).}
 
 \item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache

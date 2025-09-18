@@ -21,3 +21,4 @@ A tibble with columns:
 \strong{WARNING: This function only works for production tables (tabela_07.A.02).}
 Simple year-based structure with multiple metrics as columns.
 }
+\keyword{internal}

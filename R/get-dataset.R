@@ -15,8 +15,8 @@
 #'     \item{"github"}{GitHub repository cache}
 #'     \item{"fresh"}{Fresh download from original source}
 #'   }
-#' @param category Character. Specific category within dataset (optional).
-#'   Use get_dataset_info(name) to see available categories.
+#' @param table Character. Specific table within dataset (optional).
+#'   Use get_dataset_info(name) to see available tables.
 #' @param date_start Date. Start date for time series data (where applicable)
 #' @param date_end Date. End date for time series data (where applicable)
 #' @param ... Additional arguments passed to legacy functions
@@ -30,7 +30,7 @@
 #' abecip_data <- get_dataset("abecip_indicators")
 #'
 #' # Get only SBPE data from ABECIP
-#' sbpe_data <- get_dataset("abecip_indicators", category = "sbpe")
+#' sbpe_data <- get_dataset("abecip_indicators", table = "sbpe")
 #'
 #' # Force fresh download
 #' fresh_data <- get_dataset("bcb_realestate", source = "fresh")
@@ -44,9 +44,9 @@
 #'   \code{\link{get_dataset_info}} for dataset details
 #'
 #' @export
-get_dataset <- function(name, 
-                       source = "auto", 
-                       category = NULL, 
+get_dataset <- function(name,
+                       source = "auto",
+                       table = NULL,
                        date_start = NULL,
                        date_end = NULL,
                        ...) {
@@ -62,19 +62,28 @@ get_dataset <- function(name,
   }
   
   dataset_info <- registry$datasets[[name]]
-  
+
+  # Validate and resolve table parameter
+  table_info <- validate_and_resolve_table(name, dataset_info, table)
+  resolved_table <- table_info$resolved_table
+
   # Try to get data with fallback strategy
   if (source == "auto") {
-    data <- get_dataset_with_fallback(name, dataset_info, category, date_start, date_end, ...)
+    data <- get_dataset_with_fallback(name, dataset_info, resolved_table, date_start, date_end, ...)
   } else {
-    data <- get_dataset_from_source(name, dataset_info, source, category, date_start, date_end, ...)
+    data <- get_dataset_from_source(name, dataset_info, source, resolved_table, date_start, date_end, ...)
   }
   
   # Apply translations if available
   if (!is.null(data)) {
     data <- apply_translations(data, name, dataset_info)
   }
-  
+
+  # Show informative message about what was imported
+  if (!is.null(data)) {
+    show_import_message(name, table_info)
+  }
+
   return(data)
 }
 
@@ -85,13 +94,13 @@ get_dataset <- function(name,
 #'
 #' @param name Dataset name
 #' @param dataset_info Dataset metadata from registry
-#' @param category Optional category filter
+#' @param table Optional table filter
 #' @param date_start Optional start date
 #' @param date_end Optional end date
 #' @param ... Additional arguments
 #' @return Dataset or NULL if all methods fail
 #' @keywords internal
-get_dataset_with_fallback <- function(name, dataset_info, category, date_start, date_end, ...) {
+get_dataset_with_fallback <- function(name, dataset_info, table, date_start, date_end, ...) {
   
   # Initialize error tracking
   errors <- list()
@@ -99,7 +108,7 @@ get_dataset_with_fallback <- function(name, dataset_info, category, date_start, 
   # Try 1: GitHub cache (fastest for most users)
   cli::cli_inform("Attempting to load {name} from GitHub cache...")
   data <- tryCatch({
-    get_dataset_from_source(name, dataset_info, "github", category, date_start, date_end, ...)
+    get_dataset_from_source(name, dataset_info, "github", table, date_start, date_end, ...)
   }, error = function(e) {
     errors$github <<- e$message
     cli::cli_warn("GitHub cache failed: {e$message}")
@@ -114,7 +123,7 @@ get_dataset_with_fallback <- function(name, dataset_info, category, date_start, 
   # Try 2: Fresh download
   cli::cli_inform("Attempting fresh download from original source...")
   data <- tryCatch({
-    get_dataset_from_source(name, dataset_info, "fresh", category, date_start, date_end, ...)
+    get_dataset_from_source(name, dataset_info, "fresh", table, date_start, date_end, ...)
   }, error = function(e) {
     errors$fresh <<- e$message
     cli::cli_warn("Fresh download failed: {e$message}")
@@ -150,25 +159,25 @@ get_dataset_with_fallback <- function(name, dataset_info, category, date_start, 
 #' @param name Dataset name
 #' @param dataset_info Dataset metadata
 #' @param source Source type ("cache", "github", "fresh")
-#' @param category Optional category
+#' @param table Optional table
 #' @param date_start Optional start date
 #' @param date_end Optional end date
 #' @param ... Additional arguments
 #' @return Dataset or error
 #' @keywords internal
-get_dataset_from_source <- function(name, dataset_info, source, category, date_start, date_end, ...) {
+get_dataset_from_source <- function(name, dataset_info, source, table, date_start, date_end, ...) {
   
   switch(source,
-    "cache" = get_from_local_cache(name, dataset_info, category),
-    "github" = get_from_github_cache(name, dataset_info, category),
-    "fresh" = get_from_legacy_function(name, dataset_info, category, date_start, date_end, ...)
+    "cache" = get_from_local_cache(name, dataset_info, table),
+    "github" = get_from_github_cache(name, dataset_info, table),
+    "fresh" = get_from_legacy_function(name, dataset_info, table, date_start, date_end, ...)
   )
 }
 
 #' Get Data from Local Cache
 #'
 #' @keywords internal
-get_from_local_cache <- function(name, dataset_info, category) {
+get_from_local_cache <- function(name, dataset_info, table) {
   # Implementation for local cache (placeholder for now)
   cli::cli_abort("Local cache not yet implemented. Use source='github' or source='fresh'.")
 }
@@ -176,10 +185,10 @@ get_from_local_cache <- function(name, dataset_info, category) {
 #' Get Data from GitHub Cache
 #'
 #' @keywords internal
-get_from_github_cache <- function(name, dataset_info, category) {
-  
+get_from_github_cache <- function(name, dataset_info, table) {
+
   # Map dataset name to import_cached parameter
-  cached_name <- get_cached_name(name, dataset_info, category)
+  cached_name <- get_cached_name(name, dataset_info, table)
   
   if (is.null(cached_name)) {
     cli::cli_abort("No GitHub cache available for dataset '{name}'")
@@ -188,17 +197,17 @@ get_from_github_cache <- function(name, dataset_info, category) {
   # Use existing import_cached function
   data <- import_cached(cached_name)
   
-  # Filter by category if requested and data is a list
-  if (!is.null(category) && is.list(data) && !inherits(data, "data.frame")) {
-    if (category %in% names(data)) {
-      data <- data[[category]]
+  # Filter by table if requested and data is a list
+  if (!is.null(table) && is.list(data) && !inherits(data, "data.frame")) {
+    if (table %in% names(data)) {
+      data <- data[[table]]
     } else {
-      available_cats <- paste(names(data), collapse = ", ")
-      cli::cli_abort("Category '{category}' not found. Available: {available_cats}")
+      available_tables <- paste(names(data), collapse = ", ")
+      cli::cli_abort("Table '{table}' not found. Available: {available_tables}")
     }
   }
-  # Note: For datasets with category-specific cached files (like BIS), 
-  # the category filtering is handled by get_cached_name() above
+  # Note: For datasets with table-specific cached files (like BIS),
+  # the table filtering is handled by get_cached_name() above
   
   return(data)
 }
@@ -206,7 +215,7 @@ get_from_github_cache <- function(name, dataset_info, category) {
 #' Get Data from Legacy Function
 #'
 #' @keywords internal
-get_from_legacy_function <- function(name, dataset_info, category, date_start, date_end, ...) {
+get_from_legacy_function <- function(name, dataset_info, table, date_start, date_end, ...) {
   
   legacy_function <- dataset_info$legacy_function
   
@@ -217,16 +226,16 @@ get_from_legacy_function <- function(name, dataset_info, category, date_start, d
   # Build arguments for legacy function
   args <- list(...)
   
-  # Add category/table parameter based on function requirements
-  if (!is.null(category)) {
+  # Add table parameter based on function requirements
+  if (!is.null(table)) {
     if (legacy_function %in% c("get_abecip_indicators", "get_abrainc_indicators")) {
-      args$table <- category
+      args$table <- table
     } else if (legacy_function == "get_rppi") {
-      args$category <- category
-    } else if (supports_category_all(legacy_function)) {
-      args$category <- category
+      args$category <- table
+    } else if (supports_table_all(legacy_function)) {
+      args$category <- table
     }
-  } else if (supports_category_all(legacy_function)) {
+  } else if (supports_table_all(legacy_function)) {
     args$category <- "all"
   }
   
@@ -253,7 +262,7 @@ get_from_legacy_function <- function(name, dataset_info, category, date_start, d
 #' Maps dataset names to the parameter names used by import_cached()
 #'
 #' @keywords internal
-get_cached_name <- function(name, dataset_info, category = NULL) {
+get_cached_name <- function(name, dataset_info, table = NULL) {
   
   # First, check if cached_file is specified in registry
   cached_file <- dataset_info$cached_file
@@ -264,13 +273,13 @@ get_cached_name <- function(name, dataset_info, category = NULL) {
       # Extract base name without extension
       return(gsub("\\.(rds|csv\\.gz)$", "", basename(cached_file)))
     } else if (is.list(cached_file)) {
-      # If category is specified and exists in cached_file list, use it
-      if (!is.null(category) && category %in% names(cached_file)) {
-        selected_file <- cached_file[[category]]
+      # If table is specified and exists in cached_file list, use it
+      if (!is.null(table) && table %in% names(cached_file)) {
+        selected_file <- cached_file[[table]]
         return(gsub("\\.(rds|csv\\.gz)$", "", basename(selected_file)))
       }
       # For multiple files, use the first one as default
-      # (specific category selection handled separately)
+      # (specific table selection handled separately)
       first_file <- cached_file[[1]]
       return(gsub("\\.(rds|csv\\.gz)$", "", basename(first_file)))
     }
@@ -293,20 +302,20 @@ get_cached_name <- function(name, dataset_info, category = NULL) {
   return(name_mapping[[name]])
 }
 
-#' Check if Legacy Function Supports category="all"
+#' Check if Legacy Function Supports table="all"
 #'
 #' @keywords internal
-supports_category_all <- function(func_name) {
-  functions_with_category <- c(
+supports_table_all <- function(func_name) {
+  functions_with_table <- c(
     "get_abecip_indicators",
-    "get_abrainc_indicators", 
+    "get_abrainc_indicators",
     "get_bcb_realestate",
     "get_secovi",
     "get_bis_rppi",
     "get_bcb_series"
   )
-  
-  return(func_name %in% functions_with_category)
+
+  return(func_name %in% functions_with_table)
 }
 
 #' Apply Translations to Dataset
@@ -332,6 +341,93 @@ apply_translations <- function(data, name, dataset_info) {
   if (exists("translate_dataset", mode = "function")) {
     data <- translate_dataset(data, name)
   }
-  
+
   return(data)
+}
+
+#' Get Available Tables from Dataset Info
+#'
+#' Extract list of available tables/categories from dataset registry information
+#'
+#' @param dataset_info Dataset metadata from registry
+#' @return Character vector of available table names, or NULL if no categories
+#' @keywords internal
+get_available_tables <- function(dataset_info) {
+  categories <- dataset_info$categories
+  if (is.null(categories)) {
+    return(NULL)
+  }
+  return(names(categories))
+}
+
+#' Validate and Resolve Table Parameter
+#'
+#' Validates table parameter against available tables and resolves default table
+#'
+#' @param name Dataset name
+#' @param dataset_info Dataset metadata from registry
+#' @param table User-specified table name (can be NULL)
+#' @return List with resolved_table, available_tables, and is_default
+#' @keywords internal
+validate_and_resolve_table <- function(name, dataset_info, table = NULL) {
+  available_tables <- get_available_tables(dataset_info)
+
+  # Single-table datasets
+  if (is.null(available_tables)) {
+    if (!is.null(table)) {
+      cli::cli_warn("Dataset '{name}' has only one table. Ignoring table parameter.")
+    }
+    return(list(
+      resolved_table = NULL,
+      available_tables = NULL,
+      is_default = TRUE
+    ))
+  }
+
+  # Multi-table datasets
+  if (is.null(table)) {
+    # Use first table as default
+    resolved_table <- available_tables[1]
+    return(list(
+      resolved_table = resolved_table,
+      available_tables = available_tables,
+      is_default = TRUE
+    ))
+  }
+
+  # Validate specified table
+  if (!table %in% available_tables) {
+    available_str <- paste(available_tables, collapse = "', '")
+    cli::cli_abort("Invalid table '{table}' for dataset '{name}'. Available tables: '{available_str}'.")
+  }
+
+  return(list(
+    resolved_table = table,
+    available_tables = available_tables,
+    is_default = FALSE
+  ))
+}
+
+#' Show Dataset Import Message
+#'
+#' Display informative message about which table was imported and what's available
+#'
+#' @param name Dataset name
+#' @param table_info Result from validate_and_resolve_table()
+#' @keywords internal
+show_import_message <- function(name, table_info) {
+  if (is.null(table_info$available_tables)) {
+    # Single-table dataset - no message needed
+    return(invisible())
+  }
+
+  # Multi-table dataset
+  imported_table <- table_info$resolved_table
+  available_str <- paste(table_info$available_tables, collapse = "', '")
+
+  if (table_info$is_default) {
+    cli::cli_inform("Imported '{imported_table}' table from '{name}'. All tables available: '{available_str}'.")
+  } else {
+    cli::cli_inform("Imported '{imported_table}' table from '{name}'. All tables available: '{available_str}'.")
+  }
 }

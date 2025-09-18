@@ -30,3 +30,4 @@ steel_files <- get_cbic_files("aço")
 production <- clean_cbic_steel_production(steel_files$file_path[2])
 }
 }
+\keyword{internal}

@@ -1,5 +1,8 @@
 #' Get Credit Indicators from Abecip
 #'
+#' @section Deprecation:
+#' This function is deprecated. Use \code{\link{get_dataset}("abecip_indicators")} instead.
+#'
 #' Downloads updated housing credit data from Abecip. Abecip represents the major
 #' financial institutions that integrate Brazil's finance housing system (SFH).
 #' Provides modern error handling, progress reporting, and robust download capabilities.
@@ -74,6 +77,10 @@ get_abecip_indicators <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
+  # Deprecation warning ----
+  .Deprecated("get_dataset",
+             msg = "get_abecip_indicators() is deprecated. Use get_dataset('abecip_indicators') instead.")
+
   # Input validation and backward compatibility ----
   valid_tables <- c("sbpe", "cgi", "units", "all")
 

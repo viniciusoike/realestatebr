@@ -160,8 +160,8 @@ load_file_by_extension <- function(file_path, extension, quiet) {
   tryCatch({
     data <- switch(extension,
       "rds" = readRDS(file_path),
-      "csv.gz" = readr::read_csv(file_path, show_col_types = FALSE),
-      "csv" = readr::read_csv(file_path, show_col_types = FALSE)
+      "csv.gz" = readr::read_delim(file_path, show_col_types = FALSE),
+      "csv" = readr::read_delim(file_path, show_col_types = FALSE)
     )
 
     return(data)

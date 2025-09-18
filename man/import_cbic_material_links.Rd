@@ -25,3 +25,4 @@ cement_url <- "http://www.cbicdados.com.br/menu/materiais-de-construcao/cimento"
 files <- import_cbic_material_links(cement_url)
 }
 }
+\keyword{internal}

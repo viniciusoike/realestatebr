@@ -4,7 +4,7 @@
 \alias{get_from_local_cache}
 \title{Get Data from Local Cache}
 \usage{
-get_from_local_cache(name, dataset_info, category)
+get_from_local_cache(name, dataset_info, table)
 }
 \description{
 Get Data from Local Cache

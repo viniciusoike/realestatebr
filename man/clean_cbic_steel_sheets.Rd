@@ -21,3 +21,4 @@ steel_files <- get_cbic_files("aço")
 steel_data <- clean_cbic_steel_sheets(steel_files)
 }
 }
+\keyword{internal}

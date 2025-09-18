@@ -4,21 +4,14 @@
 \alias{get_dataset_with_fallback}
 \title{Get Dataset with Fallback Strategy}
 \usage{
-get_dataset_with_fallback(
-  name,
-  dataset_info,
-  category,
-  date_start,
-  date_end,
-  ...
-)
+get_dataset_with_fallback(name, dataset_info, table, date_start, date_end, ...)
 }
 \arguments{
 \item{name}{Dataset name}
 
 \item{dataset_info}{Dataset metadata from registry}
 
-\item{category}{Optional category filter}
+\item{table}{Optional table filter}
 
 \item{date_start}{Optional start date}
 

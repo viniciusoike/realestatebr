@@ -18,6 +18,8 @@
 #' \dontrun{
 #' materials <- import_cbic_materials()
 #' }
+#' @keywords internal
+
 import_cbic_materials <- function() {
   cli::cli_inform("Fetching CBIC materials metadata...")
 
@@ -59,6 +61,8 @@ import_cbic_materials <- function() {
 #' cement_url <- "http://www.cbicdados.com.br/menu/materiais-de-construcao/cimento"
 #' files <- import_cbic_material_links(cement_url)
 #' }
+#' @keywords internal
+
 import_cbic_material_links <- function(material_url) {
   cli::cli_inform("Fetching file links from: {material_url}")
 
@@ -100,6 +104,8 @@ import_cbic_material_links <- function(material_url) {
 #' url <- "http://www.cbicdados.com.br/media/anexos/example.xlsx"
 #' file_path <- import_cbic_file(url)
 #' }
+#' @keywords internal
+
 import_cbic_file <- function(url, dest_dir = tempdir(), delay = 1) {
   Sys.sleep(delay)
 
@@ -132,6 +138,7 @@ import_cbic_file <- function(url, dest_dir = tempdir(), delay = 1) {
 #' files <- import_cbic_material_links(cement_url)
 #' results <- import_cbic_files(files)
 #' }
+#' @keywords internal
 import_cbic_files <- function(file_params, dest_dir = tempdir()) {
   cli::cli_inform("Downloading {nrow(file_params)} files...")
 
@@ -182,6 +189,7 @@ import_cbic_files <- function(file_params, dest_dir = tempdir()) {
 #' # Only works for monthly consumption tables!
 #' cleaned_data <- clean_cbic_cement_monthly(raw_data, 2023)
 #' }
+#' @keywords internal
 clean_cbic_cement_monthly <- function(dat, year) {
   # Check if this looks like cement data
   if (!"localidade" %in% names(dat)) {
@@ -287,6 +295,7 @@ clean_cbic_cement_monthly <- function(dat, year) {
 #'     \item{value}{Numeric. Annual consumption value}
 #'     \item{variable}{Character. Type of metric (consumption or growth)}
 #'   }
+#' @keywords internal
 clean_cbic_cement_annual <- function(file_path, sheet = 1) {
   # This file has a complex structure with multiple column groups
   # Each group has: Year, Value, Growth %, blank column
@@ -349,6 +358,7 @@ clean_cbic_cement_annual <- function(file_path, sheet = 1) {
 #'     \item{variable}{Character. Metric name}
 #'     \item{value}{Numeric. Value}
 #'   }
+#' @keywords internal
 clean_cbic_cement_production <- function(file_path) {
   dat <- readxl::read_excel(file_path, skip = 4)
 
@@ -406,6 +416,7 @@ clean_cbic_cement_production <- function(file_path) {
 #'     \item{name_state}{Character. State name}
 #'     \item{value}{Numeric. Production value (NA for missing)}
 #'   }
+#' @keywords internal
 clean_cbic_cement_monthly_production <- function(dat, year) {
   # Similar structure to monthly consumption but with "..." for missing values
   if (ncol(dat) < 5) {
@@ -480,6 +491,7 @@ clean_cbic_cement_monthly_production <- function(dat, year) {
 #'     \item{state}{Character. State abbreviation}
 #'     \item{value}{Numeric. CUB cement price (R$/kg)}
 #'   }
+#' @keywords internal
 clean_cbic_cement_cub <- function(file_path) {
   dat <- readxl::read_excel(file_path, skip = 4)
 
@@ -552,6 +564,7 @@ clean_cbic_cement_cub <- function(file_path) {
 #' \dontrun{
 #' pim_data <- clean_cbic_pim("path/to/pim_file.xlsx")
 #' }
+#' @keywords internal
 clean_cbic_pim <- function(file_path, skip = 4) {
   dat <- readxl::read_excel(file_path, skip = skip)
 
@@ -659,6 +672,7 @@ clean_cbic_pim <- function(file_path, skip = 4) {
 #' download_results <- import_cbic_files(pim_files)
 #' pim_data <- clean_cbic_pim_sheets(download_results)
 #' }
+#' @keywords internal
 clean_cbic_pim_sheets <- function(download_results) {
   successful_files <- dplyr::filter(download_results, download_success)
 
@@ -704,6 +718,7 @@ clean_cbic_pim_sheets <- function(download_results) {
 #' download_results <- import_cbic_files(cement_files)
 #' processed_data <- clean_cbic_cement_sheets(download_results)
 #' }
+#' @keywords internal
 clean_cbic_cement_sheets <- function(download_results, skip_rows = 4) {
   read_excel_safe <- purrr::possibly(readxl::read_excel, otherwise = NULL)
 
@@ -808,7 +823,7 @@ clean_cbic_cement_sheets <- function(download_results, skip_rows = 4) {
 #' explore_cbic_structure(files$file_path[1])
 #' }
 #'
-#' @export
+#' @keywords internal
 explore_cbic_structure <- function(file_path, sheet = 1) {
   cli::cli_h2("Exploring CBIC file structure: {basename(file_path)}")
 
@@ -874,6 +889,7 @@ explore_cbic_structure <- function(file_path, sheet = 1) {
 #' steel_files <- get_cbic_files("aço")
 #' prices <- clean_cbic_steel_prices(steel_files$file_path[1])
 #' }
+#' @keywords internal
 clean_cbic_steel_prices <- function(file_path, skip_rows = 4) {
   drop_cols <- c("TOTAL", "Total", "total", "TOTAL GERAL", "Brasil", "BRASIL")
 
@@ -949,6 +965,7 @@ clean_cbic_steel_prices <- function(file_path, skip_rows = 4) {
 #' steel_files <- get_cbic_files("aço")
 #' production <- clean_cbic_steel_production(steel_files$file_path[2])
 #' }
+#' @keywords internal
 clean_cbic_steel_production <- function(file_path, skip_rows = 3) {
   # Read multi-level headers
   header <- readxl::read_excel(
@@ -1044,6 +1061,7 @@ get_cbic_dim_state <- function() {
 #'
 #' @param x Character vector to clean
 #' @return Cleaned character vector
+#' @keywords internal
 clean_cbic_string <- function(x) {
   y <- stringr::str_remove_all(x, "\\\\d+")
   y <- stringi::stri_trans_general(y, "latin-ascii")
@@ -1067,6 +1085,7 @@ clean_cbic_string <- function(x) {
 #' steel_files <- get_cbic_files("aço")
 #' steel_data <- clean_cbic_steel_sheets(steel_files)
 #' }
+#' @keywords internal
 clean_cbic_steel_sheets <- function(download_results) {
   successful_files <- dplyr::filter(download_results, download_success)
 

@@ -4,7 +4,7 @@
 \alias{get_from_github_cache}
 \title{Get Data from GitHub Cache}
 \usage{
-get_from_github_cache(name, dataset_info, category)
+get_from_github_cache(name, dataset_info, table)
 }
 \description{
 Get Data from GitHub Cache

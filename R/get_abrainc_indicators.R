@@ -1,5 +1,8 @@
 #' Import Indicators from the Abrainc-Fipe Report
 #'
+#' @section Deprecation:
+#' This function is deprecated. Use \code{\link{get_dataset}("abrainc_indicators")} instead.
+#'
 #' Downloads data from the Abrainc-Fipe Indicators report with modern error
 #' handling, progress reporting, and robust download capabilities. Data includes
 #' information on new launches, sales, delivered units, etc. in the primary
@@ -81,6 +84,10 @@ get_abrainc_indicators <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
+  # Deprecation warning ----
+  .Deprecated("get_dataset",
+             msg = "get_abrainc_indicators() is deprecated. Use get_dataset('abrainc_indicators') instead.")
+
   # Input validation and backward compatibility ----
   valid_tables <- c("all", "indicator", "radar", "leading")
 

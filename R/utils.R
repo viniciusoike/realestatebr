@@ -6,7 +6,6 @@
 #'
 #' @details Based on the date column, finds the range to be imported.
 get_range <- function(path = NULL, sheet, skip_row = 4) {
-
   # Import all data from sheet
   cells <- tidyxl::xlsx_cells(path, sheets = sheet)
 
@@ -17,28 +16,22 @@ get_range <- function(path = NULL, sheet, skip_row = 4) {
 
   # Finds last row that is of type Date
   maxrow <- cells |>
-    dplyr::filter(sheet == sheet,
-                  row > skip_row,
-                  data_type == "date") |>
+    dplyr::filter(sheet == sheet, row > skip_row, data_type == "date") |>
     dplyr::slice(dplyr::n()) |>
     dplyr::pull(address)
 
   # Finds last non-NA column
   maxcol <- cells |>
-    dplyr::filter(sheet == sheet,
-                  row > skip_row,
-                  col == max(col)) |>
+    dplyr::filter(sheet == sheet, row > skip_row, col == max(col)) |>
     dplyr::slice(1) |>
     dplyr::pull(address) |>
     unique()
 
   maxcol <- cells |>
-    dplyr::filter(sheet == sheet,
-                  !is.na(numeric)) |>
+    dplyr::filter(sheet == sheet, !is.na(numeric)) |>
     dplyr::slice_max(col, n = 1) |>
     dplyr::pull(address) |>
     unique()
-
 
   # Paste together range
   # B5:BD162
@@ -93,21 +86,26 @@ get_range_new <- function(path = NULL, sheet, skip_row = 4) {
   }
 
   # Read the sheet
-  df <- readxl::read_excel(path,
-                           sheet = sheet,
-                           col_names = TRUE,
-                           .name_repair = "minimal")
+  df <- readxl::read_excel(
+    path,
+    sheet = sheet,
+    col_names = TRUE,
+    .name_repair = "minimal"
+  )
 
   # Get dimensions of the data
   dims <- readxl::excel_sheets(path) |>
     purrr::set_names() |>
-    purrr::map(~readxl::read_excel(path, sheet = .x, col_names = FALSE)) |>
-    purrr::map(dim) |>
-    _[[sheet]]
+    purrr::map(~ readxl::read_excel(path, sheet = .x, col_names = FALSE)) |>
+    purrr::map(dim)
+
+  dims <- dims[[sheet]]
 
   # Find the last row with dates
-  date_cols <- which(sapply(df, inherits, "POSIXct") |
-                       sapply(df, inherits, "Date"))
+  date_cols <- which(
+    sapply(df, inherits, "POSIXct") |
+      sapply(df, inherits, "Date")
+  )
 
   if (length(date_cols) == 0) {
     stop("No date columns found in the sheet")
@@ -120,7 +118,9 @@ get_range_new <- function(path = NULL, sheet, skip_row = 4) {
 
   # Convert column numbers to Excel column letters
   number_to_letter <- function(n) {
-    if (n <= 0) return("")
+    if (n <= 0) {
+      return("")
+    }
 
     letter <- ""
     while (n > 0) {
@@ -132,7 +132,7 @@ get_range_new <- function(path = NULL, sheet, skip_row = 4) {
   }
 
   # Create range string
-  start_col <- number_to_letter(1)  # Usually starts from first column
+  start_col <- number_to_letter(1) # Usually starts from first column
   start_row <- skip_row + 1
   end_col <- number_to_letter(last_col)
   end_row <- last_date_row
@@ -143,12 +143,8 @@ get_range_new <- function(path = NULL, sheet, skip_row = 4) {
 }
 
 
-
 add_geo_dimensions <- function(df, key = c("name_simplified", "abbrev_state")) {
-
   # Join original table with geographic dimension
   joined <- dplyr::left_join(df, dim_city, by = key)
   return(joined)
-
 }
-

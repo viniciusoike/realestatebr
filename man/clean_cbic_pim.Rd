@@ -30,3 +30,4 @@ serial dates for January and month abbreviations for other months.
 pim_data <- clean_cbic_pim("path/to/pim_file.xlsx")
 }
 }
+\keyword{internal}

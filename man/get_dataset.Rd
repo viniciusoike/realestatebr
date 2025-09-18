@@ -7,7 +7,7 @@
 get_dataset(
   name,
   source = "auto",
-  category = NULL,
+  table = NULL,
   date_start = NULL,
   date_end = NULL,
   ...
@@ -24,8 +24,8 @@ get_dataset(
 \item{"fresh"}{Fresh download from original source}
 }}
 
-\item{category}{Character. Specific category within dataset (optional).
-Use get_dataset_info(name) to see available categories.}
+\item{table}{Character. Specific table within dataset (optional).
+Use get_dataset_info(name) to see available tables.}
 
 \item{date_start}{Date. Start date for time series data (where applicable)}
 
@@ -47,7 +47,7 @@ fallback between different data sources (cache, GitHub, fresh download).
 abecip_data <- get_dataset("abecip_indicators")
 
 # Get only SBPE data from ABECIP
-sbpe_data <- get_dataset("abecip_indicators", category = "sbpe")
+sbpe_data <- get_dataset("abecip_indicators", table = "sbpe")
 
 # Force fresh download
 fresh_data <- get_dataset("bcb_realestate", source = "fresh")
