@@ -2,6 +2,15 @@
 # The temporary solution is to download the data from
 # https://extra-ibre.fgv.br/IBRE/sitefgvdados/consulta.aspx
 
+# Roteiro para update manual:
+
+# 1. Ir para https://autenticacao-ibre.fgv.br/ProdutosDigitais/
+# 2. Fazer login
+# 3. Inserir as séries: IVAR, Sondagem, INCC, nesta ordem.
+
+# OBS: revisar séries e ordem das séries para facilitar o processo.
+
+# fmt: skip
 fgv_dict <- data.frame(
   id_series = 1:15,
   code_series = c(
@@ -36,6 +45,7 @@ fgv_dict <- data.frame(
   )
 )
 
+# fmt: skip
 fgv_key <- tibble::tribble(
   ~code_series,      ~name_simplified,
   1463201,         "ivar_brazil",
@@ -61,17 +71,22 @@ fgv_data <- readr::read_delim(
   locale = readr::locale(decimal_mark = ",", encoding = "ISO-8859-1"),
   na = " - ",
   col_types = "cddddddddddddddd"
-  )
+)
 
 fgv_data <- fgv_data |>
   dplyr::rename(date = Data) |>
   dplyr::mutate(date = readr::parse_date(date, format = "%m/%Y")) |>
-  tidyr::pivot_longer(-date, names_to = "name_series") |>
+  tidyr::pivot_longer(-date, names_to = "name_series")
+
+fgv_data <- fgv_data |>
   dplyr::mutate(
     code_series = stringr::str_extract(name_series, "(?<=\\()\\d{7}(?=\\))"),
     code_series = as.numeric(code_series)
-    ) |>
-  dplyr::select(-name_series) |>
+  ) |>
+  dplyr::select(-name_series)
+
+# fmt: skip
+fgv_data <- fgv_data |>
   dplyr::left_join(fgv_dict, by = "code_series") |>
   dplyr::left_join(fgv_key, by = "code_series") |>
   dplyr::select(

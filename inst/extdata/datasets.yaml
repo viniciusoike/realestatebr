@@ -235,3 +235,18 @@ datasets:
     legacy_function: "get_cbic_*"
     data_type: "list"
     translation_notes: "Material types and units translated; regional data preserved"
+
+  nre_ire:
+    name: "NRE-IRE Real Estate Index"
+    name_pt: "Índice Imobiliário NRE-IRE"
+    description: "Real Estate Index tracking average stock prices of Brazilian real estate companies"
+    source: "NRE-Poli-USP"
+    url: "https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html"
+    geography: "Brazil"
+    frequency: "monthly"
+    coverage: "May 2006-present"
+    legacy_function: "get_nre_ire"
+    data_type: "tibble"
+    cached_file: "ire.rds"
+    cached_only: true
+    translation_notes: "Index values (100 = May 2006); includes IRE, IRE-BI, and Ibovespa comparison"
