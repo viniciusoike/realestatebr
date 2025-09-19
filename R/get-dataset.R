@@ -21,16 +21,19 @@
 #' @param date_end Date. End date for time series data (where applicable)
 #' @param ... Additional arguments passed to legacy functions
 #'
-#' @return Dataset as tibble or list, depending on the dataset structure.
-#'   Use get_dataset_info(name) to see the expected structure.
+#' @return Dataset as a tibble. For multi-table datasets, use the `table` parameter
+#'   to specify which table to return. Use list_datasets() to see available tables.
 #'
 #' @examples
 #' \dontrun{
-#' # Get all ABECIP indicators
-#' abecip_data <- get_dataset("abecip")
-#'
-#' # Get only SBPE data from ABECIP
+#' # Get SBPE data from ABECIP (specify table for multi-table datasets)
 #' sbpe_data <- get_dataset("abecip", table = "sbpe")
+#'
+#' # Get units data from ABECIP  
+#' units_data <- get_dataset("abecip", table = "units")
+#'
+#' # Single-table datasets don't require table parameter
+#' secovi_data <- get_dataset("secovi")
 #'
 #' # Force fresh download
 #' fresh_data <- get_dataset("bcb_realestate", source = "fresh")
@@ -77,11 +80,6 @@ get_dataset <- function(name,
   # Apply translations if available
   if (!is.null(data)) {
     data <- apply_translations(data, name, dataset_info)
-  }
-
-  # Show informative message about what was imported
-  if (!is.null(data)) {
-    show_import_message(name, table_info)
   }
 
   return(data)
@@ -197,17 +195,40 @@ get_from_github_cache <- function(name, dataset_info, table) {
   # Use existing import_cached function
   data <- import_cached(cached_name)
   
-  # Filter by table if requested and data is a list
-  if (!is.null(table) && is.list(data) && !inherits(data, "data.frame")) {
+  # CORE REQUIREMENT: Always return a single tibble
+  # For multi-table datasets, user MUST specify which table they want
+  if (is.list(data) && !inherits(data, "data.frame")) {
+    # Multi-table dataset
+    if (is.null(table)) {
+      # No table specified - provide helpful guidance
+      available_tables <- paste(names(data), collapse = ", ")
+      cli::cli_abort(c(
+        "Dataset '{name}' contains multiple tables. Please specify which table you want:",
+        "i" = "Available tables: {available_tables}",
+        "i" = "Example: get_dataset('{name}', table = '{names(data)[1]}')"
+      ))
+    }
+    
+    # Table specified - extract it
     if (table %in% names(data)) {
       data <- data[[table]]
+      cli::cli_inform("Returning table '{table}' from dataset '{name}'")
     } else {
       available_tables <- paste(names(data), collapse = ", ")
-      cli::cli_abort("Table '{table}' not found. Available: {available_tables}")
+      cli::cli_abort(c(
+        "Table '{table}' not found in dataset '{name}'.",
+        "i" = "Available tables: {available_tables}"
+      ))
     }
+  } else if (!is.null(table)) {
+    # Single-table dataset but user specified table parameter
+    cli::cli_inform("Dataset '{name}' contains only one table. Ignoring table parameter.")
   }
-  # Note: For datasets with table-specific cached files (like BIS),
-  # the table filtering is handled by get_cached_name() above
+  
+  # Ensure we always return a tibble/data.frame, never a list
+  if (!inherits(data, "data.frame")) {
+    cli::cli_abort("Error: Dataset '{name}' did not return a data.frame/tibble. This is a package bug.")
+  }
   
   return(data)
 }

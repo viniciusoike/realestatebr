@@ -53,7 +53,7 @@
 #'     \item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter mutate select rename_with inner_join tibble
 #' @importFrom tidyr pivot_wider unnest

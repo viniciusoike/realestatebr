@@ -37,7 +37,7 @@
 #'     \item{download_time}{Timestamp of access}
 #'   }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom cli cli_inform cli_warn cli_abort
 #'
 #' @examples \dontrun{
