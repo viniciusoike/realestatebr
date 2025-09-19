@@ -41,7 +41,7 @@
 #'     \\item{download_time}{Timestamp of coordination}
 #'   }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter mutate select bind_rows
 #' @importFrom tidyr pivot_wider
@@ -423,7 +423,7 @@ import_bcb_ivgr_robust <- function(quiet, max_retries) {
 #'   \item{download_time}{Timestamp of download}
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr rename select mutate
 #' @seealso [get_rppi()]
@@ -651,7 +651,7 @@ download_igmi_excel_robust <- function(quiet, max_retries) {
 #'   \item{download_time}{Timestamp of download}
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr rename mutate group_by ungroup left_join select filter
 #' @importFrom tidyr pivot_longer
@@ -904,7 +904,7 @@ import_iqa_csv_robust <- function(quiet, max_retries) {
 #'   \item{download_time}{Timestamp of download}
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr select mutate group_by ungroup filter
 #' @seealso [get_rppi()]
@@ -1079,7 +1079,7 @@ get_rppi_iqa <- function(
 #'   \item{download_time}{Timestamp of download}
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter select mutate group_by ungroup left_join
 #' @seealso [get_rppi()]
@@ -1239,7 +1239,7 @@ get_rppi_ivar <- function(
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
 #' @param max_retries Integer. Maximum number of retry attempts.
-#' @export
+#' @keywords internal
 #' @return A `tibble` with the Secovi Rent Index where:
 #'
 #' * `index` is the index-number.
@@ -1405,7 +1405,7 @@ download_fipezap_excel <- function(quiet, max_retries) {
 #'   \item{download_time}{Timestamp of download}
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter mutate across where select bind_rows
 #' @importFrom tidyr pivot_longer separate_wider_delim

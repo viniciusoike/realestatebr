@@ -58,42 +58,57 @@ datasets <- list_datasets()
 head(datasets)
 
 # Get dataset information
-info <- get_dataset_info("abecip_indicators")
+info <- get_dataset_info("abecip")
 str(info$categories)
 
 # Get data with automatic fallback (GitHub cache → fresh download)
-abecip <- get_dataset("abecip_indicators")
-abecip
+# For multi-table datasets, specify which table you want
+sbpe_data <- get_dataset("abecip", table = "sbpe")
+head(sbpe_data)
+
+# Single-table datasets don't require table parameter
+stocks <- get_dataset("b3_stocks")
+head(stocks)
 ```
 
 The unified interface provides several advantages:
 
+- **Always returns tibbles**: Consistent data structure, never returns lists
+- **Clear table selection**: Use `table` parameter for multi-table datasets
 - **Automatic fallback**: Tries GitHub cache first, then fresh download if needed
 - **Consistent naming**: All datasets use standardized English column names
 - **Easy discovery**: Use `list_datasets()` to see all available data
-- **Category filtering**: Access specific parts of complex datasets
+- **Helpful guidance**: Clear error messages and suggestions when needed
 
 ```{r, eval=FALSE}
-# Get specific category only
-sbpe <- get_dataset("abecip_indicators", category = "sbpe")
-head(sbpe)
+# Get different tables from the same dataset
+sbpe <- get_dataset("abecip", table = "sbpe")          # SBPE flows
+units <- get_dataset("abecip", table = "units")        # Financed units
+cgi <- get_dataset("abecip", table = "cgi")            # Home equity loans
 
 # Force fresh download
 fresh_data <- get_dataset("bcb_realestate", source = "fresh")
+
+# If you don't specify table for multi-table dataset, you get helpful guidance
+# get_dataset("abecip")  # This will show available tables and examples
 ```
 
-### Legacy Functions (Still Supported)
+### Backward Compatibility
 
-All existing `get_*` functions continue to work as before:
+The legacy `get_*` functions still work internally for compatibility, but they are no longer part of the public API. The new unified interface is the recommended approach:
 
-```{r legacy, eval=FALSE}
-# Modern function interface (recommended)
-abecip_modern <- get_abecip_indicators(table = "sbpe", cached = TRUE)
+```{r migration, eval=FALSE}
+# OLD (still works but not recommended)
+# abecip_data <- get_abecip_indicators(table = "sbpe", cached = TRUE)
 
-# Legacy interface still works with deprecation warning
-abecip_legacy <- get_abecip_indicators(category = "sbpe", cached = TRUE)
+# NEW (recommended approach)
+abecip_data <- get_dataset("abecip", table = "sbpe")
 
-head(abecip_modern)
+# The new approach is:
+# - Simpler (fewer functions to remember)
+# - More consistent (always returns tibbles)  
+# - Better documented (clear guidance on available tables)
+# - More reliable (robust fallback strategies)
 ```
 
 ## Available Datasets

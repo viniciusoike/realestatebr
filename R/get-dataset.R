@@ -60,8 +60,12 @@ get_dataset <- function(name,
   # Check if dataset exists
   registry <- load_dataset_registry()
   if (!name %in% names(registry$datasets)) {
-    available <- paste(names(registry$datasets), collapse = ", ")
-    cli::cli_abort("Dataset '{name}' not found. Available: {available}")
+    available <- names(registry$datasets)
+    cli::cli_abort(c(
+      "Dataset '{name}' not found.",
+      "i" = "Use list_datasets() to see all available datasets.",
+      "i" = "Available datasets: {paste(head(available, 5), collapse = ', ')}{if(length(available) > 5) '...' else ''}"
+    ))
   }
   
   dataset_info <- registry$datasets[[name]]
@@ -211,8 +215,17 @@ get_from_github_cache <- function(name, dataset_info, table) {
     
     # Table specified - extract it
     if (table %in% names(data)) {
+      # Show info about other available tables before extracting
+      other_tables <- setdiff(names(data), table)
       data <- data[[table]]
-      cli::cli_inform("Returning table '{table}' from dataset '{name}'")
+      if (length(other_tables) > 0) {
+        cli::cli_inform(c(
+          "✓ Loaded table '{table}' from dataset '{name}'",
+          "i" = "Other available tables: {paste(other_tables, collapse = ', ')}"
+        ))
+      } else {
+        cli::cli_inform("✓ Loaded table '{table}' from dataset '{name}'")
+      }
     } else {
       available_tables <- paste(names(data), collapse = ", ")
       cli::cli_abort(c(
@@ -222,7 +235,13 @@ get_from_github_cache <- function(name, dataset_info, table) {
     }
   } else if (!is.null(table)) {
     # Single-table dataset but user specified table parameter
-    cli::cli_inform("Dataset '{name}' contains only one table. Ignoring table parameter.")
+    cli::cli_inform(c(
+      "✓ Loaded dataset '{name}' (single table)",
+      "i" = "This dataset contains only one table, so the table parameter is ignored."
+    ))
+  } else {
+    # Single-table dataset, normal case
+    cli::cli_inform("✓ Loaded dataset '{name}'")
   }
   
   # Ensure we always return a tibble/data.frame, never a list

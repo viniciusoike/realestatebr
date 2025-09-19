@@ -1141,7 +1141,7 @@ clean_cbic_steel_sheets <- function(download_results) {
 #' cement_files <- get_cbic_files("cimento")
 #' }
 #'
-#' @export
+#' @keywords internal
 get_cbic_files <- function(material_name) {
   cli::cli_h1("Getting CBIC files for {material_name}")
 
@@ -1201,7 +1201,7 @@ get_cbic_files <- function(material_name) {
 #' prices <- get_cbic_cement(table = "cub_prices", quiet = FALSE)
 #' }
 #'
-#' @export
+#' @keywords internal
 get_cbic_cement <- function(table = "monthly_consumption",
                            category = NULL,
                            cached = FALSE,
@@ -1349,7 +1349,7 @@ get_cbic_cement <- function(table = "monthly_consumption",
 #' production <- get_cbic_steel(table = "production", quiet = FALSE)
 #' }
 #'
-#' @export
+#' @keywords internal
 get_cbic_steel <- function(table = "prices",
                           category = NULL,
                           cached = FALSE,
@@ -1510,7 +1510,7 @@ get_cbic_steel <- function(table = "prices",
 #' production <- get_cbic_pim(quiet = FALSE)
 #' }
 #'
-#' @export
+#' @keywords internal
 get_cbic_pim <- function(table = "production_index",
                         category = NULL,
                         cached = FALSE,
@@ -1631,7 +1631,7 @@ get_cbic_pim <- function(table = "production_index",
 #' materials <- get_cbic_materials()
 #' }
 #'
-#' @export
+#' @keywords internal
 get_cbic_materials <- function() {
   import_cbic_materials()
 }
