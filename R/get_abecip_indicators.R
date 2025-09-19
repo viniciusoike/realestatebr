@@ -79,7 +79,7 @@ get_abecip_indicators <- function(
 ) {
   # Deprecation warning ----
   .Deprecated("get_dataset",
-             msg = "get_abecip_indicators() is deprecated. Use get_dataset('abecip_indicators') instead.")
+             msg = "get_abecip_indicators() is deprecated. Use get_dataset('abecip') instead.")
 
   # Input validation and backward compatibility ----
   valid_tables <- c("sbpe", "cgi", "units", "all")
@@ -125,10 +125,16 @@ get_abecip_indicators <- function(
     tryCatch(
       {
         # Map table to unified architecture
+        # Handle table selection for backward compatibility
         if (table == "all") {
-          data <- get_dataset("abecip_indicators", source = "github")
+          # Get all tables and combine into list
+          data <- list()
+          # Get each table individually since new API requires specific table
+          data$sbpe <- get_dataset("abecip", source = "github", table = "sbpe")
+          data$units <- get_dataset("abecip", source = "github", table = "units") 
+          data$cgi <- get_dataset("abecip", source = "github", table = "cgi")
         } else {
-          data <- get_dataset("abecip_indicators", source = "github", category = table)
+          data <- get_dataset("abecip", source = "github", table = table)
         }
 
         if (!quiet) {

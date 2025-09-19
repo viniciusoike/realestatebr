@@ -1,7 +1,7 @@
 #' Import Indicators from the Abrainc-Fipe Report
 #'
 #' @section Deprecation:
-#' This function is deprecated. Use \code{\link{get_dataset}("abrainc_indicators")} instead.
+#' This function is deprecated. Use \code{\link{get_dataset}("abrainc", table = "radar")} instead.
 #'
 #' Downloads data from the Abrainc-Fipe Indicators report with modern error
 #' handling, progress reporting, and robust download capabilities. Data includes
@@ -86,7 +86,7 @@ get_abrainc_indicators <- function(
 ) {
   # Deprecation warning ----
   .Deprecated("get_dataset",
-             msg = "get_abrainc_indicators() is deprecated. Use get_dataset('abrainc_indicators') instead.")
+             msg = "get_abrainc_indicators() is deprecated. Use get_dataset('abrainc') instead.")
 
   # Input validation and backward compatibility ----
   valid_tables <- c("all", "indicator", "radar", "leading")
@@ -132,13 +132,18 @@ get_abrainc_indicators <- function(
     tryCatch(
       {
         # Map category to unified architecture
+        # Handle table selection for backward compatibility  
         if (table == "all") {
-          data <- get_dataset("abrainc_indicators", source = "github")
+          # Get all tables and combine into list
+          data <- list()
+          data$indicator <- get_dataset("abrainc", source = "github", table = "indicator")
+          data$radar <- get_dataset("abrainc", source = "github", table = "radar")
+          data$leading <- get_dataset("abrainc", source = "github", table = "leading")
         } else {
           data <- get_dataset(
-            "abrainc_indicators",
+            "abrainc",
             source = "github",
-            category = table
+            table = table
           )
         }
 
