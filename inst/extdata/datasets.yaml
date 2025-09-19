@@ -187,8 +187,8 @@ datasets:
   b3_stocks:
     name: "B3 Real Estate Stocks"
     name_pt: "Ações Imobiliárias B3"
-    description: "Stock market data for real estate companies and REITs listed on B3"
-    source: "B3 - Brasil Bolsa Balcão"
+    description: "Stock market data for real estate companies and REITs listed on B3, accessed via rb3 package for better reliability"
+    source: "B3 - Brasil Bolsa Balcão (via rb3)"
     url: "https://www.b3.com.br"
     geography: "Brazil"
     frequency: "daily"
@@ -197,7 +197,7 @@ datasets:
     data_type: "tibble"
     cached_file: "b3_stocks.csv.gz"
     metadata_table: "b3_real_estate"
-    translation_notes: "Ticker symbols preserved; company names in Portuguese"
+    translation_notes: "Ticker symbols preserved; company names in Portuguese. Now uses rb3 package for native B3 data access"
 
   fgv_indicators:
     name: "FGV Real Estate Indicators"

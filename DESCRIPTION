@@ -14,6 +14,7 @@ Depends:
     R (>= 3.5)
 RoxygenNote: 7.3.3
 Imports:
+    bizdays,
     cli,
     dplyr,
     GetBCBData,
@@ -23,7 +24,7 @@ Imports:
     lifecycle,
     lubridate,
     purrr,
-    quantmod,
+    rb3,
     readr,
     readxl,
     rlang,

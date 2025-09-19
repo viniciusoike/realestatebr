@@ -6,10 +6,13 @@
 #'
 #' @details
 #' Downloads and imports the stock values of the most relevant
-#' real estate players in Brazil via `quantmod::getSymbols`. A list of companies
+#' real estate players in Brazil via `rb3` package which provides native
+#' access to B3 (Brazilian stock exchange) data. A list of companies
 #' can be found at `b3_real_estate`.
 #'
-#' By default uses `src = 'yahoo'`.
+#' This function now uses the `rb3` package for better reliability and 
+#' to handle delisted companies gracefully, replacing the previous 
+#' `quantmod`-based approach.
 #'
 #' @section Progress Reporting:
 #' When `quiet = FALSE`, the function provides detailed progress information
@@ -25,14 +28,15 @@
 #' @param cached Logical. If TRUE, loads data from package cache using the unified dataset architecture.
 #' @param symbol Optional character string with the stock tickers symbols. If
 #'   none is provided uses all symbols in `b3_real_estate`.
-#' @param src Character string specifying sourcing method (defaults to `'yahoo'`).
+#' @param src Character string. Deprecated parameter for backward compatibility.
+#'   Previously specified data source; now uses rb3 exclusively.
 #' @param quiet Logical. If TRUE, suppresses progress messages and warnings.
 #'   If FALSE (default), provides detailed progress reporting.
 #' @param max_retries Integer. Maximum number of retry attempts for failed
 #'   download operations. Defaults to 3.
-#' @param ... Additional arguments passed on to `quantmod::getSymbols`.
+#' @param ... Additional arguments (currently unused, kept for backward compatibility).
 #'
-#' @seealso [quantmod::getSymbols()]
+#' @seealso [rb3::fetch_marketdata()], [rb3::cotahist_get()]
 #'
 #' @return A `tibble` containing stock prices for all companies.
 #'   The tibble includes metadata attributes:
@@ -43,8 +47,11 @@
 #'   }
 #'
 #' @export
-#' @importFrom quantmod getSymbols
-#' @importFrom cli cli_inform cli_warn cli_abort cli_progress_bar
+#' @importFrom rb3 fetch_marketdata cotahist_get indexes_historical_data_get
+#' @importFrom bizdays bizseq
+#' @importFrom cli cli_inform cli_warn cli_abort
+#' @importFrom stringr str_remove
+#' @importFrom lubridate as_date year
 #' @examples \dontrun{
 #' # Get all available companies (with progress)
 #' stocks <- get_b3_stocks(quiet = FALSE)
@@ -63,7 +70,7 @@ get_b3_stocks <- function(
   category = NULL,
   cached = FALSE,
   symbol = NULL,
-  src = "yahoo",
+  src = NULL,
   quiet = FALSE,
   max_retries = 3L,
   ...
@@ -102,6 +109,15 @@ get_b3_stocks <- function(
 
   if (!is.logical(quiet) || length(quiet) != 1) {
     cli::cli_abort("{.arg quiet} must be a logical value")
+  }
+  
+  # Handle deprecated src parameter
+  if (!is.null(src)) {
+    cli::cli_warn(c(
+      "Parameter {.arg src} is deprecated",
+      "i" = "This function now uses rb3 exclusively for better reliability",
+      ">" = "This parameter will be removed in a future version"
+    ))
   }
 
   # Handle cached data ----
@@ -160,35 +176,41 @@ get_b3_stocks <- function(
     }
   }
 
-  # Download financial data with retry logic ----
+  # Download financial data using rb3 ----
   if (!quiet) {
-    cli::cli_inform("Downloading {length(symbol)} financial series...")
-    cli::cli_progress_bar(
-      "Downloading",
-      total = 1,
-      format = "{cli::pb_name} {cli::pb_percent} [{cli::pb_bar}]"
-    )
+    cli::cli_inform("Downloading {length(symbol)} financial series using rb3...")
   }
 
   attempts <- 0
-  imob <- NULL
+  stack <- NULL
 
-  while (attempts <= max_retries && is.null(imob)) {
+  while (attempts <= max_retries && is.null(stack)) {
     attempts <- attempts + 1
 
     tryCatch({
-      if (quiet) {
-        imob <- suppressWarnings(quantmod::getSymbols(symbol, src = src, auto.assign = TRUE, ...))
-      } else {
-        imob <- quantmod::getSymbols(symbol, src = src, auto.assign = TRUE, ...)
-      }
+      # Setup rb3 environment
+      cache_dir <- file.path(tempdir(), "realestatebr_rb3_cache")
+      setup_rb3_environment(cache_dir = cache_dir, quiet = quiet)
+      
+      # Use rb3 to fetch data with appropriate date range
+      end_date <- Sys.Date()
+      start_date <- end_date - 365  # Default to 1 year of data
+      
+      stack <- fetch_b3_stocks_rb3(
+        symbols = symbol,
+        start_date = start_date,
+        end_date = end_date,
+        quiet = quiet,
+        cache_dir = cache_dir
+      )
+      
     }, error = function(e) {
       if (attempts > max_retries) {
         cli::cli_abort(c(
           "Failed to download financial data after {max_retries} attempts",
           "x" = "Error: {e$message}",
-          "i" = "Check your internet connection or try a different provider",
-          "i" = "Available providers: 'yahoo', 'google', 'FRED'"
+          "i" = "Check your internet connection or try again later",
+          "i" = "rb3 requires connection to B3 servers for data download"
         ))
       }
 
@@ -201,52 +223,13 @@ get_b3_stocks <- function(
     })
   }
 
+  if (is.null(stack)) {
+    cli::cli_abort("Failed to download any data after all retry attempts")
+  }
+
   if (!quiet) {
-    cli::cli_progress_done()
-    cli::cli_inform("Financial data download complete")
+    cli::cli_inform("Financial data download complete using rb3")
   }
-
-  # Process downloaded data ----
-  if (!quiet) {
-    cli::cli_inform("Processing and standardizing data...")
-  }
-
-  # Get the downloaded series from the global environment
-  series <- mget(imob, envir = .GlobalEnv)
-
-  # Helper function to convert xts to tibble with standardized column names
-  convert_xts_to_tibble <- function(x) {
-    # Convert xts to data.frame and then to tibble
-    df <- data.frame(date = zoo::index(x), zoo::coredata(x))
-    tbl <- tibble::as_tibble(df)
-
-    # Standardize column names
-    col_names <- names(tbl)
-    # Remove symbol names from column names and clean up
-    col_names <- stringr::str_remove_all(col_names, paste(symbol, collapse = "|"))
-    col_names <- stringr::str_remove(col_names, "^\\.")
-    col_names <- stringr::str_to_lower(col_names)
-
-    # Standardize column names for consistency across all downloads
-    col_names <- stringr::str_replace_all(
-      col_names,
-      c(
-        "^open$" = "price_open",
-        "^high$" = "price_high",
-        "^low$" = "price_low",
-        "^close$" = "price_close",
-        "^volume$" = "volume",
-        "^adjusted$" = "adjusted"
-      )
-    )
-    names(tbl) <- col_names
-
-    return(tbl)
-  }
-
-  # Convert all series to tibble and stack
-  series <- lapply(series, convert_xts_to_tibble)
-  stack <- dplyr::bind_rows(series, .id = "symbol")
 
   # Add metadata attributes ----
   attr(stack, "source") <- "web"
@@ -256,7 +239,8 @@ get_b3_stocks <- function(
     total_records = nrow(stack),
     symbols_downloaded = length(symbol),
     retry_attempts = attempts,
-    source = src
+    source = "rb3",
+    data_provider = "B3 (Brasil Bolsa Balcão)"
   )
 
   if (!quiet) {
