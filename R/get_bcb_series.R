@@ -47,7 +47,7 @@
 #'     \\item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr as_tibble rename select left_join filter
 #'

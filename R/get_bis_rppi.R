@@ -40,7 +40,7 @@
 #'     \\item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr rename mutate left_join select filter if_else
 #' @importFrom tidyr pivot_longer

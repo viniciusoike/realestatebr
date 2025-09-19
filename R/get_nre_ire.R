@@ -48,7 +48,7 @@
 #'   \item{download_time}{Timestamp of access}
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @source Original series and methodology available at [https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html](https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html).
 #'

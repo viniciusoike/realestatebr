@@ -26,7 +26,6 @@
 #' }
 #'
 #' @keywords internal
-#' @export
 import_cached <- function(dataset_name, 
                          cache_dir = "cached_data", 
                          format = "auto",
@@ -300,7 +299,6 @@ clear_cache <- function(dataset_names = NULL,
 #' @param cache_dir Character. Cache subdirectory name
 #' @return Character. Full path to cache directory
 #' @keywords internal
-#' @export
 get_cache_path <- function(cache_dir = "cached_data") {
   
   cache_path <- system.file(cache_dir, package = "realestatebr")

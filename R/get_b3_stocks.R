@@ -42,7 +42,7 @@
 #'     \item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @export
+#' @keywords internal
 #' @importFrom quantmod getSymbols
 #' @importFrom cli cli_inform cli_warn cli_abort cli_progress_bar
 #' @examples \dontrun{

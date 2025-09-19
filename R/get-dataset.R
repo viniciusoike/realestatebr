@@ -21,16 +21,19 @@
 #' @param date_end Date. End date for time series data (where applicable)
 #' @param ... Additional arguments passed to legacy functions
 #'
-#' @return Dataset as tibble or list, depending on the dataset structure.
-#'   Use get_dataset_info(name) to see the expected structure.
+#' @return Dataset as a tibble. For multi-table datasets, use the `table` parameter
+#'   to specify which table to return. Use list_datasets() to see available tables.
 #'
 #' @examples
 #' \dontrun{
-#' # Get all ABECIP indicators
-#' abecip_data <- get_dataset("abecip")
-#'
-#' # Get only SBPE data from ABECIP
+#' # Get SBPE data from ABECIP (specify table for multi-table datasets)
 #' sbpe_data <- get_dataset("abecip", table = "sbpe")
+#'
+#' # Get units data from ABECIP  
+#' units_data <- get_dataset("abecip", table = "units")
+#'
+#' # Single-table datasets don't require table parameter
+#' secovi_data <- get_dataset("secovi")
 #'
 #' # Force fresh download
 #' fresh_data <- get_dataset("bcb_realestate", source = "fresh")
@@ -57,8 +60,12 @@ get_dataset <- function(name,
   # Check if dataset exists
   registry <- load_dataset_registry()
   if (!name %in% names(registry$datasets)) {
-    available <- paste(names(registry$datasets), collapse = ", ")
-    cli::cli_abort("Dataset '{name}' not found. Available: {available}")
+    available <- names(registry$datasets)
+    cli::cli_abort(c(
+      "Dataset '{name}' not found.",
+      "i" = "Use list_datasets() to see all available datasets.",
+      "i" = "Available datasets: {paste(head(available, 5), collapse = ', ')}{if(length(available) > 5) '...' else ''}"
+    ))
   }
   
   dataset_info <- registry$datasets[[name]]
@@ -66,6 +73,16 @@ get_dataset <- function(name,
   # Validate and resolve table parameter
   table_info <- validate_and_resolve_table(name, dataset_info, table)
   resolved_table <- table_info$resolved_table
+  
+  # Check if table selection is required but not provided
+  if (isTRUE(table_info$needs_table_selection)) {
+    available_tables <- paste(table_info$available_tables, collapse = ", ")
+    cli::cli_abort(c(
+      "Dataset '{name}' contains multiple tables. Please specify which table you want:",
+      "i" = "Available tables: {available_tables}",
+      "i" = "Example: get_dataset('{name}', table = '{table_info$available_tables[1]}')"
+    ))
+  }
 
   # Try to get data with fallback strategy
   if (source == "auto") {
@@ -77,11 +94,6 @@ get_dataset <- function(name,
   # Apply translations if available
   if (!is.null(data)) {
     data <- apply_translations(data, name, dataset_info)
-  }
-
-  # Show informative message about what was imported
-  if (!is.null(data)) {
-    show_import_message(name, table_info)
   }
 
   return(data)
@@ -197,17 +209,42 @@ get_from_github_cache <- function(name, dataset_info, table) {
   # Use existing import_cached function
   data <- import_cached(cached_name)
   
-  # Filter by table if requested and data is a list
-  if (!is.null(table) && is.list(data) && !inherits(data, "data.frame")) {
-    if (table %in% names(data)) {
-      data <- data[[table]]
+  # CORE REQUIREMENT: Always return a single tibble
+  # Table selection and validation has already been handled above
+  if (is.list(data) && !inherits(data, "data.frame")) {
+    # Multi-table dataset - extract the specified table
+    if (!is.null(resolved_table) && resolved_table %in% names(data)) {
+      # Show info about other available tables before extracting
+      other_tables <- setdiff(names(data), resolved_table)
+      data <- data[[resolved_table]]
+      if (length(other_tables) > 0) {
+        cli::cli_inform(c(
+          "✓ Loaded table '{resolved_table}' from dataset '{name}'",
+          "i" = "Other available tables: {paste(other_tables, collapse = ', ')}"
+        ))
+      } else {
+        cli::cli_inform("✓ Loaded table '{resolved_table}' from dataset '{name}'")
+      }
     } else {
+      # This should not happen due to validation above, but just in case
       available_tables <- paste(names(data), collapse = ", ")
-      cli::cli_abort("Table '{table}' not found. Available: {available_tables}")
+      cli::cli_abort("Internal error: Table selection failed for dataset '{name}'. Available: {available_tables}")
     }
+  } else if (!is.null(resolved_table)) {
+    # Single-table dataset but user specified table parameter
+    cli::cli_inform(c(
+      "✓ Loaded dataset '{name}' (single table)",
+      "i" = "This dataset contains only one table, so the table parameter is ignored."
+    ))
+  } else {
+    # Single-table dataset, normal case
+    cli::cli_inform("✓ Loaded dataset '{name}'")
   }
-  # Note: For datasets with table-specific cached files (like BIS),
-  # the table filtering is handled by get_cached_name() above
+  
+  # Ensure we always return a tibble/data.frame, never a list
+  if (!inherits(data, "data.frame")) {
+    cli::cli_abort("Error: Dataset '{name}' did not return a data.frame/tibble. This is a package bug.")
+  }
   
   return(data)
 }
@@ -389,14 +426,14 @@ validate_and_resolve_table <- function(name, dataset_info, table = NULL) {
     ))
   }
 
-  # Multi-table datasets
+  # Multi-table datasets - table MUST be specified  
   if (is.null(table)) {
-    # Use first table as default
-    resolved_table <- available_tables[1]
+    # No default - user must specify table explicitly
     return(list(
-      resolved_table = resolved_table,
+      resolved_table = NULL,
       available_tables = available_tables,
-      is_default = TRUE
+      is_default = FALSE,
+      needs_table_selection = TRUE
     ))
   }
 
