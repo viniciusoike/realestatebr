@@ -1,3 +1,25 @@
+# realestatebr 0.3.1
+
+## Infrastructure Improvements
+
+### 🔄 B3 Stock Data Infrastructure Upgrade
+
+- **Transitioned from `quantmod` to `rb3`** for B3 stock market data
+  - Removes heavy `quantmod` dependency in favor of specialized `rb3` package
+  - Native B3 data access provides better reliability and performance
+  - Improved handling of delisted companies and historical data
+  - Better local caching with rb3 infrastructure
+  - `get_b3_stocks()` now uses `rb3::fetch_marketdata()` and `rb3::cotahist_get()`
+  - Deprecated `src` parameter (previously used for Yahoo Finance/quantmod)
+  - Backward compatibility maintained with existing function signatures
+
+### 🛡️ Enhanced Error Handling
+
+- **Robust column handling** - Function adapts to available columns from rb3 data
+- **Better calendar management** - Graceful fallback if Brazil/B3 business calendar unavailable  
+- **Missing symbol reporting** - Warns about delisted/unavailable companies without failing
+- **Improved error messages** - More informative feedback for troubleshooting
+
 # realestatebr 0.2.0
 
 ## Major Features and Improvements
