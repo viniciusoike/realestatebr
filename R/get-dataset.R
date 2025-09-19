@@ -212,31 +212,20 @@ get_from_github_cache <- function(name, dataset_info, table) {
   return(data)
 }
 
-#' Get Data from Internal Function
-#'
-#' Uses the new internal fetch functions instead of legacy functions for
-#' fresh data downloads. This is the core implementation for the 0.4.0 architecture.
+#' Get Data from Legacy Function
 #'
 #' @keywords internal
 get_from_legacy_function <- function(name, dataset_info, table, date_start, date_end, ...) {
-
-  # Try to use internal function first (0.4.0 architecture)
-  internal_function <- dataset_info$internal_function
-
-  if (!is.null(internal_function) && internal_function != "") {
-    return(get_from_internal_function(name, dataset_info, internal_function, table, date_start, date_end, ...))
-  }
-
-  # Fallback to legacy function for backward compatibility
+  
   legacy_function <- dataset_info$legacy_function
-
+  
   if (is.null(legacy_function) || legacy_function == "") {
-    cli::cli_abort("No internal or legacy function available for fresh download of '{name}'")
+    cli::cli_abort("No legacy function available for fresh download of '{name}'")
   }
-
+  
   # Build arguments for legacy function
   args <- list(...)
-
+  
   # Add table parameter based on function requirements
   if (!is.null(table)) {
     if (legacy_function %in% c("get_abecip_indicators", "get_abrainc_indicators")) {
@@ -250,7 +239,7 @@ get_from_legacy_function <- function(name, dataset_info, table, date_start, date
   } else if (supports_table_all(legacy_function)) {
     args$table <- "all"
   }
-
+  
   # Add date arguments if provided
   if (!is.null(date_start)) {
     args$date_start <- date_start
@@ -258,57 +247,15 @@ get_from_legacy_function <- function(name, dataset_info, table, date_start, date
   if (!is.null(date_end)) {
     args$date_end <- date_end
   }
-
+  
   # Set cached = FALSE for fresh download
   args$cached <- FALSE
-
+  
   # Call the legacy function
   func <- get(legacy_function, mode = "function")
   data <- do.call(func, args)
-
+  
   return(data)
-}
-
-#' Get Data from Internal Function
-#'
-#' Calls the appropriate internal fetch function based on the dataset registry.
-#' This implements the new 0.4.0 internal function architecture.
-#'
-#' @keywords internal
-get_from_internal_function <- function(name, dataset_info, internal_function, table, date_start, date_end, ...) {
-
-  # Build arguments for internal function
-  args <- list(...)
-
-  # Add table parameter (internal functions use consistent 'table' parameter)
-  if (!is.null(table)) {
-    args$table <- table
-  }
-
-  # Add date arguments if provided (for BCB series)
-  if (!is.null(date_start)) {
-    args$date_start <- date_start
-  }
-  if (!is.null(date_end)) {
-    args$date_end <- date_end
-  }
-
-  # Set cached = FALSE for fresh download
-  args$cached <- FALSE
-
-  # Set quiet = FALSE to show progress messages
-  if (is.null(args$quiet)) {
-    args$quiet <- FALSE
-  }
-
-  # Call the internal function
-  tryCatch({
-    func <- get(internal_function, mode = "function", envir = asNamespace("realestatebr"))
-    data <- do.call(func, args)
-    return(data)
-  }, error = function(e) {
-    cli::cli_abort("Failed to call internal function '{internal_function}' for dataset '{name}': {e$message}")
-  })
 }
 
 #' Get Cached Name for import_cached Function
