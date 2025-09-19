@@ -72,7 +72,15 @@ fetch_b3_stocks_rb3 <- function(symbols = NULL, start_date = NULL, end_date = NU
     
     tryCatch({
       # Generate business days sequence for Brazil/B3
-      date_seq <- bizdays::bizseq(start_date, end_date, "Brazil/B3")
+      # First ensure the calendar is available
+      tryCatch({
+        date_seq <- bizdays::bizseq(start_date, end_date, "Brazil/B3")
+      }, error = function(e) {
+        if (!quiet) {
+          cli::cli_warn("Brazil/B3 calendar not available, using all dates")
+        }
+        date_seq <- seq.Date(start_date, end_date, by = "day")
+      })
       
       # Fetch market data (this downloads and caches data locally)
       rb3::fetch_marketdata(
@@ -94,22 +102,51 @@ fetch_b3_stocks_rb3 <- function(symbols = NULL, start_date = NULL, end_date = NU
           refdate >= start_date,
           refdate <= end_date
         ) |>
-        dplyr::select(
-          refdate, symbol, close, volume, trade_quantity, traded_contracts,
-          high, low, open
-        ) |>
-        dplyr::collect() |>
-        # Standardize column names to match legacy format
+        dplyr::collect()
+      
+      # Check what columns are available and select accordingly
+      available_cols <- names(stock_data)
+      required_cols <- c("refdate", "symbol", "close")
+      optional_cols <- c("volume", "trade_quantity", "traded_contracts", "high", "low", "open")
+      
+      # Verify required columns exist
+      missing_required <- setdiff(required_cols, available_cols)
+      if (length(missing_required) > 0) {
+        cli::cli_abort("Missing required columns in stock data: {missing_required}")
+      }
+      
+      # Select available columns
+      cols_to_select <- c(required_cols, intersect(optional_cols, available_cols))
+      stock_data <- stock_data[, cols_to_select, drop = FALSE]
+      
+      # Standardize column names to match legacy format
+      stock_data <- stock_data |>
         dplyr::mutate(
           date = refdate,
           price_close = close,
-          price_high = high,
-          price_low = low,
-          price_open = open,
-          volume = volume
+          price_high = if ("high" %in% names(.)) high else NA_real_,
+          price_low = if ("low" %in% names(.)) low else NA_real_,
+          price_open = if ("open" %in% names(.)) open else NA_real_,
+          volume = if ("volume" %in% names(.)) volume else NA_real_,
+          trade_quantity = if ("trade_quantity" %in% names(.)) trade_quantity else NA_real_,
+          traded_contracts = if ("traded_contracts" %in% names(.)) traded_contracts else NA_real_
         ) |>
         dplyr::select(date, symbol, price_open, price_high, price_low, 
                      price_close, volume, trade_quantity, traded_contracts)
+      # Check if we got any data
+      if (is.null(stock_data) || nrow(stock_data) == 0) {
+        if (!quiet) {
+          cli::cli_warn("No stock data found for symbols: {paste(clean_symbols, collapse = ', ')}")
+        }
+        stock_data <- NULL
+      } else {
+        # Check which symbols we actually got data for
+        found_symbols <- unique(stock_data$symbol)
+        missing_symbols <- setdiff(clean_symbols, found_symbols)
+        if (length(missing_symbols) > 0 && !quiet) {
+          cli::cli_warn("No data found for symbols: {paste(missing_symbols, collapse = ', ')}")
+        }
+      }
       
     }, error = function(e) {
       if (!quiet) {
