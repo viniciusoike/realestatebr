@@ -94,12 +94,42 @@ get_nre_ire <- function(
   # Note: Fresh downloads not supported, but we can fall back to internal data
 
   # Handle cached data ----
-  # Note: NRE-IRE is static data from Excel file, so we skip cache and
-  # go directly to internal package data
   if (cached) {
     if (!quiet) {
-      cli::cli_inform("NRE-IRE uses static package data (no cache needed)")
+      cli::cli_inform("Loading NRE-IRE index data from cache...")
     }
+
+    tryCatch(
+      {
+        # Use new unified architecture for cached data
+        ire_data <- get_dataset("nre_ire", source = "github")
+
+        if (!quiet) {
+          cli::cli_inform(
+            "Successfully loaded {nrow(ire_data)} NRE-IRE records from cache"
+          )
+        }
+
+        # Add metadata
+        attr(ire_data, "source") <- "cache"
+        attr(ire_data, "download_time") <- Sys.time()
+        attr(ire_data, "download_info") <- list(
+          table = table,
+          dataset = "nre_ire",
+          source = "cache"
+        )
+
+        return(ire_data)
+      },
+      error = function(e) {
+        if (!quiet) {
+          cli::cli_warn(c(
+            "Failed to load NRE-IRE data from cache: {e$message}",
+            "i" = "Falling back to internal package data"
+          ))
+        }
+      }
+    )
   }
 
   # Use internal package data ----
@@ -107,8 +137,15 @@ get_nre_ire <- function(
     cli::cli_inform("Loading NRE-IRE index data from internal package data...")
   }
 
-  # Load internal data (ire should be available from sysdata.rda)
-  # No need to check exists() since it's internal package data
+  # Check for required data dependencies
+  if (!exists("ire")) {
+    cli::cli_abort(c(
+      "Required data dependency not available",
+      "x" = "This function requires the {.pkg ire} object",
+      "i" = "Please ensure all package data is properly loaded",
+      "i" = "Try using {.code cached = TRUE} to access cached data instead"
+    ))
+  }
 
   if (!quiet) {
     cli::cli_inform(

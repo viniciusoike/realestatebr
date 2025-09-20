@@ -147,3 +147,149 @@ get_dataset("abecip", table = "cgi", source = "fresh")
 - Added proper error handling for cache loading
 - Updated success messages to be accurate (cache vs. download)
 - Correct metadata attribution (`source = "cache"` for CGI)
+
+
+# New fixes
+
+## Minor issues
+
+1. [complete] Some functions are showing unnecessary deprecation warnings for users.
+
+```r
+# ✅ Fixed: No longer show deprecation warnings when using get_dataset()
+get_dataset("abrainc", table = "radar", source = "fresh")
+get_dataset("abrainc", table = "indicator", source = "fresh")
+get_dataset("abrainc", table = "leading", source = "fresh")
+```
+
+**Fix details**: Removed `.Deprecated()` calls from internal functions:
+- Removed from `get_abrainc_indicators.R` lines 85-86
+- Removed from `get_bcb_realestate.R` lines 80-83
+- Removed from `get_secovi.R` lines 66-67
+
+2. [complete] Make messaging more concise. Don't overwhelm the user with too much information.
+
+**Major UX improvement implemented**:
+
+✅ **Comprehensive verbosity system created** with three tiers:
+- **User Mode** (default): 2-3 essential messages per function
+- **Progress Mode** (`quiet=FALSE`): Moderate detail for long operations
+- **Debug Mode** (`options(realestatebr.debug = TRUE)`): Full detail for development
+
+✅ **Functions updated**:
+- `get_rppi.R`: 49 messages → 3 user messages
+- `get_cbic.R`: 33 messages → 3 user messages
+- `get_rppi_bis.R`: 10 messages → 2 user messages
+- `get_property_records.R`: 10 messages → 2 user messages
+- `get_secovi.R`: 6 messages → 2 user messages
+- `get_bcb_realestate.R`: 5 messages → 2 user messages
+- `get_fgv_ibre.R`: 4 messages → 2 user messages
+
+✅ **Infrastructure added** in `utils.R`:
+- `is_debug_mode()`: Checks for debug environment/options
+- `cli_debug()`: Shows detailed messages only in debug mode
+- `cli_user()`: Shows concise user-level messages
+
+✅ **Debug mode documentation** added to main `get_dataset()` function with examples
+
+```r
+# Now shows minimal, clean output by default
+get_dataset("cbic")  # Shows 2-3 essential messages
+
+# Enable debug mode to see all processing details
+options(realestatebr.debug = TRUE)
+get_dataset("cbic")  # Shows 30+ detailed processing messages
+
+# Or via environment variable
+Sys.setenv(REALESTATEBR_DEBUG = "TRUE")
+```
+
+3. [complete] Minor fixes with rppi_bis.
+
+```r
+# ✅ Fixed: All working correctly
+get_dataset("rppi_bis")
+get_dataset("rppi_bis", "detailed_monthly")
+get_dataset("rppi_bis", "detailed_quarterly")
+get_dataset("rppi_bis", "detailed_semiannual")
+get_dataset("rppi_bis", "detailed_annual")
+```
+
+**Fix details**: Updated cached file mappings in `inst/extdata/datasets.yaml` lines 152-155
+
+4. [complete] Change fgv_indicators to fgv_ibre
+
+```r
+# ✅ Fixed: Renamed throughout codebase
+get_dataset("fgv_ibre")  # Now works correctly
+```
+
+**Fix details**:
+- Renamed `get_fgv_indicators.R` → `get_fgv_ibre.R`
+- Updated all function names and references
+- Updated dataset registry mapping (line 320 in `get-dataset.R`)
+- Updated `datasets.yaml` (line 257)
+
+5. [complete] NRE IRE dataset is not working
+
+```r
+# ✅ Fixed: Now working correctly
+get_dataset("nre_ire")
+```
+
+**Fix details**: Fixed integration with `get_dataset()` by updating cache handling in `get_nre_ire.R`
+
+6. [complete] The table argument doesn't seem to be working in SECOVI
+
+```r
+# ✅ Fixed: Table filtering now works correctly
+get_dataset("secovi", table = "condo")
+get_dataset("secovi", table = "launch")
+get_dataset("secovi", table = "sale")
+```
+
+**Fix details**: Added SECOVI table filtering logic in `get-dataset.R` lines 216-229
+
+# Major issues
+
+1. RPPI suite isn't working as intended
+
+This is a more complex fix. There are several datasets in the RPPI suite that are not working as intended. The user should be able to get individual datasets, but also combined dataets.
+
+Combining the datasets is not straightforward because they have different column names and definitions. There used to be a script/function/code that solved this but it seems like it was lost when the 'stack' argument was removed. The function used to work like this
+
+```r
+get_rppi_ivar() # Returns IVAR dataset
+get_rppi_igmi() # Returns IGMI dataset
+get_rppi_fipezap("sales") # Returns FIPEZAP sales dataset
+
+# Not 100% sure on the names
+get_rppi("sales", stack = TRUE) # Returns a combined dataset with IVAR, IGMI, FIPEZAP sales
+```
+
+A summary of some (but not all) of the problems
+
+```r
+# Major problems with RPPI suite of functions
+
+# OK
+get_dataset("rppi")
+# error
+get_dataset("rppi", table = "ivgr")
+get_dataset("rppi", table = "igmi")
+get_dataset("rppi", table = "iqa")
+
+# Big problem!
+sales <- get_dataset("rppi", table = "sales")
+fipezap <- get_dataset("rppi", table = "fipezap")
+all.equal(sales, fipezap)
+
+# table = 'sales' should stack all residential SALES indexes
+# IGMI, IVGR, and FIPEZAP (only sales)
+
+# Returing the same data as get_dataset("rppi") which is not correct
+rent <- get_dataset("rppi", table = "rent")
+
+# table = 'rent' should stack all rent indexes
+# IVAR, IQA, Secovi-SP, Fipezap (only rent)
+```

@@ -62,10 +62,6 @@ get_secovi <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Deprecation warning ----
-  .Deprecated("get_dataset",
-             msg = "get_secovi() is deprecated. Use get_dataset('secovi') instead.")
-
   # Input validation ----
   valid_tables <- c("all", "condo", "launch", "rent", "sale")
 
@@ -97,9 +93,7 @@ get_secovi <- function(
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading SECOVI-SP data from cache...")
-    }
+    cli_debug("Loading SECOVI-SP data from cache...")
 
     tryCatch(
       {
@@ -110,11 +104,7 @@ get_secovi <- function(
           tbl_secovi <- dplyr::filter(tbl_secovi, category == !!table)
         }
 
-        if (!quiet) {
-          cli::cli_inform(
-            "Successfully loaded {nrow(tbl_secovi)} SECOVI-SP records from cache"
-          )
-        }
+        cli_debug("Successfully loaded {nrow(tbl_secovi)} SECOVI-SP records from cache")
 
         # Add metadata
         attr(tbl_secovi, "source") <- "cache"
@@ -138,16 +128,12 @@ get_secovi <- function(
   }
 
   # Download and process data ----
-  if (!quiet) {
-    cli::cli_inform("Downloading SECOVI-SP data from website...")
-  }
+  cli_user("Downloading SECOVI-SP data from website", quiet = quiet)
 
   # Import data from SECOVI with retry logic
   scrape <- import_secovi_robust(table = table, quiet = quiet, max_retries = max_retries)
 
-  if (!quiet) {
-    cli::cli_inform("Processing {length(scrape)} data table{?s}...")
-  }
+  cli_debug("Processing {length(scrape)} data table{?s}...")
 
   # Clean data with progress reporting for parallel operations
   if (!quiet) {
@@ -155,9 +141,7 @@ get_secovi <- function(
     clean_tables <- list()
     for (i in seq_along(scrape)) {
       table_name <- names(scrape)[i]
-      if (!quiet) {
-        cli::cli_inform("Processing table: {table_name}")
-      }
+      cli_debug("Processing table: {table_name}")
       clean_tables[[i]] <- clean_secovi(scrape[[i]])
     }
     names(clean_tables) <- names(scrape)
@@ -193,9 +177,7 @@ get_secovi <- function(
     source = "web"
   )
 
-  if (!quiet) {
-    cli::cli_inform("Successfully processed SECOVI-SP data with {nrow(tbl_secovi)} records")
-  }
+  cli_user("✓ SECOVI-SP data retrieved: {nrow(tbl_secovi)} records", quiet = quiet)
 
   return(tbl_secovi)
 }

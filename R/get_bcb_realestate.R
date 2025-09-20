@@ -76,12 +76,6 @@ get_bcb_realestate <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Deprecation warning ----
-  .Deprecated(
-    "get_dataset",
-    msg = "get_bcb_realestate() is deprecated. Use get_dataset('bcb_realestate') instead."
-  )
-
   # Input validation ----
   valid_tables <- c(
     "all",
@@ -120,19 +114,13 @@ get_bcb_realestate <- function(
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading BCB real estate data from cache...")
-    }
+    cli_debug("Loading BCB real estate data from cache...")
 
     tryCatch(
       {
         clean_bcb <- get_dataset("bcb_realestate", source = "github")
 
-        if (!quiet) {
-          cli::cli_inform(
-            "Successfully loaded {nrow(clean_bcb)} records from cache"
-          )
-        }
+        cli_debug("Successfully loaded {nrow(clean_bcb)} records from cache")
 
         # Add metadata
         attr(clean_bcb, "source") <- "cache"
@@ -234,11 +222,7 @@ get_bcb_realestate <- function(
     attr(clean_bcb, "download_info")
   }
 
-  if (!quiet) {
-    cli::cli_inform(
-      "Successfully processed BCB real estate data for table: {table}"
-    )
-  }
+  cli_user("✓ BCB real estate data retrieved: {nrow(tbl_bcb)} records", quiet = quiet)
 
   return(tbl_bcb)
 }
@@ -254,16 +238,12 @@ get_bcb_realestate <- function(
 #' @return Processed BCB real estate data tibble
 #' @keywords internal
 download_and_process_bcb_data <- function(quiet, max_retries) {
-  if (!quiet) {
-    cli::cli_inform("Downloading real estate data from BCB API...")
-  }
+  cli_user("Downloading real estate data from BCB API", quiet = quiet)
 
   # Download and import most recent data available with retry logic
   bcb <- import_bcb_realestate_robust(quiet = quiet, max_retries = max_retries)
 
-  if (!quiet) {
-    cli::cli_inform("Processing and cleaning BCB data...")
-  }
+  cli_debug("Processing and cleaning BCB data...")
 
   # Clean data
   clean_bcb <- clean_bcb_realestate(bcb)

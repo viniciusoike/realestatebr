@@ -81,10 +81,6 @@ get_abrainc_indicators <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Deprecation warning ----
-  .Deprecated("get_dataset",
-             msg = "get_abrainc_indicators() is deprecated. Use get_dataset('abrainc_indicators') instead.")
-
   # Input validation and backward compatibility ----
   valid_tables <- c("all", "indicator", "radar", "leading")
 

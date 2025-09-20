@@ -98,16 +98,13 @@ get_rppi <- function(
   }
 
   # Coordinate data collection ----
+  cli_debug("Coordinating RPPI data collection across multiple sources...")
   if (!quiet) {
-    cli::cli_inform(
-      "Coordinating RPPI data collection across multiple sources..."
-    )
+    cli::cli_inform("Fetching RPPI data from multiple sources...")
   }
 
   # Import Index data from FipeZap
-  if (!quiet) {
-    cli::cli_inform("Fetching FipeZap data...")
-  }
+  cli_debug("Fetching FipeZap data...")
   fipezap <- get_rppi_fipezap(
     cached = cached,
     quiet = quiet,
@@ -140,9 +137,7 @@ get_rppi <- function(
 
   # Handle "all" case by returning both rent and sale data
   if (table == "all") {
-    if (!quiet) {
-      cli::cli_inform("Fetching all RPPI data sources (rent and sale)...")
-    }
+    cli_debug("Fetching all RPPI data sources (rent and sale)...")
 
     # Get both rent and sale data
     rent_data <- get_rppi(
@@ -193,14 +188,10 @@ get_rppi <- function(
   }
 
   if (table == "rent") {
-    if (!quiet) {
-      cli::cli_inform("Fetching rent-specific RPPI data sources...")
-    }
+    cli_debug("Fetching rent-specific RPPI data sources...")
 
     # Get Secovi-SP
-    if (!quiet) {
-      cli::cli_inform("Fetching Secovi-SP data...")
-    }
+    cli_debug("Fetching Secovi-SP data...")
     secovi <- get_rppi_secovi_sp(
       cached = cached,
       quiet = quiet,
@@ -208,9 +199,7 @@ get_rppi <- function(
     )
 
     # Get IQA
-    if (!quiet) {
-      cli::cli_inform("Fetching QuintoAndar IQA data...")
-    }
+    cli_debug("Fetching QuintoAndar IQA data...")
     iqa <- get_rppi_iqa(
       cached = cached,
       quiet = quiet,
@@ -218,9 +207,7 @@ get_rppi <- function(
     )
 
     # Get IVAR
-    if (!quiet) {
-      cli::cli_inform("Fetching IVAR data...")
-    }
+    cli_debug("Fetching IVAR data...")
     ivar <- get_rppi_ivar(
       cached = cached,
       quiet = quiet,
@@ -229,9 +216,7 @@ get_rppi <- function(
     # Standardize output
     ivar <- dplyr::select(ivar, date, name_muni, index, chg, acum12m)
 
-    if (!quiet) {
-      cli::cli_inform("Finalizing rent RPPI data coordination...")
-    }
+    cli_debug("Finalizing rent RPPI data coordination...")
 
     # Put all series in a named list
     rppi <- list(iqa, ivar, secovi, fipezap)
@@ -255,14 +240,10 @@ get_rppi <- function(
   }
 
   if (table == "sale") {
-    if (!quiet) {
-      cli::cli_inform("Fetching sales-specific RPPI data sources...")
-    }
+    cli_debug("Fetching sales-specific RPPI data sources...")
 
     # Get IVGR
-    if (!quiet) {
-      cli::cli_inform("Fetching BCB IVGR data...")
-    }
+    cli_debug("Fetching BCB IVGR data...")
     ivgr <- get_rppi_ivgr(
       cached = cached,
       quiet = quiet,
@@ -274,9 +255,7 @@ get_rppi <- function(
     ivgr <- dplyr::select(ivgr, -dplyr::any_of("name_geo"))
 
     # Get IGMI and standardize output
-    if (!quiet) {
-      cli::cli_inform("Fetching ABECIP IGMI data...")
-    }
+    cli_debug("Fetching ABECIP IGMI data...")
     igmi <- get_rppi_igmi(
       cached = cached,
       quiet = quiet,
@@ -286,9 +265,7 @@ get_rppi <- function(
       igmi,
       name_muni = ifelse(name_muni == "Brasil", "Brazil", name_muni)
     )
-    if (!quiet) {
-      cli::cli_inform("Finalizing sales RPPI data coordination...")
-    }
+    cli_debug("Finalizing sales RPPI data coordination...")
 
     # Put all series in a named list
     rppi <- list(igmi, ivgr, fipezap)
@@ -311,18 +288,18 @@ get_rppi <- function(
     }
   }
 
-  # Final coordination reporting
-  if (!quiet) {
-    if (stack) {
-      cli::cli_inform(
-        "Successfully coordinated {table} RPPI data with {nrow(rppi)} total records"
-      )
-    } else {
-      sources_count <- length(rppi)
-      cli::cli_inform(
-        "Successfully coordinated {table} RPPI data from {sources_count} source{?s}"
-      )
-    }
+  # Final coordination reporting - user-level summary
+  if (stack) {
+    cli_user(
+      "✓ RPPI ({table}): {nrow(rppi)} records",
+      quiet = quiet
+    )
+  } else {
+    sources_count <- length(rppi)
+    cli_user(
+      "✓ RPPI ({table}): {sources_count} source{?s}",
+      quiet = quiet
+    )
   }
 
   return(rppi)
@@ -472,9 +449,7 @@ get_rppi_ivgr <- function(
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading IVGR data from cache...")
-    }
+    cli_debug("Loading IVGR data from cache...")
 
     tryCatch(
       {
@@ -482,11 +457,7 @@ get_rppi_ivgr <- function(
         ivgr <- get_dataset("rppi", "sale", source = "github")
         ivgr <- dplyr::filter(ivgr, source == "IVG-R")
 
-        if (!quiet) {
-          cli::cli_inform(
-            "Successfully loaded {nrow(ivgr)} IVGR records from cache"
-          )
-        }
+        cli_debug("Successfully loaded {nrow(ivgr)} IVGR records from cache")
 
         # Add metadata
         attr(ivgr, "source") <- "cache"
@@ -498,27 +469,18 @@ get_rppi_ivgr <- function(
         return(ivgr)
       },
       error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load cached data: {e$message}",
-            "i" = "Falling back to fresh download from BCB API"
-          ))
-        }
+        cli_debug("Failed to load cached data: {e$message}, falling back to fresh download")
       }
     )
   }
 
   # Download and process data ----
-  if (!quiet) {
-    cli::cli_inform("Downloading IVGR data from BCB API...")
-  }
+  cli_debug("Downloading IVGR data from BCB API...")
 
   # Import data from BCB API with retry logic
   ivgr <- import_bcb_ivgr_robust(quiet = quiet, max_retries = max_retries)
 
-  if (!quiet) {
-    cli::cli_inform("Processing and cleaning IVGR data...")
-  }
+  cli_debug("Processing and cleaning IVGR data...")
 
   # Clean data
   clean_ivgr <- ivgr |>
@@ -539,11 +501,7 @@ get_rppi_ivgr <- function(
     source = "api"
   )
 
-  if (!quiet) {
-    cli::cli_inform(
-      "Successfully processed IVGR data with {nrow(clean_ivgr)} records"
-    )
-  }
+  cli_debug("Successfully processed IVGR data with {nrow(clean_ivgr)} records")
 
   return(tidyr::as_tibble(clean_ivgr))
 }
@@ -706,9 +664,7 @@ get_rppi_igmi <- function(
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading IGMI data from cache...")
-    }
+    cli_debug("Loading IGMI data from cache...")
 
     tryCatch(
       {
@@ -716,11 +672,7 @@ get_rppi_igmi <- function(
         igmi <- get_dataset("rppi", "sale", source = "github")
         igmi <- dplyr::filter(igmi, source == "IGMI-R")
 
-        if (!quiet) {
-          cli::cli_inform(
-            "Successfully loaded {nrow(igmi)} IGMI records from cache"
-          )
-        }
+        cli_debug("Successfully loaded {nrow(igmi)} IGMI records from cache")
 
         # Add metadata
         attr(igmi, "source") <- "cache"
@@ -732,20 +684,13 @@ get_rppi_igmi <- function(
         return(igmi)
       },
       error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load cached data: {e$message}",
-            "i" = "Falling back to fresh download from ABECIP"
-          ))
-        }
+        cli_debug("Failed to load cached data: {e$message}, falling back to fresh download")
       }
     )
   }
 
   # Download and process data ----
-  if (!quiet) {
-    cli::cli_inform("Downloading IGMI data from ABECIP website...")
-  }
+  cli_debug("Downloading IGMI data from ABECIP website...")
 
   # Download Excel file with retry logic
   temp_path <- download_igmi_excel_robust(
@@ -753,9 +698,7 @@ get_rppi_igmi <- function(
     max_retries = max_retries
   )
 
-  if (!quiet) {
-    cli::cli_inform("Processing IGMI Excel data...")
-  }
+  cli_debug("Processing IGMI Excel data...")
 
   # Import data from spreadsheet
   igmi <- readxl::read_excel(
@@ -765,9 +708,7 @@ get_rppi_igmi <- function(
     .name_repair = janitor::make_clean_names
   )
 
-  if (!quiet) {
-    cli::cli_inform("Setting up city mapping and cleaning data...")
-  }
+  cli_debug("Setting up city mapping and cleaning data...")
 
   # Auxiliary data.frame to vlookup city names
   dim_geo <- data.frame(
@@ -812,9 +753,7 @@ get_rppi_igmi <- function(
     # Drop last column (12-month brazil)
     dplyr::select(-var_percent_12_meses)
 
-  if (!quiet) {
-    cli::cli_inform("Converting to long format and calculating changes...")
-  }
+  cli_debug("Converting to long format and calculating changes...")
 
   clean_igmi <- clean_igmi |>
     # Convert data to long (previous column names are now 'name_simplified')
@@ -842,11 +781,7 @@ get_rppi_igmi <- function(
     source = "web"
   )
 
-  if (!quiet) {
-    cli::cli_inform(
-      "Successfully processed IGMI data with {nrow(clean_igmi)} records"
-    )
-  }
+  cli_debug("Successfully processed IGMI data with {nrow(clean_igmi)} records")
 
   return(clean_igmi)
 }
@@ -1050,9 +985,7 @@ get_rppi_iqa <- function(
       rent_price = as.numeric(rent_price)
     )
 
-  if (!quiet) {
-    cli::cli_inform("Calculating monthly and annual changes...")
-  }
+  cli_debug("Calculating monthly and annual changes...")
 
   # Calculate MoM change in index and 12-month change
   clean_iqa <- clean_iqa |>
@@ -1071,11 +1004,7 @@ get_rppi_iqa <- function(
     source = "web"
   )
 
-  if (!quiet) {
-    cli::cli_inform(
-      "Successfully processed IQA data with {nrow(clean_iqa)} records"
-    )
-  }
+  cli_debug("Successfully processed IQA data with {nrow(clean_iqa)} records")
 
   return(clean_iqa)
 }
@@ -1161,20 +1090,14 @@ get_rppi_ivar <- function(
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading IVAR data from cache...")
-    }
+    cli_debug("Loading IVAR data from cache...")
 
     tryCatch(
       {
         ivar <- get_dataset("rppi", "rent", source = "github")
         ivar <- dplyr::filter(ivar, source == "IVAR")
 
-        if (!quiet) {
-          cli::cli_inform(
-            "Successfully loaded {nrow(ivar)} IVAR records from cache"
-          )
-        }
+        cli_debug("Successfully loaded {nrow(ivar)} IVAR records from cache")
 
         # Add metadata
         attr(ivar, "source") <- "cache"
@@ -1186,20 +1109,13 @@ get_rppi_ivar <- function(
         return(ivar)
       },
       error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load cached data: {e$message}",
-            "i" = "Falling back to fresh data processing"
-          ))
-        }
+        cli_debug("Failed to load cached data: {e$message}, falling back to fresh processing")
       }
     )
   }
 
   # Download and process data ----
-  if (!quiet) {
-    cli::cli_inform("Processing IVAR data from FGV sources...")
-  }
+  cli_debug("Processing IVAR data from FGV sources...")
 
   # Check for required data dependencies
   if (!exists("fgv_data") || !exists("dim_city")) {
@@ -1210,18 +1126,14 @@ get_rppi_ivar <- function(
     ))
   }
 
-  if (!quiet) {
-    cli::cli_inform("Preparing city mapping data...")
-  }
+  cli_debug("Preparing city mapping data...")
 
   # Set up city mapping for IVAR cities
   ivar_cities <- dim_city |>
     dplyr::filter(code_muni %in% c(3550308, 4314902, 3304557, 3106200)) |>
     dplyr::select(name_simplified, name_muni, abbrev_state)
 
-  if (!quiet) {
-    cli::cli_inform("Extracting IVAR data series...")
-  }
+  cli_debug("Extracting IVAR data series...")
 
   # Filter IVAR from fgv_data, select columns and change the value column name
   ivar <- fgv_data |>
@@ -1229,9 +1141,7 @@ get_rppi_ivar <- function(
     dplyr::select(date, name_simplified, index = value) |>
     dplyr::filter(!is.na(index))
 
-  if (!quiet) {
-    cli::cli_inform("Calculating monthly and annual changes...")
-  }
+  cli_debug("Calculating monthly and annual changes...")
 
   # Group by city and compute percent change and YoY change
   ivar <- ivar |>
@@ -1242,9 +1152,7 @@ get_rppi_ivar <- function(
     ) |>
     dplyr::ungroup()
 
-  if (!quiet) {
-    cli::cli_inform("Joining with city metadata...")
-  }
+  cli_debug("Joining with city metadata...")
 
   # Join with proper city names and select column order
   ivar <- ivar |>
@@ -1274,11 +1182,7 @@ get_rppi_ivar <- function(
     source = "web"
   )
 
-  if (!quiet) {
-    cli::cli_inform(
-      "Successfully processed IVAR data with {nrow(ivar)} records"
-    )
-  }
+  cli_debug("Successfully processed IVAR data with {nrow(ivar)} records")
 
   return(ivar)
 }
@@ -1302,9 +1206,7 @@ get_rppi_secovi_sp <- function(
   max_retries = 3L
 ) {
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading Secovi-SP data from cache...")
-    }
+    cli_debug("Loading Secovi-SP data from cache...")
 
     tryCatch(
       {
@@ -1313,11 +1215,7 @@ get_rppi_secovi_sp <- function(
         return(secovi)
       },
       error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(
-            "Failed to load cached data, falling back to fresh download"
-          )
-        }
+        cli_debug("Failed to load cached data, falling back to fresh download")
       }
     )
   }
@@ -1503,9 +1401,7 @@ get_rppi_fipezap <- function(
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading FipeZap RPPI data from cache...")
-    }
+    cli_debug("Loading FipeZap RPPI data from cache...")
 
     tryCatch(
       {
@@ -1517,11 +1413,7 @@ get_rppi_fipezap <- function(
           df <- dplyr::filter(df, name_muni == city)
         }
 
-        if (!quiet) {
-          cli::cli_inform(
-            "Successfully loaded {nrow(df)} FipeZap RPPI records from cache"
-          )
-        }
+        cli_debug("Successfully loaded {nrow(df)} FipeZap RPPI records from cache")
 
         # Add metadata
         attr(df, "source") <- "cache"
@@ -1534,27 +1426,18 @@ get_rppi_fipezap <- function(
         return(df)
       },
       error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load cached data: {e$message}",
-            "i" = "Falling back to fresh download from FipeZap"
-          ))
-        }
+        cli_debug("Failed to load cached data: {e$message}, falling back to fresh download")
       }
     )
   }
 
   # Download and process data ----
-  if (!quiet) {
-    cli::cli_inform("Downloading FipeZap RPPI data from Excel file...")
-  }
+  cli_debug("Downloading FipeZap RPPI data from Excel file...")
 
   # Download Excel file with retry logic
   temp_path <- download_fipezap_excel(quiet = quiet, max_retries = max_retries)
 
-  if (!quiet) {
-    cli::cli_inform("Processing FipeZap Excel sheets...")
-  }
+  cli_debug("Processing FipeZap Excel sheets...")
 
   # Get all unique sheet names
   sheet_names <- readxl::excel_sheets(temp_path)
@@ -1565,9 +1448,7 @@ get_rppi_fipezap <- function(
   # Use sheets as city names
   city_names <- stringr::str_to_title(sheet_names)
 
-  if (!quiet) {
-    cli::cli_inform("Found {length(sheet_names)} city sheet{?s} to process")
-  }
+  cli_debug("Found {length(sheet_names)} city sheet{?s} to process")
 
   # Import all data
   import_fipezap <- function(x) {
@@ -1605,9 +1486,7 @@ get_rppi_fipezap <- function(
   }
 
   # Import data from all sheets
-  if (!quiet) {
-    cli::cli_inform("Reading data from Excel sheets...")
-  }
+  cli_debug("Reading data from Excel sheets...")
 
   fipezap <- parallel::mclapply(sheet_names, import_fipezap)
   # Names each list element using city names
@@ -1615,9 +1494,7 @@ get_rppi_fipezap <- function(
   # Stacks all sheets together
   fipezap <- dplyr::bind_rows(fipezap, .id = "name_muni")
 
-  if (!quiet) {
-    cli::cli_inform("Processing and cleaning FipeZap data...")
-  }
+  cli_debug("Processing and cleaning FipeZap data...")
 
   # Clean data
   clean_fipe <- fipezap |>
@@ -1652,11 +1529,7 @@ get_rppi_fipezap <- function(
     source = "web"
   )
 
-  if (!quiet) {
-    cli::cli_inform(
-      "Successfully processed FipeZap RPPI data with {nrow(clean_fipe)} records"
-    )
-  }
+  cli_debug("Successfully processed FipeZap RPPI data with {nrow(clean_fipe)} records")
 
   return(clean_fipe)
 }

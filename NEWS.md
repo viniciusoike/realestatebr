@@ -78,7 +78,7 @@ data <- get_dataset("bcb_realestate", table = "all")
 | `get_rppi()` | `"rppi"` |
 | `get_bcb_realestate()` | `"bcb_realestate"` |
 | `get_bcb_series()` | `"bcb_series"` |
-| `get_bis_rppi()` | `"bis_rppi"` |
+| `get_rppi_bis()` | `"rppi_bis"` |
 | `get_secovi()` | `"secovi"` |
 | `get_fgv_indicators()` | `"fgv_indicators"` |
 | `get_b3_stocks()` | `"b3_stocks"` |
@@ -270,7 +270,7 @@ bis <- get_dataset("rppi", table = "bis")
 - `get_b3_stocks()` - B3 stock market data with improved column naming
 - `get_bcb_realestate()` - Central Bank real estate credit data
 - `get_bcb_series()` - BCB macroeconomic time series
-- `get_bis_rppi()` - Bank for International Settlements RPPI data
+- `get_rppi_bis()` - Bank for International Settlements RPPI data
 - `get_cbic_cement()` - CBIC cement industry data (NEW)
 - `get_cbic_steel()` - CBIC steel industry data (NEW)
 - `get_cbic_pim()` - CBIC industrial production data (NEW)
@@ -281,7 +281,7 @@ bis <- get_dataset("rppi", table = "bis")
 - `get_secovi()` - SECOVI-SP real estate data with parallel processing
 
 ### Legacy Functions (Maintained)
-- `get_rppi_bis()` - Maintained as deprecated wrapper with modernized backend
+- `get_rppi_bis()` - Main function with modernized backend and single tibble returns
 - `get_itbi()` and `get_itbi_bhe()` - Planned for Phase 3 (DuckDB integration)
 
 ## Infrastructure Improvements

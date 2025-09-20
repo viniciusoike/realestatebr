@@ -1,11 +1,11 @@
-#' Get FGV Confidence Indicators
+#' Get FGV IBRE Confidence Indicators
 #'
 #' Download and clean construction confidence indicators estimated and released
-#' by the Getulio Vargas Foundation (FGV) with modern error handling and
+#' by the Getulio Vargas Foundation (FGV IBRE) with modern error handling and
 #' progress reporting capabilities.
 #'
 #' @details
-#' This function provides access to construction confidence indicators from FGV,
+#' This function provides access to construction confidence indicators from FGV IBRE,
 #' including confidence indices, expectation indicators, and INCC price indices.
 #' The function supports both cached data access and fallback to package data.
 #'
@@ -27,7 +27,7 @@
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
 #'   If `FALSE` (default), provides detailed progress reporting.
 #'
-#' @return A `tibble` containing all construction confidence indicator series from FGV.
+#' @return A `tibble` containing all construction confidence indicator series from FGV IBRE.
 #'   The tibble includes metadata attributes:
 #'   \describe{
 #'     \item{download_info}{List with access statistics}
@@ -38,16 +38,16 @@
 #' @importFrom cli cli_inform cli_warn cli_abort
 #'
 #' @examples \dontrun{
-#' # Get FGV indicators from cache (with progress)
-#' fgv <- get_fgv_indicators(quiet = FALSE)
+#' # Get FGV IBRE indicators from cache (with progress)
+#' fgv <- get_fgv_ibre(quiet = FALSE)
 #'
 #' # Use internal package data
-#' fgv <- get_fgv_indicators(cached = FALSE)
+#' fgv <- get_fgv_ibre(cached = FALSE)
 #'
 #' # Check access metadata
 #' attr(fgv, "download_info")
 #' }
-get_fgv_indicators <- function(
+get_fgv_ibre <- function(
   table = "indicators",
   cached = TRUE,
   quiet = FALSE
@@ -81,27 +81,21 @@ get_fgv_indicators <- function(
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading FGV indicators from cache...")
-    }
+    cli_debug("Loading FGV IBRE indicators from cache...")
 
     tryCatch(
       {
         # Use new unified architecture for cached data
-        fgv_data <- get_dataset("fgv_indicators", source = "github")
+        fgv_data <- get_dataset("fgv_ibre", source = "github")
 
-        if (!quiet) {
-          cli::cli_inform(
-            "Successfully loaded {nrow(fgv_data)} FGV indicator records from cache"
-          )
-        }
+        cli_debug("Successfully loaded {nrow(fgv_data)} FGV IBRE indicator records from cache")
 
         # Add metadata
         attr(fgv_data, "source") <- "cache"
         attr(fgv_data, "download_time") <- Sys.time()
         attr(fgv_data, "download_info") <- list(
           table = table,
-          dataset = "fgv_indicators",
+          dataset = "fgv_ibre",
           source = "cache"
         )
 
@@ -110,7 +104,7 @@ get_fgv_indicators <- function(
       error = function(e) {
         if (!quiet) {
           cli::cli_warn(c(
-            "Failed to load FGV data from cache: {e$message}",
+            "Failed to load FGV IBRE data from cache: {e$message}",
             "i" = "Falling back to internal package data"
           ))
         }
@@ -119,9 +113,7 @@ get_fgv_indicators <- function(
   }
 
   # Use internal package data ----
-  if (!quiet) {
-    cli::cli_inform("Loading FGV indicators from internal package data...")
-  }
+  cli_user("Loading FGV IBRE indicators from package data", quiet = quiet)
 
   # Check for required data dependencies
   if (!exists("fgv_data")) {
@@ -133,18 +125,14 @@ get_fgv_indicators <- function(
     ))
   }
 
-  if (!quiet) {
-    cli::cli_inform(
-      "Successfully accessed {nrow(fgv_data)} FGV indicator records from package data"
-    )
-  }
+  cli_user("✓ FGV IBRE indicators retrieved: {nrow(fgv_data)} records", quiet = quiet)
 
   # Add metadata
   attr(fgv_data, "source") <- "internal"
   attr(fgv_data, "download_time") <- Sys.time()
   attr(fgv_data, "download_info") <- list(
     table = table,
-    dataset = "fgv_indicators",
+    dataset = "fgv_ibre",
     source = "internal",
     note = "Fresh downloads not supported - using package data"
   )

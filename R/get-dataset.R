@@ -40,6 +40,46 @@
 #'                          date_start = as.Date("2020-01-01"))
 #' }
 #'
+#' @section Debug Mode:
+#' The realestatebr package includes a comprehensive debug mode for development
+#' and troubleshooting. Debug mode shows detailed processing messages including
+#' file-by-file progress, data type detection, web scraping steps, and more.
+#'
+#' \strong{Enable debug mode:}
+#' \describe{
+#'   \item{Environment variable}{Set \code{REALESTATEBR_DEBUG=TRUE} in your environment}
+#'   \item{Package option}{Use \code{options(realestatebr.debug = TRUE)}}
+#' }
+#'
+#' \strong{Debug mode examples:}
+#' \preformatted{
+#' # Enable debug mode via environment variable
+#' Sys.setenv(REALESTATEBR_DEBUG = "TRUE")
+#' data <- get_dataset("cbic")  # Shows detailed processing messages
+#'
+#' # Enable debug mode via package option
+#' options(realestatebr.debug = TRUE)
+#' data <- get_dataset("rppi")  # Shows detailed processing messages
+#'
+#' # Disable debug mode
+#' options(realestatebr.debug = FALSE)
+#' # or
+#' Sys.unsetenv("REALESTATEBR_DEBUG")
+#' }
+#'
+#' \strong{What debug mode shows:}
+#' \itemize{
+#'   \item File download progress and retry attempts
+#'   \item Excel sheet processing steps
+#'   \item Data type detection and validation
+#'   \item Web scraping details and error handling
+#'   \item Cache access and fallback operations
+#'   \item Data cleaning and transformation steps
+#' }
+#'
+#' Debug mode is particularly useful when troubleshooting data access issues,
+#' understanding complex dataset processing, or developing new functionality.
+#'
 #' @seealso \code{\link{list_datasets}} for available datasets,
 #'   \code{\link{get_dataset_info}} for dataset details
 #'
@@ -212,6 +252,22 @@ get_from_github_cache <- function(name, dataset_info, table) {
       cli::cli_abort("Table '{table}' not found. Available: {available_tables}")
     }
   }
+
+  # Special handling for SECOVI table filtering
+  if (!is.null(table) && name == "secovi" && table != "all") {
+    if ("category" %in% names(data)) {
+      valid_tables <- c("condo", "rent", "launch", "sale")
+      if (table %in% valid_tables) {
+        data <- data[data$category == table, ]
+        if (nrow(data) == 0) {
+          cli::cli_abort("No data found for SECOVI table '{table}'")
+        }
+      } else {
+        cli::cli_abort("Invalid SECOVI table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}")
+      }
+    }
+  }
+
   # Note: For datasets with table-specific cached files (like BIS),
   # the table filtering is handled by get_cached_name() above
   
@@ -245,7 +301,7 @@ get_from_legacy_function <- function(name, dataset_info, table, date_start, date
     if (!is.null(table)) {
       args$table <- table
     } else {
-      args$table <- "all"
+      args$table <- "capitals"  # Default to capitals since 'all' is no longer supported
     }
   } else {
     # All other functions use 'table' parameter
@@ -313,11 +369,11 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
     "abrainc_indicators" = "abrainc",
     "bcb_realestate" = "bcb_realestate",
     "secovi" = "secovi_sp",
-    "bis_rppi" = "bis_selected",
+    "rppi_bis" = "bis_selected",  # Updated to use rppi_bis dataset name
     "rppi" = "rppi_sale",
     "bcb_series" = "bcb_series",
     "b3_stocks" = "b3_stocks",
-    "fgv_indicators" = "fgv_indicators",
+    "fgv_ibre" = "fgv_ibre",
     "nre_ire" = "ire"
   )
   
@@ -333,10 +389,10 @@ supports_table_all <- function(func_name) {
     "get_abrainc_indicators",
     "get_bcb_realestate",
     "get_secovi",
-    "get_bis_rppi",
+    "get_rppi_bis",  # Updated function name
     "get_bcb_series",
     "get_cbic",
-    "get_fgv_indicators",
+    "get_fgv_ibre",
     "get_property_records"
   )
 

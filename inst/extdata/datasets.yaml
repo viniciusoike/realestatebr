@@ -114,7 +114,7 @@ datasets:
     cached_file: "secovi_sp.csv.gz"
     translation_notes: "Regional classifications specific to São Paulo metropolitan area"
     
-  bis_rppi:
+  rppi_bis:
     name: "BIS Residential Property Price Indices"
     name_pt: "Índices de Preços Residenciais BIS"
     description: "International residential property price indices from Bank for International Settlements"
@@ -128,16 +128,31 @@ datasets:
         name: "Selected Series"
         description: "Core RPPI series for major countries"
         url: "https://www.bis.org/statistics/pp_selected.htm"
-      detailed:
-        name: "Detailed Dataset"
-        description: "Full RPPI dataset with all available series"
+      detailed_monthly:
+        name: "Detailed Monthly"
+        description: "Monthly detailed RPPI data"
+        url: "https://data.bis.org/topics/RPP"
+      detailed_quarterly:
+        name: "Detailed Quarterly"
+        description: "Quarterly detailed RPPI data"
+        url: "https://data.bis.org/topics/RPP"
+      detailed_annual:
+        name: "Detailed Annual"
+        description: "Annual detailed RPPI data"
+        url: "https://data.bis.org/topics/RPP"
+      detailed_semiannual:
+        name: "Detailed Semiannual"
+        description: "Semiannual detailed RPPI data"
         url: "https://data.bis.org/topics/RPP"
     internal_function: "fetch_bis"
-    legacy_function: "get_bis_rppi"
-    data_type: "mixed"
+    legacy_function: "get_rppi_bis"
+    data_type: "tibble"
     cached_file:
       selected: "bis_selected.csv.gz"
-      detailed: "bis_detailed.rds"
+      detailed_monthly: "rppi_bis_detailed_monthly.rds"
+      detailed_quarterly: "rppi_bis_detailed_quarterly.rds"
+      detailed_annual: "rppi_bis_detailed_annual.rds"
+      detailed_semiannual: "rppi_bis_detailed_semiannual.rds"
     translation_notes: "International data; minimal translation needed"
 
   rppi:
@@ -239,19 +254,19 @@ datasets:
     translation_notes: "Metadata available in both Portuguese and English"
 
 
-  fgv_indicators:
-    name: "FGV Real Estate Indicators"
-    name_pt: "Indicadores Imobiliários FGV"
-    description: "Real estate market indicators from Fundação Getulio Vargas"
+  fgv_ibre:
+    name: "FGV IBRE Real Estate Indicators"
+    name_pt: "Indicadores Imobiliários FGV IBRE"
+    description: "Real estate market indicators from Fundação Getulio Vargas IBRE"
     source: "FGV IBRE"
     url: "https://portalibre.fgv.br"
     geography: "Brazil"
     frequency: "monthly"
     coverage: "2010-present"
     internal_function: "fetch_fgv"
-    legacy_function: "get_fgv_indicators"
+    legacy_function: "get_fgv_ibre"
     data_type: "tibble"
-    cached_file: "fgv_indicators.csv.gz"
+    cached_file: "fgv_ibre.csv.gz"
     translation_notes: "Technical economic terms; standard translations applied"
 
   cbic:
@@ -319,6 +334,22 @@ datasets:
     geography: "Brazil (varies by municipality)"
     frequency: "transaction-level (real-time)"
     coverage: "varies by municipality"
+    categories:
+      capitals:
+        name: "Capital Cities Records"
+        description: "Property records data for capital cities"
+      capitals_transfers:
+        name: "Capital Cities Transfers"
+        description: "Transfer data for capital cities"
+      cities:
+        name: "All Cities Records"
+        description: "Property records data for all cities"
+      aggregates:
+        name: "SP Regional Aggregates"
+        description: "Records data for São Paulo regional aggregates"
+      aggregates_transfers:
+        name: "SP Aggregate Transfers"
+        description: "Transfer data for São Paulo aggregates"
     internal_function: "fetch_registro"
     legacy_function: "get_property_records"
     data_type: "tibble"

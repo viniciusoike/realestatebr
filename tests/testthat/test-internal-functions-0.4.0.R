@@ -40,7 +40,7 @@ test_that("internal functions have consistent parameter interface", {
   # Note: fetch_ functions don't exist, using actual legacy functions instead
   internal_functions <- c(
     "get_rppi", "get_abecip_indicators", "get_abrainc_indicators", "get_bcb_realestate",
-    "get_bcb_series", "get_secovi", "get_bis_rppi", "get_fgv_indicators",
+    "get_bcb_series", "get_secovi", "get_rppi_bis", "get_fgv_indicators",
     "get_cbic"
   )
 

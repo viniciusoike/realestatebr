@@ -1,8 +1,8 @@
-#' Get Property Records data for major cities
+#' Get Property Records Table
 #'
-#' Imports and cleans the most up to date property transaction records available
-#' from Registro de Imoveis with modern error handling, progress reporting,
-#' and robust download capabilities.
+#' Imports and cleans specific tables from the most up to date property transaction
+#' records available from Registro de Imoveis with modern error handling, progress
+#' reporting, and robust download capabilities.
 #'
 #' @details
 #' This function scrapes download links from the Registro de Imoveis website
@@ -17,14 +17,21 @@
 #' The function includes retry logic for failed downloads and robust error
 #' handling for web scraping and Excel processing operations.
 #'
-#' @param table Character. One of `'capitals'`, `'aggregates'`, or `'all'` (default).
+#' @param table Character. One of:
+#'   \describe{
+#'     \item{"capitals"}{Records data for capital cities (default)}
+#'     \item{"capitals_transfers"}{Transfer data for capital cities}
+#'     \item{"cities"}{Records data for all cities}
+#'     \item{"aggregates"}{Records data for SP regional aggregates}
+#'     \item{"aggregates_transfers"}{Transfer data for SP aggregates}
+#'   }
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
 #'   If `FALSE` (default), provides detailed progress reporting.
 #' @param max_retries Integer. Maximum number of retry attempts for failed
 #'   downloads. Defaults to 3.
 #'
-#' @return A named `list` with property records data. The return includes
+#' @return A `tibble` with the requested property records table. The return includes
 #'   metadata attributes:
 #'   \describe{
 #'     \item{download_info}{List with download statistics}
@@ -38,26 +45,32 @@
 #' @importFrom rvest html_elements html_attr
 #'
 #' @examples \dontrun{
-#' # Get all property records (with progress)
-#' records <- get_property_records(quiet = FALSE)
+#' # Get capitals records data (default)
+#' capitals <- get_property_records()
 #'
-#' # Only for capitals and selected cities
-#' cities <- get_property_records("capitals")
+#' # Get transfer data for capital cities
+#' transfers <- get_property_records("capitals_transfers")
+#'
+#' # Get all cities records data
+#' cities <- get_property_records("cities")
+#'
+#' # Get SP regional aggregates
+#' aggregates <- get_property_records("aggregates")
 #'
 #' # Use cached data for faster access
-#' cached_records <- get_property_records(cached = TRUE)
+#' cached_data <- get_property_records("capitals", cached = TRUE)
 #'
 #' # Check download metadata
-#' attr(records, "download_info")
+#' attr(capitals, "download_info")
 #' }
 get_property_records <- function(
-  table = "all",
+  table = "capitals",
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
   # Input validation ----
-  valid_tables <- c("all", "aggregates", "capitals")
+  valid_tables <- c("capitals", "capitals_transfers", "cities", "aggregates", "aggregates_transfers")
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
@@ -87,25 +100,22 @@ get_property_records <- function(
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading property records from cache...")
-    }
+    cli_debug("Loading property records from cache...")
 
     tryCatch(
       {
         prop <- import_cached("property_records")
 
-        if (!quiet) {
-          cli::cli_inform("Successfully loaded property records from cache")
-        }
+        cli_debug("Successfully loaded property records from cache")
 
-        result <- if (table == "all") prop else prop[[table]]
+        # Extract the specific table from cached data
+        result <- extract_property_table(prop, table)
 
         # Add metadata
         attr(result, "source") <- "cache"
         attr(result, "download_time") <- Sys.time()
         attr(result, "download_info") <- list(
-          category = table,
+          table = table,
           source = "cache"
         )
 
@@ -123,9 +133,7 @@ get_property_records <- function(
   }
 
   # Scrape download links ----
-  if (!quiet) {
-    cli::cli_inform("Scraping property records website for download links...")
-  }
+  cli_user("Downloading property records data for '{table}'", quiet = quiet)
 
   download_links <- scrape_registro_imoveis_links(
     quiet = quiet,
@@ -140,43 +148,35 @@ get_property_records <- function(
     ))
   }
 
-  # Process data based on category ----
-  if (table == "all") {
-    if (!quiet) {
-      cli::cli_inform("Processing both capitals and aggregates data...")
-    }
+  # Process data based on table parameter ----
+  if (table %in% c("capitals", "capitals_transfers")) {
+    cli_debug("Processing capitals data...")
 
-    out <- list(
-      capitals = get_ri_capitals_robust(
-        url = download_links[[1]],
-        quiet = quiet,
-        max_retries = max_retries
-      ),
-      aggregates = get_ri_aggregates_robust(
-        url = download_links[[2]],
-        quiet = quiet,
-        max_retries = max_retries
-      )
-    )
-  } else if (table == "capitals") {
-    if (!quiet) {
-      cli::cli_inform("Processing capitals data...")
-    }
-
-    out <- get_ri_capitals_robust(
+    capitals_data <- get_ri_capitals_robust(
       url = download_links[[1]],
       quiet = quiet,
       max_retries = max_retries
     )
-  } else if (table == "aggregates") {
-    if (!quiet) {
-      cli::cli_inform("Processing aggregates data...")
+
+    out <- if (table == "capitals") {
+      capitals_data$records
+    } else {
+      capitals_data$transfers
     }
 
-    out <- get_ri_aggregates_robust(
+  } else if (table %in% c("cities", "aggregates", "aggregates_transfers")) {
+    cli_debug("Processing aggregates data...")
+
+    aggregates_data <- get_ri_aggregates_robust(
       url = download_links[[2]],
       quiet = quiet,
       max_retries = max_retries
+    )
+
+    out <- switch(table,
+      "cities" = aggregates_data$record_cities,
+      "aggregates" = aggregates_data$record_aggregates,
+      "aggregates_transfers" = aggregates_data$transfers
     )
   }
 
@@ -184,14 +184,12 @@ get_property_records <- function(
   attr(out, "source") <- "web"
   attr(out, "download_time") <- Sys.time()
   attr(out, "download_info") <- list(
-    category = table,
+    table = table,
     download_links = download_links,
     source = "web"
   )
 
-  if (!quiet) {
-    cli::cli_inform("Successfully processed property records data")
-  }
+  cli_user("✓ Property records data retrieved: {nrow(out)} records", quiet = quiet)
 
   return(out)
 }
@@ -339,9 +337,7 @@ download_ri_excel <- function(url, filename, quiet, max_retries) {
 #' @return Processed capitals data
 #' @keywords internal
 get_ri_capitals_robust <- function(url, quiet, max_retries) {
-  if (!quiet) {
-    cli::cli_inform("Downloading capitals data...")
-  }
+  cli_debug("Downloading capitals data...")
 
   # Download with retry logic
   download_result <- download_ri_excel(
@@ -360,9 +356,7 @@ get_ri_capitals_robust <- function(url, quiet, max_retries) {
   }
 
   # Import and clean sheets
-  if (!quiet) {
-    cli::cli_inform("Processing capitals Excel file...")
-  }
+  cli_debug("Processing capitals Excel file...")
 
   capitals <- suppressMessages(import_ri_capitals(download_result$path))
   clean_capitals <- suppressWarnings(clean_ri_capitals(capitals))
@@ -381,9 +375,7 @@ get_ri_capitals_robust <- function(url, quiet, max_retries) {
 #' @return Processed aggregates data
 #' @keywords internal
 get_ri_aggregates_robust <- function(url, quiet, max_retries) {
-  if (!quiet) {
-    cli::cli_inform("Downloading aggregates data...")
-  }
+  cli_debug("Downloading aggregates data...")
 
   # Download with retry logic
   download_result <- download_ri_excel(
@@ -402,9 +394,7 @@ get_ri_aggregates_robust <- function(url, quiet, max_retries) {
   }
 
   # Import and clean sheets
-  if (!quiet) {
-    cli::cli_inform("Processing aggregates Excel file...")
-  }
+  cli_debug("Processing aggregates Excel file...")
 
   aggregates <- suppressMessages(import_ri_aggregates(download_result$path))
   clean_aggregates <- suppressWarnings(clean_ri_aggregates(aggregates))
@@ -750,4 +740,30 @@ clean_ri_cities <- function(df) {
       name_muni,
       dplyr::any_of(c("record_total", "sale_total"))
     )
+}
+
+#' Extract Specific Table from Property Records Data
+#'
+#' Internal helper function to extract a specific table from cached property data
+#'
+#' @param prop_data Property records data structure (cached format)
+#' @param table Table name to extract
+#' @return Single tibble for the requested table
+#' @keywords internal
+extract_property_table <- function(prop_data, table) {
+  # Handle different cached data structures
+  if (is.list(prop_data) && "capitals" %in% names(prop_data)) {
+    # Standard cached structure: list(capitals = list(...), aggregates = list(...))
+    switch(table,
+      "capitals" = prop_data$capitals$records,
+      "capitals_transfers" = prop_data$capitals$transfers,
+      "cities" = prop_data$aggregates$record_cities,
+      "aggregates" = prop_data$aggregates$record_aggregates,
+      "aggregates_transfers" = prop_data$aggregates$transfers,
+      stop("Unknown table: ", table)
+    )
+  } else {
+    # Fallback for different cache formats
+    cli::cli_abort("Unsupported cached data format for property records")
+  }
 }

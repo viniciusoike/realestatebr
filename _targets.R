@@ -139,7 +139,7 @@ list(
     name = bis_rppi_data,
     command = {
       cli::cli_inform("Fetching BIS RPPI data...")
-      get_bis_rppi(cached = FALSE, quiet = FALSE)
+      get_rppi_bis(cached = FALSE, quiet = FALSE)
     },
     cue = tar_cue_age(
       name = bis_rppi_data,
