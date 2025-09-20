@@ -7,18 +7,10 @@
 Original series and methodology available at \url{https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html}.
 }
 \usage{
-get_nre_ire(
-  table = "indicators",
-  category = NULL,
-  cached = TRUE,
-  quiet = FALSE
-)
+get_nre_ire(table = "indicators", cached = TRUE, quiet = FALSE)
 }
 \arguments{
 \item{table}{Character. Which dataset to return: "indicators" (default) or "all".}
-
-\item{category}{Character. Deprecated parameter name for backward compatibility.
-Use \code{table} instead.}
 
 \item{cached}{Logical. If \code{TRUE} (default), loads data from package cache
 using the unified dataset architecture. This is currently the only

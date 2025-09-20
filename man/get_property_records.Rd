@@ -5,14 +5,14 @@
 \title{Get Property Records data for major cities}
 \usage{
 get_property_records(
-  category = "all",
+  table = "all",
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 )
 }
 \arguments{
-\item{category}{Character. One of \code{'capitals'}, \code{'aggregates'}, or \code{'all'} (default).}
+\item{table}{Character. One of \code{'capitals'}, \code{'aggregates'}, or \code{'all'} (default).}
 
 \item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache.}
 

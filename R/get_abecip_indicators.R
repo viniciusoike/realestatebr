@@ -1,7 +1,7 @@
 #' Get Credit Indicators from Abecip
 #'
 #' @section Deprecation:
-#' This function is deprecated. Use \code{\link{get_dataset}("abecip_indicators")} instead.
+#' This function is deprecated. Use \code{\link{get_dataset}("abecip")} instead.
 #'
 #' Downloads updated housing credit data from Abecip. Abecip represents the major
 #' financial institutions that integrate Brazil's finance housing system (SFH).
@@ -31,8 +31,7 @@
 #' to cached data when downloads fail. Web scraping errors are handled with
 #' automatic retries and informative error messages.
 #'
-#' @param table Character. One of `'sbpe'` (default), `'units'`, `'cgi'` or `'all'`.
-#' @param category Character. **Deprecated**. Use `table` parameter instead.
+#' @param table Character. One of `'sbpe'` (default), `'units'`, or `'cgi'`.
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
 #'   using the unified dataset architecture.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
@@ -48,7 +47,6 @@
 #'     \item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @export
 #' @source [https://www.abecip.org.br](https://www.abecip.org.br)
 #' @importFrom cli cli_inform cli_warn cli_abort cli_progress_bar cli_progress_update cli_progress_done
 #' @importFrom dplyr filter select mutate rename rename_with bind_rows group_by slice
@@ -72,23 +70,12 @@
 #' }
 get_abecip_indicators <- function(
   table = "sbpe",
-  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Deprecation warning ----
-  .Deprecated("get_dataset",
-             msg = "get_abecip_indicators() is deprecated. Use get_dataset('abecip_indicators') instead.")
-
-  # Input validation and backward compatibility ----
-  valid_tables <- c("sbpe", "cgi", "units", "all")
-
-  # Handle backward compatibility: if category is provided, use it as table
-  if (!is.null(category)) {
-    cli::cli_warn("The 'category' parameter is deprecated. Use 'table' instead.")
-    table <- category
-  }
+  # Input validation ----
+  valid_tables <- c("sbpe", "cgi", "units")
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
@@ -124,11 +111,17 @@ get_abecip_indicators <- function(
 
     tryCatch(
       {
-        # Map table to unified architecture
-        if (table == "all") {
-          data <- get_dataset("abecip_indicators", source = "github")
+        # Direct cache loading, no circular dependency
+        cached_data <- import_cached("abecip")
+
+        # Filter by table
+        if (table %in% names(cached_data)) {
+          data <- cached_data[[table]]
         } else {
-          data <- get_dataset("abecip_indicators", source = "github", category = table)
+          available_tables <- paste(names(cached_data), collapse = ", ")
+          cli::cli_abort(
+            "Table '{table}' not found in cached data. Available: {available_tables}"
+          )
         }
 
         if (!quiet) {
@@ -186,54 +179,60 @@ get_abecip_indicators <- function(
   }
 
   if (table == "cgi") {
-    # CGI data is currently static
-    abecip <- abecip_cgi
-    if (!quiet) {
-      cli::cli_inform("Loaded CGI data from package")
-    }
-  }
-
-  if (table == "all") {
-    if (!quiet) {
-      cli::cli_progress_bar(
-        name = "Downloading all Abecip datasets",
-        total = 3,
-        format = "{cli::pb_name} [{cli::pb_current}/{cli::pb_total}] {cli::pb_bar}"
-      )
+    if (!cached) {
+      if (!quiet) {
+        cli::cli_inform(c(
+          "i" = "CGI data is a static historical dataset (January 2017-present)",
+          "i" = "Loading from package cache instead of fresh download"
+        ))
+      }
     }
 
-    sbpe <- download_abecip_sbpe(
-      quiet = TRUE,
-      max_retries = max_retries
-    )
-    if (!quiet) cli::cli_progress_update()
+    # Load CGI data from package cache
+    tryCatch({
+      cached_data <- import_cached("abecip")
+      if ("cgi" %in% names(cached_data)) {
+        abecip <- cached_data[["cgi"]]
+      } else {
+        cli::cli_abort("CGI data not found in cached dataset")
+      }
 
-    units <- download_abecip_units(
-      quiet = TRUE,
-      max_retries = max_retries
-    )
-    if (!quiet) cli::cli_progress_update()
-
-    cgi <- abecip_cgi
-    if (!quiet) {
-      cli::cli_progress_update()
-      cli::cli_progress_done()
-    }
-
-    abecip <- list(sbpe = sbpe, units = units, cgi = cgi)
+      if (!quiet) {
+        cli::cli_inform("Successfully loaded CGI data from package cache")
+      }
+    }, error = function(e) {
+      cli::cli_abort(c(
+        "Failed to load CGI data from cache",
+        "x" = "Error: {e$message}",
+        "i" = "CGI data should be available in package cache"
+      ))
+    })
   }
 
   # Add metadata
-  attr(abecip, "source") <- "web"
-  attr(abecip, "download_time") <- Sys.time()
-  attr(abecip, "download_info") <- download_info
+  if (table == "cgi") {
+    attr(abecip, "source") <- "cache"
+    attr(abecip, "download_time") <- Sys.time()
+    attr(abecip, "download_info") <- list(
+      source = "cache",
+      category = table,
+      note = "CGI is a static historical dataset"
+    )
+  } else {
+    attr(abecip, "source") <- "web"
+    attr(abecip, "download_time") <- Sys.time()
+    attr(abecip, "download_info") <- download_info
+  }
 
   if (!quiet) {
-    cli::cli_inform("Successfully downloaded Abecip data")
+    if (table == "cgi") {
+      cli::cli_inform("Successfully loaded Abecip CGI data from cache")
+    } else {
+      cli::cli_inform("Successfully downloaded Abecip data")
+    }
   }
 
   return(abecip)
-
 }
 
 #' Download SBPE Data from Abecip
@@ -247,7 +246,6 @@ get_abecip_indicators <- function(
 #' @return A tibble with processed SBPE data
 #' @keywords internal
 download_abecip_sbpe <- function(quiet = FALSE, max_retries = 3L) {
-
   # Download Excel file with retry logic ----
   temp_path <- download_abecip_file(
     url_page = "https://www.abecip.org.br/credito-imobiliario/indicadores/caderneta-de-poupanca",
@@ -263,15 +261,24 @@ download_abecip_sbpe <- function(quiet = FALSE, max_retries = 3L) {
       # Get excel range to import
       range_sbpe <- get_range(temp_path, sheet = "SBPE_Mensal", skip_row = 19)
       range_sbpe <- stringr::str_replace(range_sbpe, ":R", ":K")
-  # Define column names
-  cnames <- c(
-    "date", "sbpe_inflow", "sbpe_outflow", "sbpe_netflow", "sbpe_netflow_pct",
-    "sbpe_yield", "sbpe_stock", "drop", "dim_currency", "dim_currecy_label",
-    "dim_unit")
+      # Define column names
+      cnames <- c(
+        "date",
+        "sbpe_inflow",
+        "sbpe_outflow",
+        "sbpe_netflow",
+        "sbpe_netflow_pct",
+        "sbpe_yield",
+        "sbpe_stock",
+        "drop",
+        "dim_currency",
+        "dim_currecy_label",
+        "dim_unit"
+      )
 
-  # Get excel range to import
-  range_rural <- get_range(temp_path, sheet = "Rural_Mensal")
-  range_rural <- stringr::str_replace(range_rural, "A5", "A268")
+      # Get excel range to import
+      range_rural <- get_range(temp_path, sheet = "Rural_Mensal")
+      range_rural <- stringr::str_replace(range_rural, "A5", "A268")
 
       # Import
       sbpe <- readxl::read_excel(
@@ -312,7 +319,7 @@ download_abecip_sbpe <- function(quiet = FALSE, max_retries = 3L) {
 
   # Reshape to wide format with totals
   sbpe_total <- sbpe_total |>
-    dplyr::rename_with(~stringr::str_replace(.x, "sbpe_", "")) |>
+    dplyr::rename_with(~ stringr::str_replace(.x, "sbpe_", "")) |>
     tidyr::pivot_longer(
       cols = inflow:stock,
       names_to = "series_name"
@@ -332,7 +339,6 @@ download_abecip_sbpe <- function(quiet = FALSE, max_retries = 3L) {
   validate_abecip_data(sbpe_total, "sbpe")
 
   return(sbpe_total)
-
 }
 
 #' Download Units Data from Abecip
@@ -346,7 +352,6 @@ download_abecip_sbpe <- function(quiet = FALSE, max_retries = 3L) {
 #' @return A tibble with processed units data
 #' @keywords internal
 download_abecip_units <- function(quiet = FALSE, max_retries = 3L) {
-
   # Download Excel file with retry logic ----
   temp_path <- download_abecip_file(
     url_page = "https://www.abecip.org.br/credito-imobiliario/indicadores/financiamento",
@@ -361,8 +366,13 @@ download_abecip_units <- function(quiet = FALSE, max_retries = 3L) {
     {
       # Define column names
       cnames <- c(
-        "date", "units_construction", "units_acquisition", "units_total",
-        "currency_construction", "currency_acquisition", "currency_total"
+        "date",
+        "units_construction",
+        "units_acquisition",
+        "units_total",
+        "currency_construction",
+        "currency_acquisition",
+        "currency_total"
       )
 
       # Import excel sheet
@@ -449,7 +459,12 @@ download_abecip_file <- function(
 
         # Download the file
         temp_path <- tempfile(paste0(file_prefix, ".xlsx"))
-        download.file(url, destfile = temp_path, mode = "wb", quiet = TRUE)
+        utils::download.file(
+          url,
+          destfile = temp_path,
+          mode = "wb",
+          quiet = TRUE
+        )
 
         # Verify file was downloaded
         if (!file.exists(temp_path) || file.size(temp_path) == 0) {
@@ -488,7 +503,7 @@ download_abecip_file <- function(
 process_sbpe_data <- function(df) {
   df |>
     # Select only columns that are not full NA
-    dplyr::select(dplyr::where(~sum(!is.na(.x)) > 0)) |>
+    dplyr::select(dplyr::where(~ sum(!is.na(.x)) > 0)) |>
     # Remove all "Total" rows
     dplyr::filter(!stringr::str_detect(date, "Total")) |>
     dplyr::mutate(
@@ -548,6 +563,8 @@ validate_abecip_data <- function(data, type) {
 
   # Check dates are not in the future
   if (max(data$date, na.rm = TRUE) > Sys.Date() + 90) {
-    cli::cli_warn("Some dates in {type} data are more than 90 days in the future")
+    cli::cli_warn(
+      "Some dates in {type} data are more than 90 days in the future"
+    )
   }
 }

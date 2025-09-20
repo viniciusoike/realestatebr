@@ -4,13 +4,12 @@
 #' Central Bank with modern error handling, progress reporting, and robust API access.
 #'
 #' @details
-#' Using default settings, this function downloads 140 key macroeconomic indicators
-#' such as prices indices, interest rates, credit indicators, etc. The full list
-#' of variables is gathered in the `bcb_metadata` table.
+#' This function downloads 15 essential macroeconomic indicators relevant for
+#' real estate analysis, including price indices, interest rates, and credit indicators.
+#' The series selection has been simplified for v0.4.0 to focus on core indicators.
 #'
-#' A subset of the variables can be imported using the `table` argument. The
-#' available tables are: `'credit'`, `'exchange'`, `'government'`,
-#' `'interest-rate'`, `'real-estate'`,`'price'`, and `'production'`.
+#' The 15 essential series are: 190, 192, 432, 433, 20704, 20756, 20768,
+#' 20914, 21072, 21084, 21340, 24364, 28545, 28763, 28770.
 #'
 #' The default value for `date_start` is January 2010. While arbitrary, I advise
 #' against setting `date_start` to dates prior to July 1994. To download all
@@ -26,8 +25,6 @@
 #'
 #' @param table Character. Which dataset to return: "all" (default), "credit", "exchange",
 #'   "government", "interest-rate", "real-estate", "price", or "production".
-#' @param category Character. Deprecated parameter name for backward compatibility.
-#'   Use `table` instead.
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
 #'   using the unified dataset architecture.
 #' @param date_start A `Date` argument indicating the first period to extract
@@ -36,18 +33,17 @@
 #'   If `FALSE` (default), provides detailed progress reporting.
 #' @param max_retries Integer. Maximum number of retry attempts for failed
 #'   BCB API calls. Defaults to 3.
-#' @param ... Additional arguments passed to `GetBCBData::gbcbd_get_series`.
+#' @param ... Additional arguments passed to `rbcb::get_series`.
 #'
 #' @source [https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 #' @return A 12-column `tibble` with all of the selected series from BCB.
 #'   The tibble includes metadata attributes:
-#'   \\describe{
-#'     \\item{download_info}{List with download statistics}
-#'     \\item{source}{Data source used (api or cache)}
-#'     \\item{download_time}{Timestamp of download}
+#'   \describe{
+#'     \item{download_info}{List with download statistics}
+#'     \item{source}{Data source used (api or cache)}
+#'     \item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr as_tibble rename select left_join filter
 #'
@@ -66,7 +62,6 @@
 #' }
 get_bcb_series <- function(
   table = "all",
-  category = NULL,
   cached = FALSE,
   date_start = as.Date("2010-01-01"),
   quiet = FALSE,
@@ -74,15 +69,6 @@ get_bcb_series <- function(
   ...
 ) {
   # Input validation and backward compatibility ----
-  # Handle backward compatibility: if category is provided, use it as table
-  if (!is.null(category)) {
-    cli::cli_warn(c(
-      "Parameter {.arg category} is deprecated",
-      "i" = "Use {.arg table} parameter instead",
-      ">" = "This will be removed in a future version"
-    ))
-    table <- category
-  }
 
   # Check for required data dependencies
   if (!exists("bcb_metadata")) {
@@ -137,22 +123,30 @@ get_bcb_series <- function(
     )
   }
 
-  # Prepare metadata and codes ----
+  # Use simplified essential series list ----
   if (!quiet) {
-    cli::cli_inform("Preparing BCB series metadata...")
+    cli::cli_inform("Using simplified essential BCB series...")
   }
 
-  # Subset metadata based on tables
-  if (table != "all") {
-    # Subset the metadata to the specific table
-    codes_bcb <- subset(bcb_metadata, bcb_category %in% table)$code_bcb
-  } else {
-    # Use all available tables
-    codes_bcb <- bcb_metadata$code_bcb
-  }
+  # Essential series for real estate package (15 key indicators)
+  essential_series <- c(190, 192, 432, 433, 20704, 20756, 20768,
+                       20914, 21072, 21084, 21340, 24364, 28545,
+                       28763, 28770)
+
+  codes_bcb <- essential_series
+
+  # # OLD CODE - Dynamic metadata filtering (commented for v0.4.0 simplification)
+  # # Subset metadata based on tables
+  # if (table != "all") {
+  #   # Subset the metadata to the specific table
+  #   codes_bcb <- subset(bcb_metadata, bcb_category %in% table)$code_bcb
+  # } else {
+  #   # Use all available tables
+  #   codes_bcb <- bcb_metadata$code_bcb
+  # }
 
   if (!quiet) {
-    cli::cli_inform("Selected {length(codes_bcb)} BCB series for table: {table}")
+    cli::cli_inform("Selected {length(codes_bcb)} essential BCB series")
   }
 
   # Handle cached data ----
@@ -214,12 +208,8 @@ get_bcb_series <- function(
     cli::cli_inform("Processing BCB series data...")
   }
 
-  # Rename column names and join with dictionary (metadata)
-  bcb_series <- bcb_series |>
-    dplyr::as_tibble() |>
-    dplyr::rename(date = ref.date, code_bcb = id.num) |>
-    dplyr::select(-series.name) |>
-    dplyr::left_join(bcb_metadata, by = "code_bcb")
+  # Join with metadata (rbcb already provides clean format)
+  bcb_series <- dplyr::left_join(bcb_series, bcb_metadata, by = "code_bcb")
 
   # Add metadata attributes
   attr(bcb_series, "source") <- "api"
@@ -247,7 +237,7 @@ get_bcb_series <- function(
 #' @param date_start Start date for series
 #' @param quiet Logical controlling messages
 #' @param max_retries Maximum number of retry attempts
-#' @param ... Additional arguments passed to GetBCBData::gbcbd_get_series
+#' @param ... Additional arguments passed to rbcb::get_series
 #'
 #' @return Downloaded BCB API data
 #' @keywords internal
@@ -262,12 +252,22 @@ import_bcb_series_robust <- function(codes_bcb, date_start, quiet, max_retries, 
       {
         # Try downloading from BCB API
         result <- suppressMessages(
-          GetBCBData::gbcbd_get_series(
-            id = codes_bcb,
-            first.date = date_start,
+          rbcb::get_series(
+            code = codes_bcb,
+            start_date = date_start,
             ...
           )
         )
+
+        # rbcb returns a list of tibbles, convert to single tibble
+        if (is.list(result) && !inherits(result, "data.frame")) {
+          # Rename value columns and combine with series ID
+          series_list <- purrr::map(result, function(data) {
+            dplyr::rename(data, value = 2) # Second column is the values
+          })
+          result <- dplyr::bind_rows(series_list, .id = "code_bcb")
+          result$code_bcb <- as.numeric(result$code_bcb)
+        }
 
         # Validate we got some data
         if (nrow(result) == 0) {

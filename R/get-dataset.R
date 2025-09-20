@@ -8,6 +8,8 @@
 #' @importFrom tibble tibble
 #'
 #' @param name Character. Dataset name (see list_datasets() for available options)
+#' @param table Character. Specific table within dataset (optional).
+#'   Use get_dataset_info(name) to see available tables.
 #' @param source Character. Data source preference:
 #'   \describe{
 #'     \item{"auto"}{Automatic fallback: cache → GitHub → fresh (default)}
@@ -15,8 +17,6 @@
 #'     \item{"github"}{GitHub repository cache}
 #'     \item{"fresh"}{Fresh download from original source}
 #'   }
-#' @param table Character. Specific table within dataset (optional).
-#'   Use get_dataset_info(name) to see available tables.
 #' @param date_start Date. Start date for time series data (where applicable)
 #' @param date_end Date. End date for time series data (where applicable)
 #' @param ... Additional arguments passed to legacy functions
@@ -26,11 +26,11 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Get all ABECIP indicators
+#' # Get all ABECIP indicators (default table)
 #' abecip_data <- get_dataset("abecip")
 #'
 #' # Get only SBPE data from ABECIP
-#' sbpe_data <- get_dataset("abecip", table = "sbpe")
+#' sbpe_data <- get_dataset("abecip", "sbpe")
 #'
 #' # Force fresh download
 #' fresh_data <- get_dataset("bcb_realestate", source = "fresh")
@@ -45,15 +45,21 @@
 #'
 #' @export
 get_dataset <- function(name,
-                       source = "auto",
                        table = NULL,
+                       source = "auto",
                        date_start = NULL,
                        date_end = NULL,
                        ...) {
   
   # Validate inputs
   source <- match.arg(source, choices = c("auto", "cache", "github", "fresh"))
-  
+
+  # Handle legacy dataset names
+  if (name == "abecip_indicators") {
+    cli::cli_warn("Dataset name 'abecip_indicators' is deprecated. Use 'abecip' instead.")
+    name <- "abecip"
+  }
+
   # Check if dataset exists
   registry <- load_dataset_registry()
   if (!name %in% names(registry$datasets)) {
@@ -216,30 +222,45 @@ get_from_github_cache <- function(name, dataset_info, table) {
 #'
 #' @keywords internal
 get_from_legacy_function <- function(name, dataset_info, table, date_start, date_end, ...) {
-  
+
   legacy_function <- dataset_info$legacy_function
-  
+
   if (is.null(legacy_function) || legacy_function == "") {
     cli::cli_abort("No legacy function available for fresh download of '{name}'")
   }
-  
+
   # Build arguments for legacy function
   args <- list(...)
-  
-  # Add table parameter based on function requirements
-  if (!is.null(table)) {
-    if (legacy_function %in% c("get_abecip_indicators", "get_abrainc_indicators")) {
-      args$table <- table
-    } else if (legacy_function == "get_rppi") {
-      # get_rppi still uses category parameter for backward compatibility
+
+  # Special parameter mappings based on function requirements
+  if (legacy_function == "get_rppi") {
+    # RPPI uses 'category' for backward compatibility
+    if (!is.null(table)) {
       args$category <- table
-    } else if (supports_table_all(legacy_function)) {
-      args$table <- table
+    } else {
+      args$category <- "sale"
     }
-  } else if (supports_table_all(legacy_function)) {
-    args$table <- "all"
+  } else if (legacy_function == "get_property_records") {
+    # Property records now uses 'table' parameter
+    if (!is.null(table)) {
+      args$table <- table
+    } else {
+      args$table <- "all"
+    }
+  } else {
+    # All other functions use 'table' parameter
+    if (!is.null(table)) {
+      args$table <- table
+    } else if (supports_table_all(legacy_function)) {
+      # Set appropriate defaults based on function
+      if (legacy_function == "get_cbic") {
+        args$table <- "cement_monthly_consumption"  # CBIC default
+      } else {
+        args$table <- "all"  # Others default to all
+      }
+    }
   }
-  
+
   # Add date arguments if provided
   if (!is.null(date_start)) {
     args$date_start <- date_start
@@ -247,14 +268,14 @@ get_from_legacy_function <- function(name, dataset_info, table, date_start, date
   if (!is.null(date_end)) {
     args$date_end <- date_end
   }
-  
+
   # Set cached = FALSE for fresh download
   args$cached <- FALSE
-  
+
   # Call the legacy function
   func <- get(legacy_function, mode = "function")
   data <- do.call(func, args)
-  
+
   return(data)
 }
 
@@ -288,7 +309,7 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
   
   # Fallback to mapping based on name
   name_mapping <- list(
-    "abecip_indicators" = "abecip",
+    "abecip" = "abecip",
     "abrainc_indicators" = "abrainc",
     "bcb_realestate" = "bcb_realestate",
     "secovi" = "secovi_sp",
@@ -316,8 +337,7 @@ supports_table_all <- function(func_name) {
     "get_bcb_series",
     "get_cbic",
     "get_fgv_indicators",
-    "get_bcb_series",
-    "get_b3_stocks"
+    "get_property_records"
   )
 
   return(func_name %in% functions_with_table)
@@ -428,11 +448,22 @@ show_import_message <- function(name, table_info) {
 
   # Multi-table dataset
   imported_table <- table_info$resolved_table
-  available_str <- paste(table_info$available_tables, collapse = "', '")
 
-  if (table_info$is_default) {
-    cli::cli_inform("Imported '{imported_table}' table from '{name}'. All tables available: '{available_str}'.")
+  # Special formatting for CBIC's many tables
+  if (name == "cbic" && length(table_info$available_tables) > 5) {
+    cli::cli_inform(c(
+      "i" = "Retrieved '{imported_table}' from CBIC dataset",
+      "i" = "For other tables use: get_dataset('cbic', table = '[table_name]')",
+      "i" = "Run list_datasets() to see all available CBIC tables"
+    ))
   } else {
-    cli::cli_inform("Imported '{imported_table}' table from '{name}'. All tables available: '{available_str}'.")
+    # Standard message for other datasets
+    available_str <- paste(table_info$available_tables, collapse = "', '")
+
+    if (table_info$is_default) {
+      cli::cli_inform("Retrieved '{imported_table}' from '{name}' (default table). Available tables: '{available_str}'")
+    } else {
+      cli::cli_inform("Retrieved '{imported_table}' from '{name}'. Available tables: '{available_str}'")
+    }
   }
 }

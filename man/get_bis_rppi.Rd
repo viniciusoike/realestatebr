@@ -9,7 +9,6 @@
 \usage{
 get_bis_rppi(
   table = "selected",
-  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
@@ -17,9 +16,6 @@ get_bis_rppi(
 }
 \arguments{
 \item{table}{Character. Which dataset to return: "selected" (default), "detailed", or "all".}
-
-\item{category}{Character. Deprecated parameter name for backward compatibility.
-Use \code{table} instead.}
 
 \item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
 using the unified dataset architecture.}
@@ -33,10 +29,10 @@ Excel download operations. Defaults to 3.}
 \value{
 A \code{tibble} or a named \code{list} with all RPPIs from BIS.
 The return includes metadata attributes:
-\\describe{
-\\item{download_info}{List with download statistics}
-\\item{source}{Data source used (web or cache)}
-\\item{download_time}{Timestamp of download}
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (web or cache)}
+\item{download_time}{Timestamp of download}
 }
 }
 \description{

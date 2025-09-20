@@ -14,9 +14,17 @@ This file contains configuration and commands for Claude Code to help with packa
 - ✅ `list_datasets()` and `get_dataset()` functions implemented
 - ✅ Dataset registry system created
 - ✅ Improved dataset documentation
+- ✅ CBIC dataset efficiency and UX improvements (commit 65c861b)
 - Extended functionality to all datasets
 - Improve webscraping and web API calls. Use `get_b3_stocks()` as a model.
 - Review existing codebase for consistency and style. For simple pipelines, use only a single `get_*()` function. For more complex datasets, break into multiple steps. Use `import_()` functions to download and read local files. Use `clean_()` functions for cleaning data. Use `get_()` functions as wrapper functions. Some datasets may need multiple specialized functions.
+
+#### 🔍 MANUAL REVIEW NEEDED
+- **CBIC cleaning scripts**: Review each table's data processing logic manually
+  - Monthly consumption tables: Date parsing and state matching
+  - Steel production: Multi-header Excel structure validation
+  - PIM data: Excel serial date conversion verification
+  - CUB prices: State abbreviation mapping accuracy
 
 
 ### Phase 2: Data Pipeline ⏳ PLANNED

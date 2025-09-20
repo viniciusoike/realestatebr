@@ -9,13 +9,13 @@
 #' units, real estate indices.
 #'
 #' @details
-#' If `category = 'all'` a tidy long `tibble` will be returned with all available
+#' If `table = 'all'` a tidy long `tibble` will be returned with all available
 #' data. This table can be hard to navigate since it contains several different
 #' tables within it. Each series is uniquely identified by the `series_info` column.
 #' The `series_info` column is also split along the `v1` to `v5` columns.
 #' A complete metadata of each series is available [here](https://www.bcb.gov.br/estatisticas/mercadoimobiliario) (only in Portuguese).
 #'
-#' Other choices of `category` return a wide `tibble` with informative column
+#' Other choices of `table` return a wide `tibble` with informative column
 #' names. Available options are: `'accounting'`, `'application'`, `'indices'`,
 #' `'sources'`, `'units'`, or `'all'`.
 #'
@@ -28,7 +28,7 @@
 #' to cached data when API access fails. BCB API errors are handled with
 #' automatic retries and informative error messages.
 #'
-#' @param category Character. One of `'accounting'`, `'application'`, `'indices'`,
+#' @param table Character. One of `'accounting'`, `'application'`, `'indices'`,
 #'   `'sources'`, `'units'`, or `'all'` (default).
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
 #'   using the unified dataset architecture.
@@ -38,7 +38,7 @@
 #'   API calls. Defaults to 3.
 #'
 #' @source [https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario](https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario)
-#' @return If `category = 'all'` returns a `tibble` with 13 columns where:
+#' @return If `table = 'all'` returns a `tibble` with 13 columns where:
 #' * `series_info`: the full name identifying each series.
 #' * `category`: category of the series (first element of `series_info`).
 #' * `type`: subcategory of the series (second element of `series_info`).
@@ -53,7 +53,6 @@
 #'     \item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter mutate select rename_with inner_join tibble
 #' @importFrom tidyr pivot_wider unnest
@@ -72,29 +71,38 @@
 #' attr(units, "download_info")
 #' }
 get_bcb_realestate <- function(
-  category = "all",
+  table = "all",
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
   # Deprecation warning ----
-  .Deprecated("get_dataset",
-             msg = "get_bcb_realestate() is deprecated. Use get_dataset('bcb_realestate') instead.")
+  .Deprecated(
+    "get_dataset",
+    msg = "get_bcb_realestate() is deprecated. Use get_dataset('bcb_realestate') instead."
+  )
 
   # Input validation ----
-  valid_categories <- c("all", "accounting", "application", "indices", "sources", "units")
+  valid_tables <- c(
+    "all",
+    "accounting",
+    "application",
+    "indices",
+    "sources",
+    "units"
+  )
 
-  if (!is.character(category) || length(category) != 1) {
+  if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
-      "Invalid {.arg category} parameter",
-      "x" = "{.arg category} must be a single character string"
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string"
     ))
   }
 
-  if (!category %in% valid_categories) {
+  if (!table %in% valid_tables) {
     cli::cli_abort(c(
-      "Invalid category: {.val {category}}",
-      "i" = "Valid categories: {.val {valid_categories}}"
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
     ))
   }
 
@@ -130,7 +138,7 @@ get_bcb_realestate <- function(
         attr(clean_bcb, "source") <- "cache"
         attr(clean_bcb, "download_time") <- Sys.time()
         attr(clean_bcb, "download_info") <- list(
-          category = category,
+          category = table,
           source = "cache"
         )
       },
@@ -151,13 +159,12 @@ get_bcb_realestate <- function(
   }
 
   # Return full cleaned table
-  if (category == "all") {
+  if (table == "all") {
     return(clean_bcb)
   }
 
   # Auxiliary function to pivot_wider thematic tables
   tbl_bcb_wider <- function(cat, id_cols, names_from) {
-
     clean_bcb |>
       dplyr::filter(category == cat, !stringr::str_detect(type, "[0-9]")) |>
       tidyr::pivot_wider(
@@ -167,16 +174,32 @@ get_bcb_realestate <- function(
         names_sep = "_",
         names_repair = "universal"
       ) |>
-      dplyr::rename_with(~stringr::str_remove(.x, "(_br)|(br$)"))
-
+      dplyr::rename_with(~ stringr::str_remove(.x, "(_br)|(br$)"))
   }
 
   # Tibble with parameters to feed the tbl_bcb_wider function
   params <- dplyr::tibble(
-    category_label = c("units", "accounting", "indices", "sources", "application"),
+    category_label = c(
+      "units",
+      "accounting",
+      "indices",
+      "sources",
+      "application"
+    ),
     cat = c("imoveis", "contabil", "indices", "fontes", "direcionamento"),
-    id_cols = c(list(c("date", "abbrev_state")), "date", "date", "date", "date"),
-    names_from = list(c("type", "v1"), c("type", "v1"), c("type", "v1"), c("type", "v1"), c("type", "v1", "v2")
+    id_cols = c(
+      list(c("date", "abbrev_state")),
+      "date",
+      "date",
+      "date",
+      "date"
+    ),
+    names_from = list(
+      c("type", "v1"),
+      c("type", "v1"),
+      c("type", "v1"),
+      c("type", "v1"),
+      c("type", "v1", "v2")
     )
   )
   # Use purrr::pmap to apply function
@@ -186,21 +209,35 @@ get_bcb_realestate <- function(
     )
   # Subset for specific category
   tbl_bcb <- params |>
-    dplyr::filter(category_label == category) |>
+    dplyr::filter(category_label == table) |>
     tidyr::unnest(cols = tab) |>
     dplyr::select(-cat, -id_cols, -names_from)
 
   # Add metadata attributes
-  attr(tbl_bcb, "source") <- if (is.null(attr(clean_bcb, "source"))) "api" else attr(clean_bcb, "source")
-  attr(tbl_bcb, "download_time") <- if (is.null(attr(clean_bcb, "download_time"))) Sys.time() else attr(clean_bcb, "download_time")
-  attr(tbl_bcb, "download_info") <- if (is.null(attr(clean_bcb, "download_info"))) {
-    list(category = category, source = "api")
+  attr(tbl_bcb, "source") <- if (is.null(attr(clean_bcb, "source"))) {
+    "api"
+  } else {
+    attr(clean_bcb, "source")
+  }
+  attr(tbl_bcb, "download_time") <- if (
+    is.null(attr(clean_bcb, "download_time"))
+  ) {
+    Sys.time()
+  } else {
+    attr(clean_bcb, "download_time")
+  }
+  attr(tbl_bcb, "download_info") <- if (
+    is.null(attr(clean_bcb, "download_info"))
+  ) {
+    list(category = table, source = "api")
   } else {
     attr(clean_bcb, "download_info")
   }
 
   if (!quiet) {
-    cli::cli_inform("Successfully processed BCB real estate data for category: {category}")
+    cli::cli_inform(
+      "Successfully processed BCB real estate data for table: {table}"
+    )
   }
 
   return(tbl_bcb)
@@ -304,7 +341,12 @@ import_bcb_realestate <- function() {
       message("Downloading real estate data from the Brazilian Central Bank.")
 
       # Download csv file with error checking
-      download_result <- download.file(url, destfile = temp_file, mode = "wb", quiet = TRUE)
+      download_result <- utils::download.file(
+        url,
+        destfile = temp_file,
+        mode = "wb",
+        quiet = TRUE
+      )
 
       # Check if download was successful
       if (download_result != 0) {
@@ -339,14 +381,14 @@ import_bcb_realestate <- function() {
 }
 
 clean_bcb_realestate <- function(df) {
-
   # Named vector to help split series_info into smaller categories v1-v8 (for filtering)
   new_names <- c(
     "home_equity" = "home-equity",
     "risco_operacao" = "risco-operacao",
     "d_mais" = "d-mais",
     "ivg_r" = "ivg-r",
-    "mvg_r" = "mvg-r")
+    "mvg_r" = "mvg-r"
+  )
 
   # Basic clean: renames columns and convert types
   df <- df |>
@@ -367,7 +409,18 @@ clean_bcb_realestate <- function(df) {
     tidyr::separate_wider_delim(
       series_info,
       delim = "_",
-      names = c("category", "type", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"),
+      names = c(
+        "category",
+        "type",
+        "v1",
+        "v2",
+        "v3",
+        "v4",
+        "v5",
+        "v6",
+        "v7",
+        "v8"
+      ),
       too_few = "align_start",
       cols_remove = FALSE
     )
@@ -378,7 +431,10 @@ clean_bcb_realestate <- function(df) {
   df <- df |>
     dplyr::mutate(
       # State abbreviation (if exists) is always in the last two elements of the string
-      abbrev_state = stringr::str_extract(stringr::str_sub(series_info, -2, -1), uf_abb),
+      abbrev_state = stringr::str_extract(
+        stringr::str_sub(series_info, -2, -1),
+        uf_abb
+      ),
       # Convert to upper case
       abbrev_state = stringr::str_to_upper(abbrev_state),
       # If no element was found, default to BR (Brazil)
@@ -386,7 +442,7 @@ clean_bcb_realestate <- function(df) {
     )
 
   # Remove columns that are full NA
-  df <- dplyr::select(df, dplyr::where(~!all(is.na(.x))))
+  df <- dplyr::select(df, dplyr::where(~ !all(is.na(.x))))
 
   # Rearrange columns
   df <- df |>
@@ -394,5 +450,4 @@ clean_bcb_realestate <- function(df) {
     dplyr::arrange(date)
 
   return(df)
-
 }

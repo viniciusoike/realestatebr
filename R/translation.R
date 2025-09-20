@@ -177,7 +177,7 @@ translate_column_names <- function(column_names, dataset_name) {
 get_dataset_specific_translations <- function(dataset_name) {
   
   switch(dataset_name,
-    "abecip_indicators" = list(
+    "abecip" = list(
       "sbpe" = "sbpe",  # Keep acronym
       "cgi" = "home_equity",
       "rural" = "rural",

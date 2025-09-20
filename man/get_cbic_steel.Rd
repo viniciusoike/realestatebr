@@ -6,7 +6,6 @@
 \usage{
 get_cbic_steel(
   table = "prices",
-  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
@@ -14,9 +13,6 @@ get_cbic_steel(
 }
 \arguments{
 \item{table}{Character. Which dataset to return: "prices", "production", or "all" (default: "prices")}
-
-\item{category}{Character. Deprecated parameter name for backward compatibility.
-Use \code{table} instead.}
 
 \item{cached}{Logical. If TRUE, try to load data from cache first (default: FALSE)}
 

@@ -4,7 +4,7 @@
 \alias{clean_cbic_steel_sheets}
 \title{Process CBIC steel Excel files}
 \usage{
-clean_cbic_steel_sheets(download_results)
+clean_cbic_steel_sheets(download_results, quiet = FALSE)
 }
 \arguments{
 \item{download_results}{A tibble. Output from import_cbic_files()}
@@ -17,7 +17,7 @@ Handles both steel price and production files with appropriate cleaning.
 }
 \examples{
 \dontrun{
-steel_files <- get_cbic_files("aço")
+steel_files <- get_cbic_files("aco")
 steel_data <- clean_cbic_steel_sheets(steel_files)
 }
 }

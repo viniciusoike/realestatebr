@@ -19,18 +19,6 @@
 #' @source <https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries>
 "bcb_metadata"
 
-#' Brazilian city identifier table
-#'
-#' A subset of `dim_city` including the most relevant Brazilian cities.
-#'
-#' A data frame with 72 rows and 3 columns:
-#' \describe{
-#'   \item{code_muni}{7-digit IBGE code identifying the city.}
-#'   \item{name_muni}{Name of the city.}
-#'   \item{abbrev_muni}{Year}
-#' }
-#' @source <https://www.who.int/teams/global-tuberculosis-programme/data>
-"main_cities"
 
 #' Brazilian city identifier table
 #'

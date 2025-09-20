@@ -22,7 +22,6 @@
 #' @param max_retries Integer. Maximum number of retry attempts.
 #'
 #' @return A cross-country `tibble` with RPPIs.
-#' @export
 #'
 #' @examples \dontrun{
 #' # Download data from the GitHub Repository

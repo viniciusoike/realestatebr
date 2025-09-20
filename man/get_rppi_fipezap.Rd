@@ -28,7 +28,7 @@ A \code{tibble} with RPPI data for all selected cities where:
 \item \code{rooms} - number of rooms (\code{total} is the average)
 }
 
-The national index is defined as the series with \code{name_muni == 'Índice Fipezap+'}.
+The national index is defined as the series with \code{name_muni == 'Indice Fipezap+'}.
 
 The tibble includes metadata attributes:
 \describe{
@@ -44,7 +44,7 @@ error handling, progress reporting, and robust Excel download capabilities.
 \details{
 The FipeZap Index is a monthly median stratified index calculated across several
 cities in Brazil. This function imports both the rental and the sale index for
-all cities. The Index is based on online listings of the Zap Imóveis group and is
+all cities. The Index is based on online listings of the Zap Imoveis group and is
 stratified by number of rooms. The overall city index is a weighted sum of median
 prices by room/region.
 

@@ -8,14 +8,14 @@
 }
 \usage{
 get_bcb_realestate(
-  category = "all",
+  table = "all",
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 )
 }
 \arguments{
-\item{category}{Character. One of \code{'accounting'}, \code{'application'}, \code{'indices'},
+\item{table}{Character. One of \code{'accounting'}, \code{'application'}, \code{'indices'},
 \code{'sources'}, \code{'units'}, or \code{'all'} (default).}
 
 \item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
@@ -28,7 +28,7 @@ If \code{FALSE} (default), provides detailed progress reporting.}
 API calls. Defaults to 3.}
 }
 \value{
-If \code{category = 'all'} returns a \code{tibble} with 13 columns where:
+If \code{table = 'all'} returns a \code{tibble} with 13 columns where:
 \itemize{
 \item \code{series_info}: the full name identifying each series.
 \item \code{category}: category of the series (first element of \code{series_info}).
@@ -49,13 +49,13 @@ The tibble includes metadata attributes:
 Import Real Estate data from the Brazilian Central Bank
 }
 \details{
-If \code{category = 'all'} a tidy long \code{tibble} will be returned with all available
+If \code{table = 'all'} a tidy long \code{tibble} will be returned with all available
 data. This table can be hard to navigate since it contains several different
 tables within it. Each series is uniquely identified by the \code{series_info} column.
 The \code{series_info} column is also split along the \code{v1} to \code{v5} columns.
 A complete metadata of each series is available \href{https://www.bcb.gov.br/estatisticas/mercadoimobiliario}{here} (only in Portuguese).
 
-Other choices of \code{category} return a wide \code{tibble} with informative column
+Other choices of \code{table} return a wide \code{tibble} with informative column
 names. Available options are: \code{'accounting'}, \code{'application'}, \code{'indices'},
 \code{'sources'}, \code{'units'}, or \code{'all'}.
 }

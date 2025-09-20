@@ -9,7 +9,6 @@ Abrainc-Fipe available at \url{https://www.fipe.org.br/pt-br/indices/abrainc}
 \usage{
 get_abrainc_indicators(
   table = "indicator",
-  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
@@ -17,8 +16,6 @@ get_abrainc_indicators(
 }
 \arguments{
 \item{table}{Character. One of \code{'indicator'} (default), \code{'radar'}, \code{'leading'}, or \code{'all'}.}
-
-\item{category}{Character. \strong{Deprecated}. Use \code{table} parameter instead.}
 
 \item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
 using the unified dataset architecture.}

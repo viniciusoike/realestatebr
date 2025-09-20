@@ -20,7 +20,7 @@ CBIC data is very inconsistent - always explore structure before creating cleani
 }
 \examples{
 \dontrun{
-files <- get_cbic_files("aço")
+files <- get_cbic_files("aco")
 explore_cbic_structure(files$file_path[1])
 }
 

@@ -9,7 +9,6 @@
 \usage{
 get_bcb_series(
   table = "all",
-  category = NULL,
   cached = FALSE,
   date_start = as.Date("2010-01-01"),
   quiet = FALSE,
@@ -20,9 +19,6 @@ get_bcb_series(
 \arguments{
 \item{table}{Character. Which dataset to return: "all" (default), "credit", "exchange",
 "government", "interest-rate", "real-estate", "price", or "production".}
-
-\item{category}{Character. Deprecated parameter name for backward compatibility.
-Use \code{table} instead.}
 
 \item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
 using the unified dataset architecture.}
@@ -36,15 +32,15 @@ If \code{FALSE} (default), provides detailed progress reporting.}
 \item{max_retries}{Integer. Maximum number of retry attempts for failed
 BCB API calls. Defaults to 3.}
 
-\item{...}{Additional arguments passed to \code{GetBCBData::gbcbd_get_series}.}
+\item{...}{Additional arguments passed to \code{rbcb::get_series}.}
 }
 \value{
 A 12-column \code{tibble} with all of the selected series from BCB.
 The tibble includes metadata attributes:
-\\describe{
-\\item{download_info}{List with download statistics}
-\\item{source}{Data source used (api or cache)}
-\\item{download_time}{Timestamp of download}
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (api or cache)}
+\item{download_time}{Timestamp of download}
 }
 }
 \description{
@@ -52,13 +48,12 @@ Download a compilation of macroeconomic time series data from the Brazilian
 Central Bank with modern error handling, progress reporting, and robust API access.
 }
 \details{
-Using default settings, this function downloads 140 key macroeconomic indicators
-such as prices indices, interest rates, credit indicators, etc. The full list
-of variables is gathered in the \code{bcb_metadata} table.
+This function downloads 15 essential macroeconomic indicators relevant for
+real estate analysis, including price indices, interest rates, and credit indicators.
+The series selection has been simplified for v0.4.0 to focus on core indicators.
 
-A subset of the variables can be imported using the \code{table} argument. The
-available tables are: \code{'credit'}, \code{'exchange'}, \code{'government'},
-\code{'interest-rate'}, \code{'real-estate'},\code{'price'}, and \code{'production'}.
+The 15 essential series are: 190, 192, 432, 433, 20704, 20756, 20768,
+20914, 21072, 21084, 21340, 24364, 28545, 28763, 28770.
 
 The default value for \code{date_start} is January 2010. While arbitrary, I advise
 against setting \code{date_start} to dates prior to July 1994. To download all

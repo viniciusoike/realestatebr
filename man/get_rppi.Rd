@@ -6,7 +6,6 @@
 \usage{
 get_rppi(
   table = "sale",
-  category = NULL,
   cached = FALSE,
   stack = FALSE,
   quiet = FALSE,
@@ -15,9 +14,6 @@ get_rppi(
 }
 \arguments{
 \item{table}{Character. Which dataset to return: "sale" (default), "rent", or "all".}
-
-\item{category}{Character. Deprecated parameter name for backward compatibility.
-Use \code{table} instead.}
 
 \item{cached}{If \code{TRUE} downloads the cached data from the GitHub repository.
 This is a faster option but not recommended for daily data.}
@@ -34,10 +30,10 @@ operations across all RPPI data sources. Defaults to 3.}
 \value{
 Either a named \code{list} or a \code{tibble} (if \code{stack = TRUE}).
 The return includes metadata attributes when stacked:
-\\describe{
-\\item{download_info}{List with coordination statistics}
-\\item{source}{Data source coordination method}
-\\item{download_time}{Timestamp of coordination}
+\describe{
+\item{download_info}{List with coordination statistics}
+\item{source}{Data source coordination method}
+\item{download_time}{Timestamp of coordination}
 }
 }
 \description{

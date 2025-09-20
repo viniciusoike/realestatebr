@@ -4,18 +4,10 @@
 \alias{get_fgv_indicators}
 \title{Get FGV Confidence Indicators}
 \usage{
-get_fgv_indicators(
-  table = "indicators",
-  category = NULL,
-  cached = TRUE,
-  quiet = FALSE
-)
+get_fgv_indicators(table = "indicators", cached = TRUE, quiet = FALSE)
 }
 \arguments{
 \item{table}{Character. Which dataset to return: "indicators" (default) or "all".}
-
-\item{category}{Character. Deprecated parameter name for backward compatibility.
-Use \code{table} instead.}
 
 \item{cached}{Logical. If \code{TRUE} (default), loads data from package cache
 using the unified dataset architecture. If \code{FALSE}, uses internal
@@ -35,7 +27,7 @@ The tibble includes metadata attributes:
 }
 \description{
 Download and clean construction confidence indicators estimated and released
-by the Getúlio Vargas Foundation (FGV) with modern error handling and
+by the Getulio Vargas Foundation (FGV) with modern error handling and
 progress reporting capabilities.
 }
 \details{

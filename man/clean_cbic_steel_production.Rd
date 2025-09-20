@@ -26,7 +26,7 @@ This handles complex multi-header Excel structure.
 }
 \examples{
 \dontrun{
-steel_files <- get_cbic_files("aço")
+steel_files <- get_cbic_files("aco")
 production <- clean_cbic_steel_production(steel_files$file_path[2])
 }
 }

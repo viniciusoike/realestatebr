@@ -4,7 +4,7 @@
 \alias{clean_cbic_pim_sheets}
 \title{Process CBIC PIM Excel sheets}
 \usage{
-clean_cbic_pim_sheets(download_results)
+clean_cbic_pim_sheets(download_results, quiet = FALSE)
 }
 \arguments{
 \item{download_results}{A tibble. Output from import_cbic_files()}
