@@ -238,21 +238,6 @@ datasets:
     metadata_table: "bcb_metadata"
     translation_notes: "Metadata available in both Portuguese and English"
 
-  b3_stocks:
-    name: "B3 Real Estate Stocks"
-    name_pt: "Ações Imobiliárias B3"
-    description: "Stock market data for real estate companies and REITs listed on B3"
-    source: "B3 - Brasil Bolsa Balcão"
-    url: "https://www.b3.com.br"
-    geography: "Brazil"
-    frequency: "daily"
-    coverage: "2010-present"
-    internal_function: "fetch_b3"
-    legacy_function: "get_b3_stocks"
-    data_type: "tibble"
-    cached_file: "b3_stocks.csv.gz"
-    metadata_table: "b3_real_estate"
-    translation_notes: "Ticker symbols preserved; company names in Portuguese"
 
   fgv_indicators:
     name: "FGV Real Estate Indicators"
@@ -279,15 +264,30 @@ datasets:
     frequency: "monthly"
     coverage: "varies by material"
     categories:
-      cement:
-        name: "Cement Data"
-        description: "Production, consumption, and prices of cement"
-      steel:
-        name: "Steel Data"
-        description: "Steel production and prices"
+      cement_monthly_consumption:
+        name: "Cement Monthly Consumption"
+        description: "Monthly cement consumption by state"
+      cement_annual_consumption:
+        name: "Cement Annual Consumption"
+        description: "Annual cement consumption by region"
+      cement_production_exports:
+        name: "Cement Production & Exports"
+        description: "Production, consumption, and export data"
+      cement_monthly_production:
+        name: "Cement Monthly Production"
+        description: "Monthly cement production by state"
+      cement_cub_prices:
+        name: "Cement CUB Prices"
+        description: "CUB cement prices by state"
+      steel_prices:
+        name: "Steel Prices"
+        description: "Steel prices by state"
+      steel_production:
+        name: "Steel Production"
+        description: "Steel production data"
       pim:
-        name: "Industrial Production (PIM)"
-        description: "Industrial production index for construction materials"
+        name: "Industrial Production Index"
+        description: "PIM industrial production index for construction materials"
     internal_function: "fetch_cbic"
     legacy_function: "get_cbic"
     data_type: "list"

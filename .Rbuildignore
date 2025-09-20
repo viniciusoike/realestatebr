@@ -3,6 +3,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
+^README\.html$
 ^doc$
 ^Meta$
 ^cached_data$
@@ -10,3 +11,15 @@
 ^\.github$
 ^\.DS_Store$
 ^backup$
+^CLAUDE\.md$
+^claude$
+^_pkgdown\.yml$
+^docs$
+^LICENSE\.md$
+^_targets$
+^_targets\.R$
+^data-raw$
+^logs$
+^old$
+.*\.Rcheck$
+^..Rcheck$

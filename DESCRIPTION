@@ -11,23 +11,25 @@ URL: https://viniciusoike.github.io/realestatebr/
 Encoding: UTF-8
 LazyData: true
 Depends:
-    R (>= 3.5)
+    R (>= 4.1.0)
 RoxygenNote: 7.3.3
 Imports:
     cli,
     dplyr,
-    GetBCBData,
+    geobr,
     glue,
     httr,
     janitor,
     lifecycle,
     lubridate,
     purrr,
-    quantmod,
+    rbcb,
     readr,
     readxl,
     rlang,
     rvest,
+    sf,
+    stringi,
     stringr,
     tibble,
     tidyr,

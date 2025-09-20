@@ -8,8 +8,12 @@
 #' @param warn_level Current warning level setting
 #' @keywords internal
 warn_if_level <- function(message, level = "user", warn_level = "user") {
-  if (warn_level == "none") return(invisible())
-  if (level == "dev" && warn_level != "dev") return(invisible())
+  if (warn_level == "none") {
+    return(invisible())
+  }
+  if (level == "dev" && warn_level != "dev") {
+    return(invisible())
+  }
   cli::cli_warn(message)
 }
 
@@ -36,16 +40,17 @@ get_cbic_specific_file <- function(material_url, table_type, quiet = FALSE) {
   file_params <- import_cbic_material_links(material_url, quiet = quiet)
 
   # Map table types to file patterns
-  file_patterns <- switch(table_type,
+  file_patterns <- switch(
+    table_type,
     "annual_consumption" = "consumo anual|07\\.A\\.01",
-    "production_exports" = "produção.*consumo.*exportação|07\\.A\\.02",
+    "production_exports" = "produ\u00e7\u00e3o.*consumo.*exporta\u00e7\u00e3o|07\\.A\\.02",
     "monthly_consumption" = "consumo mensal|07\\.A\\.03",
-    "monthly_production" = "produção mensal|07\\.A\\.04",
+    "monthly_production" = "produ\u00e7\u00e3o mensal|07\\.A\\.04",
     "cub_prices" = "CUB|07\\.A\\.05",
-    "steel_prices" = "Unidades da Federação.*CUB",
-    "steel_production" = "Produção.*Consumo.*Aço",
+    "steel_prices" = "Unidades da Federa\u00e7\u00e3o.*CUB",
+    "steel_production" = "Produ\u00e7\u00e3o.*Consumo.*A\u00e7o",
     "pim_current" = "Atual|07\\.C\\.03",
-    NULL  # If no match, download all (fallback)
+    NULL # If no match, download all (fallback)
   )
 
   if (is.null(file_patterns)) {
@@ -54,19 +59,27 @@ get_cbic_specific_file <- function(material_url, table_type, quiet = FALSE) {
   }
 
   # Find matching file
-  matching_files <- file_params[stringr::str_detect(
-    stringr::str_to_lower(file_params$title),
-    stringr::str_to_lower(file_patterns)
-  ), ]
+  matching_files <- file_params[
+    stringr::str_detect(
+      stringr::str_to_lower(file_params$title),
+      stringr::str_to_lower(file_patterns)
+    ),
+  ]
 
   if (nrow(matching_files) == 0) {
     # If no specific match, download all (fallback)
-    if (!quiet) cli::cli_inform("No specific file found for {table_type}, downloading all files")
+    if (!quiet) {
+      cli::cli_inform(
+        "No specific file found for {table_type}, downloading all files"
+      )
+    }
     return(import_cbic_files(file_params, quiet = quiet))
   }
 
   # Download only the specific file
-  if (!quiet) cli::cli_inform("Downloading specific file for {table_type}")
+  if (!quiet) {
+    cli::cli_inform("Downloading specific file for {table_type}")
+  }
   return(import_cbic_files(matching_files, quiet = quiet))
 }
 
@@ -93,7 +106,9 @@ get_cbic_specific_file <- function(material_url, table_type, quiet = FALSE) {
 #' @keywords internal
 
 import_cbic_materials <- function(quiet = FALSE) {
-  if (!quiet) cli::cli_inform("Fetching CBIC materials metadata...")
+  if (!quiet) {
+    cli::cli_inform("Fetching CBIC materials metadata...")
+  }
 
   session <- rvest::session("http://www.cbicdados.com.br")
   url <- "http://www.cbicdados.com.br/menu/materiais-de-construcao/"
@@ -114,7 +129,9 @@ import_cbic_materials <- function(quiet = FALSE) {
     link = material_links
   )
 
-  if (!quiet) cli::cli_inform("Found {nrow(result)} materials")
+  if (!quiet) {
+    cli::cli_inform("Found {nrow(result)} materials")
+  }
   return(result)
 }
 
@@ -136,7 +153,9 @@ import_cbic_materials <- function(quiet = FALSE) {
 #' @keywords internal
 
 import_cbic_material_links <- function(material_url, quiet = FALSE) {
-  if (!quiet) cli::cli_inform("Fetching file links from: {material_url}")
+  if (!quiet) {
+    cli::cli_inform("Fetching file links from: {material_url}")
+  }
 
   session <- rvest::session("http://www.cbicdados.com.br")
 
@@ -159,7 +178,9 @@ import_cbic_material_links <- function(material_url, quiet = FALSE) {
     cli::cli_warn("Some links are missing for material: {material_url}")
   }
 
-  if (!quiet) cli::cli_inform("Found {nrow(result)} files")
+  if (!quiet) {
+    cli::cli_inform("Found {nrow(result)} files")
+  }
   return(result)
 }
 
@@ -212,8 +233,14 @@ import_cbic_file <- function(url, dest_dir = tempdir(), delay = 1) {
 #' results <- import_cbic_files(files)
 #' }
 #' @keywords internal
-import_cbic_files <- function(file_params, dest_dir = tempdir(), quiet = FALSE) {
-  if (!quiet) cli::cli_inform("Downloading {nrow(file_params)} files...")
+import_cbic_files <- function(
+  file_params,
+  dest_dir = tempdir(),
+  quiet = FALSE
+) {
+  if (!quiet) {
+    cli::cli_inform("Downloading {nrow(file_params)} files...")
+  }
 
   results <- file_params |>
     dplyr::mutate(
@@ -227,7 +254,9 @@ import_cbic_files <- function(file_params, dest_dir = tempdir(), quiet = FALSE) 
   n_success <- sum(results$download_success)
   n_total <- nrow(results)
 
-  if (!quiet) cli::cli_inform("Downloaded {n_success} of {n_total} files successfully")
+  if (!quiet) {
+    cli::cli_inform("Downloaded {n_success} of {n_total} files successfully")
+  }
 
   return(results)
 }
@@ -263,7 +292,12 @@ import_cbic_files <- function(file_params, dest_dir = tempdir(), quiet = FALSE) 
 #' cleaned_data <- clean_cbic_cement_monthly(raw_data, 2023)
 #' }
 #' @keywords internal
-clean_cbic_cement_monthly <- function(dat, year, quiet = FALSE, warn_level = "user") {
+clean_cbic_cement_monthly <- function(
+  dat,
+  year,
+  quiet = FALSE,
+  warn_level = "user"
+) {
   # Check if this looks like cement data
   if (!"localidade" %in% names(dat)) {
     cli::cli_abort(
@@ -280,7 +314,7 @@ clean_cbic_cement_monthly <- function(dat, year, quiet = FALSE, warn_level = "us
   }
 
   drop_cols <- c("TOTAL", "Total", "total", "TOTAL GERAL")
-  pat_drop_rows <- "^TOTAL|^REGIÃO|^BRASIL|(CENTRO-OESTE)|(CENTRO OESTE)|^Fonte:|^FONTE:"
+  pat_drop_rows <- "^TOTAL|^REGI\u00c3O|^BRASIL|(CENTRO-OESTE)|(CENTRO OESTE)|^Fonte:|^FONTE:"
 
   dat_clean <- dat |>
     dplyr::select(-dplyr::any_of(drop_cols)) |>
@@ -288,9 +322,11 @@ clean_cbic_cement_monthly <- function(dat, year, quiet = FALSE, warn_level = "us
 
   # Defensive check
   if (nrow(dat_clean) == 0) {
-    if (!quiet) cli::cli_warn(
-      "No data rows remaining after filtering. Check if table structure matches expected format."
-    )
+    if (!quiet) {
+      cli::cli_warn(
+        "No data rows remaining after filtering. Check if table structure matches expected format."
+      )
+    }
     return(tibble::tibble())
   }
 
@@ -334,18 +370,21 @@ clean_cbic_cement_monthly <- function(dat, year, quiet = FALSE, warn_level = "us
     )
   }
 
-  dim_state <- suppress_external_warnings({
-    geobr::read_state(year = 2010) |>
-      sf::st_drop_geometry() |>
-      dplyr::select(code_state, name_state) |>
-      dplyr::mutate(
-        name_state = stringr::str_replace(
-          name_state,
-          "Espirito Santo",
-          "Espírito Santo"
+  dim_state <- suppress_external_warnings(
+    {
+      geobr::read_state(year = 2010) |>
+        sf::st_drop_geometry() |>
+        dplyr::select(code_state, name_state) |>
+        dplyr::mutate(
+          name_state = stringr::str_replace(
+            name_state,
+            "Espirito Santo",
+            "Esp\u00edrito Santo"
+          )
         )
-      )
-  }, warn_level = warn_level)
+    },
+    warn_level = warn_level
+  )
 
   result <- dat_dated |>
     dplyr::mutate(localidade = stringr::str_to_title(localidade)) |>
@@ -382,7 +421,12 @@ clean_cbic_cement_monthly <- function(dat, year, quiet = FALSE, warn_level = "us
 clean_cbic_cement_annual <- function(file_path, sheet = 1) {
   # This file has a complex structure with multiple column groups
   # Each group has: Year, Value, Growth %, blank column
-  dat <- readxl::read_excel(file_path, sheet = sheet, skip = 4, .name_repair = "minimal")
+  dat <- readxl::read_excel(
+    file_path,
+    sheet = sheet,
+    skip = 4,
+    .name_repair = "minimal"
+  )
 
   if (ncol(dat) < 8) {
     cli::cli_warn("Unexpected structure for annual cement consumption file")
@@ -516,7 +560,7 @@ clean_cbic_cement_monthly_production <- function(dat, year) {
   }
 
   # Filter out summary rows
-  pat_drop_rows <- "^TOTAL|^REGIÃO|^BRASIL|(CENTRO-OESTE)|(CENTRO OESTE)|^Fonte:|^FONTE:"
+  pat_drop_rows <- "^TOTAL|^REGI\u00c3O|^BRASIL|(CENTRO-OESTE)|(CENTRO OESTE)|^Fonte:|^FONTE:"
   dat_clean <- dat |>
     dplyr::filter(!stringr::str_detect(localidade, pat_drop_rows))
 
@@ -760,11 +804,15 @@ clean_cbic_pim_sheets <- function(download_results, quiet = FALSE) {
   successful_files <- dplyr::filter(download_results, download_success)
 
   if (nrow(successful_files) == 0) {
-    if (!quiet) cli::cli_warn("No PIM files were successfully downloaded")
+    if (!quiet) {
+      cli::cli_warn("No PIM files were successfully downloaded")
+    }
     return(list())
   }
 
-  if (!quiet) cli::cli_inform("Processing PIM industrial production data...")
+  if (!quiet) {
+    cli::cli_inform("Processing PIM industrial production data...")
+  }
 
   # Find the current methodology file (usually the 3rd one or the one with "Atual" in name)
   current_file_idx <- which(
@@ -778,11 +826,15 @@ clean_cbic_pim_sheets <- function(download_results, quiet = FALSE) {
   }
 
   file_path <- successful_files$file_path[current_file_idx]
-  if (!quiet) cli::cli_inform("Processing file: {basename(file_path)}")
+  if (!quiet) {
+    cli::cli_inform("Processing file: {basename(file_path)}")
+  }
 
   pim_data <- clean_cbic_pim(file_path)
 
-  if (!quiet) cli::cli_inform("Processed {nrow(pim_data)} months of PIM data")
+  if (!quiet) {
+    cli::cli_inform("Processed {nrow(pim_data)} months of PIM data")
+  }
 
   return(list(production_index = pim_data))
 }
@@ -802,70 +854,112 @@ clean_cbic_pim_sheets <- function(download_results, quiet = FALSE) {
 #' processed_data <- clean_cbic_cement_sheets(download_results)
 #' }
 #' @keywords internal
-clean_cbic_cement_sheets <- function(download_results, skip_rows = 4, quiet = FALSE, warn_level = "user") {
+clean_cbic_cement_sheets <- function(
+  download_results,
+  skip_rows = 4,
+  quiet = FALSE,
+  warn_level = "user"
+) {
   read_excel_safe <- purrr::possibly(readxl::read_excel, otherwise = NULL)
 
   all_data <- list()
   successful_files <- dplyr::filter(download_results, download_success)
 
-  if (!quiet) cli::cli_inform("Processing {nrow(successful_files)} cement files...")
+  if (!quiet) {
+    cli::cli_inform("Processing {nrow(successful_files)} cement files...")
+  }
 
   for (i in seq_len(nrow(successful_files))) {
     file_path <- successful_files$file_path[i]
     file_title <- successful_files$title[i]
 
-    if (!quiet) cli::cli_inform("Processing file {i}: {file_title}")
+    if (!quiet) {
+      cli::cli_inform("Processing file {i}: {file_title}")
+    }
 
     # Detect file type based on content or title patterns
     if (stringr::str_detect(file_title, "consumo anual|07\\.A\\.01")) {
       # File 1: Annual consumption by region
-      if (!quiet) cli::cli_inform("  Detected as annual consumption file")
+      if (!quiet) {
+        cli::cli_inform("  Detected as annual consumption file")
+      }
       cleaned_data <- clean_cbic_cement_annual(file_path)
       all_data[["annual_consumption"]] <- cleaned_data
     } else if (
       stringr::str_detect(
         file_title,
-        "produção.*consumo.*exportação|07\\.A\\.02"
+        "produ\u00e7\u00e3o.*consumo.*exporta\u00e7\u00e3o|07\\.A\\.02"
       )
     ) {
       # File 2: Production, consumption, exports
-      if (!quiet) cli::cli_inform("  Detected as production/export file")
+      if (!quiet) {
+        cli::cli_inform("  Detected as production/export file")
+      }
       cleaned_data <- clean_cbic_cement_production(file_path)
       all_data[["production_exports"]] <- cleaned_data
     } else if (stringr::str_detect(file_title, "consumo mensal|07\\.A\\.03")) {
       # File 3: Monthly consumption by state (multiple year sheets)
-      if (!quiet) cli::cli_inform("  Detected as monthly consumption file")
+      if (!quiet) {
+        cli::cli_inform("  Detected as monthly consumption file")
+      }
       sheets <- readxl::excel_sheets(file_path)
       year_sheets <- sheets[!is.na(as.numeric(sheets))]
 
       monthly_data <- list()
       for (sheet in year_sheets) {
-        if (!quiet) cli::cli_inform("    Processing sheet: {sheet}")
-        dat <- read_excel_safe(file_path, skip = skip_rows, sheet = sheet, .name_repair = "minimal")
+        if (!quiet) {
+          cli::cli_inform("    Processing sheet: {sheet}")
+        }
+        dat <- read_excel_safe(
+          file_path,
+          skip = skip_rows,
+          sheet = sheet,
+          .name_repair = "minimal"
+        )
 
         if (is.null(dat) || nrow(dat) == 0) {
-          if (!quiet) cli::cli_warn("Failed to read sheet {sheet}")
+          if (!quiet) {
+            cli::cli_warn("Failed to read sheet {sheet}")
+          }
           next
         }
 
         names(dat)[1] <- "localidade"
-        cleaned_sheet <- clean_cbic_cement_monthly(dat, as.numeric(sheet), quiet = quiet, warn_level = warn_level)
+        cleaned_sheet <- clean_cbic_cement_monthly(
+          dat,
+          as.numeric(sheet),
+          quiet = quiet,
+          warn_level = warn_level
+        )
         monthly_data[[sheet]] <- cleaned_sheet
       }
       all_data[["monthly_consumption"]] <- dplyr::bind_rows(monthly_data)
-    } else if (stringr::str_detect(file_title, "produção mensal|07\\.A\\.04")) {
+    } else if (
+      stringr::str_detect(file_title, "produ\u00e7\u00e3o mensal|07\\.A\\.04")
+    ) {
       # File 4: Monthly production by state (multiple year sheets)
-      if (!quiet) cli::cli_inform("  Detected as monthly production file")
+      if (!quiet) {
+        cli::cli_inform("  Detected as monthly production file")
+      }
       sheets <- readxl::excel_sheets(file_path)
       year_sheets <- sheets[!is.na(as.numeric(sheets))]
 
       production_data <- list()
       for (sheet in year_sheets) {
-        if (!quiet) cli::cli_inform("    Processing sheet: {sheet}")
-        dat <- read_excel_safe(file_path, skip = skip_rows, sheet = sheet, .name_repair = "minimal")
+        if (!quiet) {
+          cli::cli_inform("    Processing sheet: {sheet}")
+        }
+        dat <- read_excel_safe(
+          file_path,
+          skip = skip_rows,
+          sheet = sheet,
+          .name_repair = "minimal"
+        )
 
         if (is.null(dat) || nrow(dat) == 0) {
-          if (!quiet) cli::cli_warn("Failed to read sheet {sheet}")
+          if (!quiet) {
+            cli::cli_warn("Failed to read sheet {sheet}")
+          }
           next
         }
 
@@ -878,7 +972,9 @@ clean_cbic_cement_sheets <- function(download_results, skip_rows = 4, quiet = FA
       all_data[["monthly_production"]] <- dplyr::bind_rows(production_data)
     } else if (stringr::str_detect(file_title, "CUB|07\\.A\\.05")) {
       # File 5: CUB cement prices
-      if (!quiet) cli::cli_inform("  Detected as CUB price file")
+      if (!quiet) {
+        cli::cli_inform("  Detected as CUB price file")
+      }
       cleaned_data <- clean_cbic_cement_cub(file_path)
       all_data[["cub_prices"]] <- cleaned_data
     } else {
@@ -886,7 +982,9 @@ clean_cbic_cement_sheets <- function(download_results, skip_rows = 4, quiet = FA
     }
   }
 
-  if (!quiet) cli::cli_inform("Processed cement data successfully")
+  if (!quiet) {
+    cli::cli_inform("Processed cement data successfully")
+  }
   return(all_data)
 }
 
@@ -902,7 +1000,7 @@ clean_cbic_cement_sheets <- function(download_results, skip_rows = 4, quiet = FA
 #'
 #' @examples
 #' \dontrun{
-#' files <- get_cbic_files("aço")
+#' files <- get_cbic_files("aco")
 #' explore_cbic_structure(files$file_path[1])
 #' }
 #'
@@ -917,14 +1015,23 @@ explore_cbic_structure <- function(file_path, sheet = 1) {
   # Read the specified sheet
   cli::cli_inform("Reading sheet: {sheet}")
 
-  dat_raw <- readxl::read_excel(file_path, sheet = sheet, .name_repair = "minimal")
+  dat_raw <- readxl::read_excel(
+    file_path,
+    sheet = sheet,
+    .name_repair = "minimal"
+  )
   cli::cli_inform(
     "Raw dimensions: {nrow(dat_raw)} rows x {ncol(dat_raw)} columns"
   )
   cli::cli_inform("Column names: {paste(names(dat_raw), collapse = ', ')}")
 
   # Try with skip = 4 (common for CBIC)
-  dat_skip <- readxl::read_excel(file_path, sheet = sheet, skip = 4, .name_repair = "minimal")
+  dat_skip <- readxl::read_excel(
+    file_path,
+    sheet = sheet,
+    skip = 4,
+    .name_repair = "minimal"
+  )
   cli::cli_inform(
     "With skip=4: {nrow(dat_skip)} rows x {ncol(dat_skip)} columns"
   )
@@ -969,14 +1076,18 @@ explore_cbic_structure <- function(file_path, sheet = 1) {
 #'
 #' @examples
 #' \dontrun{
-#' steel_files <- get_cbic_files("aço")
+#' steel_files <- get_cbic_files("aco")
 #' prices <- clean_cbic_steel_prices(steel_files$file_path[1])
 #' }
 #' @keywords internal
 clean_cbic_steel_prices <- function(file_path, skip_rows = 4) {
   drop_cols <- c("TOTAL", "Total", "total", "TOTAL GERAL", "Brasil", "BRASIL")
 
-  dat <- readxl::read_excel(file_path, skip = skip_rows, .name_repair = "minimal")
+  dat <- readxl::read_excel(
+    file_path,
+    skip = skip_rows,
+    .name_repair = "minimal"
+  )
 
   if (ncol(dat) < 3) {
     cli::cli_warn(
@@ -1045,7 +1156,7 @@ clean_cbic_steel_prices <- function(file_path, skip_rows = 4) {
 #'
 #' @examples
 #' \dontrun{
-#' steel_files <- get_cbic_files("aço")
+#' steel_files <- get_cbic_files("aco")
 #' production <- clean_cbic_steel_production(steel_files$file_path[2])
 #' }
 #' @keywords internal
@@ -1134,7 +1245,7 @@ get_cbic_dim_state <- function() {
       name_state = stringr::str_replace(
         name_state,
         "Espirito Santo",
-        "Espírito Santo"
+        "Esp\u00edrito Santo"
       )
     )
 
@@ -1166,17 +1277,21 @@ clean_cbic_string <- function(x) {
 #'
 #' @examples
 #' \dontrun{
-#' steel_files <- get_cbic_files("aço")
+#' steel_files <- get_cbic_files("aco")
 #' steel_data <- clean_cbic_steel_sheets(steel_files)
 #' }
 #' @keywords internal
 clean_cbic_steel_sheets <- function(download_results, quiet = FALSE) {
   successful_files <- dplyr::filter(download_results, download_success)
 
-  if (!quiet) cli::cli_inform("Processing {nrow(successful_files)} steel files...")
+  if (!quiet) {
+    cli::cli_inform("Processing {nrow(successful_files)} steel files...")
+  }
 
   if (nrow(successful_files) == 0) {
-    if (!quiet) cli::cli_warn("No successful steel file downloads to process.")
+    if (!quiet) {
+      cli::cli_warn("No successful steel file downloads to process.")
+    }
     return(list())
   }
 
@@ -1186,14 +1301,19 @@ clean_cbic_steel_sheets <- function(download_results, quiet = FALSE) {
     file_path <- successful_files$file_path[i]
     file_title <- successful_files$title[i]
 
-    if (!quiet) cli::cli_inform("Processing steel file: {file_title}")
+    if (!quiet) {
+      cli::cli_inform("Processing steel file: {file_title}")
+    }
 
     # Determine file type based on position or title
     if (
       i == 1 ||
-        stringr::str_detect(stringr::str_to_lower(file_title), "preço|price")
+        stringr::str_detect(
+          stringr::str_to_lower(file_title),
+          "pre\u00e7o|price"
+        )
     ) {
-      # Assume first file or files with "preço" are price data
+      # Assume first file or files with "pre\u00e7o" are price data
       prices_data <- clean_cbic_steel_prices(file_path)
       all_data[["prices"]] <- prices_data
     } else {
@@ -1203,7 +1323,9 @@ clean_cbic_steel_sheets <- function(download_results, quiet = FALSE) {
     }
   }
 
-  if (!quiet) cli::cli_inform("Processed steel data successfully")
+  if (!quiet) {
+    cli::cli_inform("Processed steel data successfully")
+  }
   return(all_data)
 }
 
@@ -1225,7 +1347,6 @@ clean_cbic_steel_sheets <- function(download_results, quiet = FALSE) {
 #' cement_files <- get_cbic_files("cimento")
 #' }
 #'
-#' @export
 get_cbic_files <- function(material_name) {
   cli::cli_h1("Getting CBIC files for {material_name}")
 
@@ -1257,11 +1378,10 @@ get_cbic_files <- function(material_name) {
 #' @param table Character. Which dataset to return: "annual_consumption",
 #'   "production_exports", "monthly_consumption", "monthly_production",
 #'   "cub_prices", or "all" (default: "monthly_consumption")
-#' @param category Character. Deprecated parameter name for backward compatibility.
-#'   Use `table` instead.
 #' @param cached Logical. If TRUE, try to load data from cache first (default: FALSE)
 #' @param quiet Logical. If TRUE, suppress progress messages (default: FALSE)
 #' @param max_retries Integer. Maximum number of retry attempts for downloads (default: 3L)
+#' @inheritParams get_cbic
 #'
 #' @return A tibble with cement data, or a list if table = "all"
 #'
@@ -1285,30 +1405,25 @@ get_cbic_files <- function(material_name) {
 #' prices <- get_cbic_cement(table = "cub_prices", quiet = FALSE)
 #' }
 #'
-#' @export
-get_cbic_cement <- function(table = "monthly_consumption",
-                           category = NULL,
-                           cached = FALSE,
-                           quiet = FALSE,
-                           max_retries = 3L,
-                           warn_level = "user") {
-
+get_cbic_cement <- function(
+  table = "monthly_consumption",
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L,
+  warn_level = "user"
+) {
   # Input validation and backward compatibility ----
-  valid_tables <- c("annual_consumption", "production_exports", "monthly_consumption",
-                    "monthly_production", "cub_prices", "all")
+  valid_tables <- c(
+    "annual_consumption",
+    "production_exports",
+    "monthly_consumption",
+    "monthly_production",
+    "cub_prices",
+    "all"
+  )
 
   # Validate warn_level
   warn_level <- match.arg(warn_level, choices = c("none", "user", "dev"))
-
-  # Handle backward compatibility: if category is provided, use it as table
-  if (!is.null(category)) {
-    cli::cli_warn(c(
-      "Parameter {.arg category} is deprecated",
-      "i" = "Use {.arg table} parameter instead",
-      ">" = "This will be removed in a future version"
-    ))
-    table <- category
-  }
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
@@ -1328,7 +1443,9 @@ get_cbic_cement <- function(table = "monthly_consumption",
   # Handle cached data ----
   if (cached) {
     if (!quiet) {
-      cli::cli_inform("Cached data loading not yet implemented for CBIC datasets")
+      cli::cli_inform(
+        "Cached data loading not yet implemented for CBIC datasets"
+      )
     }
   }
 
@@ -1343,42 +1460,52 @@ get_cbic_cement <- function(table = "monthly_consumption",
   while (attempts <= max_retries && is.null(cement_data)) {
     attempts <- attempts + 1
 
-    tryCatch({
-      materials <- import_cbic_materials(quiet = quiet)
-      cement_url <- materials$link[stringr::str_detect(
-        stringr::str_to_lower(materials$title),
-        "cimento"
-      )][1]
+    tryCatch(
+      {
+        materials <- import_cbic_materials(quiet = quiet)
+        cement_url <- materials$link[stringr::str_detect(
+          stringr::str_to_lower(materials$title),
+          "cimento"
+        )][1]
 
-      if (is.na(cement_url)) {
-        cli::cli_abort("Cement material not found in CBIC database")
+        if (is.na(cement_url)) {
+          cli::cli_abort("Cement material not found in CBIC database")
+        }
+
+        # Use specific file download if not requesting all tables
+        if (table == "all") {
+          file_params <- import_cbic_material_links(cement_url, quiet = quiet)
+          download_results <- import_cbic_files(file_params, quiet = quiet)
+        } else {
+          download_results <- get_cbic_specific_file(
+            cement_url,
+            table,
+            quiet = quiet
+          )
+        }
+        cement_data <- clean_cbic_cement_sheets(
+          download_results,
+          quiet = quiet,
+          warn_level = warn_level
+        )
+      },
+      error = function(e) {
+        if (attempts > max_retries) {
+          cli::cli_abort(c(
+            "Failed to retrieve CBIC cement data after {max_retries} attempts",
+            "x" = "Error: {e$message}",
+            "i" = "Check your internet connection and try again"
+          ))
+        }
+
+        if (!quiet) {
+          cli::cli_warn("Attempt {attempts} failed, retrying...")
+        }
+
+        # Exponential backoff
+        Sys.sleep(min(attempts * 0.5, 3))
       }
-
-      # Use specific file download if not requesting all tables
-      if (table == "all") {
-        file_params <- import_cbic_material_links(cement_url, quiet = quiet)
-        download_results <- import_cbic_files(file_params, quiet = quiet)
-      } else {
-        download_results <- get_cbic_specific_file(cement_url, table, quiet = quiet)
-      }
-      cement_data <- clean_cbic_cement_sheets(download_results, quiet = quiet, warn_level = warn_level)
-
-    }, error = function(e) {
-      if (attempts > max_retries) {
-        cli::cli_abort(c(
-          "Failed to retrieve CBIC cement data after {max_retries} attempts",
-          "x" = "Error: {e$message}",
-          "i" = "Check your internet connection and try again"
-        ))
-      }
-
-      if (!quiet) {
-        cli::cli_warn("Attempt {attempts} failed, retrying...")
-      }
-
-      # Exponential backoff
-      Sys.sleep(min(attempts * 0.5, 3))
-    })
+    )
   }
 
   # Return requested data ----
@@ -1396,23 +1523,26 @@ get_cbic_cement <- function(table = "monthly_consumption",
   attr(result, "download_time") <- Sys.time()
 
   # Calculate total records safely
-  total_records <- tryCatch({
-    if (is.data.frame(result)) {
-      nrow(result)
-    } else if (is.list(result)) {
-      # Only count data frames, skip nested lists
-      df_elements <- result[sapply(result, is.data.frame)]
-      if (length(df_elements) > 0) {
-        sum(sapply(df_elements, nrow))
+  total_records <- tryCatch(
+    {
+      if (is.data.frame(result)) {
+        nrow(result)
+      } else if (is.list(result)) {
+        # Only count data frames, skip nested lists
+        df_elements <- result[sapply(result, is.data.frame)]
+        if (length(df_elements) > 0) {
+          sum(sapply(df_elements, nrow))
+        } else {
+          0
+        }
       } else {
         0
       }
-    } else {
+    },
+    error = function(e) {
       0
     }
-  }, error = function(e) {
-    0
-  })
+  )
 
   attr(result, "download_info") <- list(
     table = table,
@@ -1434,8 +1564,6 @@ get_cbic_cement <- function(table = "monthly_consumption",
 #' Returns steel price data by default, or all datasets when requested.
 #'
 #' @param table Character. Which dataset to return: "prices", "production", or "all" (default: "prices")
-#' @param category Character. Deprecated parameter name for backward compatibility.
-#'   Use `table` instead.
 #' @param cached Logical. If TRUE, try to load data from cache first (default: FALSE)
 #' @param quiet Logical. If TRUE, suppress progress messages (default: FALSE)
 #' @param max_retries Integer. Maximum number of retry attempts for downloads (default: 3L)
@@ -1462,25 +1590,14 @@ get_cbic_cement <- function(table = "monthly_consumption",
 #' production <- get_cbic_steel(table = "production", quiet = FALSE)
 #' }
 #'
-#' @export
-get_cbic_steel <- function(table = "prices",
-                          category = NULL,
-                          cached = FALSE,
-                          quiet = FALSE,
-                          max_retries = 3L) {
-
-  # Input validation and backward compatibility ----
+get_cbic_steel <- function(
+  table = "prices",
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+) {
+  # Input validation ----
   valid_tables <- c("prices", "production", "all")
-
-  # Handle backward compatibility: if category is provided, use it as table
-  if (!is.null(category)) {
-    cli::cli_warn(c(
-      "Parameter {.arg category} is deprecated",
-      "i" = "Use {.arg table} parameter instead",
-      ">" = "This will be removed in a future version"
-    ))
-    table <- category
-  }
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
@@ -1500,7 +1617,9 @@ get_cbic_steel <- function(table = "prices",
   # Handle cached data ----
   if (cached) {
     if (!quiet) {
-      cli::cli_inform("Cached data loading not yet implemented for CBIC datasets")
+      cli::cli_inform(
+        "Cached data loading not yet implemented for CBIC datasets"
+      )
     }
   }
 
@@ -1515,37 +1634,39 @@ get_cbic_steel <- function(table = "prices",
   while (attempts <= max_retries && is.null(steel_data)) {
     attempts <- attempts + 1
 
-    tryCatch({
-      materials <- import_cbic_materials(quiet = quiet)
-      steel_url <- materials$link[stringr::str_detect(
-        stringr::str_to_lower(materials$title),
-        "aço"
-      )][1]
+    tryCatch(
+      {
+        materials <- import_cbic_materials(quiet = quiet)
+        steel_url <- materials$link[stringr::str_detect(
+          stringr::str_to_lower(materials$title),
+          "a\u00e7o"
+        )][1]
 
-      if (is.na(steel_url)) {
-        cli::cli_abort("Steel material not found in CBIC database")
+        if (is.na(steel_url)) {
+          cli::cli_abort("Steel material not found in CBIC database")
+        }
+
+        file_params <- import_cbic_material_links(steel_url, quiet = quiet)
+        download_results <- import_cbic_files(file_params, quiet = quiet)
+        steel_data <- clean_cbic_steel_sheets(download_results, quiet = quiet)
+      },
+      error = function(e) {
+        if (attempts > max_retries) {
+          cli::cli_abort(c(
+            "Failed to retrieve CBIC steel data after {max_retries} attempts",
+            "x" = "Error: {e$message}",
+            "i" = "Check your internet connection and try again"
+          ))
+        }
+
+        if (!quiet) {
+          cli::cli_warn("Attempt {attempts} failed, retrying...")
+        }
+
+        # Exponential backoff
+        Sys.sleep(min(attempts * 0.5, 3))
       }
-
-      file_params <- import_cbic_material_links(steel_url, quiet = quiet)
-      download_results <- import_cbic_files(file_params, quiet = quiet)
-      steel_data <- clean_cbic_steel_sheets(download_results, quiet = quiet)
-
-    }, error = function(e) {
-      if (attempts > max_retries) {
-        cli::cli_abort(c(
-          "Failed to retrieve CBIC steel data after {max_retries} attempts",
-          "x" = "Error: {e$message}",
-          "i" = "Check your internet connection and try again"
-        ))
-      }
-
-      if (!quiet) {
-        cli::cli_warn("Attempt {attempts} failed, retrying...")
-      }
-
-      # Exponential backoff
-      Sys.sleep(min(attempts * 0.5, 3))
-    })
+    )
   }
 
   # Return requested data ----
@@ -1570,23 +1691,26 @@ get_cbic_steel <- function(table = "prices",
   attr(result, "download_time") <- Sys.time()
 
   # Calculate total records safely
-  total_records <- tryCatch({
-    if (is.data.frame(result)) {
-      nrow(result)
-    } else if (is.list(result)) {
-      # Only count data frames, skip nested lists
-      df_elements <- result[sapply(result, is.data.frame)]
-      if (length(df_elements) > 0) {
-        sum(sapply(df_elements, nrow))
+  total_records <- tryCatch(
+    {
+      if (is.data.frame(result)) {
+        nrow(result)
+      } else if (is.list(result)) {
+        # Only count data frames, skip nested lists
+        df_elements <- result[sapply(result, is.data.frame)]
+        if (length(df_elements) > 0) {
+          sum(sapply(df_elements, nrow))
+        } else {
+          0
+        }
       } else {
         0
       }
-    } else {
+    },
+    error = function(e) {
       0
     }
-  }, error = function(e) {
-    0
-  })
+  )
 
   attr(result, "download_info") <- list(
     table = table,
@@ -1609,8 +1733,6 @@ get_cbic_steel <- function(table = "prices",
 #' of typical construction industry inputs in Brazil.
 #'
 #' @param table Character. Which dataset to return: "production_index" or "all" (default: "production_index")
-#' @param category Character. Deprecated parameter name for backward compatibility.
-#'   Use `table` instead.
 #' @param cached Logical. If TRUE, try to load data from cache first (default: FALSE)
 #' @param quiet Logical. If TRUE, suppress progress messages (default: FALSE)
 #' @param max_retries Integer. Maximum number of retry attempts for downloads (default: 3L)
@@ -1643,25 +1765,14 @@ get_cbic_steel <- function(table = "prices",
 #' production <- get_cbic_pim(quiet = FALSE)
 #' }
 #'
-#' @export
-get_cbic_pim <- function(table = "production_index",
-                        category = NULL,
-                        cached = FALSE,
-                        quiet = FALSE,
-                        max_retries = 3L) {
-
-  # Input validation and backward compatibility ----
+get_cbic_pim <- function(
+  table = "production_index",
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+) {
+  # Input validation ----
   valid_tables <- c("production_index", "all")
-
-  # Handle backward compatibility: if category is provided, use it as table
-  if (!is.null(category)) {
-    cli::cli_warn(c(
-      "Parameter {.arg category} is deprecated",
-      "i" = "Use {.arg table} parameter instead",
-      ">" = "This will be removed in a future version"
-    ))
-    table <- category
-  }
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
@@ -1681,7 +1792,9 @@ get_cbic_pim <- function(table = "production_index",
   # Handle cached data ----
   if (cached) {
     if (!quiet) {
-      cli::cli_inform("Cached data loading not yet implemented for CBIC datasets")
+      cli::cli_inform(
+        "Cached data loading not yet implemented for CBIC datasets"
+      )
     }
   }
 
@@ -1696,37 +1809,39 @@ get_cbic_pim <- function(table = "production_index",
   while (attempts <= max_retries && is.null(pim_data)) {
     attempts <- attempts + 1
 
-    tryCatch({
-      materials <- import_cbic_materials(quiet = quiet)
-      pim_url <- materials$link[stringr::str_detect(
-        stringr::str_to_lower(materials$title),
-        "pim"
-      )][1]
+    tryCatch(
+      {
+        materials <- import_cbic_materials(quiet = quiet)
+        pim_url <- materials$link[stringr::str_detect(
+          stringr::str_to_lower(materials$title),
+          "pim"
+        )][1]
 
-      if (is.na(pim_url) || length(pim_url) == 0) {
-        cli::cli_abort("PIM material not found in CBIC database")
+        if (is.na(pim_url) || length(pim_url) == 0) {
+          cli::cli_abort("PIM material not found in CBIC database")
+        }
+
+        file_params <- import_cbic_material_links(pim_url, quiet = quiet)
+        download_results <- import_cbic_files(file_params, quiet = quiet)
+        pim_data <- clean_cbic_pim_sheets(download_results, quiet = quiet)
+      },
+      error = function(e) {
+        if (attempts > max_retries) {
+          cli::cli_abort(c(
+            "Failed to retrieve CBIC PIM data after {max_retries} attempts",
+            "x" = "Error: {e$message}",
+            "i" = "Check your internet connection and try again"
+          ))
+        }
+
+        if (!quiet) {
+          cli::cli_warn("Attempt {attempts} failed, retrying...")
+        }
+
+        # Exponential backoff
+        Sys.sleep(min(attempts * 0.5, 3))
       }
-
-      file_params <- import_cbic_material_links(pim_url, quiet = quiet)
-      download_results <- import_cbic_files(file_params, quiet = quiet)
-      pim_data <- clean_cbic_pim_sheets(download_results, quiet = quiet)
-
-    }, error = function(e) {
-      if (attempts > max_retries) {
-        cli::cli_abort(c(
-          "Failed to retrieve CBIC PIM data after {max_retries} attempts",
-          "x" = "Error: {e$message}",
-          "i" = "Check your internet connection and try again"
-        ))
-      }
-
-      if (!quiet) {
-        cli::cli_warn("Attempt {attempts} failed, retrying...")
-      }
-
-      # Exponential backoff
-      Sys.sleep(min(attempts * 0.5, 3))
-    })
+    )
   }
 
   # Return requested data ----
@@ -1744,23 +1859,26 @@ get_cbic_pim <- function(table = "production_index",
   attr(result, "download_time") <- Sys.time()
 
   # Calculate total records safely
-  total_records <- tryCatch({
-    if (is.data.frame(result)) {
-      nrow(result)
-    } else if (is.list(result)) {
-      # Only count data frames, skip nested lists
-      df_elements <- result[sapply(result, is.data.frame)]
-      if (length(df_elements) > 0) {
-        sum(sapply(df_elements, nrow))
+  total_records <- tryCatch(
+    {
+      if (is.data.frame(result)) {
+        nrow(result)
+      } else if (is.list(result)) {
+        # Only count data frames, skip nested lists
+        df_elements <- result[sapply(result, is.data.frame)]
+        if (length(df_elements) > 0) {
+          sum(sapply(df_elements, nrow))
+        } else {
+          0
+        }
       } else {
         0
       }
-    } else {
+    },
+    error = function(e) {
       0
     }
-  }, error = function(e) {
-    0
-  })
+  )
 
   attr(result, "download_info") <- list(
     table = table,
@@ -1787,7 +1905,6 @@ get_cbic_pim <- function(table = "production_index",
 #' materials <- get_cbic_materials()
 #' }
 #'
-#' @export
 get_cbic_materials <- function() {
   import_cbic_materials()
 }
@@ -1813,29 +1930,86 @@ get_cbic_materials <- function() {
 #' @param cached Logical. If TRUE, try to load data from cache first
 #' @param quiet Logical. If TRUE, suppress progress messages
 #' @param max_retries Integer. Maximum number of retry attempts for downloads
+#' @param warn_level Character. Warning level for messages: "none", "user", or "dev".
+#'   Defaults to "none" for internal use.
 #'
 #' @return A tibble with the requested CBIC data
 #'
 #' @keywords internal
-#' @export
-get_cbic <- function(table = "cement_monthly_consumption", cached = FALSE, quiet = FALSE, max_retries = 3L, warn_level = "none") {
-
+get_cbic <- function(
+  table = "cement_monthly_consumption",
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L,
+  warn_level = "none"
+) {
   # Map compound table names to function calls
-  result <- switch(table,
+  result <- switch(
+    table,
     # Cement tables
-    "cement_monthly_consumption" = get_cbic_cement(table = "monthly_consumption", cached = cached, quiet = quiet, max_retries = max_retries, warn_level = warn_level),
-    "cement_annual_consumption" = get_cbic_cement(table = "annual_consumption", cached = cached, quiet = quiet, max_retries = max_retries, warn_level = warn_level),
-    "cement_production_exports" = get_cbic_cement(table = "production_exports", cached = cached, quiet = quiet, max_retries = max_retries, warn_level = warn_level),
-    "cement_monthly_production" = get_cbic_cement(table = "monthly_production", cached = cached, quiet = quiet, max_retries = max_retries, warn_level = warn_level),
-    "cement_cub_prices" = get_cbic_cement(table = "cub_prices", cached = cached, quiet = quiet, max_retries = max_retries, warn_level = warn_level),
+    "cement_monthly_consumption" = get_cbic_cement(
+      table = "monthly_consumption",
+      cached = cached,
+      quiet = quiet,
+      max_retries = max_retries,
+      warn_level = warn_level
+    ),
+    "cement_annual_consumption" = get_cbic_cement(
+      table = "annual_consumption",
+      cached = cached,
+      quiet = quiet,
+      max_retries = max_retries,
+      warn_level = warn_level
+    ),
+    "cement_production_exports" = get_cbic_cement(
+      table = "production_exports",
+      cached = cached,
+      quiet = quiet,
+      max_retries = max_retries,
+      warn_level = warn_level
+    ),
+    "cement_monthly_production" = get_cbic_cement(
+      table = "monthly_production",
+      cached = cached,
+      quiet = quiet,
+      max_retries = max_retries,
+      warn_level = warn_level
+    ),
+    "cement_cub_prices" = get_cbic_cement(
+      table = "cub_prices",
+      cached = cached,
+      quiet = quiet,
+      max_retries = max_retries,
+      warn_level = warn_level
+    ),
 
     # Steel tables
-    "steel_prices" = get_cbic_steel(table = "prices", cached = cached, quiet = quiet, max_retries = max_retries),
-    "steel_production" = get_cbic_steel(table = "production", cached = cached, quiet = quiet, max_retries = max_retries),
+    "steel_prices" = get_cbic_steel(
+      table = "prices",
+      cached = cached,
+      quiet = quiet,
+      max_retries = max_retries
+    ),
+    "steel_production" = get_cbic_steel(
+      table = "production",
+      cached = cached,
+      quiet = quiet,
+      max_retries = max_retries
+    ),
 
     # PIM tables
-    "pim" = get_cbic_pim(table = "production_index", cached = cached, quiet = quiet, max_retries = max_retries),
-    "pim_production_index" = get_cbic_pim(table = "production_index", cached = cached, quiet = quiet, max_retries = max_retries),
+    "pim" = get_cbic_pim(
+      table = "production_index",
+      cached = cached,
+      quiet = quiet,
+      max_retries = max_retries
+    ),
+    "pim_production_index" = get_cbic_pim(
+      table = "production_index",
+      cached = cached,
+      quiet = quiet,
+      max_retries = max_retries
+    ),
 
     # Error for invalid tables
     cli::cli_abort(c(

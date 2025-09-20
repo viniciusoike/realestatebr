@@ -24,8 +24,6 @@
 #' provides informative error messages when data is unavailable.
 #'
 #' @param table Character. Which dataset to return: "indicators" (default) or "all".
-#' @param category Character. Deprecated parameter name for backward compatibility.
-#'   Use `table` instead.
 #' @param cached Logical. If `TRUE` (default), loads data from package cache
 #'   using the unified dataset architecture. This is currently the only
 #'   supported method for this dataset.
@@ -48,7 +46,6 @@
 #'   \item{download_time}{Timestamp of access}
 #' }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @source Original series and methodology available at [https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html](https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html).
 #'
@@ -64,22 +61,12 @@
 #' }
 get_nre_ire <- function(
   table = "indicators",
-  category = NULL,
   cached = TRUE,
   quiet = FALSE
 ) {
   # Input validation and backward compatibility ----
   valid_tables <- c("indicators", "all")
 
-  # Handle backward compatibility: if category is provided, use it as table
-  if (!is.null(category)) {
-    cli::cli_warn(c(
-      "Parameter {.arg category} is deprecated",
-      "i" = "Use {.arg table} parameter instead",
-      ">" = "This will be removed in a future version"
-    ))
-    table <- category
-  }
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(

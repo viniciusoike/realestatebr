@@ -22,8 +22,6 @@
 #' data sources and standardizing outputs across different RPPI functions.
 #'
 #' @param table Character. Which dataset to return: "sale" (default), "rent", or "all".
-#' @param category Character. Deprecated parameter name for backward compatibility.
-#'   Use `table` instead.
 #' @param cached If `TRUE` downloads the cached data from the GitHub repository.
 #'   This is a faster option but not recommended for daily data.
 #' @param stack If `TRUE` returns a single `tibble` identified by a `source` column.
@@ -35,13 +33,12 @@
 #'
 #' @return Either a named `list` or a `tibble` (if `stack = TRUE`).
 #'   The return includes metadata attributes when stacked:
-#'   \\describe{
-#'     \\item{download_info}{List with coordination statistics}
-#'     \\item{source}{Data source coordination method}
-#'     \\item{download_time}{Timestamp of coordination}
+#'   \describe{
+#'     \item{download_info}{List with coordination statistics}
+#'     \item{source}{Data source coordination method}
+#'     \item{download_time}{Timestamp of coordination}
 #'   }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter mutate select bind_rows
 #' @importFrom tidyr pivot_wider
@@ -61,7 +58,6 @@
 #' }
 get_rppi <- function(
   table = "sale",
-  category = NULL,
   cached = FALSE,
   stack = FALSE,
   quiet = FALSE,
@@ -69,16 +65,6 @@ get_rppi <- function(
 ) {
   # Input validation and backward compatibility ----
   valid_tables <- c("sale", "rent", "all")
-
-  # Handle backward compatibility: if category is provided, use it as table
-  if (!is.null(category)) {
-    cli::cli_warn(c(
-      "Parameter {.arg category} is deprecated",
-      "i" = "Use {.arg table} parameter instead",
-      ">" = "This will be removed in a future version"
-    ))
-    table <- category
-  }
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
@@ -113,7 +99,9 @@ get_rppi <- function(
 
   # Coordinate data collection ----
   if (!quiet) {
-    cli::cli_inform("Coordinating RPPI data collection across multiple sources...")
+    cli::cli_inform(
+      "Coordinating RPPI data collection across multiple sources..."
+    )
   }
 
   # Import Index data from FipeZap
@@ -141,9 +129,13 @@ get_rppi <- function(
       names_from = "variable",
       values_from = "value"
     ) |>
-    # Swap "Índice Fipezap+" for "Brazil"
+    # Swap "\u00cdndice Fipezap+" for "Brazil"
     dplyr::mutate(
-      name_muni = ifelse(name_muni == "Índice Fipezap+", "Brazil", name_muni)
+      name_muni = ifelse(
+        name_muni == "\u00cdndice Fipezap+",
+        "Brazil",
+        name_muni
+      )
     )
 
   # Handle "all" case by returning both rent and sale data
@@ -153,8 +145,20 @@ get_rppi <- function(
     }
 
     # Get both rent and sale data
-    rent_data <- get_rppi(table = "rent", cached = cached, stack = stack, quiet = quiet, max_retries = max_retries)
-    sale_data <- get_rppi(table = "sale", cached = cached, stack = stack, quiet = quiet, max_retries = max_retries)
+    rent_data <- get_rppi(
+      table = "rent",
+      cached = cached,
+      stack = stack,
+      quiet = quiet,
+      max_retries = max_retries
+    )
+    sale_data <- get_rppi(
+      table = "sale",
+      cached = cached,
+      stack = stack,
+      quiet = quiet,
+      max_retries = max_retries
+    )
 
     result <- list(
       rent = rent_data,
@@ -278,7 +282,10 @@ get_rppi <- function(
       quiet = quiet,
       max_retries = max_retries
     )
-    igmi <- dplyr::mutate(igmi, name_muni = ifelse(name_muni == "Brasil", "Brazil", name_muni))
+    igmi <- dplyr::mutate(
+      igmi,
+      name_muni = ifelse(name_muni == "Brasil", "Brazil", name_muni)
+    )
     if (!quiet) {
       cli::cli_inform("Finalizing sales RPPI data coordination...")
     }
@@ -307,15 +314,18 @@ get_rppi <- function(
   # Final coordination reporting
   if (!quiet) {
     if (stack) {
-      cli::cli_inform("Successfully coordinated {table} RPPI data with {nrow(rppi)} total records")
+      cli::cli_inform(
+        "Successfully coordinated {table} RPPI data with {nrow(rppi)} total records"
+      )
     } else {
       sources_count <- length(rppi)
-      cli::cli_inform("Successfully coordinated {table} RPPI data from {sources_count} source{?s}")
+      cli::cli_inform(
+        "Successfully coordinated {table} RPPI data from {sources_count} source{?s}"
+      )
     }
   }
 
   return(rppi)
-
 }
 
 #' Import BCB IVGR Data with Robust Error Handling
@@ -338,11 +348,14 @@ import_bcb_ivgr_robust <- function(quiet, max_retries) {
       {
         # Try downloading from BCB API
         result <- suppressMessages(
-          GetBCBData::gbcbd_get_series(
-            id = 21340,
-            first.date = as.Date("2001-03-01")
+          rbcb::get_series(
+            code = 21340,
+            start_date = as.Date("2001-03-01")
           )
         )
+
+        # Rename the value column for consistency
+        result <- dplyr::rename(result, value = 2)
 
         # Validate we got some data
         if (nrow(result) == 0) {
@@ -423,12 +436,11 @@ import_bcb_ivgr_robust <- function(quiet, max_retries) {
 #'   \item{download_time}{Timestamp of download}
 #' }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr rename select mutate
 #' @seealso [get_rppi()]
 #'
-#' @references Banco Central do Brasil (2018) "Índice de Valores de Garantia de Imóveis Residenciais Financiados (IVG-R). Seminário de Metodologia do IBGE."
+#' @references Banco Central do Brasil (2018) "Indice de Valores de Garantia de Imoveis Residenciais Financiados (IVG-R). Seminario de Metodologia do IBGE."
 #'
 #' @examples \dontrun{
 #' # Get IVGR index (with progress)
@@ -467,7 +479,7 @@ get_rppi_ivgr <- function(
     tryCatch(
       {
         # Use new unified architecture for cached data
-        ivgr <- get_dataset("rppi", source = "github", category = "sale")
+        ivgr <- get_dataset("rppi", "sale", source = "github")
         ivgr <- dplyr::filter(ivgr, source == "IVG-R")
 
         if (!quiet) {
@@ -510,8 +522,8 @@ get_rppi_ivgr <- function(
 
   # Clean data
   clean_ivgr <- ivgr |>
-    # Rename columns and select only date and index
-    dplyr::rename(date = ref.date, index = value) |>
+    # Rename value column to index (date already correct from rbcb)
+    dplyr::rename(index = value) |>
     dplyr::select(date, index) |>
     dplyr::mutate(
       name_geo = "Brazil",
@@ -528,11 +540,12 @@ get_rppi_ivgr <- function(
   )
 
   if (!quiet) {
-    cli::cli_inform("Successfully processed IVGR data with {nrow(clean_ivgr)} records")
+    cli::cli_inform(
+      "Successfully processed IVGR data with {nrow(clean_ivgr)} records"
+    )
   }
 
   return(tidyr::as_tibble(clean_ivgr))
-
 }
 
 #' Download IGMI Excel File with Robust Error Handling
@@ -556,7 +569,10 @@ download_igmi_excel_robust <- function(quiet, max_retries) {
         # Scrape download URL from ABECIP website
         base_url <- "https://www.abecip.org.br/igmi-r-abecip/serie-historica"
         parsed <- xml2::read_html(base_url)
-        node <- rvest::html_element(parsed, xpath = "//div[@class='bloco_anexo']/a")
+        node <- rvest::html_element(
+          parsed,
+          xpath = "//div[@class='bloco_anexo']/a"
+        )
         download_url <- rvest::html_attr(node, "href")
 
         if (is.na(download_url)) {
@@ -566,7 +582,12 @@ download_igmi_excel_robust <- function(quiet, max_retries) {
         # Download the Excel file
         temp_path <- tempfile("igmi.xlsx")
         download_result <- try(
-          download.file(download_url, destfile = temp_path, mode = "wb", quiet = TRUE),
+          utils::download.file(
+            download_url,
+            destfile = temp_path,
+            mode = "wb",
+            quiet = TRUE
+          ),
           silent = TRUE
         )
 
@@ -651,7 +672,6 @@ download_igmi_excel_robust <- function(quiet, max_retries) {
 #'   \item{download_time}{Timestamp of download}
 #' }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr rename mutate group_by ungroup left_join select filter
 #' @importFrom tidyr pivot_longer
@@ -693,7 +713,7 @@ get_rppi_igmi <- function(
     tryCatch(
       {
         # Use new unified architecture for cached data
-        igmi <- get_dataset("rppi", source = "github", category = "sale")
+        igmi <- get_dataset("rppi", "sale", source = "github")
         igmi <- dplyr::filter(igmi, source == "IGMI-R")
 
         if (!quiet) {
@@ -728,7 +748,10 @@ get_rppi_igmi <- function(
   }
 
   # Download Excel file with retry logic
-  temp_path <- download_igmi_excel_robust(quiet = quiet, max_retries = max_retries)
+  temp_path <- download_igmi_excel_robust(
+    quiet = quiet,
+    max_retries = max_retries
+  )
 
   if (!quiet) {
     cli::cli_inform("Processing IGMI Excel data...")
@@ -749,11 +772,31 @@ get_rppi_igmi <- function(
   # Auxiliary data.frame to vlookup city names
   dim_geo <- data.frame(
     name_muni = c(
-      "Belo Horizonte", "Brasil", "Brasília", "Curitiba", "Fortaleza", "Goiânia",
-      "Porto Alegre", "Recife", "Rio De Janeiro", "Salvador", "São Paulo"),
+      "Belo Horizonte",
+      "Brasil",
+      "Bras\u00edlia",
+      "Curitiba",
+      "Fortaleza",
+      "Goi\u00e2nia",
+      "Porto Alegre",
+      "Recife",
+      "Rio De Janeiro",
+      "Salvador",
+      "S\u00e3o Paulo"
+    ),
     name_simplified = c(
-      "belo_horizonte", "brasil", "brasilia", "curitiba", "fortaleza", "goiania",
-      "porto_alegre", "recife", "rio_de_janeiro", "salvador", "sao_paulo")
+      "belo_horizonte",
+      "brasil",
+      "brasilia",
+      "curitiba",
+      "fortaleza",
+      "goiania",
+      "porto_alegre",
+      "recife",
+      "rio_de_janeiro",
+      "salvador",
+      "sao_paulo"
+    )
   )
 
   # Clean the data
@@ -761,7 +804,9 @@ get_rppi_igmi <- function(
     # Rename date column
     dplyr::rename(date = mes) |>
     # Parse date to Date format
-    dplyr::mutate(date = suppressWarnings(readr::parse_date(date, format = "%Y %m"))) |>
+    dplyr::mutate(
+      date = suppressWarnings(readr::parse_date(date, format = "%Y %m"))
+    ) |>
     # Remove all NAs in date column
     dplyr::filter(!is.na(date)) |>
     # Drop last column (12-month brazil)
@@ -798,11 +843,12 @@ get_rppi_igmi <- function(
   )
 
   if (!quiet) {
-    cli::cli_inform("Successfully processed IGMI data with {nrow(clean_igmi)} records")
+    cli::cli_inform(
+      "Successfully processed IGMI data with {nrow(clean_igmi)} records"
+    )
   }
 
   return(clean_igmi)
-
 }
 
 #' Import IQA CSV Data with Robust Error Handling
@@ -869,7 +915,7 @@ import_iqa_csv_robust <- function(quiet, max_retries) {
 #'
 #' @details
 #' The IQA, or QuintoAndar Rental Index, is a median stratified index calculated
-#' for Brazil's two main cities: Rio de Janeiro and São Paulo. The source of the
+#' for Brazil's two main cities: Rio de Janeiro and Sao Paulo. The source of the
 #' data are all the new rent contracts managed by QuintoAndar. The Index includes
 #' only apartments and similar units such as studios and flats.
 #'
@@ -904,7 +950,6 @@ import_iqa_csv_robust <- function(quiet, max_retries) {
 #'   \item{download_time}{Timestamp of download}
 #' }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr select mutate group_by ungroup filter
 #' @seealso [get_rppi()]
@@ -948,7 +993,7 @@ get_rppi_iqa <- function(
 
     tryCatch(
       {
-        iqa <- get_dataset("rppi", source = "github", category = "rent")
+        iqa <- get_dataset("rppi", "rent", source = "github")
         iqa <- dplyr::filter(iqa, source == "IQA")
 
         if (!quiet) {
@@ -1027,11 +1072,12 @@ get_rppi_iqa <- function(
   )
 
   if (!quiet) {
-    cli::cli_inform("Successfully processed IQA data with {nrow(clean_iqa)} records")
+    cli::cli_inform(
+      "Successfully processed IQA data with {nrow(clean_iqa)} records"
+    )
   }
 
   return(clean_iqa)
-
 }
 
 #' Get the IVAR rent Index
@@ -1079,7 +1125,6 @@ get_rppi_iqa <- function(
 #'   \item{download_time}{Timestamp of download}
 #' }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter select mutate group_by ungroup left_join
 #' @seealso [get_rppi()]
@@ -1122,7 +1167,7 @@ get_rppi_ivar <- function(
 
     tryCatch(
       {
-        ivar <- get_dataset("rppi", source = "github", category = "rent")
+        ivar <- get_dataset("rppi", "rent", source = "github")
         ivar <- dplyr::filter(ivar, source == "IVAR")
 
         if (!quiet) {
@@ -1212,7 +1257,13 @@ get_rppi_ivar <- function(
       abbrev_state = ifelse(name_simplified == "brazil", "BR", abbrev_state)
     ) |>
     dplyr::select(
-      date, name_muni, index, chg, acum12m, name_simplified, abbrev_state
+      date,
+      name_muni,
+      index,
+      chg,
+      acum12m,
+      name_simplified,
+      abbrev_state
     )
 
   # Add metadata attributes
@@ -1224,22 +1275,22 @@ get_rppi_ivar <- function(
   )
 
   if (!quiet) {
-    cli::cli_inform("Successfully processed IVAR data with {nrow(ivar)} records")
+    cli::cli_inform(
+      "Successfully processed IVAR data with {nrow(ivar)} records"
+    )
   }
 
   return(ivar)
-
 }
 
 #' Get the Secovi-SP Rent Index
 #'
-#' Imports the Secovi-SP rent index for São Paulo with modern error handling
+#' Imports the Secovi-SP rent index for Sao Paulo with modern error handling
 #' and progress reporting capabilities.
 #'
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
 #' @param max_retries Integer. Maximum number of retry attempts.
-#' @export
 #' @return A `tibble` with the Secovi Rent Index where:
 #'
 #' * `index` is the index-number.
@@ -1257,13 +1308,15 @@ get_rppi_secovi_sp <- function(
 
     tryCatch(
       {
-        secovi <- get_dataset("rppi", source = "github", category = "rent")
+        secovi <- get_dataset("rppi", "rent", source = "github")
         secovi <- dplyr::filter(secovi, source == "Secovi-SP")
         return(secovi)
       },
       error = function(e) {
         if (!quiet) {
-          cli::cli_warn("Failed to load cached data, falling back to fresh download")
+          cli::cli_warn(
+            "Failed to load cached data, falling back to fresh download"
+          )
         }
       }
     )
@@ -1281,14 +1334,13 @@ get_rppi_secovi_sp <- function(
     dplyr::filter(category == "rent", variable == "rent_price") |>
     dplyr::rename(index = value) |>
     dplyr::mutate(
-      name_muni = "São Paulo",
+      name_muni = "S\u00e3o Paulo",
       chg = index / dplyr::lag(index) - 1,
       acum12m = zoo::rollapplyr(1 + chg, width = 12, FUN = prod, fill = NA) - 1
     ) |>
     dplyr::select(date, name_muni, index, chg, acum12m)
 
   return(secovi_index)
-
 }
 
 #' Download FipeZap Excel File with Robust Error Handling
@@ -1363,7 +1415,7 @@ download_fipezap_excel <- function(quiet, max_retries) {
 #' @details
 #' The FipeZap Index is a monthly median stratified index calculated across several
 #' cities in Brazil. This function imports both the rental and the sale index for
-#' all cities. The Index is based on online listings of the Zap Imóveis group and is
+#' all cities. The Index is based on online listings of the Zap Imoveis group and is
 #' stratified by number of rooms. The overall city index is a weighted sum of median
 #' prices by room/region.
 #'
@@ -1396,7 +1448,7 @@ download_fipezap_excel <- function(quiet, max_retries) {
 #' * `variable` - 'index' is the index-number, 'chg' is the monthly change, 'acum12m' is the year-on-year change, 'price_m2' is the raw sale/rent price per squared meter, and 'yield' is the gross rental yield.
 #' * `rooms` - number of rooms (`total` is the average)
 #'
-#' The national index is defined as the series with `name_muni == 'Índice Fipezap+'`.
+#' The national index is defined as the series with `name_muni == 'Indice Fipezap+'`.
 #'
 #' The tibble includes metadata attributes:
 #' \describe{
@@ -1405,7 +1457,6 @@ download_fipezap_excel <- function(quiet, max_retries) {
 #'   \item{download_time}{Timestamp of download}
 #' }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter mutate across where select bind_rows
 #' @importFrom tidyr pivot_longer separate_wider_delim
@@ -1459,7 +1510,7 @@ get_rppi_fipezap <- function(
     tryCatch(
       {
         # Use new unified architecture for cached data
-        df <- get_dataset("rppi", source = "github", category = "fipe")
+        df <- get_dataset("rppi", "fipe", source = "github")
 
         # Filter by city if specified
         if (city != "all" && city %in% unique(df$name_muni)) {
@@ -1508,7 +1559,9 @@ get_rppi_fipezap <- function(
   # Get all unique sheet names
   sheet_names <- readxl::excel_sheets(temp_path)
   # Remove summary sheets
-  sheet_names <- sheet_names[!stringr::str_detect(sheet_names, "(Resumo)|(Aux)")]
+  sheet_names <- sheet_names[
+    !stringr::str_detect(sheet_names, "(Resumo)|(Aux)")
+  ]
   # Use sheets as city names
   city_names <- stringr::str_to_title(sheet_names)
 
@@ -1518,7 +1571,6 @@ get_rppi_fipezap <- function(
 
   # Import all data
   import_fipezap <- function(x) {
-
     # Get import range
     range <- get_range(path = temp_path, sheet = x)
 
@@ -1526,13 +1578,15 @@ get_rppi_fipezap <- function(
     if (!stringr::str_detect(range, "BD")) {
       max_col <- stringr::str_extract(
         stringr::str_match(range, ":[A-Z]+[0-9]"),
-        "[A-Z]+")
+        "[A-Z]+"
+      )
       n1 <- stringr::str_locate(range, max_col)[, 1]
       n2 <- stringr::str_locate(range, max_col)[, 2]
       range <- paste0(
         stringr::str_sub(range, 1, n1 - 1),
         "BD",
-        stringr::str_sub(range, n2 + 1, nchar(range)))
+        stringr::str_sub(range, n2 + 1, nchar(range))
+      )
     }
 
     # Import Excel
@@ -1548,7 +1602,6 @@ get_rppi_fipezap <- function(
       dplyr::mutate(dplyr::across(dplyr::where(is.character), as.numeric))
 
     return(fipe)
-
   }
 
   # Import data from all sheets
@@ -1600,11 +1653,12 @@ get_rppi_fipezap <- function(
   )
 
   if (!quiet) {
-    cli::cli_inform("Successfully processed FipeZap RPPI data with {nrow(clean_fipe)} records")
+    cli::cli_inform(
+      "Successfully processed FipeZap RPPI data with {nrow(clean_fipe)} records"
+    )
   }
 
   return(clean_fipe)
-
 }
 
 #' Creates column names for the FipeZap spreadsheet
@@ -1619,7 +1673,6 @@ get_rppi_fipezap <- function(
 #' Total rooms represents a weighted average of 1, 2, 3, and 4 bedrooms indicies.
 #' @noRd
 fipezap_col_names <- function() {
-
   market <- c("residential", "commercial")
   transaction <- c("sale", "rent")
   var_sale <- c("index", "chg", "acum12m", "price_m2")

@@ -6,8 +6,8 @@
 \usage{
 get_dataset(
   name,
-  source = "auto",
   table = NULL,
+  source = "auto",
   date_start = NULL,
   date_end = NULL,
   ...
@@ -16,6 +16,9 @@ get_dataset(
 \arguments{
 \item{name}{Character. Dataset name (see list_datasets() for available options)}
 
+\item{table}{Character. Specific table within dataset (optional).
+Use get_dataset_info(name) to see available tables.}
+
 \item{source}{Character. Data source preference:
 \describe{
 \item{"auto"}{Automatic fallback: cache → GitHub → fresh (default)}
@@ -23,9 +26,6 @@ get_dataset(
 \item{"github"}{GitHub repository cache}
 \item{"fresh"}{Fresh download from original source}
 }}
-
-\item{table}{Character. Specific table within dataset (optional).
-Use get_dataset_info(name) to see available tables.}
 
 \item{date_start}{Date. Start date for time series data (where applicable)}
 
@@ -43,11 +43,11 @@ fallback between different data sources (cache, GitHub, fresh download).
 }
 \examples{
 \dontrun{
-# Get all ABECIP indicators
+# Get all ABECIP indicators (default table)
 abecip_data <- get_dataset("abecip")
 
 # Get only SBPE data from ABECIP
-sbpe_data <- get_dataset("abecip", table = "sbpe")
+sbpe_data <- get_dataset("abecip", "sbpe")
 
 # Force fresh download
 fresh_data <- get_dataset("bcb_realestate", source = "fresh")

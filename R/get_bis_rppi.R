@@ -22,8 +22,6 @@
 #' error handling for multi-sheet processing operations.
 #'
 #' @param table Character. Which dataset to return: "selected" (default), "detailed", or "all".
-#' @param category Character. Deprecated parameter name for backward compatibility.
-#'   Use `table` instead.
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
 #'   using the unified dataset architecture.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
@@ -34,13 +32,12 @@
 #' @source [https://data.bis.org/topics/RPP](https://data.bis.org/topics/RPP)
 #' @return A `tibble` or a named `list` with all RPPIs from BIS.
 #'   The return includes metadata attributes:
-#'   \\describe{
-#'     \\item{download_info}{List with download statistics}
-#'     \\item{source}{Data source used (web or cache)}
-#'     \\item{download_time}{Timestamp of download}
+#'   \describe{
+#'     \item{download_info}{List with download statistics}
+#'     \item{source}{Data source used (web or cache)}
+#'     \item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr rename mutate left_join select filter if_else
 #' @importFrom tidyr pivot_longer
@@ -57,7 +54,6 @@
 #' }
 get_bis_rppi <- function(
   table = "selected",
-  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
@@ -65,15 +61,6 @@ get_bis_rppi <- function(
   # Input validation and backward compatibility ----
   valid_tables <- c("selected", "detailed", "all")
 
-  # Handle backward compatibility: if category is provided, use it as table
-  if (!is.null(category)) {
-    cli::cli_warn(c(
-      "Parameter {.arg category} is deprecated",
-      "i" = "Use {.arg table} parameter instead",
-      ">" = "This will be removed in a future version"
-    ))
-    table <- category
-  }
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
@@ -111,7 +98,7 @@ get_bis_rppi <- function(
     tryCatch(
       {
         # Use new unified architecture for cached data
-        data <- get_dataset("bis_rppi", source = "github", category = table)
+        data <- get_dataset("bis_rppi", table, source = "github")
 
         if (!quiet) {
           total_records <- if (is.list(data)) sum(sapply(data, nrow)) else nrow(data)

@@ -39,7 +39,6 @@
 #'     \item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter select bind_rows left_join
 #' @importFrom parallel mclapply
