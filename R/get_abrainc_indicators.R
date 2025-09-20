@@ -215,6 +215,8 @@ get_abrainc_indicators <- function(
   # Name each element of the list
   if (table == "all") {
     category <- names(vl)
+  } else {
+    category <- table
   }
   names(abrainc) <- category
   out <- purrr::map(category, function(x) {
@@ -381,7 +383,7 @@ clean_abrainc <- function(ls, category) {
   # Clean the tibble
   clean_df <- abrainc_basic_clean(df, subcategories[[category]])
 
-  if (table == "indicator") {
+  if (category == "indicator") {
     # Join final table with labels for variables
     clean_df <- dplyr::left_join(
       clean_df,
@@ -390,7 +392,7 @@ clean_abrainc <- function(ls, category) {
     )
   }
 
-  if (table == "leading") {
+  if (category == "leading") {
     clean_df <- clean_df |>
       # Fix the Zone column and join with variable labels
       dplyr::mutate(
@@ -400,7 +402,7 @@ clean_abrainc <- function(ls, category) {
       dplyr::left_join(labels, by = dplyr::join_by(variable))
   }
 
-  if (table == "radar") {
+  if (category == "radar") {
     clean_df <- clean_df |>
       # Compute yearly averages for categories and variables
       dplyr::mutate(

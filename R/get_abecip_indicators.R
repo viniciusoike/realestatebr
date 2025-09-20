@@ -179,20 +179,57 @@ get_abecip_indicators <- function(
   }
 
   if (table == "cgi") {
-    # CGI data is currently static
-    abecip <- abecip_cgi
-    if (!quiet) {
-      cli::cli_inform("Loaded CGI data from package")
+    if (!cached) {
+      if (!quiet) {
+        cli::cli_inform(c(
+          "i" = "CGI data is a static historical dataset (January 2017-present)",
+          "i" = "Loading from package cache instead of fresh download"
+        ))
+      }
     }
+
+    # Load CGI data from package cache
+    tryCatch({
+      cached_data <- import_cached("abecip")
+      if ("cgi" %in% names(cached_data)) {
+        abecip <- cached_data[["cgi"]]
+      } else {
+        cli::cli_abort("CGI data not found in cached dataset")
+      }
+
+      if (!quiet) {
+        cli::cli_inform("Successfully loaded CGI data from package cache")
+      }
+    }, error = function(e) {
+      cli::cli_abort(c(
+        "Failed to load CGI data from cache",
+        "x" = "Error: {e$message}",
+        "i" = "CGI data should be available in package cache"
+      ))
+    })
   }
 
   # Add metadata
-  attr(abecip, "source") <- "web"
-  attr(abecip, "download_time") <- Sys.time()
-  attr(abecip, "download_info") <- download_info
+  if (table == "cgi") {
+    attr(abecip, "source") <- "cache"
+    attr(abecip, "download_time") <- Sys.time()
+    attr(abecip, "download_info") <- list(
+      source = "cache",
+      category = table,
+      note = "CGI is a static historical dataset"
+    )
+  } else {
+    attr(abecip, "source") <- "web"
+    attr(abecip, "download_time") <- Sys.time()
+    attr(abecip, "download_info") <- download_info
+  }
 
   if (!quiet) {
-    cli::cli_inform("Successfully downloaded Abecip data")
+    if (table == "cgi") {
+      cli::cli_inform("Successfully loaded Abecip CGI data from cache")
+    } else {
+      cli::cli_inform("Successfully downloaded Abecip data")
+    }
   }
 
   return(abecip)
