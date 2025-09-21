@@ -56,6 +56,91 @@
 #' # Check coordination metadata
 #' attr(all_data, "download_info")
 #' }
+
+#' Standardize City Names Across RPPI Sources
+#'
+#' @param names Character vector of city names
+#' @return Standardized city names
+#' @keywords internal
+standardize_city_names <- function(names) {
+  standardized_names <- names |>
+    # Standardize Brazil variations
+    stringr::str_replace("Brasil", "Brazil") |>
+    stringr::str_replace("\u00cdndice Fipezap\\+", "Brazil") |>
+    # Other standardizations can be added here
+    trimws()
+
+  return(standardized_names)
+}
+
+#' Harmonize FipeZap Data for Stacking
+#'
+#' @param dat FipeZap data tibble
+#' @param transaction_type "sale" or "rent" to filter for stacking
+#' @return Harmonized tibble with standard RPPI columns
+#' @keywords internal
+harmonize_fipezap_for_stacking <- function(dat, transaction_type = NULL) {
+
+  filtered_data <- dat |>
+    # Filter to residential data with total rooms only
+    dplyr::filter(
+      market == "residential",
+      rooms == "total",
+      variable %in% c("index", "chg", "acum12m")
+    )
+
+  # Filter by transaction type if specified
+  if (!is.null(transaction_type)) {
+    filtered_data <- filtered_data |>
+      dplyr::filter(rent_sale == transaction_type)
+  }
+
+  # Convert to wide format with standard columns
+  harmonized_data <- filtered_data |>
+    tidyr::pivot_wider(
+      id_cols = c("date", "name_muni"),
+      names_from = "variable",
+      values_from = "value"
+    ) |>
+    dplyr::mutate(
+      name_muni = standardize_city_names(name_muni)
+    ) |>
+    dplyr::select(date, name_muni, index, chg, acum12m)
+
+  return(harmonized_data)
+}
+
+#' Standardize RPPI Structure
+#'
+#' @param dat Input tibble from any RPPI source
+#' @param source_name Name to add as source column
+#' @return Standardized tibble with consistent columns
+#' @keywords internal
+standardize_rppi_structure <- function(dat, source_name) {
+
+  # Handle IQA special case (has rent_price instead of index)
+  if ("rent_price" %in% names(dat) && !"index" %in% names(dat)) {
+    dat <- dat |>
+      dplyr::rename(index = rent_price)
+  }
+
+  # Handle different column name variations
+  if ("name_geo" %in% names(dat) && !"name_muni" %in% names(dat)) {
+    dat <- dat |>
+      dplyr::rename(name_muni = name_geo)
+  }
+
+  # Ensure standard columns exist and are in correct order
+  standardized_data <- dat |>
+    dplyr::mutate(
+      name_muni = standardize_city_names(name_muni)
+    ) |>
+    dplyr::select(date, name_muni, index, chg, acum12m) |>
+    dplyr::mutate(source = source_name)
+
+  return(standardized_data)
+}
+
 get_rppi <- function(
   table = "sale",
   cached = FALSE,
@@ -63,21 +148,25 @@ get_rppi <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Input validation and backward compatibility ----
-  valid_tables <- c("sale", "rent", "all")
+  # Input validation ----
+  individual_tables <- c("fipezap", "igmi", "ivgr", "iqa", "ivar", "secovi_sp")
+  stacked_tables <- c("sale", "rent", "all")
+  valid_tables <- c(individual_tables, stacked_tables)
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
       "Invalid {.arg table} parameter",
       "x" = "{.arg table} must be a single character string",
-      "i" = "Valid tables: {.val {valid_tables}}"
+      "i" = "Valid individual tables: {.val {individual_tables}}",
+      "i" = "Valid stacked tables: {.val {stacked_tables}}"
     ))
   }
 
   if (!table %in% valid_tables) {
     cli::cli_abort(c(
       "Invalid table: {.val {table}}",
-      "i" = "Valid tables: {.val {valid_tables}}"
+      "i" = "Valid individual tables: {.val {individual_tables}}",
+      "i" = "Valid stacked tables: {.val {stacked_tables}}"
     ))
   }
 
@@ -97,212 +186,127 @@ get_rppi <- function(
     cli::cli_abort("{.arg max_retries} must be a positive integer")
   }
 
-  # Coordinate data collection ----
-  cli_debug("Coordinating RPPI data collection across multiple sources...")
-  if (!quiet) {
-    cli::cli_inform("Fetching RPPI data from multiple sources...")
-  }
+  # Handle individual index requests ----
+  if (table %in% c("fipezap", "igmi", "ivgr", "iqa", "ivar", "secovi_sp")) {
+    cli_debug("Fetching individual RPPI index: {table}")
 
-  # Import Index data from FipeZap
-  cli_debug("Fetching FipeZap data...")
-  fipezap <- get_rppi_fipezap(
-    cached = cached,
-    quiet = quiet,
-    max_retries = max_retries
-  )
-
-  # Standardize output
-  fipezap <- fipezap |>
-    # Select only the residential index and filter by operation
-    dplyr::filter(
-      market == "residential",
-      rent_sale == table,
-      variable %in% c("index", "chg", "acum12m"),
-      rooms == "total"
-    ) |>
-    # Convert to wide
-    tidyr::pivot_wider(
-      id_cols = c("date", "name_muni"),
-      names_from = "variable",
-      values_from = "value"
-    ) |>
-    # Swap "\u00cdndice Fipezap+" for "Brazil"
-    dplyr::mutate(
-      name_muni = ifelse(
-        name_muni == "\u00cdndice Fipezap+",
-        "Brazil",
-        name_muni
+    individual_data <- switch(table,
+      "fipezap" = get_rppi_fipezap(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      ),
+      "igmi" = get_rppi_igmi(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      ),
+      "ivgr" = get_rppi_ivgr(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      ),
+      "iqa" = get_rppi_iqa(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      ),
+      "ivar" = get_rppi_ivar(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      ),
+      "secovi_sp" = get_rppi_secovi_sp(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
       )
     )
 
-  # Handle "all" case by returning both rent and sale data
-  if (table == "all") {
-    cli_debug("Fetching all RPPI data sources (rent and sale)...")
+    # Add metadata
+    attr(individual_data, "table") <- table
+    attr(individual_data, "download_time") <- Sys.time()
 
-    # Get both rent and sale data
+    if (!quiet) {
+      cli::cli_inform("✓ RPPI ({table}): {nrow(individual_data)} records")
+    }
+
+    return(individual_data)
+  }
+
+  # Handle stacked data requests ----
+  cli_debug("Coordinating RPPI data collection for stacked table: {table}")
+
+  if (table == "sale") {
+    # Fetch individual indices for sales
+    cli_debug("Fetching sales indices: IGMI, IVGR, FipeZap")
+
+    igmi_data <- get_rppi_igmi(cached = cached, quiet = quiet, max_retries = max_retries)
+    ivgr_data <- get_rppi_ivgr(cached = cached, quiet = quiet, max_retries = max_retries)
+    fipezap_data <- get_rppi_fipezap(cached = cached, quiet = quiet, max_retries = max_retries)
+
+    # Standardize and stack
+    igmi_std <- standardize_rppi_structure(igmi_data, "IGMI-R")
+    ivgr_std <- standardize_rppi_structure(ivgr_data, "IVG-R")
+    fipezap_std <- harmonize_fipezap_for_stacking(fipezap_data, "sale") |>
+      dplyr::mutate(source = "FipeZap")
+
+    stacked_data <- dplyr::bind_rows(igmi_std, ivgr_std, fipezap_std)
+
+  } else if (table == "rent") {
+    # Fetch individual indices for rent
+    cli_debug("Fetching rent indices: IVAR, IQA, Secovi-SP, FipeZap")
+
+    ivar_data <- get_rppi_ivar(cached = cached, quiet = quiet, max_retries = max_retries)
+    iqa_data <- get_rppi_iqa(cached = cached, quiet = quiet, max_retries = max_retries)
+    secovi_data <- get_rppi_secovi_sp(cached = cached, quiet = quiet, max_retries = max_retries)
+    fipezap_data <- get_rppi_fipezap(cached = cached, quiet = quiet, max_retries = max_retries)
+
+    # Standardize and stack
+    ivar_std <- standardize_rppi_structure(ivar_data, "IVAR")
+    iqa_std <- standardize_rppi_structure(iqa_data, "IQA")
+    secovi_std <- standardize_rppi_structure(secovi_data, "Secovi-SP")
+    fipezap_std <- harmonize_fipezap_for_stacking(fipezap_data, "rent") |>
+      dplyr::mutate(source = "FipeZap")
+
+    stacked_data <- dplyr::bind_rows(ivar_std, iqa_std, secovi_std, fipezap_std)
+
+  } else if (table == "all") {
+    # Get both rent and sale stacked data
+    cli_debug("Fetching all RPPI data (both rent and sale)")
+
     rent_data <- get_rppi(
       table = "rent",
       cached = cached,
-      stack = stack,
+      stack = TRUE,  # Force stacking for consistency
       quiet = quiet,
       max_retries = max_retries
     )
     sale_data <- get_rppi(
       table = "sale",
       cached = cached,
-      stack = stack,
+      stack = TRUE,  # Force stacking for consistency
       quiet = quiet,
       max_retries = max_retries
     )
 
-    result <- list(
-      rent = rent_data,
-      sale = sale_data
-    )
-
-    # Add metadata for "all" case
-    if (stack) {
-      # If stacked, combine both datasets
-      result <- dplyr::bind_rows(
-        dplyr::mutate(rent_data, transaction_type = "rent"),
-        dplyr::mutate(sale_data, transaction_type = "sale")
-      )
-
-      attr(result, "source") <- "coordinated"
-      attr(result, "download_time") <- Sys.time()
-      attr(result, "download_info") <- list(
-        table = table,
-        total_records = nrow(result),
-        transaction_types = c("rent", "sale")
-      )
-    } else {
-      attr(result, "source") <- "coordinated"
-      attr(result, "download_time") <- Sys.time()
-      attr(result, "download_info") <- list(
-        table = table,
-        sources = c("rent", "sale")
-      )
-    }
-
-    return(result)
-  }
-
-  if (table == "rent") {
-    cli_debug("Fetching rent-specific RPPI data sources...")
-
-    # Get Secovi-SP
-    cli_debug("Fetching Secovi-SP data...")
-    secovi <- get_rppi_secovi_sp(
-      cached = cached,
-      quiet = quiet,
-      max_retries = max_retries
-    )
-
-    # Get IQA
-    cli_debug("Fetching QuintoAndar IQA data...")
-    iqa <- get_rppi_iqa(
-      cached = cached,
-      quiet = quiet,
-      max_retries = max_retries
-    )
-
-    # Get IVAR
-    cli_debug("Fetching IVAR data...")
-    ivar <- get_rppi_ivar(
-      cached = cached,
-      quiet = quiet,
-      max_retries = max_retries
-    )
-    # Standardize output
-    ivar <- dplyr::select(ivar, date, name_muni, index, chg, acum12m)
-
-    cli_debug("Finalizing rent RPPI data coordination...")
-
-    # Put all series in a named list
-    rppi <- list(iqa, ivar, secovi, fipezap)
-    # If stack is TRUE name the list and then bind the rows
-    if (stack) {
-      names(rppi) <- c("IQA", "IVAR", "Secovi-SP", "FipeZap")
-      rppi <- dplyr::bind_rows(rppi, .id = "source")
-
-      # Add coordination metadata for stacked results
-      attr(rppi, "source") <- "coordinated"
-      attr(rppi, "download_time") <- Sys.time()
-      attr(rppi, "download_info") <- list(
-        table = table,
-        sources_coordinated = c("IQA", "IVAR", "Secovi-SP", "FipeZap"),
-        coordination_method = "stacked"
-      )
-    } else {
-      # Else just use simple names and return as list
-      names(rppi) <- c("iqa", "ivar", "secovi_sp", "fipezap")
-    }
-  }
-
-  if (table == "sale") {
-    cli_debug("Fetching sales-specific RPPI data sources...")
-
-    # Get IVGR
-    cli_debug("Fetching BCB IVGR data...")
-    ivgr <- get_rppi_ivgr(
-      cached = cached,
-      quiet = quiet,
-      max_retries = max_retries
-    )
-
-    # Standardize output
-    ivgr <- dplyr::mutate(ivgr, name_muni = "Brazil")
-    ivgr <- dplyr::select(ivgr, -dplyr::any_of("name_geo"))
-
-    # Get IGMI and standardize output
-    cli_debug("Fetching ABECIP IGMI data...")
-    igmi <- get_rppi_igmi(
-      cached = cached,
-      quiet = quiet,
-      max_retries = max_retries
-    )
-    igmi <- dplyr::mutate(
-      igmi,
-      name_muni = ifelse(name_muni == "Brasil", "Brazil", name_muni)
-    )
-    cli_debug("Finalizing sales RPPI data coordination...")
-
-    # Put all series in a named list
-    rppi <- list(igmi, ivgr, fipezap)
-    # If stack is TRUE name the list and then bind the rows
-    if (stack) {
-      names(rppi) <- c("IGMI-R", "IVG-R", "FipeZap")
-      rppi <- dplyr::bind_rows(rppi, .id = "source")
-
-      # Add coordination metadata for stacked results
-      attr(rppi, "source") <- "coordinated"
-      attr(rppi, "download_time") <- Sys.time()
-      attr(rppi, "download_info") <- list(
-        table = table,
-        sources_coordinated = c("IGMI-R", "IVG-R", "FipeZap"),
-        coordination_method = "stacked"
-      )
-    } else {
-      # Else just use simple names and return as list
-      names(rppi) <- c("igmi_r", "ivg_r", "fipezap")
-    }
-  }
-
-  # Final coordination reporting - user-level summary
-  if (stack) {
-    cli_user(
-      "✓ RPPI ({table}): {nrow(rppi)} records",
-      quiet = quiet
-    )
-  } else {
-    sources_count <- length(rppi)
-    cli_user(
-      "✓ RPPI ({table}): {sources_count} source{?s}",
-      quiet = quiet
+    # Combine with transaction type indicator
+    stacked_data <- dplyr::bind_rows(
+      dplyr::mutate(rent_data, transaction_type = "rent"),
+      dplyr::mutate(sale_data, transaction_type = "sale")
     )
   }
 
-  return(rppi)
+  # Add metadata to stacked data
+  attr(stacked_data, "table") <- table
+  attr(stacked_data, "download_time") <- Sys.time()
+  attr(stacked_data, "coordination_method") <- "stacked"
+
+  if (!quiet) {
+    cli::cli_inform("✓ RPPI ({table}): {nrow(stacked_data)} records from {length(unique(stacked_data$source))} sources")
+  }
+
+  return(stacked_data)
 }
 
 #' Import BCB IVGR Data with Robust Error Handling
@@ -1222,7 +1226,7 @@ get_rppi_secovi_sp <- function(
 
   # Use the modernized get_secovi function
   secovi <- get_secovi(
-    category = "rent",
+    table = "rent",
     cached = FALSE,
     quiet = quiet,
     max_retries = max_retries

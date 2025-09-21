@@ -233,13 +233,21 @@ get_from_local_cache <- function(name, dataset_info, table) {
 #' @keywords internal
 get_from_github_cache <- function(name, dataset_info, table) {
 
+  # Special handling for RPPI stacked tables - these need fresh processing
+  if (name == "rppi" && !is.null(table) && table %in% c("sale", "rent", "all")) {
+    cli::cli_warn("RPPI stacked tables (sale/rent/all) require fresh processing due to outdated cache")
+    cli::cli_inform("Falling back to fresh download...")
+    # Force fresh download for stacked RPPI tables
+    stop("GitHub cache incompatible with RPPI stacked tables")
+  }
+
   # Map dataset name to import_cached parameter
   cached_name <- get_cached_name(name, dataset_info, table)
-  
+
   if (is.null(cached_name)) {
     cli::cli_abort("No GitHub cache available for dataset '{name}'")
   }
-  
+
   # Use existing import_cached function
   data <- import_cached(cached_name)
   
@@ -290,11 +298,11 @@ get_from_legacy_function <- function(name, dataset_info, table, date_start, date
 
   # Special parameter mappings based on function requirements
   if (legacy_function == "get_rppi") {
-    # RPPI uses 'category' for backward compatibility
+    # RPPI uses 'table' parameter (fixed from old 'category')
     if (!is.null(table)) {
-      args$category <- table
+      args$table <- table
     } else {
-      args$category <- "sale"
+      args$table <- "sale"
     }
   } else if (legacy_function == "get_property_records") {
     # Property records now uses 'table' parameter
@@ -370,7 +378,20 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
     "bcb_realestate" = "bcb_realestate",
     "secovi" = "secovi_sp",
     "rppi_bis" = "bis_selected",  # Updated to use rppi_bis dataset name
-    "rppi" = "rppi_sale",
+    "rppi" = if (!is.null(table) && table %in% c("fipezap", "igmi", "ivgr", "iqa", "ivar", "secovi_sp")) {
+      # Map individual RPPI tables to their cached files
+      switch(table,
+        "fipezap" = "rppi_fipe",
+        "igmi" = "rppi_igmi",
+        "ivgr" = "rppi_ivgr",
+        "iqa" = "rppi_iqa",
+        "ivar" = "rppi_ivar",
+        "secovi_sp" = "secovi_sp"
+      )
+    } else {
+      # Default to FipeZap for backwards compatibility and stacked tables
+      "rppi_fipe"
+    },
     "bcb_series" = "bcb_series",
     "b3_stocks" = "b3_stocks",
     "fgv_ibre" = "fgv_ibre",

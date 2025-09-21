@@ -202,19 +202,24 @@ datasets:
         type: "both"
         coverage: "São Paulo"
         source: "SECOVI-SP"
-      # Aggregation categories
-      sales:
-        name: "All Sales Indices"
-        description: "Aggregate of all sales-related indices"
-        includes: ["fipezap", "ivgr", "igmi", "secovi_sp"]
+      # Aggregation categories (stacked data)
+      sale:
+        name: "Stacked Sale Indices"
+        description: "Harmonized combination of all sale-related indices with source column"
+        includes: ["igmi", "ivgr", "fipezap_sale_only"]
+        data_structure: "Standardized columns with source identification"
+        note: "FipeZap filtered to residential/total/sale for consistent stacking"
       rent:
-        name: "All Rent Indices"
-        description: "Aggregate of all rent-related indices"
-        includes: ["iqa", "ivar", "secovi_sp"]
+        name: "Stacked Rent Indices"
+        description: "Harmonized combination of all rent-related indices with source column"
+        includes: ["iqa", "ivar", "secovi_sp", "fipezap_rent_only"]
+        data_structure: "Standardized columns with source identification"
+        note: "FipeZap filtered to residential/total/rent for consistent stacking"
       all:
-        name: "All Indices"
-        description: "All available RPPI indices"
-        includes: ["fipezap", "ivgr", "igmi", "iqa", "ivar", "secovi_sp"]
+        name: "All Indices Combined"
+        description: "Complete stacked dataset with transaction_type indicator"
+        includes: ["all sale indices", "all rent indices"]
+        data_structure: "Includes both source and transaction_type columns"
     internal_function: "fetch_rppi"
     legacy_function: "get_rppi"
     data_type: "mixed"
