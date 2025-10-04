@@ -2,44 +2,82 @@
 % Please edit documentation in R/get_rppi_bis.R
 \name{get_rppi_bis}
 \alias{get_rppi_bis}
-\title{Get simplified RPPI data from BIS}
+\title{Get Residential Property Price Indices from BIS}
+\source{
+\url{https://data.bis.org/topics/RPP}
+}
 \usage{
-get_rppi_bis(cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_rppi_bis(
+  table = "selected",
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+)
 }
 \arguments{
-\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache.}
+\item{table}{Character. Which dataset table to return:
+\describe{
+\item{"selected"}{Selected RPPI series for major countries (default)}
+\item{"detailed_monthly"}{Monthly detailed RPPI data}
+\item{"detailed_quarterly"}{Quarterly detailed RPPI data}
+\item{"detailed_annual"}{Annual detailed RPPI data}
+\item{"detailed_semiannual"}{Semiannual detailed RPPI data}
+}}
 
-\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
+using the unified dataset architecture.}
 
-\item{max_retries}{Integer. Maximum number of retry attempts.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
+If \code{FALSE} (default), provides detailed progress reporting.}
+
+\item{max_retries}{Integer. Maximum number of retry attempts for failed
+Excel download operations. Defaults to 3.}
 }
 \value{
-A cross-country \code{tibble} with RPPIs.
+A \code{tibble} with the requested RPPI data.
+The return includes metadata attributes:
+\describe{
+\item{download_info}{List with download statistics}
+\item{source}{Data source used (web or cache)}
+\item{download_time}{Timestamp of download}
+}
 }
 \description{
-Download and import a simplified cross-country Residential Property Price
-Indices (RPPI) panel data from the Bank for International Settlements (BIS).
+Get specific tables from the Residential Property Price Indices series from the Bank for
+International Settlements (BIS) with modern error handling, progress reporting, and robust
+Excel download capabilities. Always returns a single tibble.
 }
 \details{
-\strong{Deprecation Notice:} This function is deprecated in favor of
-\code{get_bis_rppi(category = "selected")} which provides the same functionality
-with modern error handling and progress reporting. This wrapper is maintained
-for backward compatibility but will be removed in a future version.
+For the simple selected series use \code{table = 'selected'}. More information
+on these series is available at the \href{https://www.bis.org/statistics/pp_selected.htm}{BIS website}
 
-This function is a wrapper around \code{get_bis_rppi()}. It simplifies the
-output by filtering out observations prior to 1980. All index values are
-centered in 2010. Both nominal and real series are available. Note that
-Brazilian data becomes available only after 2001.
-
-The indexes follow the residential sales market in each country. Index
-methodologies may not be comparable.
+For detailed datasets, choose from monthly, quarterly, annual, or semiannual tables.
+More information is available at the \href{https://data.bis.org/topics/RPP}{BIS website}
 }
+\section{Progress Reporting}{
+
+When \code{quiet = FALSE}, the function provides detailed progress information
+including Excel download status and data processing steps.
+}
+
+\section{Error Handling}{
+
+The function includes retry logic for failed Excel downloads and robust
+error handling for multi-sheet processing operations.
+}
+
 \examples{
 \dontrun{
-# Download data from the GitHub Repository
-bis <- get_rppi_bis(cached = TRUE)
+# Download selected RPPI data from BIS (with progress)
+bis <- get_rppi_bis(quiet = FALSE)
 
-# Recommended: Use the modern function instead
-bis <- get_bis_rppi(category = "selected", cached = TRUE)
+# Get monthly detailed data
+monthly <- get_rppi_bis("detailed_monthly")
+
+# For faster download time use cached data
+bis <- get_rppi_bis("detailed_quarterly", cached = TRUE)
+
+# Check download metadata
+attr(bis, "download_info")
 }
 }

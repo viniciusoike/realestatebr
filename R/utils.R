@@ -167,6 +167,7 @@ add_geo_dimensions <- function(df, key = c("name_simplified", "abbrev_state")) {
 #' This is useful for development and troubleshooting.
 #'
 #' @examples
+#' \dontrun{
 #' # Check current debug mode status
 #' is_debug_mode()
 #'
@@ -177,6 +178,7 @@ add_geo_dimensions <- function(df, key = c("name_simplified", "abbrev_state")) {
 #' # Enable debug mode via environment variable
 #' Sys.setenv(REALESTATEBR_DEBUG = "TRUE")
 #' is_debug_mode()  # Returns TRUE
+#' }
 #'
 #' @keywords internal
 is_debug_mode <- function() {
@@ -206,12 +208,14 @@ is_debug_mode <- function() {
 #' `is_debug_mode()`.
 #'
 #' @examples
+#' \dontrun{
 #' # This message only appears in debug mode
 #' cli_debug("Processing file: {filename}")
 #'
 #' # Enable debug mode to see the message
 #' options(realestatebr.debug = TRUE)
 #' cli_debug("Now you can see this message")
+#' }
 #'
 #' @seealso [is_debug_mode()]
 #' @keywords internal
@@ -238,12 +242,14 @@ cli_debug <- function(message, ...) {
 #' The message is shown unless explicitly suppressed by quiet=TRUE.
 #'
 #' @examples
+#' \dontrun{
 #' # Always shows unless quiet=TRUE
 #' cli_user("✓ Dataset loaded: 1,234 records")
 #'
 #' # Respects quiet parameter
 #' cli_user("Processing complete", quiet = FALSE)  # Shows
 #' cli_user("Processing complete", quiet = TRUE)   # Hidden
+#' }
 #'
 #' @keywords internal
 cli_user <- function(message, quiet = FALSE, ...) {

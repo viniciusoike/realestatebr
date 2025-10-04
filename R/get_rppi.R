@@ -1,67 +1,10 @@
-#' Get Residential Property Price Index Data
-#'
-#' Quickly import all Residential Price Indexes in Brazil with modern error
-#' handling, progress reporting, and robust data coordination across multiple sources.
-#' This function returns a convenient standardized output.
-#'
-#' @details
-#' There are several residential property price indexes in Brazil. This function
-#' is a wrapper around all of the `get_rppi_*` functions that conveniently returns
-#' a standardized output. The `index` column is the index-number, the `chg` column
-#' is the percent change in the index number, and `acum12m` is the 12-month
-#' accumulated variation in the index number.
-#'
-#' It's important to note the IQA Index is a raw price and not a index-number.
-#'
-#' @section Progress Reporting:
-#' When `quiet = FALSE`, the function provides detailed progress information
-#' including coordination status across multiple RPPI data sources.
-#'
-#' @section Error Handling:
-#' The function includes comprehensive error handling for coordinating multiple
-#' data sources and standardizing outputs across different RPPI functions.
-#'
-#' @param table Character. Which dataset to return: "sale" (default), "rent", or "all".
-#' @param cached If `TRUE` downloads the cached data from the GitHub repository.
-#'   This is a faster option but not recommended for daily data.
-#' @param stack If `TRUE` returns a single `tibble` identified by a `source` column.
-#'   If `FALSE` returns a named `list` (default).
-#' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
-#'   If `FALSE` (default), provides detailed progress reporting across all sources.
-#' @param max_retries Integer. Maximum number of retry attempts for failed
-#'   operations across all RPPI data sources. Defaults to 3.
-#'
-#' @return Either a named `list` or a `tibble` (if `stack = TRUE`).
-#'   The return includes metadata attributes when stacked:
-#'   \describe{
-#'     \item{download_info}{List with coordination statistics}
-#'     \item{source}{Data source coordination method}
-#'     \item{download_time}{Timestamp of coordination}
-#'   }
-#'
-#' @importFrom cli cli_inform cli_warn cli_abort
-#' @importFrom dplyr filter mutate select bind_rows
-#' @importFrom tidyr pivot_wider
-#'
-#' @examples \dontrun{
-#' # Get RPPI sales data (with progress)
-#' sales <- get_rppi("sale", quiet = FALSE)
-#'
-#' # Get RPPI rent data
-#' rent <- get_rppi("rent")
-#'
-#' # Get stacked data for easier analysis
-#' all_data <- get_rppi("sale", stack = TRUE)
-#'
-#' # Check coordination metadata
-#' attr(all_data, "download_info")
-#' }
 
 #' Standardize City Names Across RPPI Sources
 #'
 #' @param names Character vector of city names
 #' @return Standardized city names
 #' @keywords internal
+#' @noRd
 standardize_city_names <- function(names) {
   standardized_names <- names |>
     # Standardize Brazil variations
@@ -141,6 +84,66 @@ standardize_rppi_structure <- function(dat, source_name) {
   return(standardized_data)
 }
 
+
+#' Get Residential Property Price Index Data
+#'
+#' Quickly import all Residential Price Indexes in Brazil with modern error
+#' handling, progress reporting, and robust data coordination across multiple sources.
+#' This function returns a convenient standardized output.
+#'
+#' @details
+#' There are several residential property price indexes in Brazil. This function
+#' is a wrapper around all of the `get_rppi_*` functions that conveniently returns
+#' a standardized output. The `index` column is the index-number, the `chg` column
+#' is the percent change in the index number, and `acum12m` is the 12-month
+#' accumulated variation in the index number.
+#'
+#' It's important to note the IQA Index is a raw price and not a index-number.
+#'
+#' @section Progress Reporting:
+#' When `quiet = FALSE`, the function provides detailed progress information
+#' including coordination status across multiple RPPI data sources.
+#'
+#' @section Error Handling:
+#' The function includes comprehensive error handling for coordinating multiple
+#' data sources and standardizing outputs across different RPPI functions.
+#'
+#' @param table Character. Which dataset to return: "sale" (default), "rent", or "all".
+#' @param cached If `TRUE` downloads the cached data from the GitHub repository.
+#'   This is a faster option but not recommended for daily data.
+#' @param stack If `TRUE` returns a single `tibble` identified by a `source` column.
+#'   If `FALSE` returns a named `list` (default).
+#' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
+#'   If `FALSE` (default), provides detailed progress reporting across all sources.
+#' @param max_retries Integer. Maximum number of retry attempts for failed
+#'   operations across all RPPI data sources. Defaults to 3.
+#'
+#' @return Either a named `list` or a `tibble` (if `stack = TRUE`).
+#'   The return includes metadata attributes when stacked:
+#'   \describe{
+#'     \item{download_info}{List with coordination statistics}
+#'     \item{source}{Data source coordination method}
+#'     \item{download_time}{Timestamp of coordination}
+#'   }
+#'
+#' @importFrom cli cli_inform cli_warn cli_abort
+#' @importFrom dplyr filter mutate select bind_rows
+#' @importFrom tidyr pivot_wider
+#'
+#'
+#' @examples \dontrun{
+#' # Get RPPI sales data (with progress)
+#' sales <- get_rppi("sale", quiet = FALSE)
+#'
+#' # Get RPPI rent data
+#' rent <- get_rppi("rent")
+#'
+#' # Get stacked data for easier analysis
+#' all_data <- get_rppi("sale", stack = TRUE)
+#'
+#' # Check coordination metadata
+#' attr(all_data, "download_info")
+#' }
 get_rppi <- function(
   table = "sale",
   cached = FALSE,

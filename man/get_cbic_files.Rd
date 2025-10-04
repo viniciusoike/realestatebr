@@ -4,7 +4,7 @@
 \alias{get_cbic_files}
 \title{Get raw CBIC files for a specific material}
 \usage{
-get_cbic_files(material_name)
+get_cbic_files(material_name, quiet = FALSE)
 }
 \arguments{
 \item{material_name}{Character vector of length 1. Name of material (e.g., "cimento")}
