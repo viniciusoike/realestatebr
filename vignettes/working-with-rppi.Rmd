@@ -18,9 +18,7 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-Brazil has several Residential Property Price Indices (RPPI) from different
-sources. This vignette shows how to access and work with them using the
-realestatebr package.
+Brazil has several Residential Property Price Indices (RPPI) from different sources, each with unique methodologies and coverage. This vignette shows how to access and analyze these indices using the realestatebr package.
 
 ```{r setup, message=FALSE, eval=FALSE}
 library(realestatebr)
@@ -84,13 +82,13 @@ Most RPPI datasets share these columns:
 
 ### Special Cases
 
-**IQA**: Returns `rent_price` (median rent per m²) instead of an index
+**IQA (QuintoAndar)**: Returns `rent_price` (median rent per m²) instead of an index value
 
-**FipeZap**: Most detailed with additional columns:
+**FipeZap**: Most comprehensive dataset with additional dimensions:
 - **market**: residential or commercial
-- **rooms**: breakdown by number of rooms
+- **rooms**: breakdown by number of bedrooms (1, 2, 3, 4+, total)
 - **variable**: index, price_m2, or listings
-- **rent_sale**: sale or rent
+- **rent_sale**: sale or rent market
 
 ## Example: Comparing National Sale Indices
 
@@ -207,10 +205,9 @@ ggplot(ivgr, aes(x = date, y = acum12m)) +
   theme_minimal()
 ```
 
-## International Comparison (BIS)
+## International Comparison
 
-The package also includes international RPPI data from the Bank for
-International Settlements:
+The package includes international RPPI data from the Bank for International Settlements (BIS):
 
 ```{r, eval=FALSE}
 # Get BIS international RPPI
@@ -275,26 +272,30 @@ All indices are monthly, but historical coverage varies:
 - FipeZap: 2011-present
 - IVAR: 2008-present
 
-## Tips for Analysis
+## Analysis Tips
 
-### 1. Use Stacked Data for Comparisons
+### 1. Use Stacked Data for Easy Comparisons
+
+Stacked data makes it easier to compare multiple indices:
 
 ```{r, eval=FALSE}
-# Easier than merging individual datasets
-all_sale <- get_dataset("rppi", "sale")
+# Get all sale indices in one table
+all_sale <- get_dataset("rppi", table = "sale")
 
-# Filter and compare
+# Compare across sources
 all_sale |>
   filter(name_muni == "São Paulo") |>
   ggplot(aes(x = date, y = acum12m, color = source)) +
-  geom_line()
+  geom_line() +
+  labs(title = "São Paulo Sale Indices Comparison")
 ```
 
-### 2. Normalize Indices for Comparison
+### 2. Normalize Indices When Comparing Levels
+
+Since each index has a different base period, normalize them for direct comparison:
 
 ```{r, eval=FALSE}
-# Rebase all indices to the same starting point
-sales <- get_dataset("rppi", "sale")
+sales <- get_dataset("rppi", table = "sale")
 
 sales_normalized <- sales |>
   group_by(source) |>
@@ -302,13 +303,16 @@ sales_normalized <- sales |>
   ungroup()
 ```
 
-### 3. Focus on Growth Rates
+### 3. Compare Growth Rates, Not Levels
+
+Growth rates are more meaningful than absolute index levels:
 
 ```{r, eval=FALSE}
-# More comparable than absolute levels
+# 12-month growth comparison
 sales |>
   ggplot(aes(x = date, y = acum12m, color = source)) +
-  geom_line()
+  geom_line() +
+  labs(y = "12-month change (%)")
 ```
 
 ## Next Steps

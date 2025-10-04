@@ -1,7 +1,7 @@
 #' Import Indicators from the Abrainc-Fipe Report
 #'
 #' @section Deprecation:
-#' This function is deprecated. Use \code{\link{get_dataset}("abrainc_indicators")} instead.
+#' This function is deprecated. Use \code{\link{get_dataset}("abrainc")} instead.
 #'
 #' Downloads data from the Abrainc-Fipe Indicators report with modern error
 #' handling, progress reporting, and robust download capabilities. Data includes
@@ -121,10 +121,10 @@ get_abrainc_indicators <- function(
       {
         # Map category to unified architecture
         if (table == "all") {
-          data <- get_dataset("abrainc_indicators", source = "github")
+          data <- get_dataset("abrainc", source = "github")
         } else {
           data <- get_dataset(
-            "abrainc_indicators",
+            "abrainc",
             source = "github",
             category = table
           )

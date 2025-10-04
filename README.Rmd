@@ -13,152 +13,113 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Brazilian Real Estate
+# realestatebr
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of realestatebr is to facilitate the access to reports and indicators on the Brazilian real estate market. This package currently covers only the residential market but in the future it will also encompass other real estate markets.
-
-**Important**: This package is still under development but can already be installed. Feedback is welcome.
-
-## What's New in v0.2.0 🎉
-
-**Phase 1 Modernization Complete** - This major release modernizes all core functions with:
-
-- **🔧 Standardized API** - All functions now use `table` parameter (replacing `category`) with backward compatibility
-- **📊 Unified Data Access** - New `list_datasets()` and `get_dataset()` functions for easy data discovery
-- **🚀 Better Performance** - Robust error handling, retry logic, and progress reporting
-- **📈 New Data Sources** - CBIC construction materials data (cement, steel, production indices)
-- **🌐 Bilingual Support** - Automatic translation between Portuguese and English
-- **✅ Comprehensive Testing** - 35+ tests ensure reliability across all functions
-
-[See full changelog](NEWS.md) for complete details.
+The **realestatebr** package provides easy access to Brazilian real estate market data from multiple authoritative sources. Access property price indices, housing credit indicators, construction materials data, and more—all through a unified, consistent interface.
 
 ## Installation
 
-You can install the development version of realestatebr from [GitHub](https://github.com/) with:
-
-``` r
+```r
 # install.packages("remotes")
 remotes::install_github("viniciusoike/realestatebr")
 ```
 
-## Getting Started
-
-### New Unified Interface (Recommended)
-
-The package now provides a modern, unified interface for accessing all datasets:
+## Quick Start
 
 ```{r example, eval=FALSE}
 library(realestatebr)
 
 # Discover available datasets
 datasets <- list_datasets()
-head(datasets)
 
-# Get dataset information
-info <- get_dataset_info("abecip_indicators")
-str(info$categories)
+# Get housing credit data
+abecip <- get_dataset("abecip")
 
-# Get data with automatic fallback (GitHub cache → fresh download)
-abecip <- get_dataset("abecip_indicators")
-abecip
-```
+# Get specific table
+sbpe <- get_dataset("abecip", table = "sbpe")
 
-The unified interface provides several advantages:
-
-- **Automatic fallback**: Tries GitHub cache first, then fresh download if needed
-- **Consistent naming**: All datasets use standardized English column names
-- **Easy discovery**: Use `list_datasets()` to see all available data
-- **Category filtering**: Access specific parts of complex datasets
-
-```{r, eval=FALSE}
-# Get specific category only
-sbpe <- get_dataset("abecip_indicators", category = "sbpe")
-head(sbpe)
-
-# Force fresh download
-fresh_data <- get_dataset("bcb_realestate", source = "fresh")
-```
-
-### Legacy Functions (Still Supported)
-
-All existing `get_*` functions continue to work as before:
-
-```{r legacy, eval=FALSE}
-# Modern function interface (recommended)
-abecip_modern <- get_abecip_indicators(table = "sbpe", cached = TRUE)
-
-# Legacy interface still works with deprecation warning
-abecip_legacy <- get_abecip_indicators(category = "sbpe", cached = TRUE)
-
-head(abecip_modern)
+# Get property price indices
+rppi <- get_dataset("rppi", table = "fipezap")
 ```
 
 ## Available Datasets
 
-The package provides access to comprehensive Brazilian real estate data from multiple sources:
+The package provides access to 10+ datasets from authoritative sources:
 
-| Dataset | Source | Description | Geography |
-|---------|--------|-------------|-----------|
-| `abecip_indicators` | ABECIP | Housing credit data (SBPE flows, units, home equity) | Brazil |
-| `abrainc_indicators` | ABRAINC/FIPE | Primary market indicators (launches, sales, business conditions) | Brazil (major cities) |
-| `bcb_realestate` | BCB | Real estate credit and market data | Brazil (by state) |
-| `secovi` | SECOVI-SP | São Paulo market indicators (fees, rentals, launches, sales) | São Paulo |
-| `bis_rppi` | BIS | International residential property price indices | International (60+ countries) |
-| `rppi` | FIPE/ZAP | Property price indices for sales and rentals | Brazil (50+ cities) |
-| `bcb_series` | BCB | Economic time series (price indices, credit, activity) | Brazil |
-| `b3_stocks` | B3 | Real estate company stock data | Brazil |
-| `fgv_indicators` | FGV | Real estate market indicators | Brazil |
-| `cbic` | CBIC | Construction materials data (cement, steel, production) | Brazil |
+| Dataset | Source | Description |
+|---------|--------|-------------|
+| `abecip` | ABECIP | Housing credit flows, financed units, home equity |
+| `abrainc` | ABRAINC/FIPE | Primary market indicators (launches, sales) |
+| `bcb_realestate` | BCB | Real estate credit and market data |
+| `secovi` | SECOVI-SP | São Paulo market indicators |
+| `rppi` | Multiple | Property price indices (sale/rent, 50+ cities) |
+| `rppi_bis` | BIS | International property price indices (60+ countries) |
+| `bcb_series` | BCB | Economic time series |
+| `cbic` | CBIC | Cement consumption and production |
 
-```{r datasets, eval=FALSE}
-# See all available datasets with details
-available_data <- list_datasets()
-print(available_data[, c("name", "source", "frequency", "coverage")])
+```{r, eval=FALSE}
+# See all datasets
+list_datasets()
 
 # Filter by source
-bcb_datasets <- list_datasets(source = "BCB")
-print(bcb_datasets$name)
+list_datasets(source = "BCB")
 ```
 
-## Residential Property Price Indexes
+## Example: Property Price Indices
 
-There are several house price indices available in the Brazilian residential real estate market. The `get_rppi_*` functions collect all of these indices. A general `get_rppi()` function
-
-```{r, eval=FALSE}
-# For better plots
+```{r rppi-example, eval=FALSE}
 library(ggplot2)
-
-# Download and clean all sales RPPIs
-rppi <- get_rppi(category = "sale", stack = TRUE)
-# Filter only Brazil
-rppi_brazil <- subset(rppi, name_muni == "Brazil" & date >= as.Date("2019-01-01"))
-
-ggplot(rppi_brazil, aes(date, acum12m)) +
-  geom_line(aes(color = source)) +
-  scale_y_continuous(labels = scales::label_percent()) +
-  theme_light()
-```
-
-International comparisons are also possible using the BIS data
-
-```{r, eval=FALSE}
 library(dplyr, warn.conflicts = FALSE)
-# Download simplified BIS RPPI data
-bis <- get_rppi_bis()
-# Highlight some countries, show only real indices
-bis_brasil <- bis |> 
-  filter(
-    country %in% c("Australia", "Brazil", "Chile", "Japan", "United States"),
-    is_nominal == FALSE,
-    date >= as.Date("2000-01-01")
-    )
 
-ggplot(bis_brasil, aes(date, index)) +
-  geom_line(aes(color = country)) +
-  geom_hline(yintercept = 100) +
-  theme_light() +
-  theme(legend.position = "top")
+# Get FipeZap index
+fipezap <- get_dataset("rppi", table = "fipezap")
+
+# Brazil national index
+rppi_br <- fipezap |>
+  filter(
+    name_muni == "Brazil",
+    market == "residential",
+    rooms == "total",
+    variable == "index",
+    date >= as.Date("2019-01-01")
+  )
+
+ggplot(rppi_br, aes(x = date, y = value, color = rent_sale)) +
+  geom_line() +
+  labs(title = "Brazil Property Price Index",
+       x = NULL, y = "Index") +
+  theme_minimal()
 ```
+
+## International Comparison
+
+```{r bis-example, eval=FALSE}
+# Get BIS international data
+bis <- get_dataset("rppi_bis")
+
+# Compare countries
+bis_compare <- bis |>
+  filter(
+    reference_area %in% c("Brazil", "United States", "Japan"),
+    is_nominal == FALSE,
+    date >= as.Date("2010-01-01")
+  )
+
+ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
+  geom_line() +
+  labs(title = "Real Property Prices - International",
+       x = NULL, y = "Index") +
+  theme_minimal()
+```
+
+## What's New
+
+**v0.4.0** introduces a unified `get_dataset()` interface replacing all individual `get_*()` functions. This is a breaking change. See [NEWS.md](NEWS.md) for migration details.
+
+## Learn More
+
+- [Getting Started vignette](vignettes/getting-started.Rmd)
+- [Working with RPPI vignette](vignettes/working-with-rppi.Rmd)

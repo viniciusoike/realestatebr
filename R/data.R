@@ -1,6 +1,6 @@
 #' Brazilian Central Bank Series Metadata
 #'
-#' A table with metadata that supports the `get_bcb_series()` function.
+#' A table with metadata for BCB economic series. Use with `get_dataset("bcb_series")`.
 #'
 #' @format ## `bcb_metadata`
 #' A data frame with 140 rows and 10 columns:

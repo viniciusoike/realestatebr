@@ -187,7 +187,7 @@ get_dataset_specific_translations <- function(dataset_name) {
       "prazo_medio" = "average_term"
     ),
     
-    "abrainc_indicators" = list(
+    "abrainc" = list(
       "vgv" = "total_sales_value",  # Valor Geral de Vendas
       "vso" = "sales_velocity",     # Velocidade de Vendas
       "estoque" = "inventory",
@@ -213,7 +213,7 @@ get_dataset_specific_translations <- function(dataset_name) {
       "condominio" = "condo_fee"
     ),
     
-    "bis_rppi" = list(
+    "rppi_bis" = list(
       "rppi" = "property_price_index",
       "residential" = "residential",
       "commercial" = "commercial"
