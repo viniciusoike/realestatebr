@@ -1,0 +1,187 @@
+---
+title: "Getting Started with realestatebr"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with realestatebr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Installation
+
+```{r, eval = FALSE}
+# Install from GitHub
+remotes::install_github("viniciusoike/realestatebr")
+```
+
+## Quick Start
+
+The realestatebr package provides a unified interface for accessing Brazilian
+real estate data from multiple sources.
+
+```{r setup, message=FALSE, eval=FALSE}
+library(realestatebr)
+library(dplyr)
+library(ggplot2)
+```
+
+## Main Functions
+
+### Discovering Datasets
+
+```{r, eval=FALSE}
+# List all available datasets
+datasets <- list_datasets()
+head(datasets)
+
+# Get information about a specific dataset
+info <- get_dataset_info("abecip")
+names(info$categories)
+```
+
+### Getting Data
+
+```{r, eval=FALSE}
+# Get default table
+abecip <- get_dataset("abecip")
+head(abecip)
+
+# Get specific table
+sbpe <- get_dataset("abecip", "sbpe")
+
+# Force fresh download
+fresh <- get_dataset("abecip", source = "fresh")
+```
+
+## Example: ABECIP Housing Credit
+
+```{r, eval=FALSE}
+# Get SBPE housing credit data
+sbpe <- get_dataset("abecip", "sbpe")
+
+# Plot net flow over time
+ggplot(sbpe, aes(x = date, y = netflow)) +
+  geom_line() +
+  labs(title = "SBPE Net Flow",
+       x = NULL,
+       y = "R$ (millions)") +
+  theme_minimal()
+```
+
+## Example: BCB Real Estate Data
+
+```{r, eval=FALSE}
+# Get BCB real estate data
+bcb <- get_dataset("bcb_realestate")
+
+# Filter and aggregate
+credit_data <- bcb |>
+  filter(category == "credit", type == "stock") |>
+  summarise(total = sum(value, na.rm = TRUE), .by = date)
+
+# Plot
+ggplot(credit_data, aes(x = date, y = total)) +
+  geom_line() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Total Real Estate Credit Stock",
+       x = NULL,
+       y = "R$ (billions)") +
+  theme_minimal()
+```
+
+## Available Datasets
+
+The package provides access to 12 datasets:
+
+- **abecip**: Housing credit data from ABECIP (SBPE, units, CGI)
+- **abrainc**: Primary market indicators (radar, indicators, leading)
+- **bcb_realestate**: Real estate credit data from BCB
+- **bcb_series**: Economic time series from BCB
+- **secovi**: São Paulo market data (condo, launch, sale, rent)
+- **rppi**: Property price indices (sale/rent, multiple sources)
+- **rppi_bis**: International RPPI from BIS
+- **cbic**: Cement consumption and production data (v0.4.0)
+- **fgv_ibre**: FGV economic indicators
+- **nre_ire**: Real estate index
+- **property_records**: ITBI property records
+
+## Data Sources
+
+Use the `source` parameter to control data origin:
+
+- `"auto"` (default): Try GitHub cache first, fallback to fresh download
+- `"github"`: Force GitHub cache only
+- `"fresh"`: Force fresh download from original source
+
+```{r, eval=FALSE}
+# Try cache first, fallback to fresh
+data <- get_dataset("secovi", source = "auto")
+
+# Always use cache (faster but may be outdated)
+cached <- get_dataset("secovi", source = "github")
+
+# Always fresh download (slower but current)
+fresh <- get_dataset("secovi", source = "fresh")
+```
+
+## Working with Categories
+
+Many datasets have multiple categories (tables):
+
+```{r, eval=FALSE}
+# Get dataset information
+info <- get_dataset_info("cbic")
+
+# See available categories
+names(info$categories)
+
+# Get specific category
+cement_monthly <- get_dataset("cbic", "cement_monthly_consumption")
+cement_cub <- get_dataset("cbic", "cement_cub_prices")
+```
+
+## Verbosity Control
+
+Control message output with the `quiet` parameter:
+
+```{r, eval=FALSE}
+# Show progress messages (default)
+data <- get_dataset("abecip", quiet = FALSE)
+
+# Suppress all messages
+data <- get_dataset("abecip", quiet = TRUE)
+```
+
+## Error Handling
+
+The package uses modern CLI-based error messages:
+
+```{r, eval=FALSE}
+# Invalid dataset name
+get_dataset("invalid_name")
+#> Error: Dataset 'invalid_name' not found
+#> ℹ Available datasets: abecip, abrainc, bcb_realestate, ...
+#> ℹ Use list_datasets() to see all available datasets
+
+# Invalid category
+get_dataset("cbic", "steel_prices")
+#> Error: Table 'steel_prices' not available in this release
+#> ℹ Only cement tables are available in v0.4.0
+#> ℹ Steel and PIM tables will be added in v0.4.1
+```
+
+## Next Steps
+
+- See `vignette("working-with-rppi")` for detailed RPPI guide
+- See `vignette("migration-guide")` for migrating from v0.3.x
+- Use `?get_dataset` for full documentation
+- Visit package website for more examples
