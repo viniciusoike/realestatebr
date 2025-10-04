@@ -24,6 +24,15 @@ Brazil has several Residential Property Price Indices (RPPI) from different sour
 library(realestatebr)
 library(dplyr)
 library(ggplot2)
+
+# Helper function for consistent plot styling
+theme_series <- function() {
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    palette.colour.discrete = c("#2C6BB3", "#1abc9c", "#f39c12")
+  )
+}
 ```
 
 ## Available RPPI Datasets
@@ -108,8 +117,7 @@ ggplot(national, aes(x = date, y = index, color = source)) +
        x = NULL,
        y = "Index (base varies by source)",
        color = "Source") +
-  theme_minimal() +
-  theme(legend.position = "bottom")
+  theme_series()
 ```
 
 ## Example: FipeZap by City
@@ -135,8 +143,7 @@ ggplot(cities, aes(x = date, y = value, color = name_muni)) +
        x = NULL,
        y = "Index",
        color = "City") +
-  theme_minimal() +
-  theme(legend.position = "bottom")
+  theme_series()
 ```
 
 ## Example: Rent vs Sale - São Paulo
@@ -163,8 +170,7 @@ ggplot(sp_data, aes(x = date, y = value, color = rent_sale)) +
        x = NULL,
        y = "Index",
        color = "Type") +
-  theme_minimal() +
-  theme(legend.position = "bottom")
+  theme_series()
 ```
 
 ## Example: Regional Comparison with IGMI
@@ -230,8 +236,7 @@ ggplot(countries, aes(x = date, y = value, color = reference_area)) +
        x = NULL,
        y = "Index (2010 = 100)",
        color = "Country") +
-  theme_minimal() +
-  theme(legend.position = "bottom")
+  theme_series()
 ```
 
 ## Understanding Index Bases

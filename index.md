@@ -114,26 +114,29 @@ ggplot(sbpe, aes(x = date, y = netflow)) +
 # Get FipeZap property price index
 fipezap <- get_dataset("rppi", table = "fipezap")
 
-# Compare rent vs sale prices in São Paulo
+# Compare rent vs sale YoY changes in São Paulo
 sp_data <- fipezap |>
   filter(
     name_muni == "São Paulo",
     market == "residential",
     rooms == "total",
-    variable == "index",
-    date >= as.Date("2015-01-01")
+    variable == "acum12m",
+    date >= as.Date("2019-01-01")
   )
 
 ggplot(sp_data, aes(x = date, y = value, color = rent_sale)) +
   geom_line(linewidth = 1) +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   labs(
-    title = "São Paulo Property Price Indices",
+    title = "São Paulo Property Prices - Year-over-Year Change",
     subtitle = "Residential market - FipeZap Index",
     x = NULL,
-    y = "Index (Jan 2011 = 100)",
+    y = "YoY change (%)",
     color = "Market"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(legend.position = "bottom")
 ```
 
 ### International Comparison
@@ -145,21 +148,24 @@ bis <- get_dataset("rppi_bis")
 # Compare Brazil with other countries
 countries <- bis |>
   filter(
-    reference_area %in% c("Brazil", "United States", "Chile", "Japan"),
+    reference_area %in% c("Brazil", "United States", "Japan"),
     is_nominal == FALSE,
+    unit == "Index, 2010 = 100",
     date >= as.Date("2010-01-01")
   )
 
 ggplot(countries, aes(x = date, y = value, color = reference_area)) +
   geom_line(linewidth = 1) +
+  geom_hline(yintercept = 100) +
   labs(
     title = "Real Residential Property Prices - International",
     subtitle = "Deflated by CPI, 2010 = 100",
     x = NULL,
-    y = "Index",
+    y = "Index (2010 = 100)",
     color = "Country"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(legend.position = "bottom")
 ```
 
 ## Available Datasets
