@@ -64,48 +64,86 @@ list_datasets(source = "BCB")
 
 ``` r
 library(ggplot2)
+library(realestatebr)
 library(dplyr, warn.conflicts = FALSE)
 
 # Get FipeZap index
 fipezap <- get_dataset("rppi", table = "fipezap")
+#> Attempting to load rppi from GitHub cache...
+#> Loaded 'rppi_fipe' from cache
+#> Successfully loaded from GitHub cache
+#> Retrieved 'fipezap' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',
+#> 'iqa', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'
 
 # Brazil national index
-rppi_br <- fipezap |>
+rppi_spo <- fipezap |>
   filter(
-    name_muni == "Brazil",
+    name_muni == "São Paulo",
     market == "residential",
     rooms == "total",
-    variable == "index",
+    variable == "acum12m",
     date >= as.Date("2019-01-01")
   )
 
-ggplot(rppi_br, aes(x = date, y = value, color = rent_sale)) +
-  geom_line() +
-  labs(title = "Brazil Property Price Index",
-       x = NULL, y = "Index") +
-  theme_minimal()
+ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
+  geom_line(lwd = 0.8) +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_y_continuous(labels = seq(-0.05, 0.15, by = 0.05) * 100, ) +
+  labs(
+    title = "Brazil Property Price Index",
+    x = NULL,
+    y = "YoY chg. (%)",
+    color = ""
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    palette.colour.discrete = c("#2C6BB3", "#1abc9c", "#f39c12")
+  )
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_line()`).
 ```
+
+<img src="man/figures/README-rppi-example-1.png" width="100%" />
 
 ## International Comparison
 
 ``` r
 # Get BIS international data
 bis <- get_dataset("rppi_bis")
+#> Attempting to load rppi_bis from GitHub cache...
+#> Loaded 'bis_selected' from cache
+#> Successfully loaded from GitHub cache
+#> Retrieved 'selected' from 'rppi_bis' (default table). Available tables:
+#> 'selected', 'detailed_monthly', 'detailed_quarterly', 'detailed_annual',
+#> 'detailed_semiannual'
 
 # Compare countries
 bis_compare <- bis |>
   filter(
     reference_area %in% c("Brazil", "United States", "Japan"),
     is_nominal == FALSE,
+    unit == "Index, 2010 = 100",
     date >= as.Date("2010-01-01")
   )
 
 ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
-  geom_line() +
-  labs(title = "Real Property Prices - International",
-       x = NULL, y = "Index") +
-  theme_minimal()
+  geom_line(lwd = 0.8) +
+  geom_hline(yintercept = 100) +
+  labs(
+    title = "Real Property Prices - International",
+    x = NULL,
+    y = "Index (2010 = 100)",
+    color = "") +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    palette.colour.discrete = c("#2C6BB3", "#1abc9c", "#f39c12")
+  )
 ```
+
+<img src="man/figures/README-bis-example-1.png" width="100%" />
 
 ## What’s New
 
