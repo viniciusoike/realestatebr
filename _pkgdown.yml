@@ -2,3 +2,8 @@ url: https://viniciusoike.github.io/realestatebr/
 template:
   bootstrap: 5
 
+articles:
+- title: Getting Started
+  contents:
+  - getting-started
+  - working-with-rppi
