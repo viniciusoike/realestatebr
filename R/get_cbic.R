@@ -1975,6 +1975,19 @@ get_cbic <- function(
   max_retries = 3L,
   warn_level = "none"
 ) {
+  # TEMPORARY: Only cement tables validated for v0.4.0
+  # Steel and PIM tables will be added in v0.4.1
+  steel_pim_tables <- c("steel_prices", "steel_production", "pim", "pim_production_index")
+
+  if (table %in% steel_pim_tables) {
+    cli::cli_abort(c(
+      "Table '{table}' not available in this release",
+      "i" = "Only cement tables are available in v0.4.0",
+      "i" = "Steel and PIM tables will be added in v0.4.1",
+      "i" = "Available tables: cement_monthly_consumption, cement_annual_consumption, cement_production_exports, cement_monthly_production, cement_cub_prices"
+    ))
+  }
+
   # Map compound table names to function calls
   result <- switch(
     table,
@@ -2046,7 +2059,8 @@ get_cbic <- function(
     # Error for invalid tables
     cli::cli_abort(c(
       "Invalid table '{table}' for CBIC dataset",
-      "i" = "Available tables: cement_monthly_consumption, cement_annual_consumption, cement_production_exports, cement_monthly_production, cement_cub_prices, steel_prices, steel_production, pim"
+      "i" = "Available tables (v0.4.0): cement_monthly_consumption, cement_annual_consumption, cement_production_exports, cement_monthly_production, cement_cub_prices",
+      "i" = "Note: Steel and PIM tables will be added in v0.4.1"
     ))
   )
 

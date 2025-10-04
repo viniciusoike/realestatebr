@@ -275,14 +275,14 @@ datasets:
     translation_notes: "Technical economic terms; standard translations applied"
 
   cbic:
-    name: "CBIC Construction Materials Data"
-    name_pt: "Dados de Materiais de Construção CBIC"
-    description: "Construction materials data including cement, steel, and industrial production indices"
+    name: "CBIC Cement Data"
+    name_pt: "Dados de Cimento CBIC"
+    description: "Cement consumption, production, and price data (v0.4.0 includes cement only; steel and PIM coming in v0.4.1)"
     source: "CBIC - Câmara Brasileira da Indústria da Construção"
     url: "http://www.cbicdados.com.br"
     geography: "Brazil (by state for some metrics)"
     frequency: "monthly"
-    coverage: "varies by material"
+    coverage: "varies by table"
     categories:
       cement_monthly_consumption:
         name: "Cement Monthly Consumption"
@@ -299,18 +299,9 @@ datasets:
       cement_cub_prices:
         name: "Cement CUB Prices"
         description: "CUB cement prices by state"
-      steel_prices:
-        name: "Steel Prices"
-        description: "Steel prices by state"
-      steel_production:
-        name: "Steel Production"
-        description: "Steel production data"
-      pim:
-        name: "Industrial Production Index"
-        description: "PIM industrial production index for construction materials"
     internal_function: "fetch_cbic"
     legacy_function: "get_cbic"
-    data_type: "list"
+    data_type: "tibble"
     cached_file: "cbic.rds"
     translation_notes: "Material types and units translated; regional data preserved"
 

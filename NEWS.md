@@ -10,6 +10,30 @@ This release implements a **major breaking change** that consolidates 15+ indivi
 - `get_abecip_indicators()`, `get_abrainc_indicators()`, `get_rppi()`, `get_bcb_realestate()`, etc.
 - **Migration**: Use `get_dataset("dataset_name")` instead
 
+### 📊 CBIC Dataset - Partial Release (Cement Only)
+
+**Note**: In v0.4.0, the CBIC dataset is limited to **cement tables only** (validated data). Steel and PIM tables will be added in v0.4.1.
+
+**Available in v0.4.0**:
+- ✅ `cement_monthly_consumption` - Monthly cement consumption by state
+- ✅ `cement_annual_consumption` - Annual cement consumption by region
+- ✅ `cement_production_exports` - Production, consumption, and export data
+- ✅ `cement_monthly_production` - Monthly cement production by state
+- ✅ `cement_cub_prices` - CUB cement prices by state
+
+**Coming in v0.4.1**:
+- ⏳ Steel prices and production data
+- ⏳ PIM industrial production indices
+
+```r
+# Works in v0.4.0
+get_dataset("cbic")  # Default: cement_monthly_consumption
+get_dataset("cbic", "cement_cub_prices")
+
+# Will error with informative message
+get_dataset("cbic", "steel_prices")  # Deferred to v0.4.1
+```
+
 ### 🏗️ New Internal Architecture
 
 - **Internal fetch functions**: Created 12 new `fetch_*()` functions with `@keywords internal`
