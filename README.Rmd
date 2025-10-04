@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# realestatebr
+# realestatebr <img src="man/figures/hexlogo.png" align="right" height="139" alt="" />
 
 <!-- badges: start -->
 <!-- badges: end -->

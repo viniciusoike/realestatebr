@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# realestatebr
+# realestatebr <img src="man/figures/hexlogo.png" align="right" height="139" alt="" />
 
 <!-- badges: start -->
 
