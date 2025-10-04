@@ -4,7 +4,7 @@
 \alias{import_cbic_materials}
 \title{Import CBIC materials metadata from main page}
 \usage{
-import_cbic_materials()
+import_cbic_materials(quiet = FALSE)
 }
 \value{
 A tibble with columns:

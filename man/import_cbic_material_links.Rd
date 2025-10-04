@@ -4,7 +4,7 @@
 \alias{import_cbic_material_links}
 \title{Import Excel file links for a specific CBIC material}
 \usage{
-import_cbic_material_links(material_url)
+import_cbic_material_links(material_url, quiet = FALSE)
 }
 \arguments{
 \item{material_url}{Character vector of length 1. URL of the material page}

@@ -6,7 +6,6 @@
 \usage{
 get_cbic_pim(
   table = "production_index",
-  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
@@ -14,9 +13,6 @@ get_cbic_pim(
 }
 \arguments{
 \item{table}{Character. Which dataset to return: "production_index" or "all" (default: "production_index")}
-
-\item{category}{Character. Deprecated parameter name for backward compatibility.
-Use \code{table} instead.}
 
 \item{cached}{Logical. If TRUE, try to load data from cache first (default: FALSE)}
 

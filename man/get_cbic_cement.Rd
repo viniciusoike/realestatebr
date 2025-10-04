@@ -6,10 +6,10 @@
 \usage{
 get_cbic_cement(
   table = "monthly_consumption",
-  category = NULL,
   cached = FALSE,
   quiet = FALSE,
-  max_retries = 3L
+  max_retries = 3L,
+  warn_level = "user"
 )
 }
 \arguments{
@@ -17,14 +17,14 @@ get_cbic_cement(
 "production_exports", "monthly_consumption", "monthly_production",
 "cub_prices", or "all" (default: "monthly_consumption")}
 
-\item{category}{Character. Deprecated parameter name for backward compatibility.
-Use \code{table} instead.}
-
 \item{cached}{Logical. If TRUE, try to load data from cache first (default: FALSE)}
 
 \item{quiet}{Logical. If TRUE, suppress progress messages (default: FALSE)}
 
 \item{max_retries}{Integer. Maximum number of retry attempts for downloads (default: 3L)}
+
+\item{warn_level}{Character. Warning level for messages: "none", "user", or "dev".
+Defaults to "none" for internal use.}
 }
 \value{
 A tibble with cement data, or a list if table = "all"

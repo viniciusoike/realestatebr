@@ -15,21 +15,19 @@ encompass other real estate markets.
 **Important**: This package is still under development but can already
 be installed. Feedback is welcome.
 
-## What’s New in v0.2.0 🎉
+## What's New in v0.4.0 🎉
 
-**Phase 1 Modernization Complete** - This major release modernizes all
-core functions with:
+**Major Breaking Changes - API Consolidation** - This release implements a unified interface:
 
-- **Standardized API** - All functions now use `table` parameter.
-  (replacing `category`) with backward compatibility. All functions now return `tibble` by default.
-- **Unified Data Access** - New `list_datasets()` and `get_dataset()`
-  functions for easy data discovery.
-- **Better Performance** - Robust error handling, retry logic, and
-  progress reporting.
-- **New Data Sources** - CBIC construction materials data (cement,
-  steel, production indices).
+- **Single Function Interface** - All 15+ individual `get_*()` functions consolidated into `get_dataset()`
+- **Hierarchical Dataset Access** - Simplified access with `get_dataset("dataset_name", table = "table_name")`
+- **Smart Fallback System** - Automatic fallback from GitHub cache → fresh download
+- **Enhanced Error Handling** - Better troubleshooting and informative error messages
+- **Internal Architecture** - 12 new internal fetch functions with consistent parameters
 
-[See full changelog](NEWS.md) for complete details.
+**⚠️ Breaking Change**: Individual `get_*()` functions have been removed. Use `get_dataset("dataset_name")` instead.
+
+[See full migration guide](NEWS.md) for complete details.
 
 ## Installation
 
@@ -43,10 +41,9 @@ remotes::install_github("viniciusoike/realestatebr")
 
 ## Getting Started
 
-### New Unified Interface (Recommended)
+### Unified Interface (New in v0.4.0)
 
-The package now provides a modern, unified interface for accessing all
-datasets:
+The package now provides a single, unified interface for accessing all datasets:
 
 ``` r
 library(realestatebr)
@@ -56,45 +53,51 @@ datasets <- list_datasets()
 head(datasets)
 
 # Get dataset information
-info <- get_dataset_info("abecip_indicators")
-str(info$categories)
+info <- get_dataset_info("abecip")
+str(info$tables)
 
 # Get data with automatic fallback (GitHub cache → fresh download)
-abecip <- get_dataset("abecip_indicators")
+abecip <- get_dataset("abecip")
 abecip
 ```
 
 The unified interface provides several advantages:
 
-- **Automatic fallback**: Tries GitHub cache first, then fresh download
-  if needed
-- **Consistent naming**: All datasets use standardized English column
-  names
-- **Easy discovery**: Use `list_datasets()` to see all available data
-- **Category filtering**: Access specific parts of complex datasets
+- **Single function**: All data accessed through `get_dataset()`
+- **Automatic fallback**: Tries GitHub cache first, then fresh download if needed
+- **Hierarchical access**: Use `table` parameter for specific data tables
+- **Smart caching**: Intelligent cache management with validation
+- **Consistent API**: Standardized parameters across all datasets
 
 ``` r
-# Get specific category only
-sbpe <- get_dataset("abecip_indicators", category = "sbpe")
+# Get specific table only
+sbpe <- get_dataset("abecip", table = "sbpe")
 head(sbpe)
+
+# Hierarchical access for RPPI datasets
+fipezap <- get_dataset("rppi", table = "fipezap")
 
 # Force fresh download
 fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 ```
 
-### Legacy Functions (Still Supported)
+### Migration from v0.3.x
 
-All existing `get_*` functions continue to work as before:
+**Breaking Change in v0.4.0**: Individual `get_*()` functions have been removed. Update your code:
 
 ``` r
-# Modern function interface (recommended)
-abecip_modern <- get_abecip_indicators(table = "sbpe", cached = TRUE)
+# OLD (v0.3.x) - No longer works
+# abecip_old <- get_abecip_indicators(table = "sbpe")
 
-# Legacy interface still works with deprecation warning
-abecip_legacy <- get_abecip_indicators(category = "sbpe", cached = TRUE)
+# NEW (v0.4.0) - Required migration
+abecip_new <- get_dataset("abecip", table = "sbpe")
 
-head(abecip_modern)
+# Dataset name mapping
+rppi_data <- get_dataset("rppi", table = "fipezap")  # was get_rppi_fipezap()
+bcb_data <- get_dataset("bcb_realestate")            # was get_bcb_realestate()
 ```
+
+See the [full migration guide](NEWS.md) for complete details.
 
 ## Available Datasets
 
@@ -103,8 +106,8 @@ from multiple sources:
 
 | Dataset | Source | Description | Geography |
 |----|----|----|----|
-| `abecip_indicators` | ABECIP | Housing credit data (SBPE flows, units, home equity) | Brazil |
-| `abrainc_indicators` | ABRAINC/FIPE | Primary market indicators (launches, sales, business conditions) | Brazil (major cities) |
+| `abecip` | ABECIP | Housing credit data (SBPE flows, units, home equity) | Brazil |
+| `abrainc` | ABRAINC/FIPE | Primary market indicators (launches, sales, business conditions) | Brazil (major cities) |
 | `bcb_realestate` | BCB | Real estate credit and market data | Brazil (by state) |
 | `secovi` | SECOVI-SP | São Paulo market indicators (fees, rentals, launches, sales) | São Paulo |
 | `bis_rppi` | BIS | International residential property price indices | International (60+ countries) |
@@ -126,41 +129,43 @@ print(bcb_datasets$name)
 
 ## Residential Property Price Indexes
 
-There are several house price indices available in the Brazilian
-residential real estate market. The `get_rppi_*` functions collect all
-of these indices. A general `get_rppi()` function
+There are several house price indices available in the Brazilian residential real estate market. All can be accessed through the unified `get_dataset()` interface:
 
 ``` r
 # For better plots
 library(ggplot2)
+library(dplyr, warn.conflicts = FALSE)
 
-# Download and clean all sales RPPIs
-rppi <- get_rppi(category = "sale", stack = TRUE)
-# Filter only Brazil
-rppi_brazil <- subset(rppi, name_muni == "Brazil" & date >= as.Date("2019-01-01"))
+# Get specific RPPI source
+fipezap <- get_dataset("rppi", table = "fipezap")
 
-ggplot(rppi_brazil, aes(date, acum12m)) +
-  geom_line(aes(color = source)) +
-  scale_y_continuous(labels = scales::label_percent()) +
+# Filter Brazil data for recent period
+rppi_brazil <- fipezap |>
+  filter(name_muni == "Brazil", date >= as.Date("2019-01-01"))
+
+ggplot(rppi_brazil, aes(date, index)) +
+  geom_line(aes(color = market)) +
+  scale_y_continuous(labels = scales::label_number()) +
+  facet_wrap(~rent_sale) +
   theme_light()
 ```
 
-International comparisons are also possible using the BIS data
+International comparisons are also possible using the BIS data:
 
 ``` r
-library(dplyr, warn.conflicts = FALSE)
-# Download simplified BIS RPPI data
-bis <- get_rppi_bis()
+# Download BIS RPPI data
+bis <- get_dataset("bis_rppi")
+
 # Highlight some countries, show only real indices
-bis_brasil <- bis |> 
+bis_selected <- bis |>
   filter(
-    country %in% c("Australia", "Brazil", "Chile", "Japan", "United States"),
+    reference_area %in% c("Australia", "Brazil", "Chile", "Japan", "United States"),
     is_nominal == FALSE,
     date >= as.Date("2000-01-01")
-    )
+  )
 
-ggplot(bis_brasil, aes(date, index)) +
-  geom_line(aes(color = country)) +
+ggplot(bis_selected, aes(date, value)) +
+  geom_line(aes(color = reference_area)) +
   geom_hline(yintercept = 100) +
   theme_light() +
   theme(legend.position = "top")

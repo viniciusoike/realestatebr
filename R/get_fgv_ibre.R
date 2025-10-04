@@ -1,11 +1,11 @@
-#' Get FGV Confidence Indicators
+#' Get FGV IBRE Confidence Indicators
 #'
 #' Download and clean construction confidence indicators estimated and released
-#' by the Getúlio Vargas Foundation (FGV) with modern error handling and
+#' by the Getulio Vargas Foundation (FGV IBRE) with modern error handling and
 #' progress reporting capabilities.
 #'
 #' @details
-#' This function provides access to construction confidence indicators from FGV,
+#' This function provides access to construction confidence indicators from FGV IBRE,
 #' including confidence indices, expectation indicators, and INCC price indices.
 #' The function supports both cached data access and fallback to package data.
 #'
@@ -21,15 +21,13 @@
 #' provides informative error messages when data is unavailable.
 #'
 #' @param table Character. Which dataset to return: "indicators" (default) or "all".
-#' @param category Character. Deprecated parameter name for backward compatibility.
-#'   Use `table` instead.
 #' @param cached Logical. If `TRUE` (default), loads data from package cache
 #'   using the unified dataset architecture. If `FALSE`, uses internal
 #'   package data objects.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
 #'   If `FALSE` (default), provides detailed progress reporting.
 #'
-#' @return A `tibble` containing all construction confidence indicator series from FGV.
+#' @return A `tibble` containing all construction confidence indicator series from FGV IBRE.
 #'   The tibble includes metadata attributes:
 #'   \describe{
 #'     \item{download_info}{List with access statistics}
@@ -37,37 +35,26 @@
 #'     \item{download_time}{Timestamp of access}
 #'   }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #'
 #' @examples \dontrun{
-#' # Get FGV indicators from cache (with progress)
-#' fgv <- get_fgv_indicators(quiet = FALSE)
+#' # Get FGV IBRE indicators from cache (with progress)
+#' fgv <- get_fgv_ibre(quiet = FALSE)
 #'
 #' # Use internal package data
-#' fgv <- get_fgv_indicators(cached = FALSE)
+#' fgv <- get_fgv_ibre(cached = FALSE)
 #'
 #' # Check access metadata
 #' attr(fgv, "download_info")
 #' }
-get_fgv_indicators <- function(
+get_fgv_ibre <- function(
   table = "indicators",
-  category = NULL,
   cached = TRUE,
   quiet = FALSE
 ) {
   # Input validation and backward compatibility ----
   valid_tables <- c("indicators", "all")
 
-  # Handle backward compatibility: if category is provided, use it as table
-  if (!is.null(category)) {
-    cli::cli_warn(c(
-      "Parameter {.arg category} is deprecated",
-      "i" = "Use {.arg table} parameter instead",
-      ">" = "This will be removed in a future version"
-    ))
-    table <- category
-  }
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
@@ -94,27 +81,21 @@ get_fgv_indicators <- function(
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading FGV indicators from cache...")
-    }
+    cli_debug("Loading FGV IBRE indicators from cache...")
 
     tryCatch(
       {
         # Use new unified architecture for cached data
-        fgv_data <- get_dataset("fgv_indicators", source = "github")
+        fgv_data <- get_dataset("fgv_ibre", source = "github")
 
-        if (!quiet) {
-          cli::cli_inform(
-            "Successfully loaded {nrow(fgv_data)} FGV indicator records from cache"
-          )
-        }
+        cli_debug("Successfully loaded {nrow(fgv_data)} FGV IBRE indicator records from cache")
 
         # Add metadata
         attr(fgv_data, "source") <- "cache"
         attr(fgv_data, "download_time") <- Sys.time()
         attr(fgv_data, "download_info") <- list(
           table = table,
-          dataset = "fgv_indicators",
+          dataset = "fgv_ibre",
           source = "cache"
         )
 
@@ -123,7 +104,7 @@ get_fgv_indicators <- function(
       error = function(e) {
         if (!quiet) {
           cli::cli_warn(c(
-            "Failed to load FGV data from cache: {e$message}",
+            "Failed to load FGV IBRE data from cache: {e$message}",
             "i" = "Falling back to internal package data"
           ))
         }
@@ -132,9 +113,7 @@ get_fgv_indicators <- function(
   }
 
   # Use internal package data ----
-  if (!quiet) {
-    cli::cli_inform("Loading FGV indicators from internal package data...")
-  }
+  cli_user("Loading FGV IBRE indicators from package data", quiet = quiet)
 
   # Check for required data dependencies
   if (!exists("fgv_data")) {
@@ -146,18 +125,14 @@ get_fgv_indicators <- function(
     ))
   }
 
-  if (!quiet) {
-    cli::cli_inform(
-      "Successfully accessed {nrow(fgv_data)} FGV indicator records from package data"
-    )
-  }
+  cli_user("✓ FGV IBRE indicators retrieved: {nrow(fgv_data)} records", quiet = quiet)
 
   # Add metadata
   attr(fgv_data, "source") <- "internal"
   attr(fgv_data, "download_time") <- Sys.time()
   attr(fgv_data, "download_info") <- list(
     table = table,
-    dataset = "fgv_indicators",
+    dataset = "fgv_ibre",
     source = "internal",
     note = "Fresh downloads not supported - using package data"
   )
@@ -172,15 +147,15 @@ fgv_dict <- data.frame(
     1464783, 1465235, 1464331, 1000379, 1000366, 1000370
   ),
   name_series = c(
-    "Índice de Variação de Aluguéis Residenciais (IVAR) - Média Nacional",
-    "Índice de Variação de Aluguéis Residenciais (IVAR) - São Paulo",
-    "Índice de Variação de Aluguéis Residenciais (IVAR) - Rio de Janeiro",
-    "Índice de Variação de Aluguéis Residenciais (IVAR) - Belo Horizonte",
-    "Índice de Variação de Aluguéis Residenciais (IVAR) - Porto Alegre",
-    "Sondagem da Construção – Nível de Utilização da Capacidade Instalada",
-    "IE-CST Com ajuste Sazonal - Índice de Expectativas da Construção",
-    "ISA-CST Com ajuste Sazonal - Índice da Situação Atual da Construção",
-    "ICST Com ajuste Sazonal - Índice de Confiança da Construção",
+    "\u00cdndice de Varia\u00e7\u00e3o de Alugu\u00e9is Residenciais (IVAR) - M\u00e9dia Nacional",
+    "\u00cdndice de Varia\u00e7\u00e3o de Alugu\u00e9is Residenciais (IVAR) - S\u00e3o Paulo",
+    "\u00cdndice de Varia\u00e7\u00e3o de Alugu\u00e9is Residenciais (IVAR) - Rio de Janeiro",
+    "\u00cdndice de Varia\u00e7\u00e3o de Alugu\u00e9is Residenciais (IVAR) - Belo Horizonte",
+    "\u00cdndice de Varia\u00e7\u00e3o de Alugu\u00e9is Residenciais (IVAR) - Porto Alegre",
+    "Sondagem da Constru\u00e7\u00e3o \u2013 N\u00edvel de Utiliza\u00e7\u00e3o da Capacidade Instalada",
+    "IE-CST Com ajuste Sazonal - \u00cdndice de Expectativas da Constru\u00e7\u00e3o",
+    "ISA-CST Com ajuste Sazonal - \u00cdndice da Situa\u00e7\u00e3o Atual da Constru\u00e7\u00e3o",
+    "ICST Com ajuste Sazonal - \u00cdndice de Confian\u00e7a da Constru\u00e7\u00e3o",
     "INCC - Brasil - DI",
     "INCC - Brasil",
     "INCC - Brasil-10",
@@ -194,7 +169,7 @@ fgv_dict <- data.frame(
   ),
   unit = c(
     "Indice", "Indice", "Indice", "Indice", "Indice", "Percentual", "Indicador",
-    "Indicador", "Indicador", "Índice", "Índice", "Índice", "Percentual",
+    "Indicador", "Indicador", "\u00cdndice", "\u00cdndice", "\u00cdndice", "Percentual",
     "Percentual", "Percentual"
   )
 )

@@ -25,18 +25,6 @@ source("data-raw/targets_helpers.R")
 list(
   # ---- DAILY UPDATES ----
 
-  # B3 Stocks - Real estate related stocks (ONLY daily dataset)
-  tar_target(
-    name = b3_stocks_data,
-    command = {
-      cli::cli_inform("Fetching B3 Stocks data...")
-      get_b3_stocks(cached = FALSE, quiet = FALSE)
-    },
-    cue = tar_cue_age(
-      name = b3_stocks_data,
-      age = as.difftime(12, units = "hours")
-    )
-  ),
 
   # ---- WEEKLY UPDATES ----
 
@@ -151,7 +139,7 @@ list(
     name = bis_rppi_data,
     command = {
       cli::cli_inform("Fetching BIS RPPI data...")
-      get_bis_rppi(cached = FALSE, quiet = FALSE)
+      get_rppi_bis(cached = FALSE, quiet = FALSE)
     },
     cue = tar_cue_age(
       name = bis_rppi_data,

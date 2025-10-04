@@ -9,16 +9,13 @@
 \usage{
 get_abecip_indicators(
   table = "sbpe",
-  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 )
 }
 \arguments{
-\item{table}{Character. One of \code{'sbpe'} (default), \code{'units'}, \code{'cgi'} or \code{'all'}.}
-
-\item{category}{Character. \strong{Deprecated}. Use \code{table} parameter instead.}
+\item{table}{Character. One of \code{'sbpe'} (default), \code{'units'}, or \code{'cgi'}.}
 
 \item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
 using the unified dataset architecture.}
@@ -60,7 +57,7 @@ is in percentage and \code{average_term} which is in months.
 }
 \section{Deprecation}{
 
-This function is deprecated. Use \code{\link{get_dataset}("abecip_indicators")} instead.
+This function is deprecated. Use \code{\link{get_dataset}("abecip")} instead.
 
 Downloads updated housing credit data from Abecip. Abecip represents the major
 financial institutions that integrate Brazil's finance housing system (SFH).

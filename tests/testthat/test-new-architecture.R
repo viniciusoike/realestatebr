@@ -10,7 +10,7 @@ test_that("new architecture: list_datasets works", {
   expect_true("description" %in% names(datasets))
   
   # Test that priority datasets are included
-  priority_datasets <- c("abecip_indicators", "abrainc_indicators", 
+  priority_datasets <- c("abecip", "abrainc_indicators",
                          "bcb_realestate", "secovi", "bis_rppi")
   expect_true(all(priority_datasets %in% datasets$name))
 })
@@ -18,7 +18,7 @@ test_that("new architecture: list_datasets works", {
 test_that("new architecture: get_dataset_info works", {
   
   # Test with a known dataset
-  info <- get_dataset_info("abecip_indicators")
+  info <- get_dataset_info("abecip")
   
   expect_type(info, "list")
   expect_true("metadata" %in% names(info))
@@ -28,7 +28,7 @@ test_that("new architecture: get_dataset_info works", {
   # Test metadata structure
   expect_true("name" %in% names(info$metadata))
   expect_true("title" %in% names(info$metadata))
-  expect_equal(info$metadata$name, "abecip_indicators")
+  expect_equal(info$metadata$name, "ABECIP Housing Credit Indicators")
 })
 
 test_that("new architecture: get_dataset works with GitHub cache", {
@@ -36,7 +36,7 @@ test_that("new architecture: get_dataset works with GitHub cache", {
   skip_if_offline()
   
   # Test basic functionality
-  data <- get_dataset("abecip_indicators", source = "github")
+  data <- get_dataset("abecip", source = "github")
   
   expect_type(data, "list")
   expect_true(length(data) > 0)
@@ -49,8 +49,8 @@ test_that("new architecture: get_dataset category filtering works", {
   
   skip_if_offline()
   
-  # Test category filtering
-  sbpe_data <- get_dataset("abecip_indicators", source = "github", category = "sbpe")
+  # Test table filtering
+  sbpe_data <- get_dataset("abecip", source = "github", table = "sbpe")
   
   expect_s3_class(sbpe_data, "data.frame")
   expect_true(nrow(sbpe_data) > 0)
@@ -93,10 +93,10 @@ test_that("error handling: invalid category", {
   
   skip_if_offline()
   
-  # Test invalid category
+  # Test invalid table
   expect_error(
-    get_dataset("abecip_indicators", source = "github", category = "invalid_category"),
-    "Category 'invalid_category' not found"
+    get_dataset("abecip", source = "github", table = "invalid_table"),
+    "Table 'invalid_table' not found"
   )
 })
 
@@ -116,7 +116,7 @@ test_that("translation system works", {
   skip_if_offline()
   
   # Test that data comes back translated
-  data <- get_dataset("abecip_indicators", source = "github", category = "sbpe")
+  data <- get_dataset("abecip", source = "github", table = "sbpe")
   
   # Check for English column names (not Portuguese)
   column_names <- names(data)

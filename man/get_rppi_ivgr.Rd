@@ -71,7 +71,7 @@ attr(ivgr, "download_info")
 }
 }
 \references{
-Banco Central do Brasil (2018) "Índice de Valores de Garantia de Imóveis Residenciais Financiados (IVG-R). Seminário de Metodologia do IBGE."
+Banco Central do Brasil (2018) "Indice de Valores de Garantia de Imoveis Residenciais Financiados (IVG-R). Seminario de Metodologia do IBGE."
 }
 \seealso{
 \code{\link[=get_rppi]{get_rppi()}}

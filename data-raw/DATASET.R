@@ -1,9 +1,7 @@
 ## code to prepare `DATASET` dataset goes here
 library(dplyr)
 
-main_cities <- readr::read_rds("data-raw/main_cities.rds")
-
-code_main_cities <- unique(main_cities$code_muni)
+# main_cities dataset removed in v0.4.0 - use dim_city instead
 
 # Import city shapefile with official IBGE identifiers
 dim_city <- geobr::read_municipality(year = 2020)
@@ -32,6 +30,19 @@ dim_city <- dim_city |>
     name_simplified = stringr::str_replace_all(name_simplified, " ", "_")
   )
 
+dim_state <- geobr::read_state(year = 2010)
+dim_state <- sf::st_drop_geometry(dim_state)
+
+dim_state <- dim_state |>
+  dplyr::select(code_state, name_state) |>
+  dplyr::mutate(
+    name_state = stringr::str_replace(
+      name_state,
+      "Espirito Santo",
+      "Esp\u00edrito Santo"
+    )
+  )
+
 real_estate_symbols <- readxl::read_excel(
   "data-raw/b3_real_estate.xlsx",
   col_names = c(
@@ -50,10 +61,10 @@ real_estate_symbols <- readxl::read_excel(
 b3_real_estate <- real_estate_symbols |>
   select(symbol, name, name_short, category, segment)
 
-usethis::use_data(main_cities, overwrite = TRUE)
 usethis::use_data(dim_city, overwrite = TRUE)
 usethis::use_data(b3_real_estate, overwrite = TRUE)
 usethis::use_data(real_estate_symbols, internal = TRUE, overwrite = TRUE)
+usethis::use_data(dim_state, internal = TRUE, overwrite = TRUE)
 
 source("data-raw/abecip_cgi.R")
 source("data-raw/fgv_clean.R")

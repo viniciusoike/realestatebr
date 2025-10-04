@@ -4,7 +4,12 @@
 \alias{clean_cbic_cement_sheets}
 \title{Process CBIC cement Excel sheets specifically}
 \usage{
-clean_cbic_cement_sheets(download_results, skip_rows = 4)
+clean_cbic_cement_sheets(
+  download_results,
+  skip_rows = 4,
+  quiet = FALSE,
+  warn_level = "user"
+)
 }
 \arguments{
 \item{download_results}{A tibble. Output from import_cbic_files()}

@@ -1,8 +1,8 @@
 ---
-title: "Getting Started"
+title: "Getting Started with realestatebr"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting Started}
+  %\VignetteIndexEntry{Getting Started with realestatebr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -10,233 +10,178 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  warning = FALSE,
-  message = FALSE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
 )
 ```
 
-```{r setup}
+## Installation
+
+```{r, eval = FALSE}
+# Install from GitHub
+remotes::install_github("viniciusoike/realestatebr")
+```
+
+## Quick Start
+
+The realestatebr package provides a unified interface for accessing Brazilian
+real estate data from multiple sources.
+
+```{r setup, message=FALSE, eval=FALSE}
 library(realestatebr)
-# Additional packages to facilitate data visualization.
-library(ggplot2)
 library(dplyr)
-
-theme_series <- theme_minimal() +
-  theme(
-    panel.grid.minor = element_blank(),
-    legend.position = "bottom",
-    axis.line = element_line(),
-    axis.title.x = element_blank()
-  )
-
-theme_set(theme_series)
+library(ggplot2)
 ```
 
-# General Usage
+## Main Functions
 
-The `realestatebr` package aims to offer real estate reports and data in a "tidy" output. By "tidy" I mean a form that is more amenable to be used in data analysis work. Currently, the package is focused only on residential real estate but in the future the package may also encompass commercial real estate information.
+### Discovering Datasets
 
-## New Unified Architecture
-
-The package now provides a modern, unified interface for accessing all datasets with automatic fallback strategies and consistent data formatting.
-
-```{r unified, eval=FALSE}
-# Discover available datasets
+```{r, eval=FALSE}
+# List all available datasets
 datasets <- list_datasets()
-head(datasets[, c("name", "source", "description")])
+head(datasets)
 
-# Get detailed dataset information
-info <- get_dataset_info("abecip_indicators")
-str(info$categories, max.level = 2)
-
-# Access data with automatic fallback (GitHub cache → fresh download)
-abecip_data <- get_dataset("abecip_indicators")
-names(abecip_data)
-
-# Get specific categories
-sbpe_data <- get_dataset("abecip_indicators", category = "sbpe")
-head(sbpe_data)
+# Get information about a specific dataset
+info <- get_dataset_info("abecip")
+names(info$categories)
 ```
 
-## Legacy Functions (Still Supported)
-
-All existing `get_*()` functions continue to work unchanged:
-
-This package downloads, cleans and returns data. All functions follow a similar syntax (`get_*()`) with two arguments:
-
--   `category` - A string that indicates specific parts/tables of the data (will default to `'all'`)
--   `cached` - A logical that indicates if the data should be downloaded from the original provider or from the GitHub repository.
-
-Both arguments have the same purpose: to accelerate data consumption. By specifying a particular table, the function can save processing time; similarly, downloading the cleaned data from the GitHub repository can be faster.
-
-One of the exceptions to the rule above is the `get_rppi()` function, which downloads data on Residential Property Prices Indexes. It has an additional third argument `stack` which is a logical that indicates whether the indexes should be returned in a single table or as elements in a named `list`.
-
-The specific `get_rppi_*()` functions have different arguments.
-
-# Examples
-
-## Abecip
-
-Abecip is one of the backbones of the Brazilian real estate market. The data is available in two main tables: "SBPE" and "Financiamentos". The example below shows how to download both tables and plot the total amount of financing for new properties.
-
-```{r}
-abecip <- get_abecip_indicators(cached = TRUE)
-```
-
-```{r}
-sbpe <- abecip$sbpe |>
-  filter(date >= as.Date("2010-01-01")) |>
-  mutate(acum = RcppRoll::roll_sumr(sbpe_netflow, n = 12, fill = NA)) |>
-  filter(!is.na(acum))
-
-ggplot(sbpe, aes(date, acum)) +
-  geom_line() +
-  geom_hline(yintercept = 0) +
-  scale_x_date(date_breaks = "2 year", date_labels = "%Y") +
-  scale_y_continuous(labels = scales::label_number(scale = 1e-3, suffix = "B")) +
-  labs(
-    title = "Total SBPE Net Flow (12-month rolling sum)",
-    y = "R$ (Billion)",
-    caption = "Source: Abecip"
-  )
-```
-
-## Abrainc
-
-As a simple use case example consider the case of downloading the quarterly [Abrainc-Fipe report](https://www.abrainc.org.br/lab). To get all of the available data use the `get_abrainc_indicators()` function.
-
-```{r}
-abrainc <- get_abrainc_indicators()
-```
-
-The result will be a named list with three `tibble`.
-
-```{r}
-abrainc
-```
-
-When working specifically with a single table this can be specified in the `category` argument.
-
-```{r}
-# Either subset the existing abrainc file or download again
-radar <- get_abrainc_indicators(category = "radar")
-
-# Plot example
-ggplot(radar, aes(x = date, y = value)) +
-  geom_line() +
-  facet_wrap(vars(variable), ncol = 3) +
-  theme_light()
-```
-
-## Brazilian Central Bank
-
-The Brazilian Central Bank has a wide variety of real estate data that is stored into a single long-format csv file. This makes working with this data quite difficult. The example below shows how to find the total amount of new real estate credit in three specific states.
+### Getting Data
 
 ```{r, eval=FALSE}
-bcb <- get_bcb_realestate(cached = TRUE)
+# Get default table
+abecip <- get_dataset("abecip")
+head(abecip)
 
-credit_south <- bcb %>%
-  filter(
-    category == "credito",
-    type == "contratacao",
-    v1 == "contratado",
-    v2 == "pf",
-    abbrev_state %in% c("PR", "RS", "SC")
-  ) %>%
-  summarise(total = sum(value, na.rm = TRUE), .by = c("date", "abbrev_state"))
+# Get specific table
+sbpe <- get_dataset("abecip", "sbpe")
 
-credit_south <- credit_south %>%
-  group_by(abbrev_state) %>%
-  mutate(
-    trend = zoo::rollmean(total, k = 12, fill = NA, align = "center"),
-    trend = zoo::rollmean(trend, k = 2, fill = NA, align = "center")
-  ) %>%
-  ungroup()
-
-ggplot(credit_south, aes(x = date, color = abbrev_state)) +
-  geom_line(aes(y = total), alpha = 0.5) +
-  geom_line(aes(y = trend)) +
-  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
-  scale_y_continuous(breaks = seq(0, 3, 0.5) * 1e9, labels = seq(0, 3, 0.5)) +
-  scale_color_brewer(name = "State", type = "qual", palette = 6) +
-  labs(
-    title = "Monthly Real Estate Credit Volume Trend",
-    subtitle = "Smoothed 12x2-month moving averge of monthly real estate credit operations.",
-    x = NULL,
-    y = "R$ (Billion)",
-    caption = "Source: Brazilian Central Bank (BCB)"
-  )
+# Force fresh download
+fresh <- get_dataset("abecip", source = "fresh")
 ```
 
-The `category` argument allows for a more direct "query"; also, data is presented in "wide" format.
+## Example: ABECIP Housing Credit
 
 ```{r, eval=FALSE}
-index <- get_bcb_realestate("indices", cached = TRUE)
+# Get SBPE housing credit data
+sbpe <- get_dataset("abecip", "sbpe")
 
-index
-```
-
-
-## RPPI
-
-### Brazil
-
-There are several Residential Property Price Indices in Brazil. Each index has its own methodology, coverage, and data source. The table below summarizes
-
-| Name        | Rent/sale     | Coverage                     | Source           | Methodology                   |
-|-------------|---------------|------------------------------|------------------|-------------------------------|
-| IVG-R       | Sale          | National                     | Bank appraisals  | Median Stratified + Smoothing |
-| FipeZap     | Rent and Sale | National (cities)            | Online Listings  | Median Stratified + Smoothing |
-| IGMI-R      | Sale          | National (cities)            | Bank appraisals  | Hedonic                       |
-| IVAR        | Rent          | National (cities)            | Rental Contracts | Repeat-rent                   |
-| QuintoAndar | Rent          | Rio de Janeiro and São Paulo | Rental Contracts | Median Stratified             |
-
-To get a specific series use one of the `get_rppi_*` functions. The IVAR index is available for many cities.
-
-```{r}
-ivar <- get_rppi_ivar()
-
-ggplot(ivar, aes(x = date, y = index)) +
+# Plot net flow over time
+ggplot(sbpe, aes(x = date, y = netflow)) +
   geom_line() +
-  facet_wrap(vars(name_muni))
+  labs(title = "SBPE Net Flow",
+       x = NULL,
+       y = "R$ (millions)") +
+  theme_minimal()
 ```
 
-The FipeZap Index has many cities and subindices.
+## Example: BCB Real Estate Data
 
-```{r}
-fipe <- get_rppi_fipezap()
+```{r, eval=FALSE}
+# Get BCB real estate data
+bcb <- get_dataset("bcb_realestate")
 
-subfipe <- fipe |>
-  filter(
-    name_muni == "São Paulo",
-    market == "residential",
-    variable == "index",
-    rooms != "total"
-    )
+# Filter and aggregate
+credit_data <- bcb |>
+  filter(category == "credit", type == "stock") |>
+  summarise(total = sum(value, na.rm = TRUE), .by = date)
 
-ggplot(subfipe, aes(x = date, y = value, color = rooms)) +
+# Plot
+ggplot(credit_data, aes(x = date, y = total)) +
   geom_line() +
-  facet_wrap(vars(rent_sale)) +
-  theme_light()
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Total Real Estate Credit Stock",
+       x = NULL,
+       y = "R$ (billions)") +
+  theme_minimal()
 ```
 
-### International
+## Available Datasets
 
-The Bank for International Settlements compiles RPPIs from across the world. The default output calls the selected quarterly series.
+The package provides access to 12 datasets:
 
-```{r}
-bis <- get_bis_rppi()
+- **abecip**: Housing credit data from ABECIP (SBPE, units, CGI)
+- **abrainc**: Primary market indicators (radar, indicators, leading)
+- **bcb_realestate**: Real estate credit data from BCB
+- **bcb_series**: Economic time series from BCB
+- **secovi**: São Paulo market data (condo, launch, sale, rent)
+- **rppi**: Property price indices (sale/rent, multiple sources)
+- **rppi_bis**: International RPPI from BIS
+- **cbic**: Cement consumption and production data (v0.4.0)
+- **fgv_ibre**: FGV economic indicators
+- **nre_ire**: Real estate index
+- **property_records**: ITBI property records
 
-subbis <- bis |>
-  filter(
-    date >= as.Date("2000-01-01"),
-    reference_area %in% c("World", "Japan", "United States", "Brazil"),
-    is_nominal == TRUE,
-    unit == "Index, 2010 = 100"
-    )
+## Data Sources
 
-ggplot(subbis, aes(x = date, y = value, color = reference_area)) +
-  geom_line() +
-  theme_light()
+Use the `source` parameter to control data origin:
+
+- `"auto"` (default): Try GitHub cache first, fallback to fresh download
+- `"github"`: Force GitHub cache only
+- `"fresh"`: Force fresh download from original source
+
+```{r, eval=FALSE}
+# Try cache first, fallback to fresh
+data <- get_dataset("secovi", source = "auto")
+
+# Always use cache (faster but may be outdated)
+cached <- get_dataset("secovi", source = "github")
+
+# Always fresh download (slower but current)
+fresh <- get_dataset("secovi", source = "fresh")
 ```
+
+## Working with Categories
+
+Many datasets have multiple categories (tables):
+
+```{r, eval=FALSE}
+# Get dataset information
+info <- get_dataset_info("cbic")
+
+# See available categories
+names(info$categories)
+
+# Get specific category
+cement_monthly <- get_dataset("cbic", "cement_monthly_consumption")
+cement_cub <- get_dataset("cbic", "cement_cub_prices")
+```
+
+## Verbosity Control
+
+Control message output with the `quiet` parameter:
+
+```{r, eval=FALSE}
+# Show progress messages (default)
+data <- get_dataset("abecip", quiet = FALSE)
+
+# Suppress all messages
+data <- get_dataset("abecip", quiet = TRUE)
+```
+
+## Error Handling
+
+The package uses modern CLI-based error messages:
+
+```{r, eval=FALSE}
+# Invalid dataset name
+get_dataset("invalid_name")
+#> Error: Dataset 'invalid_name' not found
+#> ℹ Available datasets: abecip, abrainc, bcb_realestate, ...
+#> ℹ Use list_datasets() to see all available datasets
+
+# Invalid category
+get_dataset("cbic", "steel_prices")
+#> Error: Table 'steel_prices' not available in this release
+#> ℹ Only cement tables are available in v0.4.0
+#> ℹ Steel and PIM tables will be added in v0.4.1
+```
+
+## Next Steps
+
+- See `vignette("working-with-rppi")` for detailed RPPI guide
+- See `vignette("migration-guide")` for migrating from v0.3.x
+- Use `?get_dataset` for full documentation
+- Visit package website for more examples

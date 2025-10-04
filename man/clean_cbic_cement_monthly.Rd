@@ -4,7 +4,7 @@
 \alias{clean_cbic_cement_monthly}
 \title{Clean CBIC cement monthly consumption data (tabela_07.A.03)}
 \usage{
-clean_cbic_cement_monthly(dat, year)
+clean_cbic_cement_monthly(dat, year, quiet = FALSE, warn_level = "user")
 }
 \arguments{
 \item{dat}{A data.frame. Raw data from Excel sheet with 'localidade' column}

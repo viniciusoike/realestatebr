@@ -1,8 +1,8 @@
-#' Get Property Records data for major cities
+#' Get Property Records Table
 #'
-#' Imports and cleans the most up to date property transaction records available
-#' from Registro de Imoveis with modern error handling, progress reporting,
-#' and robust download capabilities.
+#' Imports and cleans specific tables from the most up to date property transaction
+#' records available from Registro de Imoveis with modern error handling, progress
+#' reporting, and robust download capabilities.
 #'
 #' @details
 #' This function scrapes download links from the Registro de Imoveis website
@@ -17,14 +17,21 @@
 #' The function includes retry logic for failed downloads and robust error
 #' handling for web scraping and Excel processing operations.
 #'
-#' @param category Character. One of `'capitals'`, `'aggregates'`, or `'all'` (default).
+#' @param table Character. One of:
+#'   \describe{
+#'     \item{"capitals"}{Records data for capital cities (default)}
+#'     \item{"capitals_transfers"}{Transfer data for capital cities}
+#'     \item{"cities"}{Records data for all cities}
+#'     \item{"aggregates"}{Records data for SP regional aggregates}
+#'     \item{"aggregates_transfers"}{Transfer data for SP aggregates}
+#'   }
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
 #'   If `FALSE` (default), provides detailed progress reporting.
 #' @param max_retries Integer. Maximum number of retry attempts for failed
 #'   downloads. Defaults to 3.
 #'
-#' @return A named `list` with property records data. The return includes
+#' @return A `tibble` with the requested property records table. The return includes
 #'   metadata attributes:
 #'   \describe{
 #'     \item{download_info}{List with download statistics}
@@ -32,45 +39,50 @@
 #'     \item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @export
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter select mutate inner_join left_join
 #' @importFrom xml2 read_html
 #' @importFrom rvest html_elements html_attr
 #'
 #' @examples \dontrun{
-#' # Get all property records (with progress)
-#' records <- get_property_records(quiet = FALSE)
+#' # Get capitals records data (default)
+#' capitals <- get_property_records()
 #'
-#' # Only for capitals and selected cities
-#' cities <- get_property_records("capitals")
+#' # Get transfer data for capital cities
+#' transfers <- get_property_records("capitals_transfers")
+#'
+#' # Get all cities records data
+#' cities <- get_property_records("cities")
+#'
+#' # Get SP regional aggregates
+#' aggregates <- get_property_records("aggregates")
 #'
 #' # Use cached data for faster access
-#' cached_records <- get_property_records(cached = TRUE)
+#' cached_data <- get_property_records("capitals", cached = TRUE)
 #'
 #' # Check download metadata
-#' attr(records, "download_info")
+#' attr(capitals, "download_info")
 #' }
 get_property_records <- function(
-  category = "all",
+  table = "capitals",
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
   # Input validation ----
-  valid_categories <- c("all", "aggregates", "capitals")
+  valid_tables <- c("capitals", "capitals_transfers", "cities", "aggregates", "aggregates_transfers")
 
-  if (!is.character(category) || length(category) != 1) {
+  if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
-      "Invalid {.arg category} parameter",
-      "x" = "{.arg category} must be a single character string"
+      "Invalid {.arg table} parameter",
+      "x" = "{.arg table} must be a single character string"
     ))
   }
 
-  if (!category %in% valid_categories) {
+  if (!table %in% valid_tables) {
     cli::cli_abort(c(
-      "Invalid category: {.val {category}}",
-      "i" = "Valid categories: {.val {valid_categories}}"
+      "Invalid table: {.val {table}}",
+      "i" = "Valid tables: {.val {valid_tables}}"
     ))
   }
 
@@ -88,25 +100,22 @@ get_property_records <- function(
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading property records from cache...")
-    }
+    cli_debug("Loading property records from cache...")
 
     tryCatch(
       {
         prop <- import_cached("property_records")
 
-        if (!quiet) {
-          cli::cli_inform("Successfully loaded property records from cache")
-        }
+        cli_debug("Successfully loaded property records from cache")
 
-        result <- if (category == "all") prop else prop[[category]]
+        # Extract the specific table from cached data
+        result <- extract_property_table(prop, table)
 
         # Add metadata
         attr(result, "source") <- "cache"
         attr(result, "download_time") <- Sys.time()
         attr(result, "download_info") <- list(
-          category = category,
+          table = table,
           source = "cache"
         )
 
@@ -124,11 +133,12 @@ get_property_records <- function(
   }
 
   # Scrape download links ----
-  if (!quiet) {
-    cli::cli_inform("Scraping property records website for download links...")
-  }
+  cli_user("Downloading property records data for '{table}'", quiet = quiet)
 
-  download_links <- scrape_registro_imoveis_links(quiet = quiet, max_retries = max_retries)
+  download_links <- scrape_registro_imoveis_links(
+    quiet = quiet,
+    max_retries = max_retries
+  )
 
   if (is.null(download_links) || length(download_links) < 2) {
     cli::cli_abort(c(
@@ -138,43 +148,35 @@ get_property_records <- function(
     ))
   }
 
-  # Process data based on category ----
-  if (category == "all") {
-    if (!quiet) {
-      cli::cli_inform("Processing both capitals and aggregates data...")
-    }
+  # Process data based on table parameter ----
+  if (table %in% c("capitals", "capitals_transfers")) {
+    cli_debug("Processing capitals data...")
 
-    out <- list(
-      capitals = get_ri_capitals_robust(
-        url = download_links[[1]],
-        quiet = quiet,
-        max_retries = max_retries
-      ),
-      aggregates = get_ri_aggregates_robust(
-        url = download_links[[2]],
-        quiet = quiet,
-        max_retries = max_retries
-      )
-    )
-  } else if (category == "capitals") {
-    if (!quiet) {
-      cli::cli_inform("Processing capitals data...")
-    }
-
-    out <- get_ri_capitals_robust(
+    capitals_data <- get_ri_capitals_robust(
       url = download_links[[1]],
       quiet = quiet,
       max_retries = max_retries
     )
-  } else if (category == "aggregates") {
-    if (!quiet) {
-      cli::cli_inform("Processing aggregates data...")
+
+    out <- if (table == "capitals") {
+      capitals_data$records
+    } else {
+      capitals_data$transfers
     }
 
-    out <- get_ri_aggregates_robust(
+  } else if (table %in% c("cities", "aggregates", "aggregates_transfers")) {
+    cli_debug("Processing aggregates data...")
+
+    aggregates_data <- get_ri_aggregates_robust(
       url = download_links[[2]],
       quiet = quiet,
       max_retries = max_retries
+    )
+
+    out <- switch(table,
+      "cities" = aggregates_data$record_cities,
+      "aggregates" = aggregates_data$record_aggregates,
+      "aggregates_transfers" = aggregates_data$transfers
     )
   }
 
@@ -182,17 +184,14 @@ get_property_records <- function(
   attr(out, "source") <- "web"
   attr(out, "download_time") <- Sys.time()
   attr(out, "download_info") <- list(
-    category = category,
+    table = table,
     download_links = download_links,
     source = "web"
   )
 
-  if (!quiet) {
-    cli::cli_inform("Successfully processed property records data")
-  }
+  cli_user("✓ Property records data retrieved: {nrow(out)} records", quiet = quiet)
 
   return(out)
-
 }
 
 #' Scrape Download Links from Registro de Imoveis Website
@@ -223,12 +222,20 @@ scrape_registro_imoveis_links <- function(quiet, max_retries) {
 
         # Scrape page and get the links
         dlinks <- xml2::read_html(con) |>
-          rvest::html_elements(xpath = "//*[@id='section-contact']/div/p[5]/a") |>
+          rvest::html_elements(
+            xpath = "//*[@id='section-contact']/div/p[5]/a"
+          ) |>
           rvest::html_attr("href") |>
-          purrr::map(stringr::str_replace, pattern = " ", replacement = "%20") |>
+          purrr::map(
+            stringr::str_replace,
+            pattern = " ",
+            replacement = "%20"
+          ) |>
           purrr::map(clean_links)
 
-        dlinks <- purrr::map(dlinks, function(x) stringr::str_extract(x, "https.+\\.xlsx$"))
+        dlinks <- purrr::map(dlinks, function(x) {
+          stringr::str_extract(x, "https.+\\.xlsx$")
+        })
 
         # Validate we got valid links
         if (length(dlinks) >= 2 && !any(is.na(unlist(dlinks)))) {
@@ -282,7 +289,7 @@ download_ri_excel <- function(url, filename, quiet, max_retries) {
     tryCatch(
       {
         # Attempt download
-        download.file(
+        utils::download.file(
           url = url,
           destfile = temp_path,
           mode = "wb",
@@ -330,9 +337,7 @@ download_ri_excel <- function(url, filename, quiet, max_retries) {
 #' @return Processed capitals data
 #' @keywords internal
 get_ri_capitals_robust <- function(url, quiet, max_retries) {
-  if (!quiet) {
-    cli::cli_inform("Downloading capitals data...")
-  }
+  cli_debug("Downloading capitals data...")
 
   # Download with retry logic
   download_result <- download_ri_excel(
@@ -351,9 +356,7 @@ get_ri_capitals_robust <- function(url, quiet, max_retries) {
   }
 
   # Import and clean sheets
-  if (!quiet) {
-    cli::cli_inform("Processing capitals Excel file...")
-  }
+  cli_debug("Processing capitals Excel file...")
 
   capitals <- suppressMessages(import_ri_capitals(download_result$path))
   clean_capitals <- suppressWarnings(clean_ri_capitals(capitals))
@@ -372,9 +375,7 @@ get_ri_capitals_robust <- function(url, quiet, max_retries) {
 #' @return Processed aggregates data
 #' @keywords internal
 get_ri_aggregates_robust <- function(url, quiet, max_retries) {
-  if (!quiet) {
-    cli::cli_inform("Downloading aggregates data...")
-  }
+  cli_debug("Downloading aggregates data...")
 
   # Download with retry logic
   download_result <- download_ri_excel(
@@ -393,9 +394,7 @@ get_ri_aggregates_robust <- function(url, quiet, max_retries) {
   }
 
   # Import and clean sheets
-  if (!quiet) {
-    cli::cli_inform("Processing aggregates Excel file...")
-  }
+  cli_debug("Processing aggregates Excel file...")
 
   aggregates <- suppressMessages(import_ri_aggregates(download_result$path))
   clean_aggregates <- suppressWarnings(clean_ri_aggregates(aggregates))
@@ -413,7 +412,7 @@ get_ri_capitals <- function(cached, ...) {
   # Define path
   path_capitals <- tempfile("registro_imoveis_capitals.xlsx")
   # Download file
-  download.file(
+  utils::download.file(
     destfile = path_capitals,
     mode = "wb",
     quiet = TRUE,
@@ -437,7 +436,7 @@ get_ri_aggregates <- function(cached, ...) {
   # Define path
   path_spo <- tempfile("registro_imoveis_spo.xlsx")
   # Download file
-  download.file(
+  utils::download.file(
     destfile = path_spo,
     mode = "wb",
     quiet = TRUE,
@@ -472,18 +471,21 @@ import_ri_capitals <- function(path) {
   header_fid <- c("year", "date", names(janitor::clean_names(header_fid)))
 
   # Import sheets
-  records   <- readxl::read_excel(path, sheet = 2, skip = 3, col_names = header)
-  sales     <- readxl::read_excel(path, sheet = 3, skip = 3, col_names = header)
-  transfers <- readxl::read_excel(path, sheet = 4, skip = 3, col_names = header_fid)
+  records <- readxl::read_excel(path, sheet = 2, skip = 3, col_names = header)
+  sales <- readxl::read_excel(path, sheet = 3, skip = 3, col_names = header)
+  transfers <- readxl::read_excel(
+    path,
+    sheet = 4,
+    skip = 3,
+    col_names = header_fid
+  )
 
   # Return
   out <- list(records = records, sales = sales, transfers = transfers)
   return(out)
-
 }
 
 clean_ri_capitals <- function(ls) {
-
   # Get tables from list
   record <- ls[["records"]]
   sale <- ls[["sales"]]
@@ -492,7 +494,12 @@ clean_ri_capitals <- function(ls) {
   # Clean data (simplified column names, converts character to numeric)
   clean_record <- clean_ri(record, value_name = "record_total")
   clean_sale <- clean_ri(sale, value_name = "sale_total")
-  clean_transfer <- clean_ri(transfer, "transfer_type", "transfer", state = FALSE)
+  clean_transfer <- clean_ri(
+    transfer,
+    "transfer_type",
+    "transfer",
+    state = FALSE
+  )
 
   # Join with city dimension/labels and rearrange column order
 
@@ -501,17 +508,23 @@ clean_ri_capitals <- function(ls) {
     dplyr::mutate(
       name_simplified = "sao_paulo",
       abbrev_state = "SP"
-      )
+    )
 
   # Join both records and sales and proper city names
   tbl1 <- clean_record |>
     dplyr::inner_join(
       dplyr::select(clean_sale, date, name_simplified, sale_total),
       by = c("date", "name_simplified")
-      ) |>
+    ) |>
     dplyr::left_join(dim_city, by = c("abbrev_state", "name_simplified")) |>
     dplyr::select(
-      year, date, name_muni, record_total, sale_total, code_muni, name_state,
+      year,
+      date,
+      name_muni,
+      record_total,
+      sale_total,
+      code_muni,
+      name_state,
       abbrev_state
     )
 
@@ -519,17 +532,21 @@ clean_ri_capitals <- function(ls) {
   tbl2 <- clean_transfer |>
     dplyr::left_join(dim_city, by = c("abbrev_state", "name_simplified")) |>
     dplyr::select(
-      year, date, name_muni, transfer_type, transfer, code_muni, name_state,
+      year,
+      date,
+      name_muni,
+      transfer_type,
+      transfer,
+      code_muni,
+      name_state,
       abbrev_state
     )
 
   return(list(records = tbl1, transfers = tbl2))
-
 }
 
 
 import_ri_aggregates <- function(path) {
-
   # First, get column names
 
   # Import header line
@@ -539,18 +556,21 @@ import_ri_aggregates <- function(path) {
   header_fid <- readxl::read_excel(path = path, sheet = 4, range = "C4:E4")
   header_fid <- c("year", "date", names(janitor::clean_names(header_fid)))
   # Read Excel sheet using column names
-  records   <- readxl::read_excel(path, sheet = 2, skip = 4, col_names = header)
-  sales     <- readxl::read_excel(path, sheet = 3, skip = 4, col_names = header)
-  transfers <- readxl::read_excel(path, sheet = 4, skip = 4, col_names = header_fid)
+  records <- readxl::read_excel(path, sheet = 2, skip = 4, col_names = header)
+  sales <- readxl::read_excel(path, sheet = 3, skip = 4, col_names = header)
+  transfers <- readxl::read_excel(
+    path,
+    sheet = 4,
+    skip = 4,
+    col_names = header_fid
+  )
 
   # Return sheets as a named list
   out <- list(records = records, sales = sales, transfers = transfers)
   return(out)
-
 }
 
 clean_ri_aggregates <- function(ls) {
-
   # Separate objects from named list
   record <- ls[["records"]]
   sale <- ls[["sales"]]
@@ -596,7 +616,7 @@ clean_ri_aggregates <- function(ls) {
     record_cities,
     sale_cities,
     by = c("year", "date", "abbrev_state", "name_simplified", "name_muni")
-    )
+  )
 
   # Join aggregate-regions sales and records data
   tbl2 <- dplyr::inner_join(
@@ -604,12 +624,17 @@ clean_ri_aggregates <- function(ls) {
     # Select fewer columns to avoid overlapping columns
     dplyr::select(sale_aggs, date, name_sp_region, sale_total),
     by = c("date", "name_sp_region")
-    )
+  )
   # Rearrange column order
   tbl2 <- tbl2 |>
     dplyr::select(
-      year, date, name_sp_region, name_sp_label, record_total, sale_total
-      )
+      year,
+      date,
+      name_sp_region,
+      name_sp_label,
+      record_total,
+      sale_total
+    )
 
   # Join transfer data with city dimensions and rearrange column order
   tbl3 <- clean_transfer |>
@@ -617,22 +642,30 @@ clean_ri_aggregates <- function(ls) {
     dplyr::select(year, date, name_state, transfer_type, transfer, abbrev_state)
 
   return(list(record_cities = tbl1, record_aggregates = tbl2, transfers = tbl3))
-
 }
 
 clean_ri_spo <- function(df) {
-
   df_aux <- dplyr::tribble(
-    ~name_sp_region,                          ~name_sp_label,
-    "estado_de_sao_paulo_total",              "Estado de São Paulo",
-    "metropolitana_de_sao_paulo_total",       "Metropolitana de São Paulo",
-    "regiao_metropolitana_de_sao_paulo_rmsp", "Região Metro. de São Paulo",
-    "municipio_de_sao_paulo",                 "São Paulo (capital)",
-    "demais_municipios_da_rmsp",              "Demais municípios da RMSP",
-    "demais_municipios_da_msp",               "Demais municípios da MSP",
-    "vale_do_paraiba_paulista",               "Vale do Paraíba Paulista",
-    "macro_metropolitana_paulista",           "Macrorregião Metropolitana Paulista",
-    "litoral_sul_paulista",                   "Litoral Sul Paulista"
+    ~name_sp_region,
+    ~name_sp_label,
+    "estado_de_sao_paulo_total",
+    "Estado de S\u00e3o Paulo",
+    "metropolitana_de_sao_paulo_total",
+    "Metropolitana de S\u00e3o Paulo",
+    "regiao_metropolitana_de_sao_paulo_rmsp",
+    "Regi\u00e3o Metro. de S\u00e3o Paulo",
+    "municipio_de_sao_paulo",
+    "S\u00e3o Paulo (capital)",
+    "demais_municipios_da_rmsp",
+    "Demais munic\u00edpios da RMSP",
+    "demais_municipios_da_msp",
+    "Demais munic\u00edpios da MSP",
+    "vale_do_paraiba_paulista",
+    "Vale do Para\u00edba Paulista",
+    "macro_metropolitana_paulista",
+    "Macrorregi\u00e3o Metropolitana Paulista",
+    "litoral_sul_paulista",
+    "Litoral Sul Paulista"
   )
 
   df |>
@@ -642,14 +675,22 @@ clean_ri_spo <- function(df) {
     dplyr::rename(name_sp_region = name_simplified) |>
     dplyr::left_join(df_aux, by = dplyr::join_by(name_sp_region)) |>
     dplyr::select(
-      -code_muni, -name_muni, -abbrev_state, -name_state, -code_state,
-      -code_region, -name_region
-      )
-
+      -code_muni,
+      -name_muni,
+      -abbrev_state,
+      -name_state,
+      -code_state,
+      -code_region,
+      -name_region
+    )
 }
 
-clean_ri <- function(df, var_name = "name", value_name = "value", state = TRUE) {
-
+clean_ri <- function(
+  df,
+  var_name = "name",
+  value_name = "value",
+  state = TRUE
+) {
   # Fix date column, convert to long and remove missing values
   clean <- df |>
     # dplyr::mutate(date = janitor::excel_numeric_to_date(as.numeric(date))) |>
@@ -669,13 +710,15 @@ clean_ri <- function(df, var_name = "name", value_name = "value", state = TRUE) 
         name_simplified = stringr::str_remove(name, "_[A-Z]{2}$")
       ) |>
       dplyr::select(
-        year, date, abbrev_state, name_simplified, dplyr::all_of(value_name)
+        year,
+        date,
+        abbrev_state,
+        name_simplified,
+        dplyr::all_of(value_name)
       )
-
   }
 
   return(clean)
-
 }
 
 clean_ri_cities <- function(df) {
@@ -684,7 +727,8 @@ clean_ri_cities <- function(df) {
       name_simplified = stringr::str_replace(
         name_simplified,
         "municipio_de_sao_paulo",
-        "sao_paulo")
+        "sao_paulo"
+      )
     ) |>
     dplyr::left_join(dim_city, by = dplyr::join_by(name_simplified)) |>
     dplyr::filter(!is.na(name_muni)) |>
@@ -695,5 +739,31 @@ clean_ri_cities <- function(df) {
       name_simplified,
       name_muni,
       dplyr::any_of(c("record_total", "sale_total"))
-      )
+    )
+}
+
+#' Extract Specific Table from Property Records Data
+#'
+#' Internal helper function to extract a specific table from cached property data
+#'
+#' @param prop_data Property records data structure (cached format)
+#' @param table Table name to extract
+#' @return Single tibble for the requested table
+#' @keywords internal
+extract_property_table <- function(prop_data, table) {
+  # Handle different cached data structures
+  if (is.list(prop_data) && "capitals" %in% names(prop_data)) {
+    # Standard cached structure: list(capitals = list(...), aggregates = list(...))
+    switch(table,
+      "capitals" = prop_data$capitals$records,
+      "capitals_transfers" = prop_data$capitals$transfers,
+      "cities" = prop_data$aggregates$record_cities,
+      "aggregates" = prop_data$aggregates$record_aggregates,
+      "aggregates_transfers" = prop_data$aggregates$transfers,
+      stop("Unknown table: ", table)
+    )
+  } else {
+    # Fallback for different cache formats
+    cli::cli_abort("Unsupported cached data format for property records")
+  }
 }

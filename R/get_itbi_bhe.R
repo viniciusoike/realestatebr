@@ -51,7 +51,6 @@ itbi_bhe_dict <- function() {
 #' @param city Must one of 'bhe', 'spo', 'Belo Horizonte', or 'São Paulo'
 #'
 #' @return A `tibble`
-#' @export
 get_itbi <- function(city = "bhe") {
 
   available_cities_itbi <- c(

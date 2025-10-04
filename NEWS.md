@@ -1,3 +1,232 @@
+# realestatebr 0.4.0
+
+## Major Breaking Changes - API Consolidation
+
+### 🎯 Unified Data Interface
+
+This release implements a **major breaking change** that consolidates 15+ individual `get_*()` functions into a single, unified `get_dataset()` interface. This dramatically simplifies the package API while maintaining full functionality.
+
+**BREAKING CHANGE**: All individual `get_*()` functions have been removed:
+- `get_abecip_indicators()`, `get_abrainc_indicators()`, `get_rppi()`, `get_bcb_realestate()`, etc.
+- **Migration**: Use `get_dataset("dataset_name")` instead
+
+### 📊 CBIC Dataset - Partial Release (Cement Only)
+
+**Note**: In v0.4.0, the CBIC dataset is limited to **cement tables only** (validated data). Steel and PIM tables will be added in v0.4.1.
+
+**Available in v0.4.0**:
+- ✅ `cement_monthly_consumption` - Monthly cement consumption by state
+- ✅ `cement_annual_consumption` - Annual cement consumption by region
+- ✅ `cement_production_exports` - Production, consumption, and export data
+- ✅ `cement_monthly_production` - Monthly cement production by state
+- ✅ `cement_cub_prices` - CUB cement prices by state
+
+**Coming in v0.4.1**:
+- ⏳ Steel prices and production data
+- ⏳ PIM industrial production indices
+
+```r
+# Works in v0.4.0
+get_dataset("cbic")  # Default: cement_monthly_consumption
+get_dataset("cbic", "cement_cub_prices")
+
+# Will error with informative message
+get_dataset("cbic", "steel_prices")  # Deferred to v0.4.1
+```
+
+### 🏗️ New Internal Architecture
+
+- **Internal fetch functions**: Created 12 new `fetch_*()` functions with `@keywords internal`
+- **Registry-driven**: All datasets managed through centralized `inst/extdata/datasets.yaml`
+- **Hierarchical RPPI**: Consolidated `rppi` and `rppi_indices` into single hierarchical structure
+- **Consistent parameters**: All internal functions use standardized `table`, `cached`, `quiet`, `max_retries`
+
+### 📋 Simplified Public API
+
+**New unified interface:**
+```r
+# Get data from any dataset
+data <- get_dataset("abecip")               # Default table
+data <- get_dataset("abecip", table = "sbpe")  # Specific table
+data <- get_dataset("rppi", table = "fipezap")  # Hierarchical access
+
+# Discover datasets
+datasets <- list_datasets()
+info <- get_dataset_info("rppi")
+```
+
+**Removed functions (now internal):**
+- `get_abecip_indicators()` → `get_dataset("abecip")`
+- `get_abrainc_indicators()` → `get_dataset("abrainc")`
+- `get_rppi()` → `get_dataset("rppi")`
+- `get_bcb_realestate()` → `get_dataset("bcb_realestate")`
+- `get_bcb_series()` → `get_dataset("bcb_series")`
+- Plus 10 more functions
+
+### 🔧 Enhanced Data Access
+
+- **Smart fallback**: Auto fallback from GitHub cache → fresh download
+- **Source control**: Explicit `source = "cache"/"github"/"fresh"` options
+- **Better error messages**: Detailed troubleshooting information
+- **Metadata preservation**: All data includes source tracking and download info
+
+### 🧪 Comprehensive Testing
+
+- **New test suite**: `test-internal-functions-0.4.0.R` with 100 tests
+- **Registry validation**: Ensures all datasets have proper internal function mappings
+- **Parameter consistency**: Validates all internal functions follow standard interface
+- **Hierarchical testing**: Comprehensive RPPI access pattern validation
+
+## Migration Guide
+
+### For Existing Code (Breaking Changes)
+
+```r
+# OLD (0.3.x) - Will no longer work
+data <- get_abecip_indicators(table = "sbpe")
+data <- get_rppi(table = "fipezap")
+data <- get_bcb_realestate(table = "all")
+
+# NEW (0.4.0) - Required migration
+data <- get_dataset("abecip", table = "sbpe")
+data <- get_dataset("rppi", table = "fipezap")
+data <- get_dataset("bcb_realestate", table = "all")
+```
+
+### Dataset Name Mapping
+
+| Old Function | New get_dataset() Name |
+|-------------|---------------------|
+| `get_abecip_indicators()` | `"abecip"` |
+| `get_abrainc_indicators()` | `"abrainc"` |
+| `get_rppi()` | `"rppi"` |
+| `get_bcb_realestate()` | `"bcb_realestate"` |
+| `get_bcb_series()` | `"bcb_series"` |
+| `get_rppi_bis()` | `"rppi_bis"` |
+| `get_secovi()` | `"secovi"` |
+| `get_fgv_indicators()` | `"fgv_indicators"` |
+| `get_b3_stocks()` | `"b3_stocks"` |
+| `get_nre_ire()` | `"nre_ire"` |
+| `get_cbic_*()` | `"cbic"` |
+| `get_itbi()` | `"itbi"` |
+| `get_property_records()` | `"registro"` |
+
+### RPPI Consolidation
+
+```r
+# OLD - Multiple functions
+fipezap <- get_rppi_fipezap()
+igmi <- get_rppi_igmi()
+bis <- get_rppi_bis()
+
+# NEW - Unified hierarchical access
+fipezap <- get_dataset("rppi", table = "fipezap")
+igmi <- get_dataset("rppi", table = "igmi")
+bis <- get_dataset("rppi", table = "bis")
+```
+
+## Technical Implementation
+
+### Internal Architecture
+- **12 internal fetch functions**: `fetch_rppi()`, `fetch_abecip()`, etc.
+- **Registry system**: Complete mapping in `datasets.yaml`
+- **Fallback mechanism**: `get_from_internal_function()` → `get_from_legacy_function()`
+- **NAMESPACE cleanup**: Only exports `get_dataset()`, `list_datasets()`, utilities
+
+### Backward Compatibility
+- **Phase 1**: Internal functions call legacy functions for gradual transition
+- **Testing**: Comprehensive test coverage ensures functionality preservation
+- **Error handling**: Graceful degradation with informative error messages
+
+---
+
+*This release represents a major architectural shift toward a unified, maintainable API. While it introduces breaking changes, the new interface is significantly simpler and more powerful.*
+
+**Full Changelog**: https://github.com/viniciusoike/realestatebr/compare/v0.3.0...v0.4.0
+
+---
+
+# realestatebr 0.3.0
+
+## Major Features and Improvements
+
+### 🎯 Phase 2: Data Pipeline Implementation Complete
+
+- **{targets} Pipeline Framework**: Implemented comprehensive targets workflow for automated data processing and validation
+- **Automated Data Workflows**: Added daily and weekly GitHub Actions workflows using the targets pipeline
+- **Data Validation Infrastructure**: Added comprehensive validation rules and reporting for all datasets
+- **Pipeline Performance Monitoring**: Added automated report generation and validation status tracking
+
+### 📊 Enhanced Data Processing
+
+- **Targets Pipeline**: `_targets.R` workflow with automated dependency management and parallel processing
+- **Validation System**: Comprehensive data validation rules with automated quality checks
+- **Pipeline Helpers**: Centralized helper functions for consistent data processing across all sources
+- **Report Generation**: Automated pipeline status reports and data quality summaries
+
+### 🔧 Improved Function Reliability
+
+- **Error Handling**: Enhanced error handling in `cache.R` with better fallback mechanisms
+- **Function Fixes**: Fixed parameter bugs in `get_abrainc_indicators()` (category → table)
+- **Data Access**: Improved `get_nre_ire()` to use internal package data directly
+- **Internal Data**: Updated `sysdata.rda` with latest processed datasets
+
+### 🚀 Infrastructure Improvements
+
+- **Workflow Automation**: Replaced single update workflow with focused daily/weekly pipelines
+- **Cache Management**: Improved cache validation and fallback strategies
+- **Data Source Updates**: Enhanced FGV data cleaning with improved formatting
+- **Dependency Updates**: Added `targets` and `tarchetypes` to package dependencies
+
+### 📈 New Data Sources
+
+- **B3 Stocks**: Added enhanced B3 stock data processing with standardized formatting
+- **FGV Indicators**: Improved FGV consultation data processing and validation
+- **Industrial Production**: Enhanced CBIC PIM data integration
+- **Construction Materials**: Updated CBIC cement and steel data processing
+
+## Technical Implementation
+
+### Targets Pipeline Architecture
+- **Automated Processing**: All datasets now processed through unified targets pipeline
+- **Quality Assurance**: Built-in validation and quality checks for all data sources
+- **Performance Monitoring**: Real-time pipeline status and error reporting
+- **Dependency Management**: Automatic detection of data updates and re-processing
+
+### Enhanced Error Handling
+- **Graceful Degradation**: Improved fallback mechanisms for failed data retrievals
+- **Better Diagnostics**: Enhanced error messages and troubleshooting information
+- **Retry Logic**: Smart retry mechanisms with exponential backoff
+- **Progress Reporting**: Real-time progress updates during long-running operations
+
+### Data Quality Improvements
+- **Validation Rules**: Comprehensive validation for all datasets
+- **Metadata Tracking**: Enhanced metadata preservation and source tracking
+- **Format Standardization**: Consistent data formatting across all sources
+- **Quality Metrics**: Automated quality assessment and reporting
+
+## Migration Notes
+
+### For Existing Users
+- All existing functions continue to work unchanged
+- Enhanced reliability and performance with new pipeline backend
+- Improved error messages and troubleshooting information
+- Better cache management and fallback strategies
+
+### For Developers
+- New targets pipeline provides foundation for custom data workflows
+- Enhanced validation framework for quality assurance
+- Standardized helper functions for consistent data processing
+- Comprehensive pipeline documentation and examples
+
+---
+
+*This release establishes the foundation for automated data processing and validation, setting the stage for Phase 3 implementation with large dataset support.*
+
+**Full Changelog**: https://github.com/viniciusoike/realestatebr/compare/v0.2.0...v0.3.0
+
+---
+
 # realestatebr 0.2.0
 
 ## Major Features and Improvements
@@ -65,7 +294,7 @@
 - `get_b3_stocks()` - B3 stock market data with improved column naming
 - `get_bcb_realestate()` - Central Bank real estate credit data
 - `get_bcb_series()` - BCB macroeconomic time series
-- `get_bis_rppi()` - Bank for International Settlements RPPI data
+- `get_rppi_bis()` - Bank for International Settlements RPPI data
 - `get_cbic_cement()` - CBIC cement industry data (NEW)
 - `get_cbic_steel()` - CBIC steel industry data (NEW)
 - `get_cbic_pim()` - CBIC industrial production data (NEW)
@@ -76,7 +305,7 @@
 - `get_secovi()` - SECOVI-SP real estate data with parallel processing
 
 ### Legacy Functions (Maintained)
-- `get_rppi_bis()` - Maintained as deprecated wrapper with modernized backend
+- `get_rppi_bis()` - Main function with modernized backend and single tibble returns
 - `get_itbi()` and `get_itbi_bhe()` - Planned for Phase 3 (DuckDB integration)
 
 ## Infrastructure Improvements

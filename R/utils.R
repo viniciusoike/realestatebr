@@ -148,3 +148,112 @@ add_geo_dimensions <- function(df, key = c("name_simplified", "abbrev_state")) {
   joined <- dplyr::left_join(df, dim_city, by = key)
   return(joined)
 }
+
+#' Check if Debug Mode is Enabled
+#'
+#' @description
+#' Checks whether debug mode is enabled for detailed package messaging.
+#' Debug mode can be enabled via environment variable or package option.
+#'
+#' @return Logical. TRUE if debug mode is enabled, FALSE otherwise.
+#'
+#' @details
+#' Debug mode can be enabled in two ways (checked in order of precedence):
+#' 1. Environment variable: `REALESTATEBR_DEBUG=TRUE`
+#' 2. Package option: `options(realestatebr.debug = TRUE)`
+#'
+#' When debug mode is enabled, all detailed processing messages are shown,
+#' including file-by-file progress, type detection, and intermediate steps.
+#' This is useful for development and troubleshooting.
+#'
+#' @examples
+#' \dontrun{
+#' # Check current debug mode status
+#' is_debug_mode()
+#'
+#' # Enable debug mode via option
+#' options(realestatebr.debug = TRUE)
+#' is_debug_mode()  # Returns TRUE
+#'
+#' # Enable debug mode via environment variable
+#' Sys.setenv(REALESTATEBR_DEBUG = "TRUE")
+#' is_debug_mode()  # Returns TRUE
+#' }
+#'
+#' @keywords internal
+is_debug_mode <- function() {
+  # Check environment variable first (takes precedence)
+  debug_env <- Sys.getenv("REALESTATEBR_DEBUG", "")
+  if (debug_env %in% c("TRUE", "1", "true")) return(TRUE)
+
+  # Check package option
+  debug_opt <- getOption("realestatebr.debug", FALSE)
+  return(isTRUE(debug_opt))
+}
+
+#' Debug-Level Messaging
+#'
+#' @description
+#' Displays informational messages only when debug mode is enabled.
+#' This function is a wrapper around `cli::cli_inform()` that respects
+#' the debug mode setting.
+#'
+#' @param message Character string. The message to display.
+#' @param ... Additional arguments passed to `cli::cli_inform()`.
+#'
+#' @details
+#' This function should be used for detailed processing messages that are
+#' useful for development and debugging but would be too verbose for
+#' end-users. Messages are only shown when debug mode is enabled via
+#' `is_debug_mode()`.
+#'
+#' @examples
+#' \dontrun{
+#' # This message only appears in debug mode
+#' cli_debug("Processing file: {filename}")
+#'
+#' # Enable debug mode to see the message
+#' options(realestatebr.debug = TRUE)
+#' cli_debug("Now you can see this message")
+#' }
+#'
+#' @seealso [is_debug_mode()]
+#' @keywords internal
+cli_debug <- function(message, ...) {
+  if (is_debug_mode()) {
+    cli::cli_inform(message, ...)
+  }
+}
+
+#' User-Level Messaging
+#'
+#' @description
+#' Displays concise informational messages for end-users.
+#' This function shows a simplified, clean message unless the user
+#' has requested verbose output via the quiet parameter.
+#'
+#' @param message Character string. The message to display.
+#' @param quiet Logical. If TRUE, suppresses the message.
+#' @param ... Additional arguments passed to `cli::cli_inform()`.
+#'
+#' @details
+#' This function should be used for essential status messages that
+#' provide value to end-users, such as final results or major milestones.
+#' The message is shown unless explicitly suppressed by quiet=TRUE.
+#'
+#' @examples
+#' \dontrun{
+#' # Always shows unless quiet=TRUE
+#' cli_user("✓ Dataset loaded: 1,234 records")
+#'
+#' # Respects quiet parameter
+#' cli_user("Processing complete", quiet = FALSE)  # Shows
+#' cli_user("Processing complete", quiet = TRUE)   # Hidden
+#' }
+#'
+#' @keywords internal
+cli_user <- function(message, quiet = FALSE, ...) {
+  if (!quiet) {
+    cli::cli_inform(message, ...)
+  }
+}

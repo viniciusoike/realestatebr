@@ -6,8 +6,8 @@
 \usage{
 get_dataset(
   name,
-  source = "auto",
   table = NULL,
+  source = "auto",
   date_start = NULL,
   date_end = NULL,
   ...
@@ -16,6 +16,9 @@ get_dataset(
 \arguments{
 \item{name}{Character. Dataset name (see list_datasets() for available options)}
 
+\item{table}{Character. Specific table within dataset (optional).
+Use get_dataset_info(name) to see available tables.}
+
 \item{source}{Character. Data source preference:
 \describe{
 \item{"auto"}{Automatic fallback: cache → GitHub → fresh (default)}
@@ -23,9 +26,6 @@ get_dataset(
 \item{"github"}{GitHub repository cache}
 \item{"fresh"}{Fresh download from original source}
 }}
-
-\item{table}{Character. Specific table within dataset (optional).
-Use get_dataset_info(name) to see available tables.}
 
 \item{date_start}{Date. Start date for time series data (where applicable)}
 
@@ -41,13 +41,55 @@ Use get_dataset_info(name) to see the expected structure.
 Unified interface for accessing all realestatebr package datasets with automatic
 fallback between different data sources (cache, GitHub, fresh download).
 }
+\section{Debug Mode}{
+
+The realestatebr package includes a comprehensive debug mode for development
+and troubleshooting. Debug mode shows detailed processing messages including
+file-by-file progress, data type detection, web scraping steps, and more.
+
+\strong{Enable debug mode:}
+\describe{
+\item{Environment variable}{Set \code{REALESTATEBR_DEBUG=TRUE} in your environment}
+\item{Package option}{Use \code{options(realestatebr.debug = TRUE)}}
+}
+
+\strong{Debug mode examples:}
+\preformatted{
+# Enable debug mode via environment variable
+Sys.setenv(REALESTATEBR_DEBUG = "TRUE")
+data <- get_dataset("cbic")  # Shows detailed processing messages
+
+# Enable debug mode via package option
+options(realestatebr.debug = TRUE)
+data <- get_dataset("rppi")  # Shows detailed processing messages
+
+# Disable debug mode
+options(realestatebr.debug = FALSE)
+# or
+Sys.unsetenv("REALESTATEBR_DEBUG")
+}
+
+\strong{What debug mode shows:}
+\itemize{
+\item File download progress and retry attempts
+\item Excel sheet processing steps
+\item Data type detection and validation
+\item Web scraping details and error handling
+\item Cache access and fallback operations
+\item Data cleaning and transformation steps
+}
+
+Debug mode is particularly useful when troubleshooting data access issues,
+understanding complex dataset processing, or developing new functionality.
+}
+
 \examples{
 \dontrun{
-# Get all ABECIP indicators
+# Get all ABECIP indicators (default table)
 abecip_data <- get_dataset("abecip")
 
 # Get only SBPE data from ABECIP
-sbpe_data <- get_dataset("abecip", table = "sbpe")
+sbpe_data <- get_dataset("abecip", "sbpe")
 
 # Force fresh download
 fresh_data <- get_dataset("bcb_realestate", source = "fresh")

@@ -1,0 +1,320 @@
+---
+title: "Working with Property Price Indices"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Working with Property Price Indices}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Introduction
+
+Brazil has several Residential Property Price Indices (RPPI) from different
+sources. This vignette shows how to access and work with them using the
+realestatebr package.
+
+```{r setup, message=FALSE, eval=FALSE}
+library(realestatebr)
+library(dplyr)
+library(ggplot2)
+```
+
+## Available RPPI Datasets
+
+### Individual Indices
+
+Access specific RPPI by name:
+
+```{r, eval=FALSE}
+# FipeZap Index (most comprehensive - 20 cities)
+fipezap <- get_dataset("rppi", "fipezap")
+
+# IVGR - National sales index from BCB
+ivgr <- get_dataset("rppi", "ivgr")
+
+# IGMI - Hedonic sales index from FGV
+igmi <- get_dataset("rppi", "igmi")
+
+# IVAR - Rent index from FGV
+ivar <- get_dataset("rppi", "ivar")
+
+# IQA - QuintoAndar rent prices
+iqa <- get_dataset("rppi", "iqa")
+
+# Secovi-SP - São Paulo market index
+secovi_sp <- get_dataset("rppi", "secovi_sp")
+```
+
+### Stacked Indices
+
+For easy comparison across sources:
+
+```{r, eval=FALSE}
+# All sale indices in one table
+sale_indices <- get_dataset("rppi", "sale")
+unique(sale_indices$source)
+# Shows: IGMI-R, IVG-R, FipeZap, Secovi-SP
+
+# All rent indices
+rent_indices <- get_dataset("rppi", "rent")
+unique(rent_indices$source)
+# Shows: IVAR, IQA, Secovi-SP, FipeZap
+```
+
+## Understanding the Data Structure
+
+### Common Columns
+
+Most RPPI datasets share these columns:
+
+- **date**: Reference date (usually month-end)
+- **index**: Index number (base varies by source)
+- **chg**: Monthly percent change
+- **acum12m**: 12-month accumulated change
+- **name_muni**: City or region name
+
+### Special Cases
+
+**IQA**: Returns `rent_price` (median rent per m²) instead of an index
+
+**FipeZap**: Most detailed with additional columns:
+- **market**: residential or commercial
+- **rooms**: breakdown by number of rooms
+- **variable**: index, price_m2, or listings
+- **rent_sale**: sale or rent
+
+## Example: Comparing National Sale Indices
+
+```{r, eval=FALSE}
+# Get stacked sale data
+sales <- get_dataset("rppi", "sale")
+
+# Filter for national indices
+national <- sales |>
+  filter(name_muni %in% c("Brazil", "Brasil"))
+
+# Plot comparison
+ggplot(national, aes(x = date, y = index, color = source)) +
+  geom_line(linewidth = 1) +
+  labs(title = "Brazil National RPPI - Sales",
+       subtitle = "Different methodologies, same trend",
+       x = NULL,
+       y = "Index (base varies by source)",
+       color = "Source") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+## Example: FipeZap by City
+
+```{r, eval=FALSE}
+# Get FipeZap data
+fz <- get_dataset("rppi", "fipezap")
+
+# Filter for major cities - residential sale index
+cities <- fz |>
+  filter(
+    market == "residential",
+    rooms == "total",
+    variable == "index",
+    rent_sale == "sale",
+    name_muni %in% c("São Paulo", "Rio De Janeiro", "Belo Horizonte")
+  )
+
+# Plot
+ggplot(cities, aes(x = date, y = value, color = name_muni)) +
+  geom_line(linewidth = 1) +
+  labs(title = "FipeZap Sale Index - Major Cities",
+       x = NULL,
+       y = "Index",
+       color = "City") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+## Example: Rent vs Sale - São Paulo
+
+```{r, eval=FALSE}
+# Get FipeZap data
+fz <- get_dataset("rppi", "fipezap")
+
+# Filter for São Paulo - both rent and sale
+sp_data <- fz |>
+  filter(
+    name_muni == "São Paulo",
+    market == "residential",
+    rooms == "total",
+    variable == "index"
+  ) |>
+  select(date, rent_sale, value)
+
+# Plot comparison
+ggplot(sp_data, aes(x = date, y = value, color = rent_sale)) +
+  geom_line(linewidth = 1) +
+  labs(title = "São Paulo: Rent vs Sale Index",
+       subtitle = "FipeZap residential index",
+       x = NULL,
+       y = "Index",
+       color = "Type") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+## Example: Regional Comparison with IGMI
+
+```{r, eval=FALSE}
+# Get IGMI data
+igmi <- get_dataset("rppi", "igmi")
+
+# Major cities comparison
+cities_igmi <- igmi |>
+  filter(name_muni %in% c("São Paulo", "Rio De Janeiro",
+                          "Belo Horizonte", "Brasília"))
+
+# Plot with facets
+ggplot(cities_igmi, aes(x = date, y = index)) +
+  geom_line(color = "steelblue", linewidth = 1) +
+  facet_wrap(~name_muni, scales = "free_y") +
+  labs(title = "IGMI Sale Index by City",
+       x = NULL,
+       y = "Index") +
+  theme_minimal()
+```
+
+## Example: Year-over-Year Changes
+
+```{r, eval=FALSE}
+# Get IVGR national index
+ivgr <- get_dataset("rppi", "ivgr")
+
+# Plot 12-month accumulated change
+ggplot(ivgr, aes(x = date, y = acum12m)) +
+  geom_line(linewidth = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Brazil Property Prices - Year-over-Year Change",
+       subtitle = "IVG-R from BCB",
+       x = NULL,
+       y = "12-month accumulated change (%)") +
+  theme_minimal()
+```
+
+## International Comparison (BIS)
+
+The package also includes international RPPI data from the Bank for
+International Settlements:
+
+```{r, eval=FALSE}
+# Get BIS international RPPI
+bis <- get_dataset("rppi_bis")
+
+# Filter for select countries
+countries <- bis |>
+  filter(
+    reference_area %in% c("Brazil", "United States", "Japan", "Germany"),
+    is_nominal == TRUE,
+    unit == "Index, 2010 = 100",
+    date >= as.Date("2000-01-01")
+  )
+
+# Plot comparison
+ggplot(countries, aes(x = date, y = value, color = reference_area)) +
+  geom_line(linewidth = 1) +
+  labs(title = "Residential Property Prices - International",
+       subtitle = "Nominal indices, 2010 = 100",
+       x = NULL,
+       y = "Index (2010 = 100)",
+       color = "Country") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+## Understanding Index Bases
+
+Each RPPI uses a different base period:
+
+- **FipeZap**: January 2011 = 100
+- **IVGR**: January 2010 = 100
+- **IGMI**: August 2010 = 100
+- **IVAR**: January 2010 = 100
+- **Secovi-SP**: January 2009 = 100
+
+When comparing indices, focus on **growth rates** (chg, acum12m) rather than
+absolute index levels.
+
+## Key Differences Between Indices
+
+### Coverage
+
+- **FipeZap**: 20 cities, most comprehensive geographic coverage
+- **IVGR**: National focus with some city detail
+- **IGMI**: Major cities with hedonic adjustment
+- **IVAR**: 16 cities, rent-specific
+- **IQA**: Median rent prices (not an index)
+
+### Methodology
+
+- **IGMI**: Hedonic pricing model (controls for property characteristics)
+- **IVGR/IVAR**: Repeat-sales methodology
+- **FipeZap**: Median prices from listings
+- **IQA**: Actual contract prices (unique!)
+
+### Frequency
+
+All indices are monthly, but historical coverage varies:
+- IVGR: 2001-present
+- IGMI: 2010-present
+- FipeZap: 2011-present
+- IVAR: 2008-present
+
+## Tips for Analysis
+
+### 1. Use Stacked Data for Comparisons
+
+```{r, eval=FALSE}
+# Easier than merging individual datasets
+all_sale <- get_dataset("rppi", "sale")
+
+# Filter and compare
+all_sale |>
+  filter(name_muni == "São Paulo") |>
+  ggplot(aes(x = date, y = acum12m, color = source)) +
+  geom_line()
+```
+
+### 2. Normalize Indices for Comparison
+
+```{r, eval=FALSE}
+# Rebase all indices to the same starting point
+sales <- get_dataset("rppi", "sale")
+
+sales_normalized <- sales |>
+  group_by(source) |>
+  mutate(index_normalized = 100 * index / first(index)) |>
+  ungroup()
+```
+
+### 3. Focus on Growth Rates
+
+```{r, eval=FALSE}
+# More comparable than absolute levels
+sales |>
+  ggplot(aes(x = date, y = acum12m, color = source)) +
+  geom_line()
+```
+
+## Next Steps
+
+- See `vignette("getting-started")` for package basics
+- See `?get_dataset` for all available tables
+- Explore city-level data with FipeZap
+- Compare methodologies across indices
+- Analyze rent vs sale dynamics

@@ -56,7 +56,7 @@ jobs:
 
       - name: Check current cache status
         run: |
-          Rscript -e 'source("data-raw/generate_report.R"); generate_quick_status()'
+          Rscript -e 'source("data-raw/pipeline/generate_report.R"); generate_quick_status()'
 
       - name: Determine targets to run
         id: determine-targets
@@ -96,8 +96,8 @@ jobs:
       - name: Validate updated data
         run: |
           Rscript -e '
-            source("data-raw/validation.R")
-            source("data-raw/targets_helpers.R")
+            source("data-raw/pipeline/validation.R")
+            source("data-raw/pipeline/targets_helpers.R")
 
             # Validate cache integrity
             cache_valid <- validate_cache_integrity()
@@ -117,7 +117,7 @@ jobs:
 
       - name: Generate comprehensive report
         run: |
-          Rscript -e 'source("data-raw/generate_report.R"); generate_pipeline_report()'
+          Rscript -e 'source("data-raw/pipeline/generate_report.R"); generate_pipeline_report()'
 
       - name: Check if there are changes to commit
         id: verify-changed-files

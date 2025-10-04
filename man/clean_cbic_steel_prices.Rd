@@ -27,7 +27,7 @@ Steel data has different structure than cement data.
 }
 \examples{
 \dontrun{
-steel_files <- get_cbic_files("aço")
+steel_files <- get_cbic_files("aco")
 prices <- clean_cbic_steel_prices(steel_files$file_path[1])
 }
 }

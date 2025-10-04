@@ -4,7 +4,7 @@
 \alias{import_cbic_files}
 \title{Import all Excel files for a specific CBIC material}
 \usage{
-import_cbic_files(file_params, dest_dir = tempdir())
+import_cbic_files(file_params, dest_dir = tempdir(), quiet = FALSE)
 }
 \arguments{
 \item{file_params}{A tibble. Output from import_cbic_material_links()}

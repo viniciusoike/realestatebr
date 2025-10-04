@@ -37,7 +37,7 @@ error handling, progress reporting, and robust CSV download capabilities.
 }
 \details{
 The IQA, or QuintoAndar Rental Index, is a median stratified index calculated
-for Brazil's two main cities: Rio de Janeiro and São Paulo. The source of the
+for Brazil's two main cities: Rio de Janeiro and Sao Paulo. The source of the
 data are all the new rent contracts managed by QuintoAndar. The Index includes
 only apartments and similar units such as studios and flats.
 

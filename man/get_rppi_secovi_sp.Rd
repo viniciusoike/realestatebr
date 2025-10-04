@@ -22,6 +22,6 @@ A \code{tibble} with the Secovi Rent Index where:
 }
 }
 \description{
-Imports the Secovi-SP rent index for São Paulo with modern error handling
+Imports the Secovi-SP rent index for Sao Paulo with modern error handling
 and progress reporting capabilities.
 }

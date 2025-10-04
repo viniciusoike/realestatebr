@@ -40,7 +40,6 @@
 #' automatic retries and informative error messages.
 #'
 #' @param table Character. One of `'indicator'` (default), `'radar'`, `'leading'`, or `'all'`.
-#' @param category Character. **Deprecated**. Use `table` parameter instead.
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
 #'   using the unified dataset architecture.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
@@ -56,7 +55,6 @@
 #'     \item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @export
 #' @source Abrainc-Fipe available at [https://www.fipe.org.br/pt-br/indices/abrainc](https://www.fipe.org.br/pt-br/indices/abrainc)
 #' @importFrom cli cli_inform cli_warn cli_abort cli_progress_bar cli_progress_update cli_progress_done
 #' @importFrom dplyr filter select mutate rename left_join group_by slice
@@ -79,23 +77,13 @@
 #' }
 get_abrainc_indicators <- function(
   table = "indicator",
-  category = NULL,
   cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Deprecation warning ----
-  .Deprecated("get_dataset",
-             msg = "get_abrainc_indicators() is deprecated. Use get_dataset('abrainc_indicators') instead.")
-
   # Input validation and backward compatibility ----
   valid_tables <- c("all", "indicator", "radar", "leading")
 
-  # Handle backward compatibility: if category is provided, use it as table
-  if (!is.null(category)) {
-    cli::cli_warn("The 'category' parameter is deprecated. Use 'table' instead.")
-    table <- category
-  }
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
@@ -223,6 +211,8 @@ get_abrainc_indicators <- function(
   # Name each element of the list
   if (table == "all") {
     category <- names(vl)
+  } else {
+    category <- table
   }
   names(abrainc) <- category
   out <- purrr::map(category, function(x) {
@@ -389,7 +379,7 @@ clean_abrainc <- function(ls, category) {
   # Clean the tibble
   clean_df <- abrainc_basic_clean(df, subcategories[[category]])
 
-  if (table == "indicator") {
+  if (category == "indicator") {
     # Join final table with labels for variables
     clean_df <- dplyr::left_join(
       clean_df,
@@ -398,7 +388,7 @@ clean_abrainc <- function(ls, category) {
     )
   }
 
-  if (table == "leading") {
+  if (category == "leading") {
     clean_df <- clean_df |>
       # Fix the Zone column and join with variable labels
       dplyr::mutate(
@@ -408,7 +398,7 @@ clean_abrainc <- function(ls, category) {
       dplyr::left_join(labels, by = dplyr::join_by(variable))
   }
 
-  if (table == "radar") {
+  if (category == "radar") {
     clean_df <- clean_df |>
       # Compute yearly averages for categories and variables
       dplyr::mutate(
@@ -573,11 +563,11 @@ abrainc_fipe_col_names <- function() {
     "alvaras_total",
     "Number of Building Permits (per month)",
     "alvaras_prop",
-    "Distribution of Building Permits in São Paulo (Total)",
+    "Distribution of Building Permits in S\u00e3o Paulo (Total)",
     "alvaras_total_12m",
     "Building Permits (12-month cumulative)",
     "alvaras_prop_12m",
-    "Distribution of Building Permits in São Paulo (%)"
+    "Distribution of Building Permits in S\u00e3o Paulo (%)"
   )
 
   out <- list(

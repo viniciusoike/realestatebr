@@ -1,7 +1,7 @@
 Package: realestatebr
 Type: Package
 Title: Import Brazilian Real Estate Data into R
-Version: 0.3.0
+Version: 0.4.0
 Author: Vinicius Oike Reginatto
 Maintainer: Vinicius Oike Reginatto <viniciusoike@gmail.com>
 Description: This package offers a suite of functions that import real estate
@@ -11,23 +11,25 @@ URL: https://viniciusoike.github.io/realestatebr/
 Encoding: UTF-8
 LazyData: true
 Depends:
-    R (>= 3.5)
+    R (>= 4.1.0)
 RoxygenNote: 7.3.3
 Imports:
     cli,
     dplyr,
-    GetBCBData,
+    geobr,
     glue,
     httr,
     janitor,
     lifecycle,
     lubridate,
     purrr,
-    quantmod,
+    rbcb,
     readr,
     readxl,
     rlang,
     rvest,
+    sf,
+    stringi,
     stringr,
     tibble,
     tidyr,

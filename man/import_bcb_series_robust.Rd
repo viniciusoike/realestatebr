@@ -15,7 +15,7 @@ import_bcb_series_robust(codes_bcb, date_start, quiet, max_retries, ...)
 
 \item{max_retries}{Maximum number of retry attempts}
 
-\item{...}{Additional arguments passed to GetBCBData::gbcbd_get_series}
+\item{...}{Additional arguments passed to rbcb::get_series}
 }
 \value{
 Downloaded BCB API data
