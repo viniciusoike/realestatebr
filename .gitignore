@@ -63,3 +63,6 @@ rb3/
 
 # Backup directory
 backup/
+
+/.quarto/
+README.html
