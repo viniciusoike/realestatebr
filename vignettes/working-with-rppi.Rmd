@@ -94,7 +94,7 @@ Most RPPI datasets share these columns:
 
 ### QuintoAndar (IQA)
 
-Unlike other indices, IQA provides actual rent prices instead of an index. Creating an based index from these prices is straightforward. The code below shows how to create a base 100 index for each municipality, using the first available rent price as the base (i.e. 2019/06 = 100).
+Unlike other indices, IQA provides actual rent prices instead of an index. Creating a base index from these prices is straightforward. The code below shows how to create a base 100 index for each municipality, using the first available rent price as the base (i.e. 2019/06 = 100).
 
 ```{r}
 library(dplyr)
@@ -184,13 +184,10 @@ cities <- fz |>
 
 base_index <- cities |>
   filter(between(date, as.Date("2019-01-01"), as.Date("2019-12-31"))) |>
-  summarise(
-    base_index = mean(value),
-    .by = c("name_muni", "rent_sale")
-  )
+  summarise(base_index = mean(value), .by = c(name_muni, rent_sale))
 
 cities <- cities |>
-  left_join(base_index, by = c("name_muni", "rent_sale")) |>
+  left_join(base_index, join_by(name_muni, rent_sale)) |>
   mutate(new_index = 100 * value / base_index) |>
   select(-base_index)
 
@@ -275,8 +272,8 @@ ggplot(countries, aes(x = date, y = value, color = reference_area)) +
 - **IGMI**: Hedonic pricing model (controls for property characteristics).
 - **IVAR**: Repeat-sales methodology.
 - **FipeZap**: Median prices from listings.
-- **IQA** (old): Median prices form rental contract prices.
-- **IQA** (new): Hedonic pricing model from both listting and contract prices.
+- **IQA** (old): Median prices from rental contract prices.
+- **IQA** (new): Hedonic pricing model from both listing and contract prices.
 
 ### Frequency
 
