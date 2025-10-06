@@ -190,6 +190,12 @@ datasets:
         type: "rent"
         coverage: "Major cities"
         source: "QuintoAndar"
+      iqaiw:
+        name: "IQAIW - Índice QuintoAndar ImovelWeb"
+        description: "QuintoAndar ImovelWeb hedonic rent price index"
+        type: "rent"
+        coverage: "Major cities (6 cities)"
+        source: "QuintoAndar"
       ivar:
         name: "IVAR - Índice de Valores de Aluguéis Residenciais"
         description: "Residential rent values index"
@@ -228,6 +234,7 @@ datasets:
       ivgr: "rppi_ivgr.csv.gz"
       igmi: "rppi_igmi.csv.gz"
       iqa: "rppi_iqa.csv.gz"
+      iqaiw: "rppi_iqaiw.csv.gz"
       ivar: "rppi_ivar.csv.gz"
       secovi_sp: "secovi_sp.csv.gz"
     translation_notes: "Index methodologies vary by source; base periods normalized where possible"

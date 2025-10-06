@@ -456,7 +456,7 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
     "rppi_bis" = "bis_selected", # Updated to use rppi_bis dataset name
     "rppi" = if (
       !is.null(table) &&
-        table %in% c("fipezap", "igmi", "ivgr", "iqa", "ivar", "secovi_sp")
+        table %in% c("fipezap", "igmi", "ivgr", "iqa", "iqaiw", "ivar", "secovi_sp")
     ) {
       # Map individual RPPI tables to their cached files
       switch(
@@ -465,6 +465,7 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
         "igmi" = "rppi_igmi",
         "ivgr" = "rppi_ivgr",
         "iqa" = "rppi_iqa",
+        "iqaiw" = "rppi_iqaiw",
         "ivar" = "rppi_ivar",
         "secovi_sp" = "secovi_sp"
       )
