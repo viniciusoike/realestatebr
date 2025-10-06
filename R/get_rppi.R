@@ -363,12 +363,11 @@ get_rppi_iqa <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
       name_muni = stringr::str_to_title(name_muni, locale = "pt_BR"),
       rent_price = as.numeric(rent_price)
     ) |>
-    dplyr::group_by(name_muni) |>
     dplyr::mutate(
       chg = rent_price / dplyr::lag(rent_price) - 1,
-      acum12m = rent_price / dplyr::lag(rent_price, n = 12) - 1
-    ) |>
-    dplyr::ungroup()
+      acum12m = rent_price / dplyr::lag(rent_price, n = 12) - 1,
+      .by = name_muni
+    )
 }
 
 #' Get IVAR Rent Index

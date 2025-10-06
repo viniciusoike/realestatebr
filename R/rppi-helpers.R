@@ -17,13 +17,16 @@ NULL
 #' @keywords internal
 #' @noRd
 try_rppi_cached <- function(table, source_filter = NULL) {
-  tryCatch({
-    data <- get_dataset("rppi", table, source = "github")
-    if (!is.null(source_filter)) {
-      data <- dplyr::filter(data, source == source_filter)
-    }
-    data
-  }, error = function(e) NULL)
+  tryCatch(
+    {
+      data <- get_dataset("rppi", table, source = "github")
+      if (!is.null(source_filter)) {
+        data <- dplyr::filter(data, source == source_filter)
+      }
+      data
+    },
+    error = function(e) NULL
+  )
 }
 
 #' Download with Retry Logic
@@ -37,15 +40,24 @@ try_rppi_cached <- function(table, source_filter = NULL) {
 #' @return Result from fn() if successful
 #' @keywords internal
 #' @noRd
-download_with_retry <- function(fn, max_retries = 3, quiet = FALSE, desc = "Download") {
+download_with_retry <- function(
+  fn,
+  max_retries = 3,
+  quiet = FALSE,
+  desc = "Download"
+) {
   for (i in seq_len(max_retries + 1)) {
     result <- tryCatch(fn(), error = function(e) {
       if (i <= max_retries && !quiet) {
-        cli::cli_warn("{desc} attempt {i}/{max_retries + 1} failed: {e$message}")
+        cli::cli_warn(
+          "{desc} attempt {i}/{max_retries + 1} failed: {e$message}"
+        )
       }
       NULL
     })
-    if (!is.null(result)) return(result)
+    if (!is.null(result)) {
+      return(result)
+    }
     if (i <= max_retries) Sys.sleep(min(i * 0.5, 3))
   }
   cli::cli_abort("{desc} failed after {max_retries + 1} attempts")
@@ -61,21 +73,33 @@ download_with_retry <- function(fn, max_retries = 3, quiet = FALSE, desc = "Down
 #' @return Data with chg and acum12m columns added
 #' @keywords internal
 #' @noRd
-calculate_rppi_changes <- function(data, index_col = "index", group_col = NULL) {
-  if (!is.null(group_col)) {
-    data <- data |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(group_col)))
-  }
-
+calculate_rppi_changes <- function(
+  data,
+  index_col = "index",
+  group_col = NULL
+) {
   data <- data |>
     dplyr::mutate(
       chg = .data[[index_col]] / dplyr::lag(.data[[index_col]]) - 1,
-      acum12m = zoo::rollapplyr(1 + chg, width = 12, FUN = prod, fill = NA) - 1
+      acum12m = zoo::rollapplyr(1 + chg, width = 12, FUN = prod, fill = NA) - 1,
+      # Default is NULL (i.e. ungrouped), so this does nothing if group_col is NULL
+      .by = group_col
     )
 
-  if (!is.null(group_col)) {
-    data <- data |> dplyr::ungroup()
-  }
+  # if (!is.null(group_col)) {
+  #   data <- data |>
+  #     dplyr::group_by(dplyr::across(dplyr::all_of(group_col)))
+  # }
+
+  # data <- data |>
+  #   dplyr::mutate(
+  #     chg = .data[[index_col]] / dplyr::lag(.data[[index_col]]) - 1,
+  #     acum12m = zoo::rollapplyr(1 + chg, width = 12, FUN = prod, fill = NA) - 1
+  #   )
+
+  # if (!is.null(group_col)) {
+  #   data <- data |> dplyr::ungroup()
+  # }
 
   data
 }
