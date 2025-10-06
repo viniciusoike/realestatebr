@@ -64,11 +64,11 @@ jobs:
           target_group="${{ github.event.inputs.target_group || 'weekly' }}"
 
           if [ "$target_group" == "weekly" ]; then
-            targets="bcb_series_data,bcb_realestate_data,fgv_indicators_data,abecip_data,abrainc_data,secovi_data,rppi_sale_data,rppi_rent_data,cache_weekly_data"
+            targets="bcb_series_data,bcb_realestate_data,fgv_ibre_data,abecip_data,abrainc_data,secovi_data,rppi_sale_data,rppi_rent_data,cache_weekly_data"
           elif [ "$target_group" == "monthly" ]; then
             targets="bis_rppi_data,cbic_data,property_records_data,nre_ire_data,cache_monthly_data"
           elif [ "$target_group" == "all" ]; then
-            targets="bcb_series_data,bcb_realestate_data,fgv_indicators_data,abecip_data,abrainc_data,secovi_data,rppi_sale_data,rppi_rent_data,bis_rppi_data,cbic_data,property_records_data,nre_ire_data,cache_weekly_data,cache_monthly_data"
+            targets="bcb_series_data,bcb_realestate_data,fgv_ibre_data,abecip_data,abrainc_data,secovi_data,rppi_sale_data,rppi_rent_data,bis_rppi_data,cbic_data,property_records_data,nre_ire_data,cache_weekly_data,cache_monthly_data"
           fi
 
           echo "targets=$targets" >> $GITHUB_OUTPUT
