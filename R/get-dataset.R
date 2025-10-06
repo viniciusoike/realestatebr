@@ -104,6 +104,15 @@ get_dataset <- function(
 
   dataset_info <- registry$datasets[[name]]
 
+  # Check if dataset is hidden
+  if (!is.null(dataset_info$status) && dataset_info$status == "hidden") {
+    cli::cli_abort(c(
+      "Dataset '{name}' is not available in this version",
+      "i" = "This dataset is under development",
+      "i" = "Planned for future release"
+    ))
+  }
+
   # Validate and resolve table parameter
   table_info <- validate_and_resolve_table(name, dataset_info, table)
   resolved_table <- table_info$resolved_table
@@ -466,7 +475,7 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
     "bcb_series" = "bcb_series",
     "b3_stocks" = "b3_stocks",
     "fgv_ibre" = "fgv_ibre",
-    "nre_ire" = "ire"
+    "nre_ire" = "nre_ire"
   )
 
   return(name_mapping[[name]])

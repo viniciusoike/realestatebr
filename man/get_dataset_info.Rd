@@ -24,7 +24,7 @@ and column descriptions.
 \examples{
 \dontrun{
 # Get detailed info for ABECIP indicators
-info <- get_dataset_info("abecip_indicators")
+info <- get_dataset_info("abecip")
 str(info)
 }
 

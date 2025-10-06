@@ -29,6 +29,6 @@ A data frame with 140 rows and 10 columns:
 bcb_metadata
 }
 \description{
-A table with metadata that supports the \code{get_bcb_series()} function.
+A table with metadata for BCB economic series. Use with \code{get_dataset("bcb_series")}.
 }
 \keyword{datasets}

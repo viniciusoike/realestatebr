@@ -2,26 +2,25 @@
 % Please edit documentation in R/get_rppi.R
 \name{get_rppi_secovi_sp}
 \alias{get_rppi_secovi_sp}
-\title{Get the Secovi-SP Rent Index}
+\title{Get Secovi-SP Rent Index}
 \usage{
 get_rppi_secovi_sp(cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache.}
+\item{cached}{Logical. If TRUE, loads from GitHub cache}
 
-\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.}
+\item{quiet}{Logical. If TRUE, suppresses warnings}
 
-\item{max_retries}{Integer. Maximum number of retry attempts.}
+\item{max_retries}{Integer. Maximum retry attempts}
 }
 \value{
-A \code{tibble} with the Secovi Rent Index where:
-\itemize{
-\item \code{index} is the index-number.
-\item \code{chg} is the monthly change.
-\item \code{acum12m} is the year-on-year change.
-}
+Tibble with columns: date, name_muni, index, chg, acum12m
 }
 \description{
-Imports the Secovi-SP rent index for Sao Paulo with modern error handling
-and progress reporting capabilities.
+Get Secovi-SP Rent Index
 }
+\details{
+Secovi-SP rent price index for São Paulo. Wrapper around get_secovi() that
+extracts and formats rent price data as RPPI.
+}
+\keyword{internal}

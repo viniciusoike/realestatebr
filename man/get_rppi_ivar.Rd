@@ -7,7 +7,7 @@
 get_rppi_ivar(cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{cached}{Logical. If TRUE, loads from GitHub cache}
+\item{cached}{Logical. If TRUE, loads from GitHub cache (recommended)}
 
 \item{quiet}{Logical. If TRUE, suppresses warnings}
 
@@ -25,5 +25,10 @@ comparing the same housing unit over time. Based on rental contracts from broker
 Available for 4 major cities (São Paulo, Rio, Porto Alegre, Belo Horizonte); the
 national index is a weighted average. More theoretically sound than IGP-M for rent
 contracts as it measures only rent prices.
+}
+\note{
+IVAR data is only available from cache as the source data (FGV) is not
+accessible via web scraping. This function will automatically use cached data
+when source data is unavailable.
 }
 \keyword{internal}

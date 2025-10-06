@@ -317,7 +317,7 @@ datasets:
     internal_function: "fetch_nre"
     legacy_function: "get_nre_ire"
     data_type: "tibble"
-    cached_file: "ire.rds"
+    cached_file: "nre_ire.rds"
     cached_only: true
     translation_notes: "Index values (100 = May 2006); includes IRE, IRE-BI, and Ibovespa comparison"
 
@@ -361,6 +361,8 @@ datasets:
     geography: "Brazil (varies by municipality)"
     frequency: "monthly/quarterly"
     coverage: "varies by municipality"
+    status: "hidden"
+    note: "Under development - planned for future release"
     internal_function: "fetch_itbi"
     legacy_function: "get_itbi"
     data_type: "tibble"

@@ -8,6 +8,8 @@
 #'   "indicators", "prices", "credit", "stocks". Leave NULL to see all datasets.
 #' @param source Optional. Filter by data source (e.g., "BCB", "FIPE", "ABRAINC").
 #' @param geography Optional. Filter by geographic coverage (e.g., "Brazil", "São Paulo").
+#' @param include_hidden Logical. If TRUE, includes datasets with status="hidden".
+#'   Default is FALSE to show only available datasets.
 #'
 #' @return A tibble with columns:
 #'   \describe{
@@ -46,14 +48,19 @@
 #' @seealso \code{\link{get_dataset}} for retrieving the actual data
 #'
 #' @export
-list_datasets <- function(category = NULL, source = NULL, geography = NULL) {
+list_datasets <- function(category = NULL, source = NULL, geography = NULL, include_hidden = FALSE) {
   
   # Load the dataset registry
   registry <- load_dataset_registry()
   
   # Convert registry to tibble format
   datasets_df <- registry_to_tibble(registry)
-  
+
+  # Filter out hidden datasets unless requested
+  if (!include_hidden) {
+    datasets_df <- datasets_df[is.na(datasets_df$status) | datasets_df$status != "hidden", ]
+  }
+
   # Apply filters if provided
   if (!is.null(category)) {
     # Simple pattern matching for category filter
@@ -145,7 +152,8 @@ registry_to_tibble <- function(registry) {
       available_tables = available_tables,
       data_type = dataset$data_type %||% "unknown",
       legacy_function = dataset$legacy_function %||% "",
-      url = dataset$url %||% ""
+      url = dataset$url %||% "",
+      status = dataset$status %||% "available"
     )
   })
   

@@ -8,6 +8,8 @@ get_cbic_files(material_name, quiet = FALSE)
 }
 \arguments{
 \item{material_name}{Character vector of length 1. Name of material (e.g., "cimento")}
+
+\item{quiet}{Logical. If TRUE, suppress progress messages}
 }
 \value{
 A tibble with download results including file paths

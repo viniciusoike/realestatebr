@@ -54,15 +54,15 @@ list(
     )
   ),
 
-  # FGV Indicators - Economic indicators
+  # FGV IBRE - Economic indicators
   tar_target(
-    name = fgv_indicators_data,
+    name = fgv_ibre_data,
     command = {
-      cli::cli_inform("Fetching FGV Indicators data...")
-      get_fgv_indicators(cached = FALSE, quiet = FALSE)
+      cli::cli_inform("Fetching FGV IBRE data...")
+      get_fgv_ibre(cached = FALSE, quiet = FALSE)
     },
     cue = tar_cue_age(
-      name = fgv_indicators_data,
+      name = fgv_ibre_data,
       age = as.difftime(7, units = "days")
     )
   ),
@@ -202,7 +202,7 @@ list(
       save_dataset_to_cache(bcb_series_data, "bcb_series")
       save_dataset_to_cache(bcb_realestate_data, "bcb_realestate")
       save_dataset_to_cache(b3_stocks_data, "b3_stocks")
-      save_dataset_to_cache(fgv_indicators_data, "fgv_indicators")
+      save_dataset_to_cache(fgv_ibre_data, "fgv_ibre")
 
       # Return summary
       paste("Daily cache updated:", Sys.time())
@@ -256,7 +256,7 @@ list(
       cli::cli_inform("Generating pipeline summary...")
 
       # Count successful updates
-      daily_count <- 4  # bcb_series, bcb_realestate, b3_stocks, fgv_indicators
+      daily_count <- 4  # bcb_series, bcb_realestate, b3_stocks, fgv_ibre
       weekly_count <- 5  # abecip, abrainc, secovi, rppi_sale, rppi_rent
       monthly_count <- 4  # bis_rppi, cbic, property_records, nre_ire
 

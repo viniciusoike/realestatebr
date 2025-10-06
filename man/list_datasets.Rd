@@ -4,7 +4,12 @@
 \alias{list_datasets}
 \title{List Available Datasets}
 \usage{
-list_datasets(category = NULL, source = NULL, geography = NULL)
+list_datasets(
+  category = NULL,
+  source = NULL,
+  geography = NULL,
+  include_hidden = FALSE
+)
 }
 \arguments{
 \item{category}{Optional. Filter datasets by category. Common categories include:
@@ -13,6 +18,9 @@ list_datasets(category = NULL, source = NULL, geography = NULL)
 \item{source}{Optional. Filter by data source (e.g., "BCB", "FIPE", "ABRAINC").}
 
 \item{geography}{Optional. Filter by geographic coverage (e.g., "Brazil", "São Paulo").}
+
+\item{include_hidden}{Logical. If TRUE, includes datasets with status="hidden".
+Default is FALSE to show only available datasets.}
 }
 \value{
 A tibble with columns:
@@ -51,7 +59,7 @@ sao_paulo_data <- list_datasets(geography = "São Paulo")
 View(list_datasets()$available_tables)
 
 # Get specific table from multi-table dataset
-abecip_sbpe <- get_dataset("abecip_indicators", table = "sbpe")
+abecip_sbpe <- get_dataset("abecip", table = "sbpe")
 }
 
 }

@@ -1450,6 +1450,7 @@ clean_cbic_steel_sheets <- function(download_results, quiet = FALSE) {
 #' Returns raw download results for custom processing.
 #'
 #' @param material_name Character vector of length 1. Name of material (e.g., "cimento")
+#' @param quiet Logical. If TRUE, suppress progress messages
 #'
 #' @return A tibble with download results including file paths
 #'

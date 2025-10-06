@@ -10,6 +10,22 @@ This release implements a **major breaking change** that consolidates 15+ indivi
 - `get_abecip_indicators()`, `get_abrainc_indicators()`, `get_rppi()`, `get_bcb_realestate()`, etc.
 - **Migration**: Use `get_dataset("dataset_name")` instead
 
+### 🔧 RPPI Code Simplification (Internal)
+
+**Major refactoring** of RPPI functions for better maintainability:
+- **67% code reduction**: 1579 lines → 519 lines (1060 lines removed)
+- **Bug fix**: FipeZap national index now correctly standardized to `name_muni == "Brazil"`
+- **Shared helpers**: Created `rppi-helpers.R` with common functions to eliminate duplication
+- **Removed overhead**: Eliminated unused `stack` parameter, cli_debug calls, and metadata attributes
+- **Simplified documentation**: Removed verbose sections (Progress Reporting, Error Handling, Examples) from internal functions
+- **All functions now `@keywords internal`**: Only `get_dataset()` is user-facing
+
+**Benefits**:
+- Easier to maintain and debug
+- Faster execution (less overhead)
+- Consistent error handling across all indices
+- Bug fixes apply to all functions automatically
+
 ### 📊 CBIC Dataset - Partial Release (Cement Only)
 
 **Note**: In v0.4.0, the CBIC dataset is limited to **cement tables only** (validated data). Steel and PIM tables will be added in v0.4.1.

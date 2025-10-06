@@ -9,11 +9,12 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "80%",
+  fig.align = "center"
 )
 ```
 
-# realestatebr <img src="man/figures/hexlogo.png" align="right" height="139" alt="" />
+# realestatebr
 
 <!-- badges: start -->
 <!-- badges: end -->

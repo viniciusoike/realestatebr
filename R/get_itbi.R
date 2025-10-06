@@ -1,3 +1,4 @@
+#' @keywords internal
 get_itbi_spo <- function(year, cached) {
   stopifnot(year %in% 2019:2023)
 
@@ -10,6 +11,7 @@ get_itbi_spo <- function(year, cached) {
   path_itbi <- download_itbi_sp()
 }
 
+#' @keywords internal
 download_itbi_sp <- function() {
   # Scrape links for download
   url <- "https://www.prefeitura.sp.gov.br/cidade/secretarias/fazenda/acesso_a_informacao/index.php?p=31501"
@@ -54,6 +56,7 @@ download_itbi_sp <- function() {
 }
 
 
+#' @keywords internal
 import_itbi <- function(path) {
   sheets <- readxl::excel_sheets(path)
   data_sheets <- sheets[stringr::str_detect(sheets, "[0-9][0-9][0-9][0-9]")]
@@ -137,6 +140,7 @@ itbi_cols <- list(
   )
 )
 
+#' @keywords internal
 clean_itbi <- function(data) {
   clean_df <- df |>
     dplyr::mutate(

@@ -61,7 +61,7 @@ Data comes from developers that are partnered with Abrainc. As of June 2023, the
 }
 \section{Deprecation}{
 
-This function is deprecated. Use \code{\link{get_dataset}("abrainc_indicators")} instead.
+This function is deprecated. Use \code{\link{get_dataset}("abrainc")} instead.
 
 Downloads data from the Abrainc-Fipe Indicators report with modern error
 handling, progress reporting, and robust download capabilities. Data includes

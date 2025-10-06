@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# realestatebr <img src="man/figures/hexlogo.png" align="right" height="139" alt="" />
+# realestatebr
 
 <!-- badges: start -->
 
@@ -105,7 +105,7 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
 #> (`geom_line()`).
 ```
 
-<img src="man/figures/README-rppi-example-1.png" width="100%" />
+<img src="man/figures/README-rppi-example-1.png" width="80%" style="display: block; margin: auto;" />
 
 ## International Comparison
 
@@ -143,7 +143,7 @@ ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
   )
 ```
 
-<img src="man/figures/README-bis-example-1.png" width="100%" />
+<img src="man/figures/README-bis-example-1.png" width="80%" style="display: block; margin: auto;" />
 
 ## What’s New
 

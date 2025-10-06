@@ -2,84 +2,30 @@
 % Please edit documentation in R/get_rppi.R
 \name{get_rppi_fipezap}
 \alias{get_rppi_fipezap}
-\title{Get the FipeZap RPPI}
+\title{Get FipeZap RPPI}
 \usage{
 get_rppi_fipezap(city = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{city}{Either the name of the city or \code{'all'} (default). If the chosen
-city name is not available the full table will be returned.}
+\item{city}{City name or "all" (default). Filtering by city doesn't save processing time.}
 
-\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
-using the unified dataset architecture.}
+\item{cached}{Logical. If TRUE, loads from GitHub cache}
 
-\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
-If \code{FALSE} (default), provides detailed progress reporting.}
+\item{quiet}{Logical. If TRUE, suppresses warnings}
 
-\item{max_retries}{Integer. Maximum number of retry attempts for failed
-Excel download operations. Defaults to 3.}
+\item{max_retries}{Integer. Maximum retry attempts}
 }
 \value{
-A \code{tibble} with RPPI data for all selected cities where:
-\itemize{
-\item \code{market} - specifices either \code{'commercial'} or \code{'residential'}
-\item \code{rent_sale} - specifies either \code{'rent'} or \code{'sale'}
-\item \code{variable} - 'index' is the index-number, 'chg' is the monthly change, 'acum12m' is the year-on-year change, 'price_m2' is the raw sale/rent price per squared meter, and 'yield' is the gross rental yield.
-\item \code{rooms} - number of rooms (\code{total} is the average)
-}
-
-The national index is defined as the series with \code{name_muni == 'Indice Fipezap+'}.
-
-The tibble includes metadata attributes:
-\describe{
-\item{download_info}{List with download statistics}
-\item{source}{Data source used (web or cache)}
-\item{download_time}{Timestamp of download}
-}
+Tibble with columns: date, name_muni, market, rent_sale, variable, rooms, value
 }
 \description{
-Import residential and commercial prices indices from FipeZap with modern
-error handling, progress reporting, and robust Excel download capabilities.
+Get FipeZap RPPI
 }
 \details{
-The FipeZap Index is a monthly median stratified index calculated across several
-cities in Brazil. This function imports both the rental and the sale index for
-all cities. The Index is based on online listings of the Zap Imoveis group and is
-stratified by number of rooms. The overall city index is a weighted sum of median
-prices by room/region.
-
-The residential Index includes only apartments and similar units such as studios and flats.
-
-Choosing a specific city will only filter the final results and will not save
-processing/downloading time.
+The FipeZap Index is a monthly median stratified index across ~20 Brazilian cities,
+based on online listings from Zap Imóveis. Includes residential and commercial markets,
+both sale and rent, stratified by number of rooms. The overall city index is a weighted
+sum of median prices by room/region. Residential index includes only apartments, studios,
+and flats. National index: \code{name_muni == 'Brazil'} (after standardization).
 }
-\section{Progress Reporting}{
-
-When \code{quiet = FALSE}, the function provides detailed progress information
-including Excel download status and data processing steps for multiple sheets.
-}
-
-\section{Error Handling}{
-
-The function includes retry logic for failed Excel downloads and robust
-error handling for multi-sheet Excel processing operations.
-}
-
-\examples{
-\dontrun{
-# Get all the available indices (with progress)
-fz <- get_rppi_fipezap(quiet = FALSE)
-
-# Get all indices available for Porto Alegre
-poa <- get_rppi_fipezap(city = "Porto Alegre")
-
-# Use cached data for faster access
-cached_data <- get_rppi_fipezap(cached = TRUE)
-
-# Check download metadata
-attr(fz, "download_info")
-}
-}
-\seealso{
-\code{\link[=get_rppi]{get_rppi()}}
-}
+\keyword{internal}

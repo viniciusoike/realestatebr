@@ -24,3 +24,4 @@
 .*\.Rcheck$
 ^..Rcheck$
 ^pkgdown$
+^index\.md$
