@@ -86,10 +86,23 @@ Brazilian real estate data from multiple sources.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># List all available datasets</span></span>
 <span><span class="va">datasets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_datasets.html">list_datasets</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Found 11 datasets. Use get_dataset(name) to retrieve data.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">datasets</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 14</span></span></span>
+<span><span class="co">#&gt;   name           title  title_pt description source geography frequency coverage</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> abecip         ABECI… Indicad… Housing cr… ABECI… Brazil    monthly   1982-pr…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> abrainc        ABRAI… Indicad… Primary re… ABRAI… Brazil (… quarterly 2014-pr…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bcb_realestate BCB R… Dados d… Comprehens… Banco… Brazil (… monthly   2001-pr…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bcb_series     BCB E… Séries … General ec… Banco… Brazil    varies (… varies …</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> cbic           CBIC … Dados d… Cement con… CBIC … Brazil (… monthly   varies …</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> fgv_ibre       FGV I… Indicad… Real estat… FGV I… Brazil    monthly   2010-pr…</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: categories &lt;dbl&gt;, available_tables &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   data_type &lt;chr&gt;, legacy_function &lt;chr&gt;, url &lt;chr&gt;, status &lt;chr&gt;</span></span></span>
 <span></span>
 <span><span class="co"># Filter by source</span></span>
-<span><span class="va">bcb_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_datasets.html">list_datasets</a></span><span class="op">(</span>source <span class="op">=</span> <span class="st">"BCB"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">bcb_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_datasets.html">list_datasets</a></span><span class="op">(</span>source <span class="op">=</span> <span class="st">"BCB"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: No datasets found matching the specified criteria.</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="getting-data">Getting Data<a class="anchor" aria-label="anchor" href="#getting-data"></a>
@@ -98,14 +111,37 @@ Brazilian real estate data from multiple sources.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get dataset (returns default table)</span></span>
 <span><span class="va">abecip</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Attempting to load abecip from GitHub cache...</span></span>
+<span><span class="co">#&gt; Loaded 'abecip' from cache</span></span>
+<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
+<span><span class="co">#&gt; Retrieved 'sbpe' from 'abecip' (default table). Available tables: 'sbpe',</span></span>
+<span><span class="co">#&gt; 'units', 'cgi'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">abecip</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 15</span></span></span>
+<span><span class="co">#&gt;   date       sbpe_inflow sbpe_outflow sbpe_netflow sbpe_netflow_pct sbpe_yield</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1982-01-01     <span style="text-decoration: underline;">238</span>234.      <span style="text-decoration: underline;">261</span>523.       -<span style="color: #BB0000; text-decoration: underline;">23</span><span style="color: #BB0000;">289</span>         -<span style="color: #BB0000;">0.009</span><span style="color: #BB0000; text-decoration: underline;">39</span>     <span style="text-decoration: underline;">417</span>103</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1982-02-01     <span style="text-decoration: underline;">224</span>080.      <span style="text-decoration: underline;">161</span>176.        <span style="text-decoration: underline;">62</span>904          0.021<span style="text-decoration: underline;">9</span>           0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1982-03-01     <span style="text-decoration: underline;">247</span>219.      <span style="text-decoration: underline;">118</span>663.       <span style="text-decoration: underline;">128</span>556          0.043<span style="text-decoration: underline;">8</span>           0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1982-04-01     <span style="text-decoration: underline;">264</span>925.      <span style="text-decoration: underline;">378</span>395.      -<span style="color: #BB0000; text-decoration: underline;">113</span><span style="color: #BB0000;">470</span>         -<span style="color: #BB0000;">0.037</span><span style="color: #BB0000; text-decoration: underline;">0</span>      <span style="text-decoration: underline;">485</span>995</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 1982-05-01     <span style="text-decoration: underline;">227</span>636.      <span style="text-decoration: underline;">137</span>201.        <span style="text-decoration: underline;">90</span>435          0.026<span style="text-decoration: underline;">3</span>           0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 1982-06-01     <span style="text-decoration: underline;">319</span>539.      <span style="text-decoration: underline;">154</span>800.       <span style="text-decoration: underline;">164</span>739          0.046<span style="text-decoration: underline;">7</span>           0</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 9 more variables: sbpe_stock &lt;dbl&gt;, rural_inflow &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   rural_outflow &lt;dbl&gt;, rural_netflow &lt;dbl&gt;, rural_netflow_pct &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   rural_yield &lt;dbl&gt;, rural_stock &lt;dbl&gt;, total_stock &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   total_netflow &lt;dbl&gt;</span></span></span>
 <span></span>
 <span><span class="co"># Get specific table</span></span>
 <span><span class="va">sbpe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Attempting to load abecip from GitHub cache...</span></span>
+<span><span class="co">#&gt; Loaded 'abecip' from cache</span></span>
+<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
+<span><span class="co">#&gt; Retrieved 'sbpe' from 'abecip'. Available tables: 'sbpe', 'units', 'cgi'</span></span>
 <span></span>
 <span><span class="co"># See available tables for a dataset</span></span>
 <span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset_info.html">get_dataset_info</a></span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">categories</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">categories</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "sbpe"  "units" "cgi"</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="data-sources">Data Sources<a class="anchor" aria-label="anchor" href="#data-sources"></a>
@@ -136,9 +172,9 @@ Primary market indicators (launches, sales, business conditions) -
 <strong>secovi</strong>: São Paulo market data (condos, rentals,
 launches, sales)</p>
 <p><strong>Price Indices:</strong> - <strong>rppi</strong>: Brazilian
-property price indices (FipeZap, IVGR, IGMI, IVAR, IQA, Secovi-SP) -
-<strong>rppi_bis</strong>: International property price indices from BIS
-(60+ countries)</p>
+property price indices (FipeZap, IVGR, IGMI, IVAR, IQA, IQAIW,
+Secovi-SP) - <strong>rppi_bis</strong>: International property price
+indices from BIS (60+ countries)</p>
 <p><strong>Economic Data:</strong> - <strong>bcb_series</strong>:
 Economic time series from BCB - <strong>cbic</strong>: Cement
 consumption and production data</p>
@@ -156,14 +192,19 @@ details.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get SBPE housing credit data</span></span>
 <span><span class="va">sbpe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Attempting to load abecip from GitHub cache...</span></span>
+<span><span class="co">#&gt; Loaded 'abecip' from cache</span></span>
+<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
+<span><span class="co">#&gt; Retrieved 'sbpe' from 'abecip'. Available tables: 'sbpe', 'units', 'cgi'</span></span>
 <span></span>
 <span><span class="co"># Plot net flow over time</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">sbpe</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">netflow</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">sbpe</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">sbpe_netflow</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"steelblue"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"SBPE Net Flow"</span>,</span>
 <span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>       y <span class="op">=</span> <span class="st">"R$ (millions)"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-6-1.png" width="672"></p>
 </div>
 <div class="section level3">
 <h3 id="example-2-real-estate-credit-by-state">Example 2: Real Estate Credit by State<a class="anchor" aria-label="anchor" href="#example-2-real-estate-credit-by-state"></a>
@@ -171,10 +212,15 @@ details.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get BCB real estate data</span></span>
 <span><span class="va">bcb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"bcb_realestate"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Attempting to load bcb_realestate from GitHub cache...</span></span>
+<span><span class="co">#&gt; Loaded 'bcb_realestate' from cache</span></span>
+<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
+<span><span class="co">#&gt; Retrieved 'accounting' from 'bcb_realestate' (default table). Available tables:</span></span>
+<span><span class="co">#&gt; 'accounting', 'application', 'indices', 'sources', 'units'</span></span>
 <span></span>
 <span><span class="co"># Aggregate credit by date</span></span>
 <span><span class="va">credit_data</span> <span class="op">&lt;-</span> <span class="va">bcb</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">category</span> <span class="op">==</span> <span class="st">"credit"</span>, <span class="va">type</span> <span class="op">==</span> <span class="st">"stock"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">category</span> <span class="op">==</span> <span class="st">"credito"</span>, <span class="va">type</span> <span class="op">==</span> <span class="st">"estoque"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">value</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, .by <span class="op">=</span> <span class="va">date</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot</span></span>
@@ -185,6 +231,7 @@ details.</p>
 <span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>       y <span class="op">=</span> <span class="st">"R$ (billions)"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-7-1.png" width="672"></p>
 </div>
 <div class="section level3">
 <h3 id="example-3-são-paulo-market-data">Example 3: São Paulo Market Data<a class="anchor" aria-label="anchor" href="#example-3-s%C3%A3o-paulo-market-data"></a>
@@ -192,14 +239,30 @@ details.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get Secovi São Paulo data</span></span>
 <span><span class="va">secovi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Attempting to load secovi from GitHub cache...</span></span>
+<span><span class="co">#&gt; Loaded 'secovi_sp' from cache</span></span>
+<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
+<span><span class="co">#&gt; Retrieved 'condo' from 'secovi' (default table). Available tables: 'condo',</span></span>
+<span><span class="co">#&gt; 'rent', 'launch', 'sale'</span></span>
 <span></span>
 <span><span class="co"># See available categories</span></span>
 <span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset_info.html">get_dataset_info</a></span><span class="op">(</span><span class="st">"secovi"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">categories</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "condo"  "rent"   "launch" "sale"</span></span>
 <span></span>
 <span><span class="co"># Get specific categories</span></span>
 <span><span class="va">condo_fees</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span>, table <span class="op">=</span> <span class="st">"condo"</span><span class="op">)</span></span>
-<span><span class="va">rental_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span>, table <span class="op">=</span> <span class="st">"rent"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">#&gt; Attempting to load secovi from GitHub cache...</span></span>
+<span><span class="co">#&gt; Loaded 'secovi_sp' from cache</span></span>
+<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
+<span><span class="co">#&gt; Retrieved 'condo' from 'secovi'. Available tables: 'condo', 'rent', 'launch',</span></span>
+<span><span class="co">#&gt; 'sale'</span></span>
+<span><span class="va">rental_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span>, table <span class="op">=</span> <span class="st">"rent"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Attempting to load secovi from GitHub cache...</span></span>
+<span><span class="co">#&gt; Loaded 'secovi_sp' from cache</span></span>
+<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
+<span><span class="co">#&gt; Retrieved 'rent' from 'secovi'. Available tables: 'condo', 'rent', 'launch',</span></span>
+<span><span class="co">#&gt; 'sale'</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -213,10 +276,33 @@ details.</p>
 <span></span>
 <span><span class="co"># See available tables</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">categories</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "cement_monthly_consumption" "cement_annual_consumption" </span></span>
+<span><span class="co">#&gt; [3] "cement_production_exports"  "cement_monthly_production" </span></span>
+<span><span class="co">#&gt; [5] "cement_cub_prices"</span></span>
 <span></span>
 <span><span class="co"># Access specific tables</span></span>
 <span><span class="va">cement_monthly</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"cbic"</span>, table <span class="op">=</span> <span class="st">"cement_monthly_consumption"</span><span class="op">)</span></span>
-<span><span class="va">cement_prices</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"cbic"</span>, table <span class="op">=</span> <span class="st">"cement_cub_prices"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">#&gt; Attempting to load cbic from GitHub cache...</span></span>
+<span><span class="co">#&gt; Warning: GitHub cache failed: Dataset 'cbic' not found in cache.</span></span>
+<span><span class="co">#&gt; Attempting fresh download from original source...</span></span>
+<span><span class="co">#&gt; Getting CBIC cement data</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Fetching file links from: http://www.cbicdados.com.br/menu/materiais-de-construcao/cimento</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Successfully downloaded from original source</span></span>
+<span><span class="co">#&gt; Retrieved 'cement_monthly_consumption' from 'cbic'. Available tables:</span></span>
+<span><span class="co">#&gt; 'cement_monthly_consumption', 'cement_annual_consumption',</span></span>
+<span><span class="co">#&gt; 'cement_production_exports', 'cement_monthly_production', 'cement_cub_prices'</span></span>
+<span><span class="va">cement_prices</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"cbic"</span>, table <span class="op">=</span> <span class="st">"cement_cub_prices"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Attempting to load cbic from GitHub cache...</span></span>
+<span><span class="co">#&gt; Warning: GitHub cache failed: Dataset 'cbic' not found in cache.</span></span>
+<span><span class="co">#&gt; Attempting fresh download from original source...</span></span>
+<span><span class="co">#&gt; Getting CBIC cement data</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Fetching file links from: http://www.cbicdados.com.br/menu/materiais-de-construcao/cimento</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Successfully downloaded from original source</span></span>
+<span><span class="co">#&gt; Retrieved 'cement_cub_prices' from 'cbic'. Available tables:</span></span>
+<span><span class="co">#&gt; 'cement_monthly_consumption', 'cement_annual_consumption',</span></span>
+<span><span class="co">#&gt; 'cement_production_exports', 'cement_monthly_production', 'cement_cub_prices'</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="controlling-output">Controlling Output<a class="anchor" aria-label="anchor" href="#controlling-output"></a>
@@ -227,9 +313,19 @@ details.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Show progress messages (default)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Attempting to load abecip from GitHub cache...</span></span>
+<span><span class="co">#&gt; Loaded 'abecip' from cache</span></span>
+<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
+<span><span class="co">#&gt; Retrieved 'sbpe' from 'abecip' (default table). Available tables: 'sbpe',</span></span>
+<span><span class="co">#&gt; 'units', 'cgi'</span></span>
 <span></span>
 <span><span class="co"># Suppress messages</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Attempting to load abecip from GitHub cache...</span></span>
+<span><span class="co">#&gt; Loaded 'abecip' from cache</span></span>
+<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
+<span><span class="co">#&gt; Retrieved 'sbpe' from 'abecip' (default table). Available tables: 'sbpe',</span></span>
+<span><span class="co">#&gt; 'units', 'cgi'</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="error-handling">Error Handling<a class="anchor" aria-label="anchor" href="#error-handling"></a>
