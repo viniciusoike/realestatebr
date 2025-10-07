@@ -31,38 +31,14 @@
 #' @param max_retries Integer. Maximum number of retry attempts for failed
 #'   downloads. Defaults to 3.
 #'
-#' @return A `tibble` with the requested property records table. The return includes
-#'   metadata attributes:
-#'   \describe{
-#'     \item{download_info}{List with download statistics}
-#'     \item{source}{Data source used (web or cache)}
-#'     \item{download_time}{Timestamp of download}
-#'   }
+#' @return A `tibble` with the requested property records table.
 #'
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter select mutate inner_join left_join
 #' @importFrom xml2 read_html
 #' @importFrom rvest html_elements html_attr
 #'
-#' @examples \dontrun{
-#' # Get capitals records data (default)
-#' capitals <- get_property_records()
-#'
-#' # Get transfer data for capital cities
-#' transfers <- get_property_records("capitals_transfers")
-#'
-#' # Get all cities records data
-#' cities <- get_property_records("cities")
-#'
-#' # Get SP regional aggregates
-#' aggregates <- get_property_records("aggregates")
-#'
-#' # Use cached data for faster access
-#' cached_data <- get_property_records("capitals", cached = TRUE)
-#'
-#' # Check download metadata
-#' attr(capitals, "download_info")
-#' }
+#' @keywords internal
 get_property_records <- function(
   table = "capitals",
   cached = FALSE,
@@ -70,7 +46,13 @@ get_property_records <- function(
   max_retries = 3L
 ) {
   # Input validation ----
-  valid_tables <- c("capitals", "capitals_transfers", "cities", "aggregates", "aggregates_transfers")
+  valid_tables <- c(
+    "capitals",
+    "capitals_transfers",
+    "cities",
+    "aggregates",
+    "aggregates_transfers"
+  )
 
   if (!is.character(table) || length(table) != 1) {
     cli::cli_abort(c(
@@ -110,14 +92,6 @@ get_property_records <- function(
 
         # Extract the specific table from cached data
         result <- extract_property_table(prop, table)
-
-        # Add metadata
-        attr(result, "source") <- "cache"
-        attr(result, "download_time") <- Sys.time()
-        attr(result, "download_info") <- list(
-          table = table,
-          source = "cache"
-        )
 
         return(result)
       },
@@ -163,7 +137,6 @@ get_property_records <- function(
     } else {
       capitals_data$transfers
     }
-
   } else if (table %in% c("cities", "aggregates", "aggregates_transfers")) {
     cli_debug("Processing aggregates data...")
 
@@ -173,23 +146,18 @@ get_property_records <- function(
       max_retries = max_retries
     )
 
-    out <- switch(table,
+    out <- switch(
+      table,
       "cities" = aggregates_data$record_cities,
       "aggregates" = aggregates_data$record_aggregates,
       "aggregates_transfers" = aggregates_data$transfers
     )
   }
 
-  # Add metadata attributes
-  attr(out, "source") <- "web"
-  attr(out, "download_time") <- Sys.time()
-  attr(out, "download_info") <- list(
-    table = table,
-    download_links = download_links,
-    source = "web"
+  cli_user(
+    "\u2713 Property records data retrieved: {nrow(out)} records",
+    quiet = quiet
   )
-
-  cli_user("\u2713 Property records data retrieved: {nrow(out)} records", quiet = quiet)
 
   return(out)
 }
@@ -207,54 +175,37 @@ scrape_registro_imoveis_links <- function(quiet, max_retries) {
   attempts <- 0
   last_error <- NULL
 
-  clean_links <- function(x) {
-    stringr::str_remove(x, "\\\t")
-  }
-
   while (attempts <= max_retries) {
     attempts <- attempts + 1
 
-    tryCatch(
+    result <- tryCatch(
       {
-        # Try scraping the website
-        url <- "https://www.registrodeimoveis.org.br/"
+        url <- "https://www.registrodeimoveis.org.br/portal-estatistico-registral"
         con <- url(url, "rb")
+        on.exit(try(close(con), silent = TRUE), add = TRUE)
 
-        # Scrape page and get the links
+        # Scrape and process links in one pipe
         dlinks <- xml2::read_html(con) |>
-          rvest::html_elements(
-            xpath = "//*[@id='section-contact']/div/p[5]/a"
-          ) |>
+          rvest::html_elements(xpath = "//*[@id='section-contact']/div/p[5]/a") |>
           rvest::html_attr("href") |>
-          purrr::map(
-            stringr::str_replace,
-            pattern = " ",
-            replacement = "%20"
-          ) |>
-          purrr::map(clean_links)
+          stringr::str_replace_all(" ", "%20") |>
+          stringr::str_remove("\\t") |>
+          stringr::str_extract("https.+\\.xlsx$")
 
-        dlinks <- purrr::map(dlinks, function(x) {
-          stringr::str_extract(x, "https.+\\.xlsx$")
-        })
-
-        # Validate we got valid links
-        if (length(dlinks) >= 2 && !any(is.na(unlist(dlinks)))) {
-          close(con)
-          return(dlinks)
+        # Validate
+        if (length(dlinks) >= 2 && !any(is.na(dlinks))) {
+          return(as.list(dlinks))
         }
+        NULL
       },
       error = function(e) {
         last_error <<- e$message
-        if (exists("con")) {
-          try(close(con), silent = TRUE)
-        }
-
-        # Add small delay before retry
-        if (attempts <= max_retries) {
-          Sys.sleep(min(attempts * 0.5, 3))
-        }
+        if (attempts <= max_retries) Sys.sleep(min(attempts * 0.5, 3))
+        NULL
       }
     )
+
+    if (!is.null(result)) return(result)
   }
 
   # All attempts failed
@@ -397,54 +348,6 @@ get_ri_aggregates_robust <- function(url, quiet, max_retries) {
   cli_debug("Processing aggregates Excel file...")
 
   aggregates <- suppressMessages(import_ri_aggregates(download_result$path))
-  clean_aggregates <- suppressWarnings(clean_ri_aggregates(aggregates))
-
-  return(clean_aggregates)
-}
-
-get_ri_capitals <- function(cached, ...) {
-  # Legacy function - use get_ri_capitals_robust for new code
-  .Deprecated(
-    new = "get_ri_capitals_robust",
-    msg = "get_ri_capitals is deprecated. Use get_ri_capitals_robust for better error handling."
-  )
-
-  # Define path
-  path_capitals <- tempfile("registro_imoveis_capitals.xlsx")
-  # Download file
-  utils::download.file(
-    destfile = path_capitals,
-    mode = "wb",
-    quiet = TRUE,
-    ...
-  )
-
-  # Import and clean sheets
-  capitals <- suppressMessages(import_ri_capitals(path_capitals))
-  clean_capitals <- suppressWarnings(clean_ri_capitals(capitals))
-
-  return(clean_capitals)
-}
-
-get_ri_aggregates <- function(cached, ...) {
-  # Legacy function - use get_ri_aggregates_robust for new code
-  .Deprecated(
-    new = "get_ri_aggregates_robust",
-    msg = "get_ri_aggregates is deprecated. Use get_ri_aggregates_robust for better error handling."
-  )
-
-  # Define path
-  path_spo <- tempfile("registro_imoveis_spo.xlsx")
-  # Download file
-  utils::download.file(
-    destfile = path_spo,
-    mode = "wb",
-    quiet = TRUE,
-    ...
-  )
-
-  # Import and clean sheets
-  aggregates <- suppressMessages(import_ri_aggregates(path_spo))
   clean_aggregates <- suppressWarnings(clean_ri_aggregates(aggregates))
 
   return(clean_aggregates)
@@ -754,7 +657,8 @@ extract_property_table <- function(prop_data, table) {
   # Handle different cached data structures
   if (is.list(prop_data) && "capitals" %in% names(prop_data)) {
     # Standard cached structure: list(capitals = list(...), aggregates = list(...))
-    switch(table,
+    switch(
+      table,
       "capitals" = prop_data$capitals$records,
       "capitals_transfers" = prop_data$capitals$transfers,
       "cities" = prop_data$aggregates$record_cities,
