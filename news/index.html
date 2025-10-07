@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,35 @@
 
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.1" id="realestatebr-041">realestatebr 0.4.1<a class="anchor" aria-label="anchor" href="#realestatebr-041"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-0-4-1">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-4-1"></a></h3>
+<div class="section level4">
+<h4 id="rppi-individual-table-access-0-4-1">RPPI Individual Table Access<a class="anchor" aria-label="anchor" href="#rppi-individual-table-access-0-4-1"></a></h4>
+<ul><li>
+<strong>Fixed</strong>: <code>get_dataset("rppi", "ivgr")</code> and other individual RPPI tables now work correctly</li>
+<li>
+<strong>Fixed</strong>: Vignette build errors caused by RPPI table routing issues</li>
+<li>
+<strong>Improved</strong>: Internal <code><a href="../reference/get_rppi.html">get_rppi()</a></code> function now supports all individual RPPI tables (fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp) in addition to stacked tables (sale, rent, all)</li>
+</ul></div>
+<div class="section level4">
+<h4 id="cran-compliance-0-4-1">CRAN Compliance<a class="anchor" aria-label="anchor" href="#cran-compliance-0-4-1"></a></h4>
+<ul><li>
+<strong>Fixed</strong>: Removed all non-ASCII characters from R source files (7 files affected)</li>
+<li>Replaced Portuguese characters with Unicode escapes for CRAN compliance</li>
+<li>Files updated: <code>get_bcb_realestate.R</code>, <code>get_cbic.R</code>, <code>get_fgv_ibre.R</code>, <code>get_property_records.R</code>, <code>get_rppi.R</code>, <code>get_rppi_bis.R</code>, <code>get_secovi.R</code>
+</li>
+</ul></div>
+<div class="section level4">
+<h4 id="test-suite-0-4-1">Test Suite<a class="anchor" aria-label="anchor" href="#test-suite-0-4-1"></a></h4>
+<ul><li>
+<strong>Fixed</strong>: Updated deprecated <code>category=</code> parameter to <code>table=</code> in <code>tests/sanity_check.R</code>
+</li>
+</ul><hr></div>
+</div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.0" id="realestatebr-040">realestatebr 0.4.0<a class="anchor" aria-label="anchor" href="#realestatebr-040"></a></h2>
 <div class="section level3">

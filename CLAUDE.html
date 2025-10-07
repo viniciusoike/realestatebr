@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,16 +47,46 @@
 <strong>Mission</strong>: Create the definitive R package for Brazilian real estate data - reliable, well-documented, and easy to use</li>
 </ul></div>
 <div class="section level2">
+<h2 id="current-challenges">Current challenges<a class="anchor" aria-label="anchor" href="#current-challenges"></a></h2>
+<ul><li>Multiple legacy functions with inconsistent interfaces leading to unexpected errors.</li>
+<li>Core functions aren’t working at all.</li>
+</ul></div>
+<div class="section level2">
+<h2 id="goals-for-v050">Goals for v0.5.0<a class="anchor" aria-label="anchor" href="#goals-for-v050"></a></h2>
+<ul><li>Have all core functions working perfectly. This means <code><a href="reference/get_dataset.html">get_dataset()</a></code> should work flawlessly for all datasets with both <code>source = 'cache'</code> and <code>source = 'fresh'</code>.</li>
+<li>Make codebase simpler by abandoning legacy functions, deprecation warnings, etc. In other words, make breaking changes if (1) it makes the codebase simpler; (2) makes the codebase significantly more efficient; (3) makes the codebaes less error-prone; and (4) makes the end-user experience better.</li>
+</ul></div>
+<div class="section level2">
+<h2 id="recent-updates">Recent Updates<a class="anchor" aria-label="anchor" href="#recent-updates"></a></h2>
+<div class="section level3">
+<h3 id="v041-latest---bug-fixes">v0.4.1 (Latest) - Bug Fixes<a class="anchor" aria-label="anchor" href="#v041-latest---bug-fixes"></a></h3>
+<p>✅ <strong>RPPI Individual Table Access</strong> - Fixed <code>get_dataset("rppi", "ivgr")</code> and other individual RPPI tables - Extended <code><a href="reference/get_rppi.html">get_rppi()</a></code> to support all individual tables (fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp) - Fixed vignette build errors</p>
+<p>✅ <strong>CRAN Compliance</strong> - Removed non-ASCII characters from R source files (7 files) - Added <code><a href="https://rdrr.io/r/utils/globalVariables.html" class="external-link">utils::globalVariables()</a></code> for NSE variables - UTF-8 characters preserved in roxygen2 documentation</p>
+<p>✅ <strong>Dependencies &amp; Tests</strong> - Added <code>testthat</code> to Suggests - Updated deprecated <code>category=</code> to <code>table=</code> parameters</p>
+<p>✅ <strong>Package Check Status</strong>: <code>0 errors ✔ | 0 warnings ✔ | 0 notes ✔</code></p>
+</div>
+</div>
+<div class="section level2">
 <h2 id="architecture-transition-status">Architecture Transition Status<a class="anchor" aria-label="anchor" href="#architecture-transition-status"></a></h2>
 <div class="section level3">
-<h3 id="phase-1-core-functions--in-progress">Phase 1: Core Functions 🔄 IN PROGRESS<a class="anchor" aria-label="anchor" href="#phase-1-core-functions--in-progress"></a></h3>
+<h3 id="phase-1-core-functions--completed-v040">Phase 1: Core Functions ✅ COMPLETED (v0.4.0)<a class="anchor" aria-label="anchor" href="#phase-1-core-functions--completed-v040"></a></h3>
 <ul><li>✅ <code><a href="reference/list_datasets.html">list_datasets()</a></code> and <code><a href="reference/get_dataset.html">get_dataset()</a></code> functions implemented</li>
 <li>✅ Dataset registry system created</li>
-<li>✅ Improved dataset documentation</li>
-<li>✅ CBIC dataset efficiency and UX improvements (commit 65c861b)</li>
-<li>Extended functionality to all datasets</li>
-<li>Improve webscraping and web API calls. Use <code>get_b3_stocks()</code> as a model.</li>
-<li>Review existing codebase for consistency and style. For simple pipelines, use only a single <code>get_*()</code> function. For more complex datasets, break into multiple steps. Use <code>import_()</code> functions to download and read local files. Use <code>clean_()</code> functions for cleaning data. Use <code>get_()</code> functions as wrapper functions. Some datasets may need multiple specialized functions.</li>
+<li>✅ Unified API with backward compatibility</li>
+<li>✅ All legacy functions modernized</li>
+</ul></div>
+<div class="section level3">
+<h3 id="phase-2-data-pipeline--completed">Phase 2: Data Pipeline ✅ COMPLETED<a class="anchor" aria-label="anchor" href="#phase-2-data-pipeline--completed"></a></h3>
+<ul><li>✅ {targets} workflow for automated data processing</li>
+<li>✅ Weekly GitHub Actions workflow</li>
+<li>✅ 37 targets across 12 datasets</li>
+<li>✅ Data validation and quality checks</li>
+</ul></div>
+<div class="section level3">
+<h3 id="phase-3-scale-up--planned">Phase 3: Scale Up ⏳ PLANNED<a class="anchor" aria-label="anchor" href="#phase-3-scale-up--planned"></a></h3>
+<ul><li>⏳ DuckDB integration for large datasets (ITBI, IPTU)</li>
+<li>⏳ Lazy query support</li>
+<li>⏳ Large dataset handling</li>
 </ul><div class="section level4">
 <h4 id="id_-manual-review-needed">🔍 MANUAL REVIEW NEEDED<a class="anchor" aria-label="anchor" href="#id_-manual-review-needed"></a></h4>
 <ul><li>
@@ -68,18 +98,6 @@
 </ul></li>
 </ul></div>
 </div>
-<div class="section level3">
-<h3 id="phase-2-data-pipeline--planned">Phase 2: Data Pipeline ⏳ PLANNED<a class="anchor" aria-label="anchor" href="#phase-2-data-pipeline--planned"></a></h3>
-<ul><li>🔄 {targets} workflow for automated data processing</li>
-<li>🔄 Data validation and quality checks</li>
-<li>🔄 Automated data updates</li>
-</ul></div>
-<div class="section level3">
-<h3 id="phase-3-scale-up--planned">Phase 3: Scale Up ⏳ PLANNED<a class="anchor" aria-label="anchor" href="#phase-3-scale-up--planned"></a></h3>
-<ul><li>⏳ DuckDB integration for large datasets (ITBI, IPTU)</li>
-<li>⏳ Lazy query support</li>
-<li>⏳ Large dataset handling</li>
-</ul></div>
 </div>
 <div class="section level2">
 <h2 id="core-technologies--dependencies">Core Technologies &amp; Dependencies<a class="anchor" aria-label="anchor" href="#core-technologies--dependencies"></a></h2>
@@ -115,8 +133,6 @@
 <strong><code><a href="reference/list_datasets.html">list_datasets()</a></code></strong>: Dataset discovery function</li>
 <li>
 <strong><code>get_dataset(name)</code></strong>: Unified data access function</li>
-<li>
-<strong>Legacy functions</strong>: <code><a href="reference/get_abecip_indicators.html">get_abecip_indicators()</a></code>, <code><a href="reference/get_rppi.html">get_rppi()</a></code>, <code><a href="reference/get_rppi_bis.html">get_rppi_bis()</a></code> (maintained for backward compatibility)</li>
 </ul></div>
 <div class="section level3">
 <h3 id="dataset-registry-system">Dataset Registry System<a class="anchor" aria-label="anchor" href="#dataset-registry-system"></a></h3>
@@ -176,18 +192,56 @@
 </li>
 </ul></div>
 <div class="section level3">
-<h3 id="data-updates">Data Updates<a class="anchor" aria-label="anchor" href="#data-updates"></a></h3>
+<h3 id="data-pipeline-operations">Data Pipeline Operations<a class="anchor" aria-label="anchor" href="#data-pipeline-operations"></a></h3>
+<div class="section level4">
+<h4 id="running-the-pipeline-locally">Running the Pipeline Locally<a class="anchor" aria-label="anchor" href="#running-the-pipeline-locally"></a></h4>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Load targets library</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/targets/" class="external-link">targets</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># View all targets</span></span>
+<span><span class="fu"><a href="https://docs.ropensci.org/targets/reference/tar_manifest.html" class="external-link">tar_manifest</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Check which targets are outdated</span></span>
+<span><span class="fu"><a href="https://docs.ropensci.org/targets/reference/tar_outdated.html" class="external-link">tar_outdated</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Run entire pipeline</span></span>
+<span><span class="fu"><a href="https://docs.ropensci.org/targets/reference/tar_make.html" class="external-link">tar_make</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Run specific targets (e.g., just ABECIP)</span></span>
+<span><span class="fu"><a href="https://docs.ropensci.org/targets/reference/tar_make.html" class="external-link">tar_make</a></span><span class="op">(</span>names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"abecip_data"</span>, <span class="st">"abecip_cache"</span>, <span class="st">"abecip_validation"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Visualize pipeline</span></span>
+<span><span class="fu"><a href="https://docs.ropensci.org/targets/reference/tar_visnetwork.html" class="external-link">tar_visnetwork</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="automated-updates-github-actions">Automated Updates (GitHub Actions)<a class="anchor" aria-label="anchor" href="#automated-updates-github-actions"></a></h4>
 <ul><li>
-<strong>Update cached data</strong>: Run the GitHub Actions workflow “Update Cached Data”</li>
+<strong>Weekly updates</strong>: Runs every Monday at 10 AM UTC</li>
 <li>
-<strong>Manual data update</strong>: Source the scripts in <code>data-raw/</code> directory</li>
+<strong>Manual trigger</strong>: Go to Actions → “Weekly Data Updates” → “Run workflow”</li>
 <li>
-<strong>Data pipeline</strong>: <code><a href="https://docs.ropensci.org/targets/reference/tar_make.html" class="external-link">targets::tar_make()</a></code>
-</li>
+<strong>Target groups</strong>:
+<ul><li>
+<code>weekly</code>: BCB, FGV, ABECIP, ABRAINC, SECOVI, RPPI (8 datasets)</li>
+<li>
+<code>monthly</code>: BIS, CBIC, Property Records (3 datasets)</li>
+<li>
+<code>all</code>: All datasets</li>
+</ul></li>
 </ul></div>
+<div class="section level4">
+<h4 id="pipeline-architecture">Pipeline Architecture<a class="anchor" aria-label="anchor" href="#pipeline-architecture"></a></h4>
+<p>The pipeline uses the modern <code><a href="reference/get_dataset.html">get_dataset()</a></code> interface with three targets per dataset: 1. <strong><code>{dataset}_data</code></strong>: Fetches fresh data using <code>get_dataset(source="fresh")</code> 2. <strong><code>{dataset}_cache</code></strong>: Saves to <code>inst/cached_data/</code> directory 3. <strong><code>{dataset}_validation</code></strong>: Validates data quality</p>
+<p><strong>Weekly Datasets</strong> (7-day update cycle): - bcb_series, bcb_realestate, fgv_ibre - abecip, abrainc, secovi - rppi_sale, rppi_rent</p>
+<p><strong>Monthly Datasets</strong> (30-day update cycle): - bis_rppi, cbic, property_records</p>
+<p><strong>Manual Only</strong>: - nre_ire (never auto-updates)</p>
+</div>
+</div>
 <div class="section level3">
 <h3 id="code-quality">Code Quality<a class="anchor" aria-label="anchor" href="#code-quality"></a></h3>
-<ul><li>
+<ul><li>Look into claude/coding_guidelines.md for detailed coding standards</li>
+<li>
 <strong>Lint code</strong>: <code>lintr::lint_package()</code>
 </li>
 <li>
@@ -202,6 +256,11 @@
 <h2 id="development-standards">Development Standards<a class="anchor" aria-label="anchor" href="#development-standards"></a></h2>
 <ul><li>Always refer to claude/coding_guidelines.md for detailed instructions</li>
 </ul><div class="section level3">
+<h3 id="document-changes">Document changes<a class="anchor" aria-label="anchor" href="#document-changes"></a></h3>
+<ul><li>Update <code>NEWS.md</code> with each release</li>
+<li>Commit to GitHub with descriptive messages</li>
+</ul></div>
+<div class="section level3">
 <h3 id="code-style">Code Style<a class="anchor" aria-label="anchor" href="#code-style"></a></h3>
 <ul><li>Follow tidyverse style guide.</li>
 <li>Use explicit package calls (<code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter()</a></code>) in functions.</li>
@@ -211,7 +270,7 @@
 </ul></div>
 <div class="section level3">
 <h3 id="error-handling-pattern">Error Handling Pattern<a class="anchor" aria-label="anchor" href="#error-handling-pattern"></a></h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Graceful degradation with fallbacks</span></span>
 <span><span class="va">get_dataset</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">name</span>, <span class="va">source</span> <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span><span class="op">{</span></span>
@@ -278,8 +337,6 @@
 <div class="section level2">
 <h2 id="important-notes">Important Notes<a class="anchor" aria-label="anchor" href="#important-notes"></a></h2>
 <ul><li>
-<strong>Backward Compatibility</strong>: All existing <code>get_*()</code> functions must continue working</li>
-<li>
 <strong>Data Quality</strong>: Always validate data before saving to package</li>
 <li>
 <strong>User Experience</strong>: Keep interface simple - complexity should be hidden</li>

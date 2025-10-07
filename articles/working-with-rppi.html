@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -163,11 +163,6 @@ using the first available rent price as the base (i.e. 2019/06 =
 100).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">iqa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"iqa"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi from GitHub cache...</span></span>
-<span><span class="co">#&gt; Loaded 'rppi_iqa' from cache</span></span>
-<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
-<span><span class="co">#&gt; Retrieved 'iqa' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',</span></span>
-<span><span class="co">#&gt; 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'</span></span>
 <span></span>
 <span><span class="va">iqa</span> <span class="op">&lt;-</span> <span class="va">iqa</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
@@ -215,11 +210,6 @@ series, covering only 2014 to the present.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get IGMI data</span></span>
 <span><span class="va">igmi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"igmi"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi from GitHub cache...</span></span>
-<span><span class="co">#&gt; Loaded 'rppi_igmi' from cache</span></span>
-<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
-<span><span class="co">#&gt; Retrieved 'igmi' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',</span></span>
-<span><span class="co">#&gt; 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'</span></span>
 <span></span>
 <span><span class="co"># Major cities comparison</span></span>
 <span><span class="va">cities_igmi</span> <span class="op">&lt;-</span> <span class="va">igmi</span> <span class="op">|&gt;</span></span>
@@ -232,10 +222,7 @@ series, covering only 2014 to the present.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"IGMI Sale Index by City"</span>,</span>
 <span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>       y <span class="op">=</span> <span class="st">"Index"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 12 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_line()`).</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-5-1.png" width="672"></p>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="ivg-r-the-official-sales-index">IVG-R: the ‘official’ sales index<a class="anchor" aria-label="anchor" href="#ivg-r-the-official-sales-index"></a>
@@ -251,11 +238,6 @@ filter to smooth volatility, making it less volatile than other
 indices.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ivgr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"ivgr"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi from GitHub cache...</span></span>
-<span><span class="co">#&gt; Loaded 'rppi_ivgr' from cache</span></span>
-<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
-<span><span class="co">#&gt; Retrieved 'ivgr' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',</span></span>
-<span><span class="co">#&gt; 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'</span></span>
 <span></span>
 <span><span class="co"># Plot national IVG-R index</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">ivgr</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">index</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -264,7 +246,6 @@ indices.</p>
 <span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>       y <span class="op">=</span> <span class="st">"Index (base varies by source)"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-6-1.png" width="672"></p>
 </div>
 <div class="section level3">
 <h3 id="fipezap-the-broad-sales-index">FipeZap: the broad sales index<a class="anchor" aria-label="anchor" href="#fipezap-the-broad-sales-index"></a>
@@ -280,11 +261,6 @@ across São Paulo, Rio de Janeiro, and Belo Horizonte.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get FipeZap data</span></span>
 <span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi from GitHub cache...</span></span>
-<span><span class="co">#&gt; Loaded 'rppi_fipe' from cache</span></span>
-<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
-<span><span class="co">#&gt; Retrieved 'fipezap' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',</span></span>
-<span><span class="co">#&gt; 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'</span></span>
 <span></span>
 <span><span class="co"># Filter for major cities - residential sale index</span></span>
 <span><span class="va">cities</span> <span class="op">&lt;-</span> <span class="va">fz</span> <span class="op">|&gt;</span></span>
@@ -308,10 +284,7 @@ across São Paulo, Rio de Janeiro, and Belo Horizonte.</p>
 <span>    y <span class="op">=</span> <span class="st">"Index"</span>,</span>
 <span>    color <span class="op">=</span> <span class="st">"City"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 15 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_line()`).</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-7-1.png" width="672"></p>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="comparing-national-sale-indices">Comparing National Sale Indices<a class="anchor" aria-label="anchor" href="#comparing-national-sale-indices"></a>
@@ -319,17 +292,6 @@ across São Paulo, Rio de Janeiro, and Belo Horizonte.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get stacked sale data</span></span>
 <span><span class="va">sales</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"sale"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi from GitHub cache...</span></span>
-<span><span class="co">#&gt; Warning: RPPI stacked tables (sale/rent/all) require fresh processing due to outdated</span></span>
-<span><span class="co">#&gt; cache</span></span>
-<span><span class="co">#&gt; Falling back to fresh download...</span></span>
-<span><span class="co">#&gt; Warning: GitHub cache failed: GitHub cache incompatible with RPPI</span></span>
-<span><span class="co">#&gt; stacked tables</span></span>
-<span><span class="co">#&gt; Attempting fresh download from original source...</span></span>
-<span><span class="co">#&gt; ✓ RPPI (sale): 13974 records from 3 sources</span></span>
-<span><span class="co">#&gt; Successfully downloaded from original source</span></span>
-<span><span class="co">#&gt; Retrieved 'sale' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',</span></span>
-<span><span class="co">#&gt; 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'</span></span>
 <span></span>
 <span><span class="co"># Filter for national indices</span></span>
 <span><span class="va">national</span> <span class="op">&lt;-</span> <span class="va">sales</span> <span class="op">|&gt;</span></span>
@@ -344,7 +306,6 @@ across São Paulo, Rio de Janeiro, and Belo Horizonte.</p>
 <span>       y <span class="op">=</span> <span class="st">"Index (base varies by source)"</span>,</span>
 <span>       color <span class="op">=</span> <span class="st">"Source"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-8-1.png" width="672"></p>
 <p>To actually make the indices comparable, we need to normalize them to
 a common base. The code below normalizes all indices to 100 at the start
 of 2018 and then compares their growth over time. The total variation
@@ -385,7 +346,6 @@ from 2018 to 2024 is also annotated on the plot.</p>
 <span>    color <span class="op">=</span> <span class="st">"Source"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-9-1.png" width="672"></p>
 <p>Alternatively, we can compare the 12-month growth rates of each
 index, which are directly comparable across sources. Note, however, that
 overall trends may point to different conclusions depending on the index
@@ -405,7 +365,6 @@ indices.</p>
 <span>    color <span class="op">=</span> <span class="st">"Source"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-10-1.png" width="672"></p>
 </div>
 <div class="section level3">
 <h3 id="ivar-the-repeat-rent-index">IVAR: the repeat-rent index<a class="anchor" aria-label="anchor" href="#ivar-the-repeat-rent-index"></a>
@@ -417,11 +376,6 @@ contract prices, making it a reliable measure of rental market
 trends.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ivar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"ivar"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi from GitHub cache...</span></span>
-<span><span class="co">#&gt; Loaded 'rppi_ivar' from cache</span></span>
-<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
-<span><span class="co">#&gt; Retrieved 'ivar' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',</span></span>
-<span><span class="co">#&gt; 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'</span></span>
 <span></span>
 <span><span class="va">ivar_cities</span> <span class="op">&lt;-</span> <span class="va">ivar</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">!=</span> <span class="st">"Brazil"</span><span class="op">)</span></span>
@@ -433,7 +387,6 @@ trends.</p>
 <span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>       y <span class="op">=</span> <span class="st">"Index (base varies by source)"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-11-1.png" width="672"></p>
 <p>IVAR is a “raw” index, meaning it does not apply any smoothing
 techniques like moving averages or the HP filter. As a result, it may
 appear more volatile than other indices.</p>
@@ -451,10 +404,7 @@ below applies a 6-month moving average to the national IVAR index.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"IVAR National Rent Index (raw vs 6-month MA)"</span>,</span>
 <span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>       y <span class="op">=</span> <span class="st">"Index (base varies by source)"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 5 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_line()`).</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-12-1.png" width="672"></p>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="fipezap-the-broad-rental-index">FipeZap: the broad rental index<a class="anchor" aria-label="anchor" href="#fipezap-the-broad-rental-index"></a>
@@ -465,11 +415,6 @@ prices</strong> rather than actual contract prices.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get FipeZap data</span></span>
 <span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi from GitHub cache...</span></span>
-<span><span class="co">#&gt; Loaded 'rppi_fipe' from cache</span></span>
-<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
-<span><span class="co">#&gt; Retrieved 'fipezap' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',</span></span>
-<span><span class="co">#&gt; 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'</span></span>
 <span></span>
 <span><span class="co"># Filter for major cities - residential rent index</span></span>
 <span></span>
@@ -504,7 +449,6 @@ prices</strong> rather than actual contract prices.</p>
 <span>    y <span class="op">=</span> <span class="st">"Index"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-13-1.png" width="672"></p>
 </div>
 <div class="section level3">
 <h3 id="iqa-quintoandar-rent-prices">IQA: QuintoAndar Rent Prices<a class="anchor" aria-label="anchor" href="#iqa-quintoandar-rent-prices"></a>
@@ -517,27 +461,8 @@ both listing and contract prices. Together with this methodological
 change, the index rebranded to Índice QuintoAndar ImovelWeb (IQAIW).</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">iqa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"iqa"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi from GitHub cache...</span></span>
-<span><span class="co">#&gt; Loaded 'rppi_iqa' from cache</span></span>
-<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
-<span><span class="co">#&gt; Retrieved 'iqa' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',</span></span>
-<span><span class="co">#&gt; 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'</span></span>
 <span></span>
-<span><span class="va">iqa</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 96 × 5</span></span></span>
-<span><span class="co">#&gt;    date       name_muni      rent_price      chg acum12m</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 2019-06-01 Rio De Janeiro       32.5 <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 2019-07-01 Rio De Janeiro       31.7 -<span style="color: #BB0000;">0.024</span><span style="color: #BB0000; text-decoration: underline;">3</span>       <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 2019-08-01 Rio De Janeiro       32.0  0.008<span style="text-decoration: underline;">69</span>      <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 2019-09-01 Rio De Janeiro       31.7 -<span style="color: #BB0000;">0.008</span><span style="color: #BB0000; text-decoration: underline;">95</span>      <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 2019-10-01 Rio De Janeiro       31.1 -<span style="color: #BB0000;">0.018</span><span style="color: #BB0000; text-decoration: underline;">7</span>       <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 2019-11-01 Rio De Janeiro       30.2 -<span style="color: #BB0000;">0.026</span><span style="color: #BB0000; text-decoration: underline;">9</span>       <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 2019-12-01 Rio De Janeiro       29.8 -<span style="color: #BB0000;">0.014</span><span style="color: #BB0000; text-decoration: underline;">1</span>       <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 2020-01-01 Rio De Janeiro       30.3  0.015<span style="text-decoration: underline;">7</span>       <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 2020-02-01 Rio De Janeiro       30.2 -<span style="color: #BB0000;">0.002</span><span style="color: #BB0000; text-decoration: underline;">45</span>      <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 2020-03-01 Rio De Janeiro       30.4  0.005<span style="text-decoration: underline;">47</span>      <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 86 more rows</span></span></span></code></pre></div>
+<span><span class="va">iqa</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="fipezap-by-city">FipeZap by City<a class="anchor" aria-label="anchor" href="#fipezap-by-city"></a>
@@ -567,15 +492,9 @@ change, the index rebranded to Índice QuintoAndar ImovelWeb (IQAIW).</p>
 <span>    fill <span class="op">=</span> <span class="st">"Market"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-15-1.png" width="672"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get FipeZap data</span></span>
 <span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi from GitHub cache...</span></span>
-<span><span class="co">#&gt; Loaded 'rppi_fipe' from cache</span></span>
-<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
-<span><span class="co">#&gt; Retrieved 'fipezap' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',</span></span>
-<span><span class="co">#&gt; 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'</span></span>
 <span></span>
 <span><span class="co"># Filter for major cities - residential sale index</span></span>
 <span><span class="va">cities</span> <span class="op">&lt;-</span> <span class="va">fz</span> <span class="op">|&gt;</span></span>
@@ -594,10 +513,7 @@ change, the index rebranded to Índice QuintoAndar ImovelWeb (IQAIW).</p>
 <span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>       y <span class="op">=</span> <span class="st">"Index"</span>,</span>
 <span>       color <span class="op">=</span> <span class="st">"City"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 15 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_line()`).</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-16-1.png" width="672"></p>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="rent-vs-sale---são-paulo">Rent vs Sale - São Paulo<a class="anchor" aria-label="anchor" href="#rent-vs-sale---s%C3%A3o-paulo"></a>
@@ -635,10 +551,7 @@ change, the index rebranded to Índice QuintoAndar ImovelWeb (IQAIW).</p>
 <span>    y <span class="op">=</span> <span class="st">"Index (100 = 2019 average)"</span>,</span>
 <span>    color <span class="op">=</span> <span class="st">"Market"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 1 row containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_line()`).</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-17-1.png" width="672"></p>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="international-comparison">International Comparison<a class="anchor" aria-label="anchor" href="#international-comparison"></a>
@@ -648,12 +561,6 @@ International Settlements (BIS):</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get BIS international RPPI</span></span>
 <span><span class="va">bis</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi_bis"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi_bis from GitHub cache...</span></span>
-<span><span class="co">#&gt; Loaded 'bis_selected' from cache</span></span>
-<span><span class="co">#&gt; Successfully loaded from GitHub cache</span></span>
-<span><span class="co">#&gt; Retrieved 'selected' from 'rppi_bis' (default table). Available tables:</span></span>
-<span><span class="co">#&gt; 'selected', 'detailed_monthly', 'detailed_quarterly', 'detailed_annual',</span></span>
-<span><span class="co">#&gt; 'detailed_semiannual'</span></span>
 <span></span>
 <span><span class="co"># Filter for select countries</span></span>
 <span><span class="va">countries</span> <span class="op">&lt;-</span> <span class="va">bis</span> <span class="op">|&gt;</span></span>
@@ -673,10 +580,7 @@ International Settlements (BIS):</p>
 <span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>       y <span class="op">=</span> <span class="st">"Index (2010 = 100)"</span>,</span>
 <span>       color <span class="op">=</span> <span class="st">"Country"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 4 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_line()`).</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-18-1.png" width="672"></p>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="key-differences-between-indices">Key Differences Between Indices<a class="anchor" aria-label="anchor" href="#key-differences-between-indices"></a>
@@ -737,29 +641,13 @@ and contract prices.</li>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get all sale indices in one table</span></span>
 <span><span class="va">all_sale</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"sale"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi from GitHub cache...</span></span>
-<span><span class="co">#&gt; Warning: RPPI stacked tables (sale/rent/all) require fresh processing due to outdated</span></span>
-<span><span class="co">#&gt; cache</span></span>
-<span><span class="co">#&gt; Falling back to fresh download...</span></span>
-<span><span class="co">#&gt; Warning: GitHub cache failed: GitHub cache incompatible with RPPI</span></span>
-<span><span class="co">#&gt; stacked tables</span></span>
-<span><span class="co">#&gt; Attempting fresh download from original source...</span></span>
-<span><span class="co">#&gt; Skipping download - using cached version</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ✓ RPPI (sale): 13974 records from 3 sources</span></span>
-<span><span class="co">#&gt; Successfully downloaded from original source</span></span>
-<span><span class="co">#&gt; Retrieved 'sale' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',</span></span>
-<span><span class="co">#&gt; 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'</span></span>
 <span></span>
 <span><span class="co"># Compare across sources</span></span>
 <span><span class="va">all_sale</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">==</span> <span class="st">"São Paulo"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">acum12m</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"São Paulo Sale Indices Comparison"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 24 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_line()`).</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-19-1.png" width="672"></p>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"São Paulo Sale Indices Comparison"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="normalize-indices-when-comparing-levels">2. Normalize Indices When Comparing Levels<a class="anchor" aria-label="anchor" href="#normalize-indices-when-comparing-levels"></a>
@@ -768,19 +656,6 @@ and contract prices.</li>
 direct comparison:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sales</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"sale"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Attempting to load rppi from GitHub cache...</span></span>
-<span><span class="co">#&gt; Warning: RPPI stacked tables (sale/rent/all) require fresh processing due to outdated</span></span>
-<span><span class="co">#&gt; cache</span></span>
-<span><span class="co">#&gt; Falling back to fresh download...</span></span>
-<span><span class="co">#&gt; Warning: GitHub cache failed: GitHub cache incompatible with RPPI</span></span>
-<span><span class="co">#&gt; stacked tables</span></span>
-<span><span class="co">#&gt; Attempting fresh download from original source...</span></span>
-<span><span class="co">#&gt; Skipping download - using cached version</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ✓ RPPI (sale): 13974 records from 3 sources</span></span>
-<span><span class="co">#&gt; Successfully downloaded from original source</span></span>
-<span><span class="co">#&gt; Retrieved 'sale' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',</span></span>
-<span><span class="co">#&gt; 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'</span></span>
 <span></span>
 <span><span class="va">sales_normalized</span> <span class="op">&lt;-</span> <span class="va">sales</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>index_normalized <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">index</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">index</span><span class="op">)</span>, .by <span class="op">=</span> <span class="va">source</span><span class="op">)</span></span></code></pre></div>
@@ -794,10 +669,7 @@ direct comparison:</p>
 <span><span class="va">sales</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">acum12m</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>y <span class="op">=</span> <span class="st">"12-month change (%)"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 828 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_line()`).</span></span></code></pre></div>
-<p><img src="working-with-rppi_files/figure-html/unnamed-chunk-21-1.png" width="672"></p>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>y <span class="op">=</span> <span class="st">"12-month change (%)"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level3">
