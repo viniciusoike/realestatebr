@@ -131,6 +131,18 @@ if (is.null(existing_releases) || !TAG %in% existing_releases$tag_name) {
         sep = "\n"
       )
     )
+
+    # Give GitHub API time to process the release
+    cli_alert_info("Waiting for release to be ready...")
+    Sys.sleep(3)
+
+    # Verify release was created
+    releases_check <- pb_releases(repo = REPO)
+    if (!TAG %in% releases_check$tag_name) {
+      cli_abort("Release creation verification failed")
+    }
+    cli_alert_success("Release {TAG} created and verified")
+
   }, error = function(e) {
     cli_abort("Failed to create release: {e$message}")
   })
@@ -149,12 +161,12 @@ for (file in cache_files) {
   cli_alert_info("Uploading {file_name} ({file_size_mb} MB)...")
 
   result <- tryCatch({
+    # Upload file (note: show_progress is not a valid parameter)
     pb_upload(
       file = file,
       repo = REPO,
       tag = TAG,
-      overwrite = TRUE,
-      show_progress = TRUE
+      overwrite = TRUE
     )
     cli_alert_success("Uploaded {file_name}")
     list(file = file_name, status = "success", size_mb = file_size_mb)
