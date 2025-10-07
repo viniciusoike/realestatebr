@@ -1,0 +1,69 @@
+name: Integration Tests
+
+# Run weekly and on push to main
+on:
+  schedule:
+    - cron: '0 10 * * 1'  # Every Monday at 10 AM UTC
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        r-version: ['4.3.0']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up R ${{ matrix.r-version }}
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r-version }}
+          use-public-rspm: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcurl4-openssl-dev \
+            libssl-dev \
+            libxml2-dev \
+            libgdal-dev \
+            libudunits2-dev \
+            libproj-dev
+
+      - name: Query R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::testthat
+            any::devtools
+          needs: test
+
+      - name: Run integration tests
+        env:
+          NOT_CRAN: "true"
+        run: |
+          Rscript -e '
+            devtools::load_all()
+            testthat::test_file("tests/testthat/test-integration-get_dataset.R")
+          '
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-test-results
+          path: |
+            tests/testthat/*.log
+            tests/testthat/*.Rout

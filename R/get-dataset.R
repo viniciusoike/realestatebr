@@ -318,8 +318,11 @@ get_from_github_cache <- function(name, dataset_info, table) {
   # Use existing import_cached function
   data <- import_cached(cached_name)
 
-  # Filter by table if requested and data is a list
-  if (!is.null(table) && is.list(data) && !inherits(data, "data.frame")) {
+  # Special handling for property_records nested structure
+  if (name == "property_records" && !is.null(table)) {
+    data <- extract_property_table(data, table)
+  } else if (!is.null(table) && is.list(data) && !inherits(data, "data.frame")) {
+    # Filter by table if requested and data is a list
     if (table %in% names(data)) {
       data <- data[[table]]
     } else {

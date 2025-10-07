@@ -606,7 +606,10 @@ get_rppi_fipezap <- function(
       delim = "-",
       names = c("market", "rent_sale", "variable", "rooms")
     ) |>
-    dplyr::mutate(date = lubridate::ymd(date)) |>
+    dplyr::mutate(
+      date = lubridate::ymd(date),
+      name_muni = standardize_city_names(name_muni)
+    ) |>
     dplyr::select(date, name_muni, market, rent_sale, variable, rooms, value)
 
   # Filter by city if specified

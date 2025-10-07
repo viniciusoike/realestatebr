@@ -221,7 +221,7 @@ is_debug_mode <- function() {
 #' @keywords internal
 cli_debug <- function(message, ...) {
   if (is_debug_mode()) {
-    cli::cli_inform(message, ...)
+    cli::cli_inform(message, .envir = parent.frame(), ...)
   }
 }
 
@@ -254,6 +254,6 @@ cli_debug <- function(message, ...) {
 #' @keywords internal
 cli_user <- function(message, quiet = FALSE, ...) {
   if (!quiet) {
-    cli::cli_inform(message, ...)
+    cli::cli_inform(message, .envir = parent.frame(), ...)
   }
 }

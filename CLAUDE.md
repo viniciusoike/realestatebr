@@ -8,6 +8,16 @@ This file contains configuration and commands for Claude Code to help with packa
 - **Main Branch**: main
 - **Mission**: Create the definitive R package for Brazilian real estate data - reliable, well-documented, and easy to use
 
+## Current challenges
+
+- Multiple legacy functions with inconsistent interfaces leading to unexpected errors.
+- Core functions aren't working at all.
+
+## Goals for v0.5.0
+
+- Have all core functions working perfectly. This means `get_dataset()` should work flawlessly for all datasets with both `source = 'cache'` and `source = 'fresh'`.
+- Make codebase simpler by abandoning legacy functions, deprecation warnings, etc. In other words, make breaking changes if (1) it makes the codebase simpler; (2) makes the codebase significantly more efficient; (3) makes the codebaes less error-prone; and (4) makes the end-user experience better.
+
 ## Recent Updates
 
 ### v0.4.1 (Latest) - Bug Fixes
