@@ -1,4 +1,47 @@
-# realestatebr 0.5.0 (Development)
+# realestatebr 0.5.1
+
+## Bug Fixes
+
+### SECOVI Default Table Fix
+**Fixed SECOVI dataset to return all categories by default instead of only "condo"**
+
+- **Problem**: `get_dataset("secovi")` was only returning the "condo" category (1,939 rows) instead of all categories (9,398 rows). This caused test failures for launch/rent/sale tables.
+
+- **Root Cause**: When no table parameter was specified, the code defaulted to the first category alphabetically ("condo"), rather than fetching all categories.
+
+- **Solution**:
+  - Added `default_table` configuration support in `datasets.yaml`
+  - Updated `validate_and_resolve_table()` to check for `default_table` setting
+  - Set SECOVI's `default_table: "all"` in registry
+  - Regenerated cache with all 4 categories
+
+- **Impact**:
+  - Cache size: 12KB → 55KB (includes all categories)
+  - Data completeness: 1,939 → 9,398 rows
+  - Categories: condo (1,939), launch (780), rent (2,779), sale (3,900)
+
+```r
+# Now returns all categories by default
+get_dataset("secovi")  # → 9,398 rows, 4 categories ✅
+
+# Specific tables still work correctly
+get_dataset("secovi", "launch")  # → 780 rows
+get_dataset("secovi", "rent")    # → 2,779 rows
+get_dataset("secovi", "sale")    # → 3,900 rows
+```
+
+### Test Infrastructure Improvements
+- Updated test suite to use `devtools::load_all()` instead of `library()` to ensure testing of development version
+- Added comprehensive pre-release test suite (`tests/comprehensive_check_v0.5.qmd`)
+- Added test result documentation (`tests/TEST_RESULTS_SUMMARY.md`, `tests/QUICK_SUMMARY.md`)
+
+### Pipeline Improvements
+- Updated `_targets.R` to always load development version for consistency
+- Ensures targets pipeline uses latest code during cache regeneration
+
+---
+
+# realestatebr 0.5.0
 
 ## BREAKING CHANGES: User-Level Caching Architecture
 
