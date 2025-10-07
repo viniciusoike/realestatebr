@@ -13,7 +13,7 @@ This file contains configuration and commands for Claude Code to help with packa
 - Multiple legacy functions with inconsistent interfaces leading to unexpected errors.
 - Core functions aren't working at all.
 
-## Goals for v0.6.0
+## Goals for v0.6.x
 
 - Simplify codebase by removing (1) obsolete/outdated/unnecessary functions, (2) obsolete/outdated/unnecessary documentation, (3) repetitive import/download logic, (4) unnecessary complexity.
 
@@ -29,7 +29,7 @@ The codebase of this package is very large and overly complex for its purpose.
 
 4. There is currently some ambiguity with the word 'legacy' in this package. Due to architcture transition in v0.4.0, all functions except `list_datasets()` and `get_dataset()` are considered 'legacy'. However, these functions are the backbone of the package. The only change is that they are now internal. Despite this, several functions "treat" them as if they were legacy. The core `get_from_legacy_function` for instance implies that it calls legacy functions, when in fact it calls the main internal functions. This is confusing and should be fixed.
 
-## Goals for v0.5.0
+## Goals for v0.5.x
 
 - Have all core functions working perfectly. This means `get_dataset()` should work flawlessly for all datasets with both `source = 'cache'` and `source = 'fresh'`.
 - Make sure that ALL datasets can be imported via 'cache'. This ensures that the user can always get the data quickly and conviniently.
