@@ -12,10 +12,10 @@
 #'   Use get_dataset_info(name) to see available tables.
 #' @param source Character. Data source preference:
 #'   \describe{
-#'     \item{"auto"}{Automatic fallback: cache → GitHub → fresh (default)}
-#'     \item{"cache"}{Local package cache only}
-#'     \item{"github"}{GitHub repository cache}
-#'     \item{"fresh"}{Fresh download from original source}
+#'     \item{"auto"}{Automatic fallback: user cache → GitHub releases → fresh (default)}
+#'     \item{"cache"}{User cache only (stored in ~/.local/share/realestatebr/)}
+#'     \item{"github"}{Download from GitHub releases (requires piggyback package)}
+#'     \item{"fresh"}{Fresh download from original source (saves to user cache)}
 #'   }
 #' @param date_start Date. Start date for time series data (where applicable)
 #' @param date_end Date. End date for time series data (where applicable)
@@ -176,8 +176,34 @@ get_dataset_with_fallback <- function(
   # Initialize error tracking
   errors <- list()
 
-  # Try 1: GitHub cache (fastest for most users)
-  cli::cli_inform("Attempting to load {name} from GitHub cache...")
+  # Try 1: User cache (fastest - no network needed)
+  cli::cli_inform("Checking user cache for {name}...")
+  data <- tryCatch(
+    {
+      get_dataset_from_source(
+        name,
+        dataset_info,
+        "cache",
+        table,
+        date_start,
+        date_end,
+        ...
+      )
+    },
+    error = function(e) {
+      errors$cache <<- e$message
+      cli::cli_inform("User cache not available: {e$message}")
+      NULL
+    }
+  )
+
+  if (!is.null(data)) {
+    cli::cli_inform("Successfully loaded from user cache")
+    return(data)
+  }
+
+  # Try 2: GitHub releases (pre-processed data)
+  cli::cli_inform("Attempting to download {name} from GitHub releases...")
   data <- tryCatch(
     {
       get_dataset_from_source(
@@ -192,17 +218,17 @@ get_dataset_with_fallback <- function(
     },
     error = function(e) {
       errors$github <<- e$message
-      cli::cli_warn("GitHub cache failed: {e$message}")
+      cli::cli_warn("GitHub download failed: {e$message}")
       NULL
     }
   )
 
   if (!is.null(data)) {
-    cli::cli_inform("Successfully loaded from GitHub cache")
+    cli::cli_inform("Successfully downloaded from GitHub releases")
     return(data)
   }
 
-  # Try 2: Fresh download
+  # Try 3: Fresh download from original source
   cli::cli_inform("Attempting fresh download from original source...")
   data <- tryCatch(
     {
@@ -231,13 +257,14 @@ get_dataset_with_fallback <- function(
   # All sources failed - provide detailed error information
   error_details <- paste(
     "All data sources failed for dataset '{name}':",
-    "- GitHub cache: {errors$github %||% 'Not attempted'}",
+    "- User cache: {errors$cache %||% 'Not attempted'}",
+    "- GitHub releases: {errors$github %||% 'Not attempted'}",
     "- Fresh download: {errors$fresh %||% 'Not attempted'}",
     "",
     "Troubleshooting:",
     "1. Check your internet connection",
-    "2. Try again later (temporary server issues)",
-    "3. Use source='fresh' to force fresh download",
+    "2. Install piggyback: install.packages('piggyback')",
+    "3. Try source='fresh' to force fresh download from original source",
     "4. Check dataset availability with list_datasets()",
     sep = "\n"
   )
@@ -284,15 +311,115 @@ get_dataset_from_source <- function(
 
 #' Get Data from Local Cache
 #'
+#' Loads dataset from user-level cache directory.
+#'
 #' @keywords internal
 get_from_local_cache <- function(name, dataset_info, table) {
-  # Implementation for local cache (placeholder for now)
-  cli::cli_abort(
-    "Local cache not yet implemented. Use source='github' or source='fresh'."
-  )
+  # Map dataset name to cache file name
+  cached_name <- get_cached_name(name, dataset_info, table)
+
+  if (is.null(cached_name)) {
+    cli::cli_abort("No cache available for dataset '{name}'")
+  }
+
+  # Load from user cache
+  data <- load_from_user_cache(cached_name, quiet = FALSE)
+
+  if (is.null(data)) {
+    cli::cli_abort(c(
+      "Dataset '{name}' not found in cache",
+      "i" = "Try source='github' to download from GitHub releases",
+      "i" = "Or source='fresh' to download from original source"
+    ))
+  }
+
+  # Apply same filtering logic as get_from_github_cache
+  # Special handling for property_records nested structure
+  if (name == "property_records" && !is.null(table)) {
+    data <- extract_property_table(data, table)
+  } else if (!is.null(table) && is.list(data) && !inherits(data, "data.frame")) {
+    # Filter by table if requested and data is a list
+    if (table %in% names(data)) {
+      data <- data[[table]]
+    } else {
+      available_tables <- paste(names(data), collapse = ", ")
+      cli::cli_abort("Table '{table}' not found. Available: {available_tables}")
+    }
+  }
+
+  # Special handling for SECOVI table filtering
+  if (!is.null(table) && name == "secovi" && table != "all") {
+    if ("category" %in% names(data)) {
+      valid_tables <- c("condo", "rent", "launch", "sale")
+      if (table %in% valid_tables) {
+        data <- data[data$category == table, ]
+        if (nrow(data) == 0) {
+          cli::cli_abort("No data found for SECOVI table '{table}'")
+        }
+      } else {
+        cli::cli_abort(
+          "Invalid SECOVI table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}"
+        )
+      }
+    }
+  }
+
+  # Special handling for BCB Real Estate table filtering
+  if (!is.null(table) && name == "bcb_realestate" && table != "all") {
+    if ("category" %in% names(data)) {
+      # Map user-facing table names to internal category values
+      category_mapping <- c(
+        "accounting" = "contabil",
+        "application" = "direcionamento",
+        "indices" = "indices",
+        "sources" = "fontes",
+        "units" = "imoveis"
+      )
+
+      target_category <- category_mapping[[table]]
+      if (!is.null(target_category)) {
+        # Filter data by category
+        data <- data[data$category == target_category, ]
+        if (nrow(data) == 0) {
+          cli::cli_abort("No data found for BCB Real Estate table '{table}'")
+        }
+      } else {
+        valid_tables <- names(category_mapping)
+        cli::cli_abort(
+          "Invalid BCB Real Estate table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}, all"
+        )
+      }
+    }
+  }
+
+  # Special handling for BCB Series table filtering
+  if (!is.null(table) && name == "bcb_series" && table != "all") {
+    if ("bcb_category" %in% names(data)) {
+      valid_tables <- c(
+        "price", "credit", "production", "interest-rate",
+        "exchange", "government", "real-estate"
+      )
+
+      if (table %in% valid_tables) {
+        # Filter data by bcb_category
+        data <- data[data$bcb_category == table, ]
+        if (nrow(data) == 0) {
+          cli::cli_abort("No data found for BCB Series table '{table}'")
+        }
+      } else {
+        cli::cli_abort(
+          "Invalid BCB Series table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}, all"
+        )
+      }
+    }
+  }
+
+  return(data)
 }
 
 #' Get Data from GitHub Cache
+#'
+#' Downloads dataset from GitHub releases to user cache, then loads it.
 #'
 #' @keywords internal
 get_from_github_cache <- function(name, dataset_info, table) {
@@ -301,22 +428,22 @@ get_from_github_cache <- function(name, dataset_info, table) {
     name == "rppi" && !is.null(table) && table %in% c("sale", "rent", "all")
   ) {
     cli::cli_warn(
-      "RPPI stacked tables (sale/rent/all) require fresh processing due to outdated cache"
+      "RPPI stacked tables (sale/rent/all) require fresh processing"
     )
     cli::cli_inform("Falling back to fresh download...")
     # Force fresh download for stacked RPPI tables
     stop("GitHub cache incompatible with RPPI stacked tables")
   }
 
-  # Map dataset name to import_cached parameter
+  # Map dataset name to cache file name
   cached_name <- get_cached_name(name, dataset_info, table)
 
   if (is.null(cached_name)) {
     cli::cli_abort("No GitHub cache available for dataset '{name}'")
   }
 
-  # Use existing import_cached function
-  data <- import_cached(cached_name)
+  # Download from GitHub releases to user cache
+  data <- download_from_github_release(cached_name, overwrite = FALSE, quiet = FALSE)
 
   # Special handling for property_records nested structure
   if (name == "property_records" && !is.null(table)) {
@@ -469,6 +596,18 @@ get_from_legacy_function <- function(
   # Call the legacy function
   func <- get(legacy_function, mode = "function")
   data <- do.call(func, args)
+
+  # Save freshly downloaded data to user cache for future use
+  if (!is.null(data)) {
+    cached_name <- get_cached_name(name, dataset_info, table)
+    if (!is.null(cached_name)) {
+      # Determine format based on data type
+      format <- if (is.data.frame(data)) "csv.gz" else "rds"
+
+      # Save to user cache (don't show message to avoid clutter)
+      save_to_user_cache(data, cached_name, format = format, quiet = TRUE)
+    }
+  }
 
   return(data)
 }

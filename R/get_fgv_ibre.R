@@ -83,61 +83,30 @@ get_fgv_ibre <- function(
   if (cached) {
     cli_debug("Loading FGV IBRE indicators from cache...")
 
-    tryCatch(
-      {
-        # Use new unified architecture for cached data
-        fgv_data <- get_dataset("fgv_ibre", source = "github")
+    # Use new unified architecture for cached data
+    fgv_data <- get_dataset("fgv_ibre", source = "github")
 
-        cli_debug("Successfully loaded {nrow(fgv_data)} FGV IBRE indicator records from cache")
+    cli_debug("Successfully loaded {nrow(fgv_data)} FGV IBRE indicator records from cache")
 
-        # Add metadata
-        attr(fgv_data, "source") <- "cache"
-        attr(fgv_data, "download_time") <- Sys.time()
-        attr(fgv_data, "download_info") <- list(
-          table = table,
-          dataset = "fgv_ibre",
-          source = "cache"
-        )
-
-        return(fgv_data)
-      },
-      error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load FGV IBRE data from cache: {e$message}",
-            "i" = "Falling back to internal package data"
-          ))
-        }
-      }
+    # Add metadata
+    attr(fgv_data, "source") <- "cache"
+    attr(fgv_data, "download_time") <- Sys.time()
+    attr(fgv_data, "download_info") <- list(
+      table = table,
+      dataset = "fgv_ibre",
+      source = "cache"
     )
+
+    return(fgv_data)
   }
 
-  # Use internal package data ----
-  cli_user("Loading FGV IBRE indicators from package data", quiet = quiet)
-
-  # Check for required data dependencies
-  if (!exists("fgv_data")) {
-    cli::cli_abort(c(
-      "Required data dependency not available",
-      "x" = "This function requires the {.pkg fgv_data} object",
-      "i" = "Please ensure all package data is properly loaded",
-      "i" = "Try using {.code cached = TRUE} to access cached data instead"
-    ))
-  }
-
-  cli_user("\u2713 FGV IBRE indicators retrieved: {nrow(fgv_data)} records", quiet = quiet)
-
-  # Add metadata
-  attr(fgv_data, "source") <- "internal"
-  attr(fgv_data, "download_time") <- Sys.time()
-  attr(fgv_data, "download_info") <- list(
-    table = table,
-    dataset = "fgv_ibre",
-    source = "internal",
-    note = "Fresh downloads not supported - using package data"
-  )
-
-  return(fgv_data)
+  # Fresh downloads not supported ----
+  cli::cli_abort(c(
+    "Fresh downloads not supported for FGV IBRE data",
+    "x" = "FGV data is not accessible via API and requires manual updates",
+    "i" = "Use {.code cached = TRUE} to access the most recent cached data",
+    "i" = "Or use {.code get_dataset('fgv_ibre')} which automatically uses cache"
+  ))
 }
 
 fgv_dict <- data.frame(

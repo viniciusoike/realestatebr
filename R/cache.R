@@ -1,16 +1,20 @@
-#' Cache Management Utilities
+#' Cache Management Utilities (DEPRECATED)
 #'
-#' Internal functions for managing package data cache, including loading cached
-#' datasets and handling cache invalidation strategies.
+#' These functions are deprecated as of version 0.5.0. Use the new user-level
+#' cache functions instead (see \code{\link{cache-user}}).
+#'
+#' @name cache-deprecated
+NULL
 
-#' Import Cached Dataset
+#' Import Cached Dataset (DEPRECATED)
 #'
-#' Load a dataset from the package's cached data directory with automatic
-#' format detection and error handling.
+#' \strong{DEPRECATED}: This function loaded data from \code{inst/cached_data/}
+#' which is no longer included in the package. Use \code{\link{load_from_user_cache}}
+#' or \code{\link{get_dataset}} with \code{source="cache"} instead.
 #'
 #' @param dataset_name Character. Name of the cached dataset (without extension)
 #' @param cache_dir Character. Path to cache directory (default: "cached_data")
-#' @param format Character. File format ("auto", "rds", "csv"). If "auto", 
+#' @param format Character. File format ("auto", "rds", "csv"). If "auto",
 #'   will try RDS first, then compressed CSV.
 #' @param quiet Logical. Suppress informational messages (default: FALSE)
 #'
@@ -18,70 +22,41 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Load ABECIP data from cache
-#' abecip_data <- import_cached("abecip")
+#' # OLD (deprecated):
+#' # abecip_data <- import_cached("abecip")
 #'
-#' # Load with specific format
-#' bcb_data <- import_cached("bcb_realestate", format = "csv")
+#' # NEW (recommended):
+#' abecip_data <- load_from_user_cache("abecip")
+#' # or better:
+#' abecip_data <- get_dataset("abecip")
 #' }
 #'
+#' @seealso \code{\link{load_from_user_cache}}, \code{\link{get_dataset}}
 #' @keywords internal
 #' @export
-import_cached <- function(dataset_name, 
-                         cache_dir = "cached_data", 
+import_cached <- function(dataset_name,
+                         cache_dir = "cached_data",
                          format = "auto",
                          quiet = FALSE) {
-  
+
+  # Deprecation warning
+  if (!quiet) {
+    lifecycle::deprecate_warn(
+      when = "0.5.0",
+      what = "import_cached()",
+      with = "load_from_user_cache()",
+      details = "import_cached() now loads from user cache (~/.local/share/realestatebr/) instead of inst/cached_data/"
+    )
+  }
+
   # Validate inputs
   if (!is.character(dataset_name) || length(dataset_name) != 1 || dataset_name == "") {
     cli::cli_abort("dataset_name must be a non-empty character string")
   }
-  
-  format <- match.arg(format, choices = c("auto", "rds", "csv"))
-  
-  # Build cache path
-  cache_path <- system.file(cache_dir, package = "realestatebr")
-  
-  if (!dir.exists(cache_path) || cache_path == "") {
-    cli::cli_abort(c(
-      "Cache directory not found.",
-      "i" = "Expected location: {cache_path}",
-      "i" = "Package may not be properly installed or cache_dir is incorrect.",
-      "!" = "Try reinstalling the package or check cache_dir parameter."
-    ))
-  }
-  
-  # Try different file formats
-  if (format == "auto") {
-    data <- try_load_formats(dataset_name, cache_path, quiet)
-  } else {
-    data <- load_specific_format(dataset_name, cache_path, format, quiet)
-  }
-  
-  if (is.null(data)) {
-    # List available files for helpful error message
-    available_files <- list.files(cache_path, pattern = "\\.(rds|csv|csv\\.gz)$")
-    if (length(available_files) > 0) {
-      available_names <- unique(gsub("\\.(rds|csv|csv\\.gz)$", "", available_files))
-      cli::cli_abort(c(
-        "Dataset '{dataset_name}' not found in cache.",
-        "i" = "Available datasets: {paste(available_names, collapse = ', ')}",
-        "i" = "Use check_cache_status() to see all cached files."
-      ))
-    } else {
-      cli::cli_abort(c(
-        "No cached datasets found.",
-        "i" = "Cache directory: {cache_path}",
-        "!" = "You may need to download data first using source='fresh'."
-      ))
-    }
-  }
-  
-  if (!quiet) {
-    cli::cli_inform("Loaded '{dataset_name}' from cache")
-  }
-  
-  return(data)
+
+  # Redirect to new user cache system
+  # Ignore cache_dir and format parameters (they're deprecated)
+  return(load_from_user_cache(dataset_name, quiet = quiet))
 }
 
 #' Try Loading Different File Formats

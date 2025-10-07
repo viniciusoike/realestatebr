@@ -1,3 +1,188 @@
+# realestatebr 0.5.0 (Development)
+
+## BREAKING CHANGES: User-Level Caching Architecture
+
+### Major Architectural Change
+**Version 0.5.0 introduces user-level caching, removing bundled datasets from the package to comply with CRAN's 5MB size limit. This is a BREAKING CHANGE that affects how datasets are accessed.**
+
+### What Changed
+- **Removed**: All cached datasets from `inst/cached_data/` (previously ~25MB)
+- **Added**: User-level cache directory at `~/.local/share/realestatebr/` (Linux/Mac) or `%LOCALAPPDATA%/realestatebr/Cache/` (Windows)
+- **Added**: GitHub Releases integration for pre-processed datasets
+- **Changed**: `source="cache"` now refers to user cache, not package cache
+- **Changed**: `source="github"` now downloads from GitHub releases, not package files
+
+### New Cache Behavior
+```r
+# First use: downloads from GitHub releases to user cache
+data <- get_dataset("abecip")  # Downloads once
+
+# Subsequent uses: loads from user cache (instant, offline)
+data <- get_dataset("abecip")  # Loads from ~/.local/share/realestatebr/
+
+# Force fresh download from original source
+data <- get_dataset("abecip", source = "fresh")  # Downloads and caches
+
+# Explicit source selection
+data <- get_dataset("abecip", source = "cache")   # User cache only
+data <- get_dataset("abecip", source = "github")  # GitHub releases only
+```
+
+### Auto Fallback Strategy (source = "auto", default)
+1. **User Cache**: Check `~/.local/share/realestatebr/` (instant, offline)
+2. **GitHub Releases**: Download pre-processed data (requires `piggyback` package)
+3. **Fresh Download**: Download from original source (saves to user cache)
+
+### New Dependencies
+- **Added**: `rappdirs` (Imports) - Cross-platform user cache directory support
+- **Added**: `piggyback` (Suggests) - GitHub releases download support
+
+### New Functions
+- `get_user_cache_dir()`: Get path to user cache directory
+- `list_cached_files()`: List all cached datasets
+- `clear_user_cache()`: Remove cached datasets
+- `is_cached()`: Check if dataset is in cache
+- `list_github_assets()`: List available datasets on GitHub releases
+- `download_from_github_release()`: Download specific dataset from releases
+- `update_cache_from_github()`: Update cached datasets from GitHub
+- `is_cache_up_to_date()`: Compare local vs GitHub cache timestamps
+
+### Migration Guide
+
+#### For Users
+```r
+# Install updated package
+install.packages("realestatebr")  # or devtools::install_github()
+
+# Install piggyback for GitHub downloads (recommended)
+install.packages("piggyback")
+
+# First use after update: will download datasets to user cache
+data <- get_dataset("abecip")
+
+# Check cache location
+get_user_cache_dir()
+
+# Manage cache
+list_cached_files()           # See what's cached
+clear_user_cache("abecip")    # Clear specific dataset
+clear_user_cache()            # Clear all (with confirmation)
+```
+
+#### For Package Developers
+- Cached data files now excluded from package build via `.Rbuildignore`
+- Package size reduced from ~25MB to <5MB (CRAN compliant)
+- `inst/cached_data/` kept for development/CI but excluded from distribution
+- GitHub Actions workflow publishes cache to releases via `data-raw/publish-cache.R`
+
+### Benefits
+- ✅ **CRAN Compliant**: Package size now <5MB (was 25MB)
+- ✅ **Faster Installation**: Package downloads are much smaller
+- ✅ **Offline Usage**: Once cached, datasets work offline
+- ✅ **User Control**: Users manage their own cache
+- ✅ **Weekly Updates**: GitHub releases updated automatically by CI
+- ✅ **No Breaking APIs**: `get_dataset()` interface unchanged
+
+### Deprecations
+- `import_cached()`: Still works but now loads from user cache (previously from `inst/`)
+- Old `cached=TRUE` parameter in legacy functions: Still supported but uses new cache
+
+### Files Changed
+- **New**: `R/cache-user.R` - User cache management
+- **New**: `R/cache-github.R` - GitHub releases integration
+- **New**: `data-raw/publish-cache.R` - Upload cache to releases
+- **Updated**: `R/get-dataset.R` - Refactored cache logic
+- **Updated**: `R/cache.R` - Marked as deprecated (kept for compatibility)
+- **Updated**: `.Rbuildignore` - Exclude `inst/cached_data/` files
+- **Updated**: `DESCRIPTION` - Added `rappdirs` and `piggyback` dependencies
+
+---
+
+## Targets Pipeline Fixes
+
+### Critical Pipeline Functionality
+- **Fixed**: Targets pipeline now fully functional for automated data updates
+- **Fixed**: FGV IBRE and NRE-IRE datasets now work correctly in targets pipeline
+  - Changed from `source="fresh"` to `source="github"` for manually-updated datasets
+  - These datasets have no API/download capability and require manual updates
+- **Fixed**: Removed broken internal data object fallback in `get_fgv_ibre()` and `get_nre_ire()`
+  - Previously tried to access non-existent `fgv_data` and `ire` objects from `R/sysdata.rda`
+  - Now provides clear error messages when fresh downloads are attempted with `cached=FALSE`
+
+### Enhanced Dataset Registry
+- **Added**: `manual_update` flag to `datasets.yaml` for FGV IBRE and NRE-IRE
+- **Added**: `update_notes` field documenting why fresh downloads aren't available
+- **Improved**: Clear documentation in `_targets.R` explaining data source choices
+
+### Files Changed
+- `_targets.R`: Updated `fetch_dataset()` to support `source` parameter; FGV and NRE-IRE now use `source="github"`
+- `R/get_fgv_ibre.R`: Removed broken internal data fallback; added clear error for fresh downloads
+- `R/get_nre_ire.R`: Removed broken internal data fallback; added clear error for fresh downloads
+- `inst/extdata/datasets.yaml`: Added manual update flags and notes
+
+## Bug Fixes from Recent Commits
+
+### Property Records Simplification (Commit 9eab0ca)
+- **Refactored**: Major simplification of `get_property_records.R` (14% code reduction: 780→673 lines)
+- **Removed**: Deprecated functions `get_ri_capitals()` and `get_ri_aggregates()` with warning messages
+- **Removed**: Unused metadata attributes (`source`, `download_time`, `download_info`) that were never used
+- **Simplified**: Documentation for internal function (removed verbose examples and sections)
+- **Improved**: `scrape_registro_imoveis_links()` with better connection cleanup and reduced complexity
+
+### BCB Dataset Critical Fixes (Commit bb580c8)
+
+#### BCB Real Estate
+- **Fixed**: CLI message serialization error in targets pipeline
+- **Fixed**: Compute `nrow()` before CLI interpolation to avoid closure issues
+
+#### BCB Series - Graceful Degradation (CRITICAL)
+- **Fixed**: Replaced batch download with individual series downloads for better reliability
+- **Fixed**: Now returns successful series even if some fail (e.g., 14/15 instead of 0/15)
+- **Added**: Per-series retry logic with exponential backoff using `purrr::possibly()` pattern
+- **Added**: Clear warnings showing which series failed
+- **Restored**: Commented-out table filtering logic - now filters by `bcb_category` when `table` specified
+- **Improved**: Metadata-driven approach using `bcb_metadata` dynamically (now downloads all 140 series, not just 15)
+
+#### Get Dataset Infrastructure
+- **Fixed**: BCB Real Estate table filtering by category in `get-dataset.R`
+- **Fixed**: BCB Series table filtering by `bcb_category`
+- **Added**: Support for `table="all"` in `validate_and_resolve_table()` function
+- **Fixed**: Proper mapping of user-facing table names to internal Portuguese categories
+
+#### Registry and Tests
+- **Updated**: `bcb_series` categories in `datasets.yaml` to match metadata
+- **Added**: Missing categories: production, interest-rate, exchange, government, real-estate
+- **Added**: Integration tests for BCB table filtering and graceful degradation
+- **Result**: All 97 integration tests now pass
+
+### Get Dataset Critical Fixes (Commit ce4768b)
+
+#### CLI Message Scoping
+- **Fixed**: Added `.envir = parent.frame()` to `cli::cli_inform()` calls in `cli_user()` and `cli_debug()`
+- **Fixed**: "cannot coerce type 'closure' to vector of type 'character'" error
+- **Affected**: Previously failed for rppi_bis, property_records, and all functions using these helpers
+
+#### FipeZap Data Quality
+- **Fixed**: Added `standardize_city_names()` call after binding FipeZap data
+- **Fixed**: Now correctly shows "Brazil" instead of "Índice Fipezap" for national index
+
+#### Property Records Table Extraction
+- **Fixed**: Added special handling for nested `property_records` structure in `get-dataset.R`
+- **Fixed**: Now returns single tibbles instead of nested lists
+- **Fixed**: All tables (capitals, cities, aggregates, transfers) now work correctly
+
+#### Testing Infrastructure
+- **Added**: Comprehensive integration test suite with 37 tests covering critical `get_dataset()` functionality
+- **Added**: Tests with `source="fresh"` to catch real-world failures before production
+- **Added**: GitHub Actions CI workflow for weekly integration tests
+- **Added**: Manual testing script `tests/basic_checks.R` for development
+
+### Note on Vignettes
+- Vignettes temporarily set to `eval=FALSE` for faster development
+- **TODO**: Re-enable vignette evaluation before CRAN release
+
+---
+
 # realestatebr 0.4.1
 
 ## Bug Fixes

@@ -33,20 +33,23 @@ source("data-raw/pipeline/validation.R")
 
 #' Fetch Dataset Using Modern Architecture
 #'
-#' Wrapper function that uses get_dataset() with source="fresh" to download
-#' and return the latest data for a given dataset.
+#' Wrapper function that uses get_dataset() to download and return the latest
+#' data for a given dataset. Uses appropriate source based on dataset capabilities.
 #'
 #' @param dataset_name Name of dataset (e.g., "abecip", "abrainc")
 #' @param table Optional table within dataset
+#' @param source Data source - "fresh" for downloadable datasets, "github" for manual-only
 #' @return Dataset (tibble or list)
-fetch_dataset <- function(dataset_name, table = NULL) {
+fetch_dataset <- function(dataset_name, table = NULL, source = "fresh") {
   cli::cli_inform("Fetching {dataset_name}{if(!is.null(table)) paste0(' (', table, ')') else ''}...")
 
-  # Use get_dataset with source="fresh" to ensure we download latest data
+  # Use get_dataset with specified source
+  # Most datasets use source="fresh" for real-time downloads
+  # Manually-updated datasets (FGV, NRE-IRE) use source="github" to access cache
   data <- get_dataset(
     name = dataset_name,
     table = table,
-    source = "fresh"
+    source = source
   )
 
   cli::cli_alert_success("Fetched {dataset_name}")
@@ -118,9 +121,11 @@ list(
   ),
 
   # ---- FGV IBRE - Economic Indicators ----
+  # NOTE: FGV data is manually updated (no API available)
+  # Uses source="github" to access cached data
   tar_target(
     name = fgv_ibre_data,
-    command = fetch_dataset("fgv_ibre"),
+    command = fetch_dataset("fgv_ibre", source = "github"),
     cue = tar_cue_age(
       name = fgv_ibre_data,
       age = as.difftime(7, units = "days")
@@ -293,9 +298,11 @@ list(
   ),
 
   # ---- NRE-IRE - Real Estate Index (cached only, manual update) ----
+  # NOTE: NRE-IRE requires manual data processing (no download capability)
+  # Uses source="github" to access cached data
   tar_target(
     name = nre_ire_data,
-    command = fetch_dataset("nre_ire"),
+    command = fetch_dataset("nre_ire", source = "github"),
     cue = tar_cue(mode = "never")  # Manual update only
   ),
   tar_target(

@@ -427,17 +427,21 @@ get_rppi_ivar <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     # Force load from cache
     data <- tryCatch(
       {
-        import_cached("rppi_ivar", quiet = quiet)
+        load_from_user_cache("rppi_ivar", quiet = quiet)
       },
       error = function(e) {
-        cli::cli_abort(c(
-          "IVAR data not available",
-          "x" = "Source data (fgv_data) is not accessible and cache is unavailable",
-          "i" = "IVAR requires static FGV data that is not web-scrapable",
-          "i" = "Please use cached data: get_dataset('rppi', 'ivar', source = 'github')"
-        ))
+        NULL
       }
     )
+
+    if (is.null(data)) {
+      cli::cli_abort(c(
+        "IVAR data not available",
+        "x" = "Source data (fgv_data) is not accessible and cache is unavailable",
+        "i" = "IVAR requires static FGV data that is not web-scrapable",
+        "i" = "Please use cached data: get_dataset('rppi', 'ivar', source = 'github')"
+      ))
+    }
 
     return(data)
   }
@@ -689,7 +693,7 @@ get_rppi_iqaiw <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
   if (cached) {
     data <- tryCatch(
       {
-        import_cached("rppi_iqaiw", quiet = quiet)
+        load_from_user_cache("rppi_iqaiw", quiet = quiet)
       },
       error = function(e) NULL
     )

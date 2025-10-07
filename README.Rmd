@@ -46,6 +46,68 @@ sbpe <- get_dataset("abecip", table = "sbpe")
 rppi <- get_dataset("rppi", table = "fipezap")
 ```
 
+## Data Caching
+
+**New in v0.5.0**: The package now uses user-level caching instead of bundled data files. This makes the package CRAN-compliant (<5MB) while providing faster access after first download.
+
+### How Caching Works
+
+On first use, datasets are automatically downloaded from GitHub releases and cached in your user directory:
+- **Linux/Mac**: `~/.local/share/realestatebr/`
+- **Windows**: `%LOCALAPPDATA%/realestatebr/Cache/`
+
+Subsequent uses load data instantly from cache, even offline:
+
+```r
+# First use: downloads and caches (~3-5 seconds)
+data1 <- get_dataset("abecip")
+
+# Subsequent uses: loads from cache (instant)
+data2 <- get_dataset("abecip")
+```
+
+### Managing Cache
+
+```r
+# Check cache location
+get_user_cache_dir()
+
+# List cached datasets
+list_cached_files()
+
+# Clear specific dataset
+clear_user_cache("abecip")
+
+# Clear all cache (with confirmation)
+clear_user_cache()
+
+# Update cache from GitHub
+update_cache_from_github("abecip")
+```
+
+### Data Sources
+
+The `source` parameter controls where data comes from:
+
+```r
+# Auto (default): cache → GitHub → fresh
+data <- get_dataset("abecip")
+
+# User cache only (instant, offline)
+data <- get_dataset("abecip", source = "cache")
+
+# GitHub releases (requires piggyback package)
+data <- get_dataset("abecip", source = "github")
+
+# Fresh download from original source
+data <- get_dataset("abecip", source = "fresh")
+```
+
+**Tip**: Install `piggyback` for faster GitHub downloads:
+```r
+install.packages("piggyback")
+```
+
 ## Available Datasets
 
 The package provides access to 10+ datasets from authoritative sources:
@@ -139,7 +201,9 @@ ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
 
 ## What's New
 
-**v0.4.0** introduces a unified `get_dataset()` interface replacing all individual `get_*()` functions. This is a breaking change. See [NEWS.md](NEWS.md) for migration details.
+**v0.5.0** introduces user-level caching architecture. Package no longer bundles data files (now <5MB, CRAN-compliant). Data is automatically downloaded to user cache on first use. See [NEWS.md](NEWS.md) for migration details.
+
+**v0.4.0** introduced a unified `get_dataset()` interface replacing all individual `get_*()` functions.
 
 ## Learn More
 

@@ -99,69 +99,32 @@ get_nre_ire <- function(
       cli::cli_inform("Loading NRE-IRE index data from cache...")
     }
 
-    tryCatch(
-      {
-        # Use new unified architecture for cached data
-        ire_data <- get_dataset("nre_ire", source = "github")
+    # Use new unified architecture for cached data
+    ire_data <- get_dataset("nre_ire", source = "github")
 
-        if (!quiet) {
-          cli::cli_inform(
-            "Successfully loaded {nrow(ire_data)} NRE-IRE records from cache"
-          )
-        }
+    if (!quiet) {
+      cli::cli_inform(
+        "Successfully loaded {nrow(ire_data)} NRE-IRE records from cache"
+      )
+    }
 
-        # Add metadata
-        attr(ire_data, "source") <- "cache"
-        attr(ire_data, "download_time") <- Sys.time()
-        attr(ire_data, "download_info") <- list(
-          table = table,
-          dataset = "nre_ire",
-          source = "cache"
-        )
-
-        return(ire_data)
-      },
-      error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load NRE-IRE data from cache: {e$message}",
-            "i" = "Falling back to internal package data"
-          ))
-        }
-      }
+    # Add metadata
+    attr(ire_data, "source") <- "cache"
+    attr(ire_data, "download_time") <- Sys.time()
+    attr(ire_data, "download_info") <- list(
+      table = table,
+      dataset = "nre_ire",
+      source = "cache"
     )
+
+    return(ire_data)
   }
 
-  # Use internal package data ----
-  if (!quiet) {
-    cli::cli_inform("Loading NRE-IRE index data from internal package data...")
-  }
-
-  # Check for required data dependencies
-  if (!exists("ire")) {
-    cli::cli_abort(c(
-      "Required data dependency not available",
-      "x" = "This function requires the {.pkg ire} object",
-      "i" = "Please ensure all package data is properly loaded",
-      "i" = "Try using {.code cached = TRUE} to access cached data instead"
-    ))
-  }
-
-  if (!quiet) {
-    cli::cli_inform(
-      "Successfully accessed {nrow(ire)} NRE-IRE records from package data"
-    )
-  }
-
-  # Add metadata
-  attr(ire, "source") <- "internal"
-  attr(ire, "download_time") <- Sys.time()
-  attr(ire, "download_info") <- list(
-    table = table,
-    dataset = "nre_ire",
-    source = "internal",
-    note = "Fresh downloads not supported - data requires manual processing"
-  )
-
-  return(ire)
+  # Fresh downloads not supported ----
+  cli::cli_abort(c(
+    "Fresh downloads not supported for NRE-IRE data",
+    "x" = "NRE-IRE data requires manual processing from the source website",
+    "i" = "Use {.code cached = TRUE} to access the most recent cached data",
+    "i" = "Or use {.code get_dataset('nre_ire')} which automatically uses cache"
+  ))
 }

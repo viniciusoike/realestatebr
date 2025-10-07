@@ -292,6 +292,8 @@ datasets:
     data_type: "tibble"
     cached_file: "fgv_ibre.csv.gz"
     translation_notes: "Technical economic terms; standard translations applied"
+    manual_update: true
+    update_notes: "No public API available; requires manual download and processing"
 
   cbic:
     name: "CBIC Cement Data"
@@ -338,6 +340,8 @@ datasets:
     data_type: "tibble"
     cached_file: "nre_ire.rds"
     cached_only: true
+    manual_update: true
+    update_notes: "Requires manual data extraction from source website"
     translation_notes: "Index values (100 = May 2006); includes IRE, IRE-BI, and Ibovespa comparison"
 
   property_records:

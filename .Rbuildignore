@@ -7,6 +7,9 @@
 ^doc$
 ^Meta$
 ^cached_data$
+^inst/cached_data/.*\.rds$
+^inst/cached_data/.*\.csv\.gz$
+^inst/cached_data/.*\.csv$
 ^\.claude$
 ^\.github$
 ^\.DS_Store$

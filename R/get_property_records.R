@@ -86,14 +86,20 @@ get_property_records <- function(
 
     tryCatch(
       {
-        prop <- import_cached("property_records")
+        prop <- load_from_user_cache("property_records", quiet = quiet)
 
-        cli_debug("Successfully loaded property records from cache")
+        if (is.null(prop)) {
+          if (!quiet) {
+            cli::cli_warn("Property records not found in user cache, falling back to fresh download")
+          }
+        } else {
+          cli_debug("Successfully loaded property records from cache")
 
-        # Extract the specific table from cached data
-        result <- extract_property_table(prop, table)
+          # Extract the specific table from cached data
+          result <- extract_property_table(prop, table)
 
-        return(result)
+          return(result)
+        }
       },
       error = function(e) {
         if (!quiet) {

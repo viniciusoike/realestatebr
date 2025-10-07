@@ -111,32 +111,38 @@ get_abecip_indicators <- function(
 
     tryCatch(
       {
-        # Direct cache loading, no circular dependency
-        cached_data <- import_cached("abecip")
+        # Load from user cache
+        cached_data <- load_from_user_cache("abecip", quiet = quiet)
 
-        # Filter by table
-        if (table %in% names(cached_data)) {
-          data <- cached_data[[table]]
+        if (is.null(cached_data)) {
+          if (!quiet) {
+            cli::cli_warn("Data not found in user cache, falling back to fresh download")
+          }
         } else {
-          available_tables <- paste(names(cached_data), collapse = ", ")
-          cli::cli_abort(
-            "Table '{table}' not found in cached data. Available: {available_tables}"
+          # Filter by table
+          if (table %in% names(cached_data)) {
+            data <- cached_data[[table]]
+          } else {
+            available_tables <- paste(names(cached_data), collapse = ", ")
+            cli::cli_abort(
+              "Table '{table}' not found in cached data. Available: {available_tables}"
+            )
+          }
+
+          if (!quiet) {
+            cli::cli_inform("Successfully loaded data from cache")
+          }
+
+          # Add metadata
+          attr(data, "source") <- "cache"
+          attr(data, "download_time") <- Sys.time()
+          attr(data, "download_info") <- list(
+            source = "cache",
+            category = table
           )
+
+          return(data)
         }
-
-        if (!quiet) {
-          cli::cli_inform("Successfully loaded data from cache")
-        }
-
-        # Add metadata
-        attr(data, "source") <- "cache"
-        attr(data, "download_time") <- Sys.time()
-        attr(data, "download_info") <- list(
-          source = "cache",
-          category = table
-        )
-
-        return(data)
       },
       error = function(e) {
         if (!quiet) {
@@ -188,9 +194,12 @@ get_abecip_indicators <- function(
       }
     }
 
-    # Load CGI data from package cache
+    # Load CGI data from user cache
     tryCatch({
-      cached_data <- import_cached("abecip")
+      cached_data <- load_from_user_cache("abecip", quiet = quiet)
+      if (is.null(cached_data)) {
+        cli::cli_abort("CGI data not found in user cache. Try running with cached=FALSE first.")
+      }
       if ("cgi" %in% names(cached_data)) {
         abecip <- cached_data[["cgi"]]
       } else {
@@ -198,7 +207,7 @@ get_abecip_indicators <- function(
       }
 
       if (!quiet) {
-        cli::cli_inform("Successfully loaded CGI data from package cache")
+        cli::cli_inform("Successfully loaded CGI data from user cache")
       }
     }, error = function(e) {
       cli::cli_abort(c(

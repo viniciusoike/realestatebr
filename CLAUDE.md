@@ -13,29 +13,28 @@ This file contains configuration and commands for Claude Code to help with packa
 - Multiple legacy functions with inconsistent interfaces leading to unexpected errors.
 - Core functions aren't working at all.
 
+## Goals for v0.6.0
+
+- Simplify codebase by removing (1) obsolete/outdated/unnecessary functions, (2) obsolete/outdated/unnecessary documentation, (3) repetitive import/download logic, (4) unnecessary complexity.
+
+The codebase of this package is very large and overly complex for its purpose.
+
+1. Almost all of the functions are now internal, but still feature extensive documentation. We can supress/simplify this by removing examples and other unnecessary details. We shoudld, however, keep the 'core' of the documentation (title, description, param, source, references, etc.) since this is useful for developers.
+
+2. There are still several functions with the sole purpose of printing deprecation warnings. These should be removed entirely.
+
+3. Several functions have questionable metadata like 'download_time', 'download_info', etc. These should be kept only if they serve a clear purpose. Otherwise, they should be removed.
+
+3. The import/download logic is repeated in several places. This should be consolidated into generic helper functions that can be reused across datasets.
+
+4. There is currently some ambiguity with the word 'legacy' in this package. Due to architcture transition in v0.4.0, all functions except `list_datasets()` and `get_dataset()` are considered 'legacy'. However, these functions are the backbone of the package. The only change is that they are now internal. Despite this, several functions "treat" them as if they were legacy. The core `get_from_legacy_function` for instance implies that it calls legacy functions, when in fact it calls the main internal functions. This is confusing and should be fixed.
+
 ## Goals for v0.5.0
 
 - Have all core functions working perfectly. This means `get_dataset()` should work flawlessly for all datasets with both `source = 'cache'` and `source = 'fresh'`.
+- Make sure that ALL datasets can be imported via 'cache'. This ensures that the user can always get the data quickly and conviniently.
+- Make sure the targets pipeline is fully functional and can update all datasets automatically on a weekly basis.
 - Make codebase simpler by abandoning legacy functions, deprecation warnings, etc. In other words, make breaking changes if (1) it makes the codebase simpler; (2) makes the codebase significantly more efficient; (3) makes the codebaes less error-prone; and (4) makes the end-user experience better.
-
-## Recent Updates
-
-### v0.4.1 (Latest) - Bug Fixes
-✅ **RPPI Individual Table Access**
-- Fixed `get_dataset("rppi", "ivgr")` and other individual RPPI tables
-- Extended `get_rppi()` to support all individual tables (fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp)
-- Fixed vignette build errors
-
-✅ **CRAN Compliance**
-- Removed non-ASCII characters from R source files (7 files)
-- Added `utils::globalVariables()` for NSE variables
-- UTF-8 characters preserved in roxygen2 documentation
-
-✅ **Dependencies & Tests**
-- Added `testthat` to Suggests
-- Updated deprecated `category=` to `table=` parameters
-
-✅ **Package Check Status**: `0 errors ✔ | 0 warnings ✔ | 0 notes ✔`
 
 ## Architecture Transition Status
 
