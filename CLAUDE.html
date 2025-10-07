@@ -52,7 +52,7 @@
 <li>Core functions aren’t working at all.</li>
 </ul></div>
 <div class="section level2">
-<h2 id="goals-for-v060">Goals for v0.6.0<a class="anchor" aria-label="anchor" href="#goals-for-v060"></a></h2>
+<h2 id="goals-for-v06x">Goals for v0.6.x<a class="anchor" aria-label="anchor" href="#goals-for-v06x"></a></h2>
 <ul><li>Simplify codebase by removing (1) obsolete/outdated/unnecessary functions, (2) obsolete/outdated/unnecessary documentation, (3) repetitive import/download logic, (4) unnecessary complexity.</li>
 </ul><p>The codebase of this package is very large and overly complex for its purpose.</p>
 <ol style="list-style-type: decimal"><li><p>Almost all of the functions are now internal, but still feature extensive documentation. We can supress/simplify this by removing examples and other unnecessary details. We shoudld, however, keep the ‘core’ of the documentation (title, description, param, source, references, etc.) since this is useful for developers.</p></li>
@@ -62,7 +62,7 @@
 <li><p>There is currently some ambiguity with the word ‘legacy’ in this package. Due to architcture transition in v0.4.0, all functions except <code><a href="reference/list_datasets.html">list_datasets()</a></code> and <code><a href="reference/get_dataset.html">get_dataset()</a></code> are considered ‘legacy’. However, these functions are the backbone of the package. The only change is that they are now internal. Despite this, several functions “treat” them as if they were legacy. The core <code>get_from_legacy_function</code> for instance implies that it calls legacy functions, when in fact it calls the main internal functions. This is confusing and should be fixed.</p></li>
 </ol></div>
 <div class="section level2">
-<h2 id="goals-for-v050">Goals for v0.5.0<a class="anchor" aria-label="anchor" href="#goals-for-v050"></a></h2>
+<h2 id="goals-for-v05x">Goals for v0.5.x<a class="anchor" aria-label="anchor" href="#goals-for-v05x"></a></h2>
 <ul><li>Have all core functions working perfectly. This means <code><a href="reference/get_dataset.html">get_dataset()</a></code> should work flawlessly for all datasets with both <code>source = 'cache'</code> and <code>source = 'fresh'</code>.</li>
 <li>Make sure that ALL datasets can be imported via ‘cache’. This ensures that the user can always get the data quickly and conviniently.</li>
 <li>Make sure the targets pipeline is fully functional and can update all datasets automatically on a weekly basis.</li>
