@@ -112,6 +112,7 @@ datasets:
     legacy_function: "get_secovi"
     data_type: "tibble"
     cached_file: "secovi_sp.csv.gz"
+    default_table: "all"
     translation_notes: "Regional classifications specific to São Paulo metropolitan area"
     
   rppi_bis:

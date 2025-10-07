@@ -762,8 +762,13 @@ validate_and_resolve_table <- function(name, dataset_info, table = NULL) {
 
   # Multi-table datasets
   if (is.null(table)) {
-    # Use first table as default
-    resolved_table <- available_tables[1]
+    # Check if dataset has a specified default_table in registry
+    if (!is.null(dataset_info$default_table)) {
+      resolved_table <- dataset_info$default_table
+    } else {
+      # Use first table as default (alphabetically)
+      resolved_table <- available_tables[1]
+    }
     return(list(
       resolved_table = resolved_table,
       available_tables = available_tables,
