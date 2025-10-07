@@ -179,7 +179,7 @@ get_secovi <- function(
 
   record_count <- nrow(tbl_secovi)
   if (!quiet) {
-    cli::cli_inform("✓ SECOVI-SP data retrieved: {record_count} records")
+    cli::cli_inform("\u2713 SECOVI-SP data retrieved: {record_count} records")
   }
 
   return(tbl_secovi)

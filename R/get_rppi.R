@@ -1,3 +1,6 @@
+# Suppress R CMD check NOTEs for NSE in dplyr
+utils::globalVariables(c("price_m2"))
+
 #' Standardize City Names Across RPPI Sources
 #'
 #' @param names Character vector of city names
@@ -8,7 +11,7 @@ standardize_city_names <- function(names) {
   standardized_names <- names |>
     # Standardize Brazil variations
     stringr::str_replace("Brasil", "Brazil") |>
-    # Fix: Case-insensitive match for "Índice FipeZap" with optional "+"
+    # Fix: Case-insensitive match for "\u00cdndice FipeZap" with optional "+"
     stringr::str_replace("(?i)\u00cdndice\\s+FipeZap\\+?", "Brazil") |>
     # Other standardizations can be added here
     trimws()
@@ -109,11 +112,27 @@ get_rppi <- function(
   max_retries = 3L
 ) {
   # Validate table
-  valid_tables <- c("sale", "rent", "all")
+  valid_tables <- c(
+    "sale", "rent", "all",  # Stacked tables
+    "fipezap", "ivgr", "igmi", "iqa", "iqaiw", "ivar", "secovi_sp"  # Individual tables
+  )
   if (!table %in% valid_tables) {
     cli::cli_abort(
       "Invalid table: {.val {table}}. Valid: {.val {valid_tables}}"
     )
+  }
+
+  # Route individual tables to their respective functions
+  if (table %in% c("fipezap", "ivgr", "igmi", "iqa", "iqaiw", "ivar", "secovi_sp")) {
+    return(switch(table,
+      "fipezap" = get_rppi_fipezap(cached = cached, quiet = quiet, max_retries = max_retries),
+      "ivgr" = get_rppi_ivgr(cached = cached, quiet = quiet, max_retries = max_retries),
+      "igmi" = get_rppi_igmi(cached = cached, quiet = quiet, max_retries = max_retries),
+      "iqa" = get_rppi_iqa(cached = cached, quiet = quiet, max_retries = max_retries),
+      "iqaiw" = get_rppi_iqaiw(cached = cached, quiet = quiet, max_retries = max_retries),
+      "ivar" = get_rppi_ivar(cached = cached, quiet = quiet, max_retries = max_retries),
+      "secovi_sp" = get_rppi_secovi_sp(cached = cached, quiet = quiet, max_retries = max_retries)
+    ))
   }
 
   # Stack sale indices
@@ -163,7 +182,7 @@ get_rppi <- function(
 
   if (!quiet) {
     cli::cli_inform(
-      "✓ RPPI ({table}): {nrow(stacked_data)} records from {length(unique(stacked_data$source))} sources"
+      "\u2713 RPPI ({table}): {nrow(stacked_data)} records from {length(unique(stacked_data$source))} sources"
     )
   }
 
@@ -702,11 +721,11 @@ get_rppi_iqaiw <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
   convert_city_names <- function(city) {
     vlname <- c(
       "bhe" = "Belo Horizonte",
-      "bsb" = "Brasília",
+      "bsb" = "Bras\u00edlia",
       "cur" = "Curitiba",
       "poa" = "Porto Alegre",
       "rio" = "Rio de Janeiro",
-      "spo" = "São Paulo"
+      "spo" = "S\u00e3o Paulo"
     )
     return(unname(vlname[city]))
   }
@@ -726,10 +745,10 @@ get_rppi_iqaiw <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
 
   clean_dat <- dat |>
     dplyr::rename(dplyr::all_of(expected_names)) |>
-    dplyr::filter(!is.na(price_m2)) |>
-    dplyr::mutate(name_muni = convert_city_names(name_muni)) |>
+    dplyr::filter(!is.na(.data$price_m2)) |>
+    dplyr::mutate(name_muni = convert_city_names(.data$name_muni)) |>
     dplyr::mutate(
-      index = price_m2 / first(price_m2) * 100,
+      index = .data$price_m2 / dplyr::first(.data$price_m2) * 100,
       .by = "name_muni"
     ) |>
     dplyr::select(

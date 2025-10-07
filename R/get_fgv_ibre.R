@@ -125,7 +125,7 @@ get_fgv_ibre <- function(
     ))
   }
 
-  cli_user("✓ FGV IBRE indicators retrieved: {nrow(fgv_data)} records", quiet = quiet)
+  cli_user("\u2713 FGV IBRE indicators retrieved: {nrow(fgv_data)} records", quiet = quiet)
 
   # Add metadata
   attr(fgv_data, "source") <- "internal"

@@ -189,7 +189,7 @@ get_property_records <- function(
     source = "web"
   )
 
-  cli_user("✓ Property records data retrieved: {nrow(out)} records", quiet = quiet)
+  cli_user("\u2713 Property records data retrieved: {nrow(out)} records", quiet = quiet)
 
   return(out)
 }

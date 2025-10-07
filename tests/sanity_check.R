@@ -13,26 +13,35 @@ test_dataset <- function(name, fetch_fn, plot_fn) {
   cat("Testing:", name, "\n")
   cat(strrep("=", 70), "\n")
 
-  tryCatch({
-    data <- fetch_fn()
-    cat("✓ Data loaded successfully\n")
-    cat("  Structure:", class(data), "\n")
+  tryCatch(
+    {
+      data <- fetch_fn()
+      cat("✓ Data loaded successfully\n")
+      cat("  Structure:", class(data), "\n")
 
-    if (is.data.frame(data)) {
-      cat("  Dimensions:", nrow(data), "rows x", ncol(data), "columns\n")
-      cat("  Columns:", paste(head(names(data), 10), collapse = ", "), "\n")
-    } else if (is.list(data)) {
-      cat("  List with", length(data), "elements:", paste(names(data), collapse = ", "), "\n")
+      if (is.data.frame(data)) {
+        cat("  Dimensions:", nrow(data), "rows x", ncol(data), "columns\n")
+        cat("  Columns:", paste(head(names(data), 10), collapse = ", "), "\n")
+      } else if (is.list(data)) {
+        cat(
+          "  List with",
+          length(data),
+          "elements:",
+          paste(names(data), collapse = ", "),
+          "\n"
+        )
+      }
+
+      # Create plot
+      plot_fn(data)
+
+      return(TRUE)
+    },
+    error = function(e) {
+      cat("✗ ERROR:", e$message, "\n")
+      return(FALSE)
     }
-
-    # Create plot
-    plot_fn(data)
-
-    return(TRUE)
-  }, error = function(e) {
-    cat("✗ ERROR:", e$message, "\n")
-    return(FALSE)
-  })
+  )
 }
 
 # Initialize results tracker
@@ -51,8 +60,11 @@ results$abecip <- test_dataset(
     if (nrow(recent) > 0 && "sbpe_netflow" %in% names(recent)) {
       p <- ggplot(recent, aes(x = date, y = sbpe_netflow)) +
         geom_line(color = "steelblue") +
-        labs(title = "ABECIP - SBPE Net Flow (2020+)",
-             x = "Date", y = "Net Flow") +
+        labs(
+          title = "ABECIP - SBPE Net Flow (2020+)",
+          x = "Date",
+          y = "Net Flow"
+        ) +
         theme_minimal()
       print(p)
       cat("✓ ABECIP visualization created\n")
@@ -79,8 +91,11 @@ results$abrainc <- test_dataset(
 
       p <- ggplot(key_vars, aes(x = date, y = value, color = variable)) +
         geom_line() +
-        labs(title = "ABRAINC - Market Indicators (2020+)",
-             x = "Date", y = "Value") +
+        labs(
+          title = "ABRAINC - Market Indicators (2020+)",
+          x = "Date",
+          y = "Value"
+        ) +
         theme_minimal() +
         theme(legend.position = "bottom")
       print(p)
@@ -102,14 +117,17 @@ results$bcb_realestate <- test_dataset(
       group_by(v1, v2) %>%
       filter(n() > 10) %>%
       ungroup() %>%
-      head(1000)  # Limit for plotting
+      head(1000) # Limit for plotting
 
     if (nrow(recent_data) > 0) {
       p <- ggplot(recent_data, aes(x = date, y = value)) +
         geom_line() +
         facet_wrap(~v1, scales = "free_y") +
-        labs(title = "BCB Real Estate - Recent Trends (2020+)",
-             x = "Date", y = "Value") +
+        labs(
+          title = "BCB Real Estate - Recent Trends (2020+)",
+          x = "Date",
+          y = "Value"
+        ) +
         theme_minimal()
       print(p)
       cat("✓ BCB Real Estate visualization created\n")
@@ -136,8 +154,7 @@ results$bcb_series <- test_dataset(
       p <- ggplot(key_series, aes(x = date, y = value)) +
         geom_line() +
         facet_wrap(~name, scales = "free_y") +
-        labs(title = "BCB Economic Series (2020+)",
-             x = "Date", y = "Value") +
+        labs(title = "BCB Economic Series (2020+)", x = "Date", y = "Value") +
         theme_minimal()
       print(p)
       cat("✓ BCB Series visualization created\n")
@@ -163,8 +180,11 @@ results$cbic <- test_dataset(
 
       p <- ggplot(monthly_total, aes(x = date, y = total_value)) +
         geom_line(color = "steelblue") +
-        labs(title = "CBIC - Monthly Cement Consumption (2020+)",
-             x = "Date", y = "Total Consumption") +
+        labs(
+          title = "CBIC - Monthly Cement Consumption (2020+)",
+          x = "Date",
+          y = "Total Consumption"
+        ) +
         theme_minimal()
       print(p)
       cat("✓ CBIC visualization created\n")
@@ -184,8 +204,11 @@ results$fgv_ibre <- test_dataset(
     if (nrow(recent) > 0) {
       p <- ggplot(recent, aes(x = date, y = value, color = series)) +
         geom_line() +
-        labs(title = "FGV IBRE - Real Estate Indicators (2020+)",
-             x = "Date", y = "Value") +
+        labs(
+          title = "FGV IBRE - Real Estate Indicators (2020+)",
+          x = "Date",
+          y = "Value"
+        ) +
         theme_minimal()
       print(p)
       cat("✓ FGV IBRE visualization created\n")
@@ -211,8 +234,11 @@ results$nre_ire <- test_dataset(
     if (nrow(recent) > 0) {
       p <- ggplot(recent, aes(x = date, y = ire)) +
         geom_line(color = "steelblue") +
-        labs(title = "NRE-IRE - Real Estate Index (2020+)",
-             x = "Date", y = "IRE Index") +
+        labs(
+          title = "NRE-IRE - Real Estate Index (2020+)",
+          x = "Date",
+          y = "IRE Index"
+        ) +
         theme_minimal()
       print(p)
       cat("✓ NRE-IRE visualization created\n")
@@ -227,7 +253,7 @@ results$property_records <- test_dataset(
   "Property Records",
   function() {
     # Try to get a smaller subset
-    get_dataset("property_records", category = "capitals")
+    get_dataset("property_records", table = "capitals")
   },
   function(data) {
     # Property records returns a list with "records" and "transfers"
@@ -235,10 +261,16 @@ results$property_records <- test_dataset(
       records <- data$records %>% filter(year >= 2020)
 
       if (nrow(records) > 0) {
-        p <- ggplot(records, aes(x = date, y = record_total, color = name_muni)) +
+        p <- ggplot(
+          records,
+          aes(x = date, y = record_total, color = name_muni)
+        ) +
           geom_line() +
-          labs(title = "Property Records - Total Records by Capital (2020+)",
-               x = "Date", y = "Total Records") +
+          labs(
+            title = "Property Records - Total Records by Capital (2020+)",
+            x = "Date",
+            y = "Total Records"
+          ) +
           theme_minimal()
         print(p)
         cat("✓ Property Records visualization created\n")
@@ -252,18 +284,23 @@ results$property_records <- test_dataset(
 # =============================================================================
 results$rppi <- test_dataset(
   "Brazilian RPPI",
-  function() get_dataset("rppi", category = "fipezap"),
+  function() get_dataset("rppi", table = "fipezap"),
   function(data) {
     recent <- data %>%
-      filter(date >= as.Date("2020-01-01"),
-             variable == "index",
-             rooms == "total")
+      filter(
+        date >= as.Date("2020-01-01"),
+        variable == "index",
+        rooms == "total"
+      )
 
     if (nrow(recent) > 0) {
       p <- ggplot(recent, aes(x = date, y = value, color = name_muni)) +
         geom_line() +
-        labs(title = "RPPI - FipeZap Price Index (2020+)",
-             x = "Date", y = "Index Value") +
+        labs(
+          title = "RPPI - FipeZap Price Index (2020+)",
+          x = "Date",
+          y = "Index Value"
+        ) +
         theme_minimal() +
         theme(legend.position = "bottom")
       print(p)
@@ -277,21 +314,26 @@ results$rppi <- test_dataset(
 # =============================================================================
 results$rppi_bis <- test_dataset(
   "BIS RPPI",
-  function() get_dataset("rppi_bis", category = "selected"),
+  function() get_dataset("rppi_bis", table = "selected"),
   function(data) {
     # Filter for Brazil and a few other countries
     countries <- c("Brazil", "United States", "United Kingdom", "Germany")
     recent <- data %>%
-      filter(reference_area %in% countries,
-             date >= as.Date("2020-01-01"),
-             is_nominal == TRUE,
-             unit == "Index, 2010 = 100")
+      filter(
+        reference_area %in% countries,
+        date >= as.Date("2020-01-01"),
+        is_nominal == TRUE,
+        unit == "Index, 2010 = 100"
+      )
 
     if (nrow(recent) > 0) {
       p <- ggplot(recent, aes(x = date, y = value, color = reference_area)) +
         geom_line() +
-        labs(title = "BIS RPPI - Selected Countries (2020+)",
-             x = "Date", y = "Index Value (2010 = 100)") +
+        labs(
+          title = "BIS RPPI - Selected Countries (2020+)",
+          x = "Date",
+          y = "Index Value (2010 = 100)"
+        ) +
         theme_minimal()
       print(p)
       cat("✓ BIS RPPI visualization created\n")
@@ -319,8 +361,11 @@ results$secovi <- test_dataset(
       p <- ggplot(plot_data, aes(x = date, y = value, color = variable)) +
         geom_line() +
         facet_wrap(~category, scales = "free_y") +
-        labs(title = "SECOVI-SP - Market Data (2020+)",
-             x = "Date", y = "Value") +
+        labs(
+          title = "SECOVI-SP - Market Data (2020+)",
+          x = "Date",
+          y = "Value"
+        ) +
         theme_minimal()
       print(p)
       cat("✓ SECOVI visualization created\n")
@@ -337,7 +382,7 @@ cat(strrep("=", 70), "\n")
 
 success_count <- sum(unlist(results))
 total_count <- length(results)
-expected_count <- 11  # Excluding hidden ITBI dataset
+expected_count <- 11 # Excluding hidden ITBI dataset
 
 cat(sprintf("Datasets tested: %d (excluding 1 hidden dataset)\n", total_count))
 cat(sprintf("Successful: %d\n", success_count))

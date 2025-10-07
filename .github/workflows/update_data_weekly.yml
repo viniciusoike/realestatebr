@@ -64,11 +64,14 @@ jobs:
           target_group="${{ github.event.inputs.target_group || 'weekly' }}"
 
           if [ "$target_group" == "weekly" ]; then
-            targets="bcb_series_data,bcb_realestate_data,fgv_ibre_data,abecip_data,abrainc_data,secovi_data,rppi_sale_data,rppi_rent_data,cache_weekly_data"
+            # Weekly: fetch, cache, validate for high-priority datasets
+            targets="bcb_series_data,bcb_series_cache,bcb_series_validation,bcb_realestate_data,bcb_realestate_cache,bcb_realestate_validation,fgv_ibre_data,fgv_ibre_cache,fgv_ibre_validation,abecip_data,abecip_cache,abecip_validation,abrainc_data,abrainc_cache,abrainc_validation,secovi_data,secovi_cache,secovi_validation,rppi_sale_data,rppi_sale_cache,rppi_sale_validation,rppi_rent_data,rppi_rent_cache,rppi_rent_validation,pipeline_summary"
           elif [ "$target_group" == "monthly" ]; then
-            targets="bis_rppi_data,cbic_data,property_records_data,nre_ire_data,cache_monthly_data"
+            # Monthly: fetch, cache, validate for lower-priority datasets
+            targets="bis_rppi_data,bis_rppi_cache,bis_rppi_validation,cbic_data,cbic_cache,cbic_validation,property_records_data,property_records_cache,property_records_validation,pipeline_summary"
           elif [ "$target_group" == "all" ]; then
-            targets="bcb_series_data,bcb_realestate_data,fgv_ibre_data,abecip_data,abrainc_data,secovi_data,rppi_sale_data,rppi_rent_data,bis_rppi_data,cbic_data,property_records_data,nre_ire_data,cache_weekly_data,cache_monthly_data"
+            # All targets (weekly + monthly)
+            targets="bcb_series_data,bcb_series_cache,bcb_series_validation,bcb_realestate_data,bcb_realestate_cache,bcb_realestate_validation,fgv_ibre_data,fgv_ibre_cache,fgv_ibre_validation,abecip_data,abecip_cache,abecip_validation,abrainc_data,abrainc_cache,abrainc_validation,secovi_data,secovi_cache,secovi_validation,rppi_sale_data,rppi_sale_cache,rppi_sale_validation,rppi_rent_data,rppi_rent_cache,rppi_rent_validation,bis_rppi_data,bis_rppi_cache,bis_rppi_validation,cbic_data,cbic_cache,cbic_validation,property_records_data,property_records_cache,property_records_validation,pipeline_summary"
           fi
 
           echo "targets=$targets" >> $GITHUB_OUTPUT
@@ -148,10 +151,13 @@ jobs:
             commit_msg="$commit_msg
 
 Updated datasets:
-- ABECIP housing indicators
-- ABRAINC real estate indicators
-- SECOVI market data
-- RPPI sale and rent indices
+- BCB Series (macroeconomic indicators)
+- BCB Real Estate (market data)
+- FGV IBRE (economic indicators)
+- ABECIP (housing credit)
+- ABRAINC (primary market)
+- SECOVI-SP (São Paulo market)
+- RPPI (sale and rent price indices)
 
 Report: inst/reports/pipeline_status.md"
 
@@ -159,10 +165,9 @@ Report: inst/reports/pipeline_status.md"
             commit_msg="$commit_msg
 
 Updated datasets:
-- BIS international RPPI data
-- CBIC construction indicators
-- Property registration records
-- NRE-IRE investment data
+- BIS RPPI (international property prices)
+- CBIC (construction materials)
+- Property Records (ITBI transactions)
 
 Report: inst/reports/pipeline_status.md"
 
@@ -170,6 +175,8 @@ Report: inst/reports/pipeline_status.md"
             commit_msg="$commit_msg
 
 Comprehensive update of all weekly and monthly datasets.
+- 8 weekly datasets (BCB, FGV, ABECIP, ABRAINC, SECOVI, RPPI)
+- 3 monthly datasets (BIS, CBIC, Property Records)
 
 Report: inst/reports/pipeline_status.md"
           fi

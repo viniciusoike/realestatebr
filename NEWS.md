@@ -1,3 +1,22 @@
+# realestatebr 0.4.1
+
+## Bug Fixes
+
+### RPPI Individual Table Access
+- **Fixed**: `get_dataset("rppi", "ivgr")` and other individual RPPI tables now work correctly
+- **Fixed**: Vignette build errors caused by RPPI table routing issues
+- **Improved**: Internal `get_rppi()` function now supports all individual RPPI tables (fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp) in addition to stacked tables (sale, rent, all)
+
+### CRAN Compliance
+- **Fixed**: Removed all non-ASCII characters from R source files (7 files affected)
+- Replaced Portuguese characters with Unicode escapes for CRAN compliance
+- Files updated: `get_bcb_realestate.R`, `get_cbic.R`, `get_fgv_ibre.R`, `get_property_records.R`, `get_rppi.R`, `get_rppi_bis.R`, `get_secovi.R`
+
+### Test Suite
+- **Fixed**: Updated deprecated `category=` parameter to `table=` in `tests/sanity_check.R`
+
+---
+
 # realestatebr 0.4.0
 
 ## Major Breaking Changes - API Consolidation

@@ -165,7 +165,7 @@ get_rppi_bis <- function(
     source = "web"
   )
 
-  cli_user("✓ BIS RPPI data retrieved: {nrow(df)} records", quiet = quiet)
+  cli_user("\u2713 BIS RPPI data retrieved: {nrow(df)} records", quiet = quiet)
 
   return(df)
 }

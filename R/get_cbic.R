@@ -1565,8 +1565,8 @@ get_cbic_cement <- function(
   cement_tables <- c(
     "monthly_consumption" = "consumo mensal de cimento",
     "annual_consumption" = "consumo anual de cimento",
-    "monthly_production" = "produção mensal de cimento",
-    "production_exports" = "exportação",
+    "monthly_production" = "produ\u00e7\u00e3o mensal de cimento",
+    "production_exports" = "exporta\u00e7\u00e3o",
     "cub_prices" = "do CUB"
   )
 
@@ -1759,7 +1759,7 @@ get_cbic_steel <- function(
 
   # Final user message
   cli_user(
-    "✓ CBIC steel data retrieved: {total_records} records",
+    "\u2713 CBIC steel data retrieved: {total_records} records",
     quiet = quiet
   )
 
@@ -1922,7 +1922,7 @@ get_cbic_pim <- function(
   )
 
   # Final user message
-  cli_user("✓ CBIC PIM data retrieved: {total_records} records", quiet = quiet)
+  cli_user("\u2713 CBIC PIM data retrieved: {total_records} records", quiet = quiet)
 
   return(result)
 }

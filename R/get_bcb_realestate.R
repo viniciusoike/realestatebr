@@ -222,7 +222,7 @@ get_bcb_realestate <- function(
     attr(clean_bcb, "download_info")
   }
 
-  cli_user("✓ BCB real estate data retrieved: {nrow(tbl_bcb)} records", quiet = quiet)
+  cli_user("\u2713 BCB real estate data retrieved: {nrow(tbl_bcb)} records", quiet = quiet)
 
   return(tbl_bcb)
 }

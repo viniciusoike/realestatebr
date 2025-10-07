@@ -8,16 +8,43 @@ This file contains configuration and commands for Claude Code to help with packa
 - **Main Branch**: main
 - **Mission**: Create the definitive R package for Brazilian real estate data - reliable, well-documented, and easy to use
 
+## Recent Updates
+
+### v0.4.1 (Latest) - Bug Fixes
+✅ **RPPI Individual Table Access**
+- Fixed `get_dataset("rppi", "ivgr")` and other individual RPPI tables
+- Extended `get_rppi()` to support all individual tables (fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp)
+- Fixed vignette build errors
+
+✅ **CRAN Compliance**
+- Removed non-ASCII characters from R source files (7 files)
+- Added `utils::globalVariables()` for NSE variables
+- UTF-8 characters preserved in roxygen2 documentation
+
+✅ **Dependencies & Tests**
+- Added `testthat` to Suggests
+- Updated deprecated `category=` to `table=` parameters
+
+✅ **Package Check Status**: `0 errors ✔ | 0 warnings ✔ | 0 notes ✔`
+
 ## Architecture Transition Status
 
-### Phase 1: Core Functions 🔄 IN PROGRESS
+### Phase 1: Core Functions ✅ COMPLETED (v0.4.0)
 - ✅ `list_datasets()` and `get_dataset()` functions implemented
 - ✅ Dataset registry system created
-- ✅ Improved dataset documentation
-- ✅ CBIC dataset efficiency and UX improvements (commit 65c861b)
-- Extended functionality to all datasets
-- Improve webscraping and web API calls. Use `get_b3_stocks()` as a model.
-- Review existing codebase for consistency and style. For simple pipelines, use only a single `get_*()` function. For more complex datasets, break into multiple steps. Use `import_()` functions to download and read local files. Use `clean_()` functions for cleaning data. Use `get_()` functions as wrapper functions. Some datasets may need multiple specialized functions.
+- ✅ Unified API with backward compatibility
+- ✅ All legacy functions modernized
+
+### Phase 2: Data Pipeline ✅ COMPLETED
+- ✅ {targets} workflow for automated data processing
+- ✅ Weekly GitHub Actions workflow
+- ✅ 37 targets across 12 datasets
+- ✅ Data validation and quality checks
+
+### Phase 3: Scale Up ⏳ PLANNED
+- ⏳ DuckDB integration for large datasets (ITBI, IPTU)
+- ⏳ Lazy query support
+- ⏳ Large dataset handling
 
 #### 🔍 MANUAL REVIEW NEEDED
 - **CBIC cleaning scripts**: Review each table's data processing logic manually
@@ -25,17 +52,6 @@ This file contains configuration and commands for Claude Code to help with packa
   - Steel production: Multi-header Excel structure validation
   - PIM data: Excel serial date conversion verification
   - CUB prices: State abbreviation mapping accuracy
-
-
-### Phase 2: Data Pipeline ⏳ PLANNED
-- 🔄 {targets} workflow for automated data processing
-- 🔄 Data validation and quality checks
-- 🔄 Automated data updates
-
-### Phase 3: Scale Up ⏳ PLANNED
-- ⏳ DuckDB integration for large datasets (ITBI, IPTU)
-- ⏳ Lazy query support
-- ⏳ Large dataset handling
 
 ## Core Technologies & Dependencies
 
@@ -69,7 +85,6 @@ library(DBI)            # Database interface
 ### Main Interface
 - **`list_datasets()`**: Dataset discovery function
 - **`get_dataset(name)`**: Unified data access function
-- **Legacy functions**: `get_abecip_indicators()`, `get_rppi()`, `get_rppi_bis()` (maintained for backward compatibility)
 
 ### Dataset Registry System
 - **Registry file**: `inst/extdata/datasets.yaml`
@@ -106,12 +121,56 @@ targets::tar_make()
 - **Build vignettes**: `devtools::build_vignettes()`
 - **Build pkgdown site**: `pkgdown::build_site()`
 
-### Data Updates
-- **Update cached data**: Run the GitHub Actions workflow "Update Cached Data"
-- **Manual data update**: Source the scripts in `data-raw/` directory
-- **Data pipeline**: `targets::tar_make()`
+### Data Pipeline Operations
+
+#### Running the Pipeline Locally
+```r
+# Load targets library
+library(targets)
+
+# View all targets
+tar_manifest()
+
+# Check which targets are outdated
+tar_outdated()
+
+# Run entire pipeline
+tar_make()
+
+# Run specific targets (e.g., just ABECIP)
+tar_make(names = c("abecip_data", "abecip_cache", "abecip_validation"))
+
+# Visualize pipeline
+tar_visnetwork()
+```
+
+#### Automated Updates (GitHub Actions)
+- **Weekly updates**: Runs every Monday at 10 AM UTC
+- **Manual trigger**: Go to Actions → "Weekly Data Updates" → "Run workflow"
+- **Target groups**:
+  - `weekly`: BCB, FGV, ABECIP, ABRAINC, SECOVI, RPPI (8 datasets)
+  - `monthly`: BIS, CBIC, Property Records (3 datasets)
+  - `all`: All datasets
+
+#### Pipeline Architecture
+The pipeline uses the modern `get_dataset()` interface with three targets per dataset:
+1. **`{dataset}_data`**: Fetches fresh data using `get_dataset(source="fresh")`
+2. **`{dataset}_cache`**: Saves to `inst/cached_data/` directory
+3. **`{dataset}_validation`**: Validates data quality
+
+**Weekly Datasets** (7-day update cycle):
+- bcb_series, bcb_realestate, fgv_ibre
+- abecip, abrainc, secovi
+- rppi_sale, rppi_rent
+
+**Monthly Datasets** (30-day update cycle):
+- bis_rppi, cbic, property_records
+
+**Manual Only**:
+- nre_ire (never auto-updates)
 
 ### Code Quality
+- Look into claude/coding_guidelines.md for detailed coding standards
 - **Lint code**: `lintr::lint_package()`
 - **Style code**: `styler::style_pkg()`
 - **Final check**: `devtools::check(cran = TRUE)`
@@ -119,6 +178,10 @@ targets::tar_make()
 ## Development Standards
 
 - Always refer to claude/coding_guidelines.md for detailed instructions
+
+### Document changes
+- Update `NEWS.md` with each release
+- Commit to GitHub with descriptive messages
 
 ### Code Style
 - Follow tidyverse style guide.
@@ -186,7 +249,6 @@ realestatebr/
 
 ## Important Notes
 
-- **Backward Compatibility**: All existing `get_*()` functions must continue working
 - **Data Quality**: Always validate data before saving to package
 - **User Experience**: Keep interface simple - complexity should be hidden
 - **Performance**: Cache aggressively, download only when necessary
