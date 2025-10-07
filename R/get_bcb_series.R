@@ -4,12 +4,10 @@
 #' Central Bank with modern error handling, progress reporting, and robust API access.
 #'
 #' @details
-#' This function downloads 15 essential macroeconomic indicators relevant for
-#' real estate analysis, including price indices, interest rates, and credit indicators.
-#' The series selection has been simplified for v0.4.0 to focus on core indicators.
-#'
-#' The 15 essential series are: 190, 192, 432, 433, 20704, 20756, 20768,
-#' 20914, 21072, 21084, 21340, 24364, 28545, 28763, 28770.
+#' This function downloads macroeconomic indicators from the BCB based on the
+#' series defined in the `bcb_metadata` dataset. The series cover various
+#' categories relevant for real estate analysis, including price indices,
+#' interest rates, credit indicators, production metrics, and more.
 #'
 #' The default value for `date_start` is January 2010. While arbitrary, I advise
 #' against setting `date_start` to dates prior to July 1994. To download all
@@ -123,30 +121,31 @@ get_bcb_series <- function(
     )
   }
 
-  # Use simplified essential series list ----
-  if (!quiet) {
-    cli::cli_inform("Using simplified essential BCB series...")
-  }
+  # Get series codes from bcb_metadata ----
+  # Filter series by table if not "all"
+  if (table != "all") {
+    # Get codes for requested table from metadata
+    codes_bcb <- bcb_metadata |>
+      dplyr::filter(bcb_category == table) |>
+      dplyr::pull(code_bcb)
 
-  # Essential series for real estate package (15 key indicators)
-  essential_series <- c(190, 192, 432, 433, 20704, 20756, 20768,
-                       20914, 21072, 21084, 21340, 24364, 28545,
-                       28763, 28770)
+    if (length(codes_bcb) == 0) {
+      cli::cli_abort(c(
+        "No series found for table '{table}'",
+        "i" = "Valid tables: {paste(unique(bcb_metadata$bcb_category), collapse=', ')}"
+      ))
+    }
 
-  codes_bcb <- essential_series
+    if (!quiet) {
+      cli::cli_inform("Selected {length(codes_bcb)} series for table '{table}'")
+    }
+  } else {
+    # Get all series from metadata
+    codes_bcb <- bcb_metadata$code_bcb
 
-  # # OLD CODE - Dynamic metadata filtering (commented for v0.4.0 simplification)
-  # # Subset metadata based on tables
-  # if (table != "all") {
-  #   # Subset the metadata to the specific table
-  #   codes_bcb <- subset(bcb_metadata, bcb_category %in% table)$code_bcb
-  # } else {
-  #   # Use all available tables
-  #   codes_bcb <- bcb_metadata$code_bcb
-  # }
-
-  if (!quiet) {
-    cli::cli_inform("Selected {length(codes_bcb)} essential BCB series")
+    if (!quiet) {
+      cli::cli_inform("Selected {length(codes_bcb)} BCB series from metadata")
+    }
   }
 
   # Handle cached data ----
@@ -158,8 +157,16 @@ get_bcb_series <- function(
     tryCatch(
       {
         # Use new unified architecture for cached data
-        bcb_series <- get_dataset("bcb_series", source = "github", date_start = date_start)
-        bcb_series <- dplyr::filter(bcb_series, code_bcb %in% codes_bcb, date >= date_start)
+        bcb_series <- get_dataset(
+          "bcb_series",
+          source = "github",
+          date_start = date_start
+        )
+        bcb_series <- dplyr::filter(
+          bcb_series,
+          code_bcb %in% codes_bcb,
+          date >= date_start
+        )
 
         if (!quiet) {
           cli::cli_inform(
@@ -222,11 +229,12 @@ get_bcb_series <- function(
   )
 
   if (!quiet) {
-    cli::cli_inform("Successfully processed BCB series data with {nrow(bcb_series)} records")
+    cli::cli_inform(
+      "Successfully processed BCB series data with {nrow(bcb_series)} records"
+    )
   }
 
   return(bcb_series)
-
 }
 
 #' Import BCB Series Data with Robust Error Handling
@@ -241,65 +249,103 @@ get_bcb_series <- function(
 #'
 #' @return Downloaded BCB API data
 #' @keywords internal
-import_bcb_series_robust <- function(codes_bcb, date_start, quiet, max_retries, ...) {
-  attempts <- 0
-  last_error <- NULL
+import_bcb_series_robust <- function(
+  codes_bcb,
+  date_start,
+  quiet,
+  max_retries,
+  ...
+) {
+  # Use purrr::possibly for safe downloading (following get_cbic.R pattern)
+  get_series_safe <- purrr::possibly(
+    .f = function(code) {
+      suppressMessages(
+        rbcb::get_series(code = code, start_date = date_start, ...)
+      )
+    },
+    otherwise = NULL,
+    quiet = TRUE
+  )
 
-  while (attempts <= max_retries) {
-    attempts <- attempts + 1
+  # Download each series individually to handle partial failures gracefully
+  results <- list()
+  failed_series <- c()
 
-    tryCatch(
-      {
-        # Try downloading from BCB API
-        result <- suppressMessages(
-          rbcb::get_series(
-            code = codes_bcb,
-            start_date = date_start,
-            ...
+  for (i in seq_along(codes_bcb)) {
+    code <- codes_bcb[i]
+
+    cli_debug("Downloading series {code} ({i}/{length(codes_bcb)})...")
+
+    # Try download with retries for this specific series
+    result <- NULL
+    last_error <- NULL
+
+    for (attempt in 1:(max_retries + 1)) {
+      result <- tryCatch(
+        {
+          suppressMessages(
+            rbcb::get_series(code = code, start_date = date_start, ...)
           )
-        )
-
-        # rbcb returns a list of tibbles, convert to single tibble
-        if (is.list(result) && !inherits(result, "data.frame")) {
-          # Rename value columns and combine with series ID
-          series_list <- purrr::map(result, function(data) {
-            dplyr::rename(data, value = 2) # Second column is the values
-          })
-          result <- dplyr::bind_rows(series_list, .id = "code_bcb")
-          result$code_bcb <- as.numeric(result$code_bcb)
+        },
+        error = function(e) {
+          last_error <<- e$message
+          NULL
         }
+      )
 
-        # Validate we got some data
-        if (nrow(result) == 0) {
-          stop("BCB API returned no data for the requested series")
-        }
-
-        return(result)
-      },
-      error = function(e) {
-        last_error <<- e$message
-
-        if (!quiet && attempts <= max_retries) {
-          cli::cli_warn(c(
-            "BCB API request failed (attempt {attempts}/{max_retries + 1})",
-            "x" = "Error: {e$message}",
-            "i" = "Retrying in {min(attempts * 0.5, 3)} second{?s}..."
-          ))
-        }
-
-        # Add delay before retry
-        if (attempts <= max_retries) {
-          Sys.sleep(min(attempts * 0.5, 3))
-        }
+      if (!is.null(result)) {
+        break # Success!
       }
+
+      # Retry with backoff
+      if (attempt <= max_retries) {
+        cli_debug("Series {code} failed (attempt {attempt}), retrying...")
+        Sys.sleep(min(attempt * 0.5, 3))
+      }
+    }
+
+    if (!is.null(result)) {
+      # Success - process and collect
+      # rbcb returns a single tibble for single series
+      if (is.data.frame(result)) {
+        # Rename value column (second column is always the value)
+        result <- dplyr::rename(result, value = 2)
+        result$code_bcb <- code
+        results[[length(results) + 1]] <- result
+      }
+    } else {
+      # Failed after all retries
+      failed_series <- c(failed_series, code)
+      cli_debug("Series {code} failed after {max_retries + 1} attempts")
+    }
+  }
+
+  # Report results
+  if (length(failed_series) > 0) {
+    cli::cli_warn(c(
+      "Failed to download {length(failed_series)} series after {max_retries + 1} attempts",
+      "x" = "Failed series codes: {paste(failed_series, collapse=', ')}",
+      "i" = "Returning {length(results)}/{length(codes_bcb)} successful series"
+    ))
+  }
+
+  # Abort only if ALL series failed
+  if (length(results) == 0) {
+    cli::cli_abort(c(
+      "Failed to download ANY BCB series data",
+      "x" = "All {length(codes_bcb)} series failed",
+      "i" = "Check your internet connection and BCB API status"
+    ))
+  }
+
+  # Combine successful results
+  combined <- dplyr::bind_rows(results)
+
+  if (!quiet) {
+    cli::cli_inform(
+      "Successfully downloaded {length(results)}/{length(codes_bcb)} series"
     )
   }
 
-  # All attempts failed
-  cli::cli_abort(c(
-    "Failed to download BCB series data",
-    "x" = "All {max_retries + 1} attempt{?s} failed",
-    "i" = "Last error: {last_error}",
-    "i" = "Check your internet connection and BCB API status"
-  ))
+  return(combined)
 }

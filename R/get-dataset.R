@@ -348,6 +348,56 @@ get_from_github_cache <- function(name, dataset_info, table) {
     }
   }
 
+  # Special handling for BCB Real Estate table filtering
+  if (!is.null(table) && name == "bcb_realestate" && table != "all") {
+    if ("category" %in% names(data)) {
+      # Map user-facing table names to internal category values
+      category_mapping <- c(
+        "accounting" = "contabil",
+        "application" = "direcionamento",
+        "indices" = "indices",
+        "sources" = "fontes",
+        "units" = "imoveis"
+      )
+
+      target_category <- category_mapping[[table]]
+      if (!is.null(target_category)) {
+        # Filter data by category
+        data <- data[data$category == target_category, ]
+        if (nrow(data) == 0) {
+          cli::cli_abort("No data found for BCB Real Estate table '{table}'")
+        }
+      } else {
+        valid_tables <- names(category_mapping)
+        cli::cli_abort(
+          "Invalid BCB Real Estate table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}, all"
+        )
+      }
+    }
+  }
+
+  # Special handling for BCB Series table filtering
+  if (!is.null(table) && name == "bcb_series" && table != "all") {
+    if ("bcb_category" %in% names(data)) {
+      valid_tables <- c(
+        "price", "credit", "production", "interest-rate",
+        "exchange", "government", "real-estate"
+      )
+
+      if (table %in% valid_tables) {
+        # Filter data by bcb_category
+        data <- data[data$bcb_category == table, ]
+        if (nrow(data) == 0) {
+          cli::cli_abort("No data found for BCB Series table '{table}'")
+        }
+      } else {
+        cli::cli_abort(
+          "Invalid BCB Series table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}, all"
+        )
+      }
+    }
+  }
+
   # Note: For datasets with table-specific cached files (like BIS),
   # the table filtering is handled by get_cached_name() above
 
@@ -583,10 +633,11 @@ validate_and_resolve_table <- function(name, dataset_info, table = NULL) {
   }
 
   # Validate specified table
-  if (!table %in% available_tables) {
+  # Allow "all" as a special value that means "all tables"
+  if (table != "all" && !table %in% available_tables) {
     available_str <- paste(available_tables, collapse = "', '")
     cli::cli_abort(
-      "Invalid table '{table}' for dataset '{name}'. Available tables: '{available_str}'."
+      "Invalid table '{table}' for dataset '{name}'. Available tables: '{available_str}', 'all'."
     )
   }
 

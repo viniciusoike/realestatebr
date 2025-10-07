@@ -222,7 +222,9 @@ get_bcb_realestate <- function(
     attr(clean_bcb, "download_info")
   }
 
-  cli_user("\u2713 BCB real estate data retrieved: {nrow(tbl_bcb)} records", quiet = quiet)
+  # Compute nrow before cli message to avoid serialization issues
+  n_records <- nrow(tbl_bcb)
+  cli_user("\u2713 BCB real estate data retrieved: {n_records} records", quiet = quiet)
 
   return(tbl_bcb)
 }

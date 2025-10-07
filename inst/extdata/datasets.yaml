@@ -255,9 +255,21 @@ datasets:
       credit:
         name: "Credit Indicators"
         description: "Credit market indicators"
-      activity:
-        name: "Economic Activity"
-        description: "Economic activity indicators"
+      production:
+        name: "Production Indicators"
+        description: "Production and industrial activity indicators"
+      interest-rate:
+        name: "Interest Rates"
+        description: "Interest rate indicators"
+      exchange:
+        name: "Exchange Rates"
+        description: "Exchange rate indicators"
+      government:
+        name: "Government Indicators"
+        description: "Government finance and fiscal indicators"
+      real-estate:
+        name: "Real Estate Indicators"
+        description: "Real estate market indicators"
     internal_function: "fetch_bcb_series"
     legacy_function: "get_bcb_series"
     data_type: "tibble"
