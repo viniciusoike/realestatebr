@@ -66,3 +66,7 @@ backup/
 
 /.quarto/
 README.html
+
+# Development/debugging test scripts (not formal tests)
+tests/basic_checks*.R
+tests/fixes_*.R
