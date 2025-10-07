@@ -1,0 +1,733 @@
+---
+title: "Comprehensive Dataset Testing - v0.5.1 Pre-Release"
+subtitle: "Validating all datasets work with source='cache' and source='fresh'"
+author: "realestatebr Package Test Suite"
+date: "`r Sys.Date()`"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: show
+    code-tools: true
+    embed-resources: true
+    theme: cosmo
+execute:
+  eval: true
+  warning: true
+  error: true
+  cache: false
+  timeout: 300  # 5 minutes per chunk
+---
+
+## Overview
+
+This document comprehensively tests all datasets in the realestatebr package to ensure:
+
+1. ✅ `list_datasets()` returns accurate dataset information
+2. ✅ `get_dataset(name, source="cache")` works for all datasets
+3. ✅ `get_dataset(name, source="github")` works for all datasets
+4. ✅ `get_dataset(name, source="fresh")` works for all datasets
+5. ✅ Multi-table datasets return DIFFERENT data for different tables
+6. ✅ Data quality meets minimum standards
+
+**Expected Runtime**: 3-5 hours (many downloads)
+
+---
+
+## Setup
+
+```{r setup}
+#| label: setup
+#| message: false
+
+# Load development version (not installed package)
+devtools::load_all(quiet = TRUE)
+
+library(dplyr)
+library(tibble)
+library(cli)
+
+# Test results tracking
+test_results <- tibble(
+  dataset = character(),
+  table = character(),
+  source = character(),
+  status = character(),
+  error = character(),
+  rows = integer(),
+  cols = integer(),
+  time_sec = numeric()
+)
+
+# Helper function to test dataset loading
+test_dataset <- function(name, table = NULL, source = "auto") {
+  start_time <- Sys.time()
+
+  result <- tryCatch({
+    data <- get_dataset(name, table = table, source = source)
+
+    if (is.null(data)) {
+      list(
+        status = "FAIL",
+        error = "Returned NULL",
+        rows = 0,
+        cols = 0
+      )
+    } else if (is.data.frame(data)) {
+      list(
+        status = "PASS",
+        error = NA_character_,
+        rows = nrow(data),
+        cols = ncol(data)
+      )
+    } else if (is.list(data)) {
+      # For nested lists (like some ABECIP outputs)
+      list(
+        status = "PASS (list)",
+        error = NA_character_,
+        rows = length(data),
+        cols = if(length(data) > 0 && is.data.frame(data[[1]])) ncol(data[[1]]) else NA_integer_
+      )
+    } else {
+      list(
+        status = "FAIL",
+        error = paste("Unexpected type:", class(data)[1]),
+        rows = 0,
+        cols = 0
+      )
+    }
+  }, error = function(e) {
+    list(
+      status = "ERROR",
+      error = e$message,
+      rows = 0,
+      cols = 0
+    )
+  })
+
+  end_time <- Sys.time()
+  time_elapsed <- as.numeric(difftime(end_time, start_time, units = "secs"))
+
+  # Add to results
+  test_results <<- bind_rows(
+    test_results,
+    tibble(
+      dataset = name,
+      table = table %||% "default",
+      source = source,
+      status = result$status,
+      error = result$error %||% NA_character_,
+      rows = result$rows,
+      cols = result$cols,
+      time_sec = round(time_elapsed, 2)
+    )
+  )
+
+  result
+}
+
+# Print test result
+print_result <- function(name, table, source, result) {
+  if (result$status == "PASS" || result$status == "PASS (list)") {
+    cli_alert_success("{name}{if(!is.null(table)) paste0('/', table) else ''} [{source}]: {result$status} ({result$rows} rows)")
+  } else {
+    cli_alert_danger("{name}{if(!is.null(table)) paste0('/', table) else ''} [{source}]: {result$status} - {result$error}")
+  }
+}
+```
+
+---
+
+## Part 0: Discovery & Registry Check
+
+### Test: list_datasets()
+
+```{r test-list-datasets}
+#| label: test-list-datasets
+
+datasets_list <- list_datasets()
+
+cli_h1("Dataset Registry Check")
+
+# Expected datasets (11 accessible, 1 hidden)
+expected_accessible <- c(
+  "abecip", "abrainc", "bcb_realestate", "bcb_series",
+  "secovi", "rppi_bis", "rppi", "fgv_ibre",
+  "cbic", "nre_ire", "property_records"
+)
+
+expected_hidden <- c("itbi_summary")
+
+# Check accessible datasets
+accessible <- datasets_list %>%
+  filter(is.na(status) | status != "hidden") %>%
+  pull(name)
+
+missing <- setdiff(expected_accessible, accessible)
+extra <- setdiff(accessible, expected_accessible)
+
+if (length(missing) == 0 && length(extra) == 0) {
+  cli_alert_success("All {length(expected_accessible)} expected datasets found")
+} else {
+  if (length(missing) > 0) {
+    cli_alert_danger("Missing datasets: {paste(missing, collapse = ', ')}")
+  }
+  if (length(extra) > 0) {
+    cli_alert_warning("Extra datasets: {paste(extra, collapse = ', ')}")
+  }
+}
+
+# Check hidden datasets
+hidden <- datasets_list %>%
+  filter(status == "hidden") %>%
+  pull(name)
+
+if (all(expected_hidden %in% hidden)) {
+  cli_alert_success("Hidden dataset 'itbi_summary' correctly marked")
+} else {
+  cli_alert_warning("Hidden dataset status may be incorrect")
+}
+
+# Display summary
+datasets_list %>%
+  select(name, source, frequency, geography) %>%
+  knitr::kable()
+```
+
+---
+
+## Part 1: Single-Table Datasets
+
+### 1.1 FGV IBRE (fgv_ibre)
+
+Manual-update dataset with single table.
+
+```{r test-fgv-ibre}
+#| label: test-fgv-ibre
+
+cli_h2("Testing: fgv_ibre")
+
+# Test cache
+result <- test_dataset("fgv_ibre", source = "cache")
+print_result("fgv_ibre", NULL, "cache", result)
+
+# Test github
+result <- test_dataset("fgv_ibre", source = "github")
+print_result("fgv_ibre", NULL, "github", result)
+
+# Test fresh (may warn about manual update)
+result <- test_dataset("fgv_ibre", source = "fresh")
+print_result("fgv_ibre", NULL, "fresh", result)
+
+# Test auto (default)
+result <- test_dataset("fgv_ibre", source = "auto")
+print_result("fgv_ibre", NULL, "auto", result)
+```
+
+### 1.2 NRE-IRE (nre_ire) - Cache Only
+
+Special case: cached_only=true in registry.
+
+```{r test-nre-ire}
+#| label: test-nre-ire
+
+cli_h2("Testing: nre_ire (cache-only)")
+
+# Test cache
+result <- test_dataset("nre_ire", source = "cache")
+print_result("nre_ire", NULL, "cache", result)
+
+# Test github
+result <- test_dataset("nre_ire", source = "github")
+print_result("nre_ire", NULL, "github", result)
+
+# Test fresh (should fail gracefully)
+result <- test_dataset("nre_ire", source = "fresh")
+if (result$status == "ERROR") {
+  cli_alert_info("Expected error for fresh source (cache-only dataset)")
+} else {
+  cli_alert_warning("Should have failed with fresh source")
+}
+
+# Test auto (should work)
+result <- test_dataset("nre_ire", source = "auto")
+print_result("nre_ire", NULL, "auto", result)
+```
+
+### 1.3 CBIC (cbic) - Has Default Table
+
+```{r test-cbic}
+#| label: test-cbic
+
+cli_h2("Testing: cbic")
+
+# Test default table with cache
+result <- test_dataset("cbic", source = "cache")
+print_result("cbic", NULL, "cache", result)
+
+# Test github
+result <- test_dataset("cbic", source = "github")
+print_result("cbic", NULL, "github", result)
+
+# Test fresh (slow - cement data)
+result <- test_dataset("cbic", source = "fresh")
+print_result("cbic", NULL, "fresh", result)
+```
+
+---
+
+## Part 2: Multi-Table Datasets
+
+### 2.1 ABECIP (abecip)
+
+Tables: sbpe, units, cgi
+
+```{r test-abecip}
+#| label: test-abecip
+
+cli_h2("Testing: abecip (3 tables)")
+
+tables <- c("sbpe", "units", "cgi")
+sources <- c("cache", "github", "fresh")
+
+# Test each table with each source
+for (tbl in tables) {
+  cli_h3("Table: {tbl}")
+  for (src in sources) {
+    result <- test_dataset("abecip", table = tbl, source = src)
+    print_result("abecip", tbl, src, result)
+  }
+}
+
+# Verify tables are DIFFERENT
+cli_h3("Verifying table differences")
+sbpe_data <- get_dataset("abecip", table = "sbpe", source = "cache")
+units_data <- get_dataset("abecip", table = "units", source = "cache")
+cgi_data <- get_dataset("abecip", table = "cgi", source = "cache")
+
+if (!isTRUE(all.equal(sbpe_data, units_data))) {
+  cli_alert_success("sbpe ≠ units (as expected)")
+} else {
+  cli_alert_danger("PROBLEM: sbpe == units (should be different!)")
+}
+
+if (!isTRUE(all.equal(units_data, cgi_data))) {
+  cli_alert_success("units ≠ cgi (as expected)")
+} else {
+  cli_alert_danger("PROBLEM: units == cgi (should be different!)")
+}
+```
+
+### 2.2 ABRAINC (abrainc)
+
+Tables: indicator, radar, leading
+
+```{r test-abrainc}
+#| label: test-abrainc
+
+cli_h2("Testing: abrainc (3 tables)")
+
+tables <- c("indicator", "radar", "leading")
+sources <- c("cache", "github", "fresh")
+
+for (tbl in tables) {
+  cli_h3("Table: {tbl}")
+  for (src in sources) {
+    result <- test_dataset("abrainc", table = tbl, source = src)
+    print_result("abrainc", tbl, src, result)
+  }
+}
+
+# Verify tables are DIFFERENT
+cli_h3("Verifying table differences")
+ind <- get_dataset("abrainc", table = "indicator", source = "cache")
+rad <- get_dataset("abrainc", table = "radar", source = "cache")
+lead <- get_dataset("abrainc", table = "leading", source = "cache")
+
+if (!isTRUE(all.equal(ind, rad))) {
+  cli_alert_success("indicator ≠ radar (as expected)")
+} else {
+  cli_alert_danger("PROBLEM: indicator == radar (should be different!)")
+}
+```
+
+### 2.3 BCB Real Estate (bcb_realestate)
+
+Tables: accounting, application, indices, sources, units
+
+```{r test-bcb-realestate}
+#| label: test-bcb-realestate
+
+cli_h2("Testing: bcb_realestate (5 tables)")
+
+# Test subset of tables (all 5 would be very slow with fresh)
+tables <- c("accounting", "application", "indices")
+
+for (tbl in tables) {
+  cli_h3("Table: {tbl}")
+
+  # Cache and GitHub should be fast
+  result <- test_dataset("bcb_realestate", table = tbl, source = "cache")
+  print_result("bcb_realestate", tbl, "cache", result)
+
+  result <- test_dataset("bcb_realestate", table = tbl, source = "github")
+  print_result("bcb_realestate", tbl, "github", result)
+}
+
+# Test one table with fresh source
+cli_h3("Testing one table with fresh source (slow)")
+result <- test_dataset("bcb_realestate", table = "indices", source = "fresh")
+print_result("bcb_realestate", "indices", "fresh", result)
+
+# Verify tables are DIFFERENT
+cli_h3("Verifying table differences")
+acc <- get_dataset("bcb_realestate", table = "accounting", source = "cache")
+app <- get_dataset("bcb_realestate", table = "application", source = "cache")
+ind <- get_dataset("bcb_realestate", table = "indices", source = "cache")
+
+if (!isTRUE(all.equal(acc, app))) {
+  cli_alert_success("accounting ≠ application (as expected)")
+} else {
+  cli_alert_danger("PROBLEM: accounting == application (should be different!)")
+}
+
+if (!isTRUE(all.equal(app, ind))) {
+  cli_alert_success("application ≠ indices (as expected)")
+} else {
+  cli_alert_danger("PROBLEM: application == indices (should be different!)")
+}
+```
+
+### 2.4 BCB Series (bcb_series)
+
+Tables: price, credit, production, interest-rate, exchange, government, real-estate
+
+```{r test-bcb-series}
+#| label: test-bcb-series
+
+cli_h2("Testing: bcb_series (7 categories)")
+
+# Test key tables only (full test would take hours)
+tables <- c("price", "credit", "real-estate")
+
+for (tbl in tables) {
+  cli_h3("Table: {tbl}")
+
+  # Cache and GitHub
+  result <- test_dataset("bcb_series", table = tbl, source = "cache")
+  print_result("bcb_series", tbl, "cache", result)
+
+  result <- test_dataset("bcb_series", table = tbl, source = "github")
+  print_result("bcb_series", tbl, "github", result)
+}
+
+# Test one with fresh (SLOW - may take 5+ minutes)
+cli_h3("Testing one table with fresh source (VERY SLOW)")
+result <- test_dataset("bcb_series", table = "price", source = "fresh")
+print_result("bcb_series", "price", "fresh", result)
+
+# Verify tables are DIFFERENT
+cli_h3("Verifying table differences")
+price <- get_dataset("bcb_series", table = "price", source = "cache")
+credit <- get_dataset("bcb_series", table = "credit", source = "cache")
+realestate <- get_dataset("bcb_series", table = "real-estate", source = "cache")
+
+if (!isTRUE(all.equal(price, credit))) {
+  cli_alert_success("price ≠ credit (as expected)")
+} else {
+  cli_alert_danger("PROBLEM: price == credit (should be different!)")
+}
+
+if (!isTRUE(all.equal(credit, realestate))) {
+  cli_alert_success("credit ≠ real-estate (as expected)")
+} else {
+  cli_alert_danger("PROBLEM: credit == real-estate (should be different!)")
+}
+```
+
+### 2.5 SECOVI-SP (secovi)
+
+Tables: condo, rent, launch, sale
+
+```{r test-secovi}
+#| label: test-secovi
+
+cli_h2("Testing: secovi (4 tables)")
+
+tables <- c("condo", "rent", "launch", "sale")
+
+for (tbl in tables) {
+  cli_h3("Table: {tbl}")
+
+  result <- test_dataset("secovi", table = tbl, source = "cache")
+  print_result("secovi", tbl, "cache", result)
+
+  result <- test_dataset("secovi", table = tbl, source = "github")
+  print_result("secovi", tbl, "github", result)
+}
+
+# Test one with fresh
+result <- test_dataset("secovi", table = "condo", source = "fresh")
+print_result("secovi", "condo", "fresh", result)
+
+# Verify tables are DIFFERENT
+cli_h3("Verifying table differences")
+condo <- get_dataset("secovi", table = "condo", source = "cache")
+rent <- get_dataset("secovi", table = "rent", source = "cache")
+
+if (!isTRUE(all.equal(condo, rent))) {
+  cli_alert_success("condo ≠ rent (as expected)")
+} else {
+  cli_alert_danger("PROBLEM: condo == rent (should be different!)")
+}
+```
+
+### 2.6 BIS RPPI (rppi_bis)
+
+Tables: selected, detailed_monthly, detailed_quarterly, detailed_annual, detailed_semiannual
+
+```{r test-rppi-bis}
+#| label: test-rppi-bis
+
+cli_h2("Testing: rppi_bis")
+
+# Test main table
+cli_h3("Table: selected (main)")
+result <- test_dataset("rppi_bis", table = "selected", source = "cache")
+print_result("rppi_bis", "selected", "cache", result)
+
+result <- test_dataset("rppi_bis", table = "selected", source = "github")
+print_result("rppi_bis", "selected", "github", result)
+
+result <- test_dataset("rppi_bis", table = "selected", source = "fresh")
+print_result("rppi_bis", "selected", "fresh", result)
+
+# Test one detailed table
+cli_h3("Table: detailed_quarterly")
+result <- test_dataset("rppi_bis", table = "detailed_quarterly", source = "cache")
+print_result("rppi_bis", "detailed_quarterly", "cache", result)
+```
+
+### 2.7 RPPI Suite (rppi)
+
+Individual tables: fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp
+Stacked tables: sale, rent, all (require fresh processing)
+
+```{r test-rppi}
+#| label: test-rppi
+
+cli_h2("Testing: rppi (complex)")
+
+# Test individual index tables
+individual_tables <- c("fipezap", "ivgr", "igmi", "ivar")
+
+for (tbl in individual_tables) {
+  cli_h3("Individual index: {tbl}")
+
+  result <- test_dataset("rppi", table = tbl, source = "cache")
+  print_result("rppi", tbl, "cache", result)
+
+  result <- test_dataset("rppi", table = tbl, source = "github")
+  print_result("rppi", tbl, "github", result)
+}
+
+# Test one individual table with fresh
+result <- test_dataset("rppi", table = "fipezap", source = "fresh")
+print_result("rppi", "fipezap", "fresh", result)
+
+# Check for "Brazil" standardization
+cli_h3("Checking name standardization")
+fz <- get_dataset("rppi", table = "fipezap", source = "cache")
+if ("Brazil" %in% unique(fz$name_muni)) {
+  cli_alert_success("'Brazil' found in fipezap (name standardized correctly)")
+} else {
+  cli_alert_warning("'Brazil' not found in fipezap - check standardization")
+}
+
+# Test stacked tables (MUST use fresh source)
+cli_h3("Stacked tables (fresh only)")
+stacked_tables <- c("sale", "rent")
+
+for (tbl in stacked_tables) {
+  result <- test_dataset("rppi", table = tbl, source = "fresh")
+  print_result("rppi", tbl, "fresh", result)
+}
+
+# Test that stacked tables fail with cache (expected behavior)
+cli_h3("Verify stacked tables require fresh processing")
+result <- test_dataset("rppi", table = "sale", source = "cache")
+if (result$status == "ERROR") {
+  cli_alert_info("Expected error for stacked table with cache source")
+} else {
+  cli_alert_warning("Stacked table should fail with cache source")
+}
+```
+
+### 2.8 Property Records (property_records)
+
+Tables: capitals, capitals_transfers, cities, aggregates, aggregates_transfers
+
+```{r test-property-records}
+#| label: test-property-records
+
+cli_h2("Testing: property_records")
+
+# Test main table
+cli_h3("Table: capitals")
+result <- test_dataset("property_records", table = "capitals", source = "cache")
+print_result("property_records", "capitals", "cache", result)
+
+result <- test_dataset("property_records", table = "capitals", source = "github")
+print_result("property_records", "capitals", "github", result)
+
+# Test one more table
+cli_h3("Table: aggregates")
+result <- test_dataset("property_records", table = "aggregates", source = "cache")
+print_result("property_records", "aggregates", "cache", result)
+
+# Verify output is tibble, not nested list
+cli_h3("Verify output type is tibble")
+caps <- get_dataset("property_records", table = "capitals", source = "cache")
+if (is.data.frame(caps) && !is.list(caps[[1]])) {
+  cli_alert_success("Output is tibble (not nested list)")
+} else {
+  cli_alert_danger("PROBLEM: Output should be tibble, not nested list")
+}
+```
+
+---
+
+## Part 3: Edge Cases
+
+### 3.1 Hidden Dataset (itbi_summary)
+
+```{r test-hidden-dataset}
+#| label: test-hidden-dataset
+
+cli_h2("Testing: itbi_summary (should be hidden)")
+
+result <- test_dataset("itbi_summary", source = "cache")
+if (result$status == "ERROR") {
+  cli_alert_success("Hidden dataset correctly returns error")
+} else {
+  cli_alert_warning("Hidden dataset should not be accessible")
+}
+```
+
+---
+
+## Part 4: Summary Report
+
+### Results Table
+
+```{r summary-table}
+#| label: summary-table
+
+cli_h1("Test Results Summary")
+
+# Count by status
+status_summary <- test_results %>%
+  count(status) %>%
+  arrange(desc(n))
+
+cli_h2("Status Overview")
+print(status_summary)
+
+# Pass rate
+pass_rate <- sum(test_results$status %in% c("PASS", "PASS (list)")) / nrow(test_results) * 100
+
+if (pass_rate >= 90) {
+  cli_alert_success("Pass rate: {round(pass_rate, 1)}%")
+} else if (pass_rate >= 75) {
+  cli_alert_warning("Pass rate: {round(pass_rate, 1)}%")
+} else {
+  cli_alert_danger("Pass rate: {round(pass_rate, 1)}%")
+}
+
+# Show all failures
+failures <- test_results %>%
+  filter(status %in% c("FAIL", "ERROR")) %>%
+  select(dataset, table, source, status, error)
+
+if (nrow(failures) > 0) {
+  cli_h2("Failed Tests ({nrow(failures)} total)")
+  print(failures)
+} else {
+  cli_alert_success("No failures!")
+}
+
+# Full results table
+cli_h2("Complete Results")
+test_results %>%
+  arrange(dataset, table, source) %>%
+  knitr::kable()
+```
+
+### Performance Summary
+
+```{r performance-summary}
+#| label: performance-summary
+
+cli_h2("Performance Summary")
+
+# Average times by source
+perf_by_source <- test_results %>%
+  filter(status %in% c("PASS", "PASS (list)")) %>%
+  group_by(source) %>%
+  summarise(
+    n = n(),
+    mean_sec = round(mean(time_sec), 2),
+    median_sec = round(median(time_sec), 2),
+    max_sec = round(max(time_sec), 2)
+  )
+
+print(perf_by_source)
+
+# Slowest operations
+slowest <- test_results %>%
+  filter(status %in% c("PASS", "PASS (list)")) %>%
+  arrange(desc(time_sec)) %>%
+  head(10) %>%
+  select(dataset, table, source, time_sec, rows)
+
+cli_h3("10 Slowest Operations")
+print(slowest)
+```
+
+---
+
+## Conclusion
+
+```{r conclusion}
+#| label: conclusion
+
+cli_rule("Final Assessment")
+
+total_tests <- nrow(test_results)
+passed <- sum(test_results$status %in% c("PASS", "PASS (list)"))
+failed <- sum(test_results$status == "FAIL")
+errored <- sum(test_results$status == "ERROR")
+
+cli_alert_info("Total tests: {total_tests}")
+cli_alert_info("Passed: {passed} ({round(passed/total_tests*100, 1)}%)")
+cli_alert_info("Failed: {failed}")
+cli_alert_info("Errors: {errored}")
+
+if (failed == 0 && errored <= 2) {  # Allow 2 expected errors (hidden dataset, etc)
+  cli_alert_success("✅ Ready for v0.5.1 release!")
+} else {
+  cli_alert_warning("⚠️ Issues need to be addressed before release")
+}
+
+cli_rule()
+```
+
+---
+
+## Session Info
+
+```{r session-info}
+#| label: session-info
+
+sessionInfo()
+```
