@@ -20,17 +20,6 @@ NULL
 #'
 #' @return Dataset as tibble or list, depending on original structure
 #'
-#' @examples
-#' \dontrun{
-#' # OLD (deprecated):
-#' # abecip_data <- import_cached("abecip")
-#'
-#' # NEW (recommended):
-#' abecip_data <- load_from_user_cache("abecip")
-#' # or better:
-#' abecip_data <- get_dataset("abecip")
-#' }
-#'
 #' @seealso \code{\link{load_from_user_cache}}, \code{\link{get_dataset}}
 #' @keywords internal
 #' @export
