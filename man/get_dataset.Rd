@@ -21,10 +21,10 @@ Use get_dataset_info(name) to see available tables.}
 
 \item{source}{Character. Data source preference:
 \describe{
-\item{"auto"}{Automatic fallback: cache → GitHub → fresh (default)}
-\item{"cache"}{Local package cache only}
-\item{"github"}{GitHub repository cache}
-\item{"fresh"}{Fresh download from original source}
+\item{"auto"}{Automatic fallback: user cache → GitHub releases → fresh (default)}
+\item{"cache"}{User cache only (stored in ~/.local/share/realestatebr/)}
+\item{"github"}{Download from GitHub releases (requires piggyback package)}
+\item{"fresh"}{Fresh download from original source (saves to user cache)}
 }}
 
 \item{date_start}{Date. Start date for time series data (where applicable)}

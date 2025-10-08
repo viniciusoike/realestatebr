@@ -2,7 +2,7 @@
 % Please edit documentation in R/cache.R
 \name{import_cached}
 \alias{import_cached}
-\title{Cache Management Utilities}
+\title{Import Cached Dataset (DEPRECATED)}
 \usage{
 import_cached(
   dataset_name,
@@ -25,22 +25,23 @@ will try RDS first, then compressed CSV.}
 Dataset as tibble or list, depending on original structure
 }
 \description{
-Internal functions for managing package data cache, including loading cached
-datasets and handling cache invalidation strategies.
-Import Cached Dataset
-}
-\details{
-Load a dataset from the package's cached data directory with automatic
-format detection and error handling.
+\strong{DEPRECATED}: This function loaded data from \code{inst/cached_data/}
+which is no longer included in the package. Use \code{\link{load_from_user_cache}}
+or \code{\link{get_dataset}} with \code{source="cache"} instead.
 }
 \examples{
 \dontrun{
-# Load ABECIP data from cache
-abecip_data <- import_cached("abecip")
+# OLD (deprecated):
+# abecip_data <- import_cached("abecip")
 
-# Load with specific format
-bcb_data <- import_cached("bcb_realestate", format = "csv")
+# NEW (recommended):
+abecip_data <- load_from_user_cache("abecip")
+# or better:
+abecip_data <- get_dataset("abecip")
 }
 
+}
+\seealso{
+\code{\link{load_from_user_cache}}, \code{\link{get_dataset}}
 }
 \keyword{internal}

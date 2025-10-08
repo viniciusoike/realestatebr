@@ -48,12 +48,10 @@ Download a compilation of macroeconomic time series data from the Brazilian
 Central Bank with modern error handling, progress reporting, and robust API access.
 }
 \details{
-This function downloads 15 essential macroeconomic indicators relevant for
-real estate analysis, including price indices, interest rates, and credit indicators.
-The series selection has been simplified for v0.4.0 to focus on core indicators.
-
-The 15 essential series are: 190, 192, 432, 433, 20704, 20756, 20768,
-20914, 21072, 21084, 21340, 24364, 28545, 28763, 28770.
+This function downloads macroeconomic indicators from the BCB based on the
+series defined in the \code{bcb_metadata} dataset. The series cover various
+categories relevant for real estate analysis, including price indices,
+interest rates, credit indicators, production metrics, and more.
 
 The default value for \code{date_start} is January 2010. While arbitrary, I advise
 against setting \code{date_start} to dates prior to July 1994. To download all

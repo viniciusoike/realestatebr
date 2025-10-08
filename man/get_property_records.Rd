@@ -30,13 +30,7 @@ If \code{FALSE} (default), provides detailed progress reporting.}
 downloads. Defaults to 3.}
 }
 \value{
-A \code{tibble} with the requested property records table. The return includes
-metadata attributes:
-\describe{
-\item{download_info}{List with download statistics}
-\item{source}{Data source used (web or cache)}
-\item{download_time}{Timestamp of download}
-}
+A \code{tibble} with the requested property records table.
 }
 \description{
 Imports and cleans specific tables from the most up to date property transaction
@@ -60,24 +54,4 @@ The function includes retry logic for failed downloads and robust error
 handling for web scraping and Excel processing operations.
 }
 
-\examples{
-\dontrun{
-# Get capitals records data (default)
-capitals <- get_property_records()
-
-# Get transfer data for capital cities
-transfers <- get_property_records("capitals_transfers")
-
-# Get all cities records data
-cities <- get_property_records("cities")
-
-# Get SP regional aggregates
-aggregates <- get_property_records("aggregates")
-
-# Use cached data for faster access
-cached_data <- get_property_records("capitals", cached = TRUE)
-
-# Check download metadata
-attr(capitals, "download_info")
-}
-}
+\keyword{internal}

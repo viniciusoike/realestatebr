@@ -7,6 +7,6 @@
 get_from_local_cache(name, dataset_info, table)
 }
 \description{
-Get Data from Local Cache
+Loads dataset from user-level cache directory.
 }
 \keyword{internal}
