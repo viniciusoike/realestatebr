@@ -24,19 +24,4 @@ When debug mode is enabled, all detailed processing messages are shown,
 including file-by-file progress, type detection, and intermediate steps.
 This is useful for development and troubleshooting.
 }
-\examples{
-\dontrun{
-# Check current debug mode status
-is_debug_mode()
-
-# Enable debug mode via option
-options(realestatebr.debug = TRUE)
-is_debug_mode()  # Returns TRUE
-
-# Enable debug mode via environment variable
-Sys.setenv(REALESTATEBR_DEBUG = "TRUE")
-is_debug_mode()  # Returns TRUE
-}
-
-}
 \keyword{internal}

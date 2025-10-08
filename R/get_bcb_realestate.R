@@ -1,32 +1,20 @@
-#' Import Real Estate data from the Brazilian Central Bank
+#' Import Real Estate data from the Brazilian Central Bank (DEPRECATED)
 #'
 #' @section Deprecation:
-#' This function is deprecated. Use \code{\link{get_dataset}("bcb_realestate")} instead.
+#' This function is deprecated since v0.4.0.
+#' Use \code{\link{get_dataset}}("bcb_realestate") instead:
 #'
-#' Imports and cleans real estate data published monthly by the Brazilian Central
-#' Bank with modern error handling, progress reporting, and robust API access.
-#' Includes credit sources, credit applications, credit operations, financed
-#' units, real estate indices.
+#' \preformatted{
+#'   # Old way:
+#'   data <- get_bcb_realestate()
+#'
+#'   # New way:
+#'   data <- get_dataset("bcb_realestate")
+#' }
 #'
 #' @details
-#' If `table = 'all'` a tidy long `tibble` will be returned with all available
-#' data. This table can be hard to navigate since it contains several different
-#' tables within it. Each series is uniquely identified by the `series_info` column.
-#' The `series_info` column is also split along the `v1` to `v5` columns.
-#' A complete metadata of each series is available [here](https://www.bcb.gov.br/estatisticas/mercadoimobiliario) (only in Portuguese).
-#'
-#' Other choices of `table` return a wide `tibble` with informative column
-#' names. Available options are: `'accounting'`, `'application'`, `'indices'`,
-#' `'sources'`, `'units'`, or `'all'`.
-#'
-#' @section Progress Reporting:
-#' When `quiet = FALSE`, the function provides detailed progress information
-#' including API access status and data processing steps.
-#'
-#' @section Error Handling:
-#' The function includes retry logic for failed API calls and graceful fallback
-#' to cached data when API access fails. BCB API errors are handled with
-#' automatic retries and informative error messages.
+#' Imports real estate data from BCB including credit sources, credit applications,
+#' financed units, and real estate indices.
 #'
 #' @param table Character. One of `'accounting'`, `'application'`, `'indices'`,
 #'   `'sources'`, `'units'`, or `'all'` (default).
@@ -56,20 +44,8 @@
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter mutate select rename_with inner_join tibble
 #' @importFrom tidyr pivot_wider unnest
-#'
-#' @examples \dontrun{
-#' # Download all data in long format (with progress)
-#' bcb <- get_bcb_realestate(quiet = FALSE)
-#'
-#' # Get only data on financed units
-#' units <- get_bcb_realestate("units")
-#'
-#' # Use cached data for faster access
-#' cached_data <- get_bcb_realestate(cached = TRUE)
-#'
-#' # Check download metadata
-#' attr(units, "download_info")
-#' }
+#' @keywords internal
+#' @export
 get_bcb_realestate <- function(
   table = "all",
   cached = FALSE,

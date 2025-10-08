@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_fgv_ibre.R
 \name{get_fgv_ibre}
 \alias{get_fgv_ibre}
-\title{Get FGV IBRE Confidence Indicators}
+\title{Get FGV IBRE Confidence Indicators (DEPRECATED)}
 \usage{
 get_fgv_ibre(table = "indicators", cached = TRUE, quiet = FALSE)
 }
@@ -26,39 +26,24 @@ The tibble includes metadata attributes:
 }
 }
 \description{
-Download and clean construction confidence indicators estimated and released
-by the Getulio Vargas Foundation (FGV IBRE) with modern error handling and
-progress reporting capabilities.
+Get FGV IBRE Confidence Indicators (DEPRECATED)
 }
 \details{
-This function provides access to construction confidence indicators from FGV IBRE,
-including confidence indices, expectation indicators, and INCC price indices.
-The function supports both cached data access and fallback to package data.
-
-\strong{Note:} Fresh data downloads from FGV APIs are not currently supported.
-The function accesses cached data or internal package data objects.
+Downloads construction confidence indicators from FGV IBRE including confidence
+indices, expectation indicators, and INCC price indices.
 }
-\section{Progress Reporting}{
+\section{Deprecation}{
 
-When \code{quiet = FALSE}, the function provides progress information
-about data access operations.
-}
+This function is deprecated since v0.4.0.
+Use \code{\link{get_dataset}}("fgv_ibre") instead:
 
-\section{Error Handling}{
+\preformatted{
+  # Old way:
+  data <- get_fgv_ibre()
 
-The function includes robust error handling for data access and
-provides informative error messages when data is unavailable.
-}
-
-\examples{
-\dontrun{
-# Get FGV IBRE indicators from cache (with progress)
-fgv <- get_fgv_ibre(quiet = FALSE)
-
-# Use internal package data
-fgv <- get_fgv_ibre(cached = FALSE)
-
-# Check access metadata
-attr(fgv, "download_info")
+  # New way:
+  data <- get_dataset("fgv_ibre")
 }
 }
+
+\keyword{internal}

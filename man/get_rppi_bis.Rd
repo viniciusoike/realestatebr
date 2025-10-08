@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_rppi_bis.R
 \name{get_rppi_bis}
 \alias{get_rppi_bis}
-\title{Get Residential Property Price Indices from BIS}
+\title{Get Residential Property Price Indices from BIS (DEPRECATED)}
 \source{
 \url{https://data.bis.org/topics/RPP}
 }
@@ -43,41 +43,24 @@ The return includes metadata attributes:
 }
 }
 \description{
-Get specific tables from the Residential Property Price Indices series from the Bank for
-International Settlements (BIS) with modern error handling, progress reporting, and robust
-Excel download capabilities. Always returns a single tibble.
+Get Residential Property Price Indices from BIS (DEPRECATED)
 }
 \details{
-For the simple selected series use \code{table = 'selected'}. More information
-on these series is available at the \href{https://www.bis.org/statistics/pp_selected.htm}{BIS website}
-
-For detailed datasets, choose from monthly, quarterly, annual, or semiannual tables.
-More information is available at the \href{https://data.bis.org/topics/RPP}{BIS website}
+Downloads Residential Property Price Indices from BIS with support for selected
+series and detailed monthly/quarterly/annual/semiannual datasets.
 }
-\section{Progress Reporting}{
+\section{Deprecation}{
 
-When \code{quiet = FALSE}, the function provides detailed progress information
-including Excel download status and data processing steps.
-}
+This function is deprecated since v0.4.0.
+Use \code{\link{get_dataset}}("rppi_bis") instead:
 
-\section{Error Handling}{
+\preformatted{
+  # Old way:
+  data <- get_rppi_bis()
 
-The function includes retry logic for failed Excel downloads and robust
-error handling for multi-sheet processing operations.
-}
-
-\examples{
-\dontrun{
-# Download selected RPPI data from BIS (with progress)
-bis <- get_rppi_bis(quiet = FALSE)
-
-# Get monthly detailed data
-monthly <- get_rppi_bis("detailed_monthly")
-
-# For faster download time use cached data
-bis <- get_rppi_bis("detailed_quarterly", cached = TRUE)
-
-# Check download metadata
-attr(bis, "download_info")
+  # New way:
+  data <- get_dataset("rppi_bis")
 }
 }
+
+\keyword{internal}

@@ -1,25 +1,20 @@
-#' Download macroeconomic time-series from BCB
+#' Download macroeconomic time-series from BCB (DEPRECATED)
 #'
-#' Download a compilation of macroeconomic time series data from the Brazilian
-#' Central Bank with modern error handling, progress reporting, and robust API access.
+#' @section Deprecation:
+#' This function is deprecated since v0.4.0.
+#' Use \code{\link{get_dataset}}("bcb_series") instead:
+#'
+#' \preformatted{
+#'   # Old way:
+#'   data <- get_bcb_series()
+#'
+#'   # New way:
+#'   data <- get_dataset("bcb_series")
+#' }
 #'
 #' @details
-#' This function downloads macroeconomic indicators from the BCB based on the
-#' series defined in the `bcb_metadata` dataset. The series cover various
-#' categories relevant for real estate analysis, including price indices,
-#' interest rates, credit indicators, production metrics, and more.
-#'
-#' The default value for `date_start` is January 2010. While arbitrary, I advise
-#' against setting `date_start` to dates prior to July 1994. To download all
-#' available data the user can set a date such as `as.Date("1900-01-01)`.
-#'
-#' @section Progress Reporting:
-#' When `quiet = FALSE`, the function provides detailed progress information
-#' including BCB API access status and data processing steps.
-#'
-#' @section Error Handling:
-#' The function includes retry logic for failed BCB API calls and robust
-#' error handling for metadata processing and data validation.
+#' Downloads macroeconomic time series from BCB including price indices, interest
+#' rates, credit indicators, and production metrics.
 #'
 #' @param table Character. Which dataset to return: "all" (default), "credit", "exchange",
 #'   "government", "interest-rate", "real-estate", "price", or "production".
@@ -44,20 +39,8 @@
 #'
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr as_tibble rename select left_join filter
-#'
-#' @examples \dontrun{
-#' # Get price indicators (with progress)
-#' prices <- get_bcb_series(table = "price", quiet = FALSE)
-#'
-#' # Get all series
-#' bcb_series <- get_bcb_series(date_start = as.Date("2020-01-01"))
-#'
-#' # Use cached data for faster access
-#' cached_data <- get_bcb_series(cached = TRUE)
-#'
-#' # Check download metadata
-#' attr(prices, "download_info")
-#' }
+#' @keywords internal
+#' @export
 get_bcb_series <- function(
   table = "all",
   cached = FALSE,

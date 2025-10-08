@@ -22,17 +22,6 @@ useful for development and debugging but would be too verbose for
 end-users. Messages are only shown when debug mode is enabled via
 \code{is_debug_mode()}.
 }
-\examples{
-\dontrun{
-# This message only appears in debug mode
-cli_debug("Processing file: {filename}")
-
-# Enable debug mode to see the message
-options(realestatebr.debug = TRUE)
-cli_debug("Now you can see this message")
-}
-
-}
 \seealso{
 \code{\link[=is_debug_mode]{is_debug_mode()}}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_abecip_indicators.R
 \name{get_abecip_indicators}
 \alias{get_abecip_indicators}
-\title{Get Credit Indicators from Abecip}
+\title{Get Credit Indicators from Abecip (DEPRECATED)}
 \source{
 \url{https://www.abecip.org.br}
 }
@@ -36,59 +36,24 @@ Either a named \code{list} (when table is \code{'all'}) or a \code{tibble}
 }
 }
 \description{
-Get Credit Indicators from Abecip
+Get Credit Indicators from Abecip (DEPRECATED)
 }
 \details{
-This function returns three tables:
-\enumerate{
-\item The \code{sbpe} table summarizes the monetary flows from SBPE. Values are nominal
-and currency changes over the years. Data is available since January 1982. Original
-data from Abecip is split into rural (\code{rural_} and non-rural (\code{sbpe_}). The total
-columns sum rural and non-rural financing.
-\item The \code{units} table summarizes the number of units financed by SBPE. Data
-is available since January 2002. The original data discriminates loans that
-are used to finance new units (\verb{_construction}) and to finance acquisitions in
-the secondary market (\verb{_acquisition}). The \code{units_} columns are in absolute units.
-The \code{currency_} columns are in millions of nominal BRL (R$ million).
-\item The \code{cgi} table returns summary data on home-equity loans. Data is available
-since January 2017. All columns are in absolute/nominal units except \code{default_rate} which
-is in percentage and \code{average_term} which is in months.
-}
+Downloads housing credit data from Abecip including SBPE monetary flows, financed
+units, and home-equity loan data.
 }
 \section{Deprecation}{
 
-This function is deprecated. Use \code{\link{get_dataset}("abecip")} instead.
+This function is deprecated since v0.4.0.
+Use \code{\link{get_dataset}}("abecip") instead:
 
-Downloads updated housing credit data from Abecip. Abecip represents the major
-financial institutions that integrate Brazil's finance housing system (SFH).
-Provides modern error handling, progress reporting, and robust download capabilities.
-}
+\preformatted{
+  # Old way:
+  data <- get_abecip_indicators()
 
-\section{Progress Reporting}{
-
-When \code{quiet = FALSE}, the function provides detailed progress information
-including download status and data processing steps.
-}
-
-\section{Error Handling}{
-
-The function includes retry logic for failed downloads and graceful fallback
-to cached data when downloads fail. Web scraping errors are handled with
-automatic retries and informative error messages.
-}
-
-\examples{
-\dontrun{
-# Download all available data (with progress)
-all_data <- get_abecip_indicators(quiet = FALSE)
-
-# Get specific table
-units <- get_abecip_indicators("units")
-
-# Use cached data for faster access
-cached_data <- get_abecip_indicators(cached = TRUE)
-
-# Check download metadata
-attr(units, "download_info")
+  # New way:
+  data <- get_dataset("abecip")
 }
 }
+
+\keyword{internal}

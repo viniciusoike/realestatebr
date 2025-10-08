@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_bcb_realestate.R
 \name{get_bcb_realestate}
 \alias{get_bcb_realestate}
-\title{Import Real Estate data from the Brazilian Central Bank}
+\title{Import Real Estate data from the Brazilian Central Bank (DEPRECATED)}
 \source{
 \url{https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario}
 }
@@ -46,54 +46,24 @@ The tibble includes metadata attributes:
 }
 }
 \description{
-Import Real Estate data from the Brazilian Central Bank
+Import Real Estate data from the Brazilian Central Bank (DEPRECATED)
 }
 \details{
-If \code{table = 'all'} a tidy long \code{tibble} will be returned with all available
-data. This table can be hard to navigate since it contains several different
-tables within it. Each series is uniquely identified by the \code{series_info} column.
-The \code{series_info} column is also split along the \code{v1} to \code{v5} columns.
-A complete metadata of each series is available \href{https://www.bcb.gov.br/estatisticas/mercadoimobiliario}{here} (only in Portuguese).
-
-Other choices of \code{table} return a wide \code{tibble} with informative column
-names. Available options are: \code{'accounting'}, \code{'application'}, \code{'indices'},
-\code{'sources'}, \code{'units'}, or \code{'all'}.
+Imports real estate data from BCB including credit sources, credit applications,
+financed units, and real estate indices.
 }
 \section{Deprecation}{
 
-This function is deprecated. Use \code{\link{get_dataset}("bcb_realestate")} instead.
+This function is deprecated since v0.4.0.
+Use \code{\link{get_dataset}}("bcb_realestate") instead:
 
-Imports and cleans real estate data published monthly by the Brazilian Central
-Bank with modern error handling, progress reporting, and robust API access.
-Includes credit sources, credit applications, credit operations, financed
-units, real estate indices.
-}
+\preformatted{
+  # Old way:
+  data <- get_bcb_realestate()
 
-\section{Progress Reporting}{
-
-When \code{quiet = FALSE}, the function provides detailed progress information
-including API access status and data processing steps.
-}
-
-\section{Error Handling}{
-
-The function includes retry logic for failed API calls and graceful fallback
-to cached data when API access fails. BCB API errors are handled with
-automatic retries and informative error messages.
-}
-
-\examples{
-\dontrun{
-# Download all data in long format (with progress)
-bcb <- get_bcb_realestate(quiet = FALSE)
-
-# Get only data on financed units
-units <- get_bcb_realestate("units")
-
-# Use cached data for faster access
-cached_data <- get_bcb_realestate(cached = TRUE)
-
-# Check download metadata
-attr(units, "download_info")
+  # New way:
+  data <- get_dataset("bcb_realestate")
 }
 }
+
+\keyword{internal}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_secovi.R
 \name{get_secovi}
 \alias{get_secovi}
-\title{Import data from Secovi-SP}
+\title{Import data from Secovi-SP (DEPRECATED)}
 \usage{
 get_secovi(table = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
@@ -29,48 +29,24 @@ metadata attributes:
 }
 }
 \description{
-Import data from Secovi-SP
+Import data from Secovi-SP (DEPRECATED)
 }
 \details{
-This function scrapes real estate data from SECOVI-SP website including
-condominium fees, rental market data, launches, and sales information.
-The function handles parallel processing for data cleaning while maintaining
-progress reporting.
+Scrapes real estate data from SECOVI-SP including condominium fees, rental
+market data, launches, and sales information.
 }
 \section{Deprecation}{
 
-This function is deprecated. Use \code{\link{get_dataset}("secovi")} instead.
+This function is deprecated since v0.4.0.
+Use \code{\link{get_dataset}}("secovi") instead:
 
-Download and clean real estate information from Sao Paulo (SP) made available
-by SECOVI-SP with modern error handling, progress reporting, and robust
-web scraping capabilities.
-}
+\preformatted{
+  # Old way:
+  data <- get_secovi()
 
-\section{Progress Reporting}{
-
-When \code{quiet = FALSE}, the function provides detailed progress information
-including web scraping status and data processing steps, even during
-parallel operations.
-}
-
-\section{Error Handling}{
-
-The function includes retry logic for failed web scraping attempts and
-robust error handling for parallel data processing operations.
-}
-
-\examples{
-\dontrun{
-# Download all available data (with progress)
-secovi <- get_secovi(quiet = FALSE)
-
-# Download only a specific series
-sales <- get_secovi("sale")
-
-# Use cached data for faster access
-cached_data <- get_secovi(cached = TRUE)
-
-# Check download metadata
-attr(sales, "download_info")
+  # New way:
+  data <- get_dataset("secovi")
 }
 }
+
+\keyword{internal}

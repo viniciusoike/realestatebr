@@ -23,15 +23,4 @@ This function should be used for essential status messages that
 provide value to end-users, such as final results or major milestones.
 The message is shown unless explicitly suppressed by quiet=TRUE.
 }
-\examples{
-\dontrun{
-# Always shows unless quiet=TRUE
-cli_user("✓ Dataset loaded: 1,234 records")
-
-# Respects quiet parameter
-cli_user("Processing complete", quiet = FALSE)  # Shows
-cli_user("Processing complete", quiet = TRUE)   # Hidden
-}
-
-}
 \keyword{internal}

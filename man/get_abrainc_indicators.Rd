@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_abrainc_indicators.R
 \name{get_abrainc_indicators}
 \alias{get_abrainc_indicators}
-\title{Import Indicators from the Abrainc-Fipe Report}
+\title{Import Indicators from the Abrainc-Fipe Report (DEPRECATED)}
 \source{
 Abrainc-Fipe available at \url{https://www.fipe.org.br/pt-br/indices/abrainc}
 }
@@ -36,64 +36,24 @@ Either a named \code{list} (when table is \code{'all'}) or a \code{tibble}
 }
 }
 \description{
-Import Indicators from the Abrainc-Fipe Report
+Import Indicators from the Abrainc-Fipe Report (DEPRECATED)
 }
 \details{
-The data in \code{'indicator'} gives broad numbers of launches, sales, supply, etc.
-of new housing units in the primary sector.
-
-The data in \code{'radar'} is a 0-10 standardized index that serves as a proxy
-for general business conditions.
-
-The data in \code{'leading'} compiles building permits data in Sao Paulo and uses
-this information as proxy for a real estate leading indicator.
-
-Units indicated as \code{"Social Housing (MCMV)"} are units related either to the
-Minha Casa Minha Vida (MCMV) or Casa Verde Amarela (CVA) federal government
-housing programs. These programs aim to provide affordable housing for low to
-medium income families. While the eligible families enjoy subsidized credit
-conditions the housing is not free (families commit to monthly mortgage payments)
-and is usually built by private developers. The definition of social housing
-varies by country so caution is advised in making international comparisons.
-
-Data comes from developers that are partnered with Abrainc. As of June 2023, there were
-66 real estate developers associated with Abrainc.
+Downloads data from the Abrainc-Fipe Indicators report including information on
+new launches, sales, delivered units, and market indicators.
 }
 \section{Deprecation}{
 
-This function is deprecated. Use \code{\link{get_dataset}("abrainc")} instead.
+This function is deprecated since v0.4.0.
+Use \code{\link{get_dataset}}("abrainc") instead:
 
-Downloads data from the Abrainc-Fipe Indicators report with modern error
-handling, progress reporting, and robust download capabilities. Data includes
-information on new launches, sales, delivered units, etc. in the primary
-market.
-}
+\preformatted{
+  # Old way:
+  data <- get_abrainc_indicators()
 
-\section{Progress Reporting}{
-
-When \code{quiet = FALSE}, the function provides detailed progress information
-including download status and data processing steps.
-}
-
-\section{Error Handling}{
-
-The function includes retry logic for failed downloads and graceful fallback
-to cached data when downloads fail. Excel download errors are handled with
-automatic retries and informative error messages.
-}
-
-\examples{
-\dontrun{
-# Get all available data (with progress)
-all_data <- get_abrainc_indicators(quiet = FALSE)
-
-# Get only the Radar data
-radar <- get_abrainc_indicators(table = "radar")
-
-# Use cached data for faster access
-cached_data <- get_abrainc_indicators(cached = TRUE)
-
-# Check download metadata
-attr(radar, "download_info")
+  # New way:
+  data <- get_dataset("abrainc")
 }
 }
+
+\keyword{internal}

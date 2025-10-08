@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_nre_ire.R
 \name{get_nre_ire}
 \alias{get_nre_ire}
-\title{Get the IRE Index}
+\title{Get the IRE Index (DEPRECATED)}
 \source{
 Original series and methodology available at \url{https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html}.
 }
@@ -39,42 +39,24 @@ The tibble includes metadata attributes:
 }
 }
 \description{
-Imports the Real Estate Index from NRE-Poli (USP) with modern error handling
-and progress reporting capabilities.
+Get the IRE Index (DEPRECATED)
 }
 \details{
-The Real Estate Index (IRE) tracks the average stock price of real estate
-companies in Brazil. The Index is maintained by the Real Estate Research
-Group by the Polytechnich School of the University of São Paulo (NRE-Poli-USP).
-
-The values are indexed (100 = May/2006). Check \code{return} for a definition of each
-column.
-
-\strong{Note:} This function currently only supports cached data loading.
-Fresh data downloads are not available as the original data source requires
-manual processing.
+Downloads the Real Estate Index (IRE) from NRE-Poli (USP) tracking average stock
+prices of real estate companies in Brazil. Values indexed to 100 = May/2006.
 }
-\section{Progress Reporting}{
+\section{Deprecation}{
 
-When \code{quiet = FALSE}, the function provides progress information
-about cache loading operations.
-}
+This function is deprecated since v0.4.0.
+Use \code{\link{get_dataset}}("nre_ire") instead:
 
-\section{Error Handling}{
+\preformatted{
+  # Old way:
+  data <- get_nre_ire()
 
-The function includes robust error handling for cache access and
-provides informative error messages when data is unavailable.
-}
-
-\examples{
-\dontrun{
-# Import the IRE Index (with progress)
-ire <- get_nre_ire(quiet = FALSE)
-
-# Import quietly
-ire <- get_nre_ire(cached = TRUE, quiet = TRUE)
-
-# Check access metadata
-attr(ire, "download_info")
+  # New way:
+  data <- get_dataset("nre_ire")
 }
 }
+
+\keyword{internal}

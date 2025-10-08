@@ -29,18 +29,6 @@ Dataset as tibble or list, depending on original structure
 which is no longer included in the package. Use \code{\link{load_from_user_cache}}
 or \code{\link{get_dataset}} with \code{source="cache"} instead.
 }
-\examples{
-\dontrun{
-# OLD (deprecated):
-# abecip_data <- import_cached("abecip")
-
-# NEW (recommended):
-abecip_data <- load_from_user_cache("abecip")
-# or better:
-abecip_data <- get_dataset("abecip")
-}
-
-}
 \seealso{
 \code{\link{load_from_user_cache}}, \code{\link{get_dataset}}
 }

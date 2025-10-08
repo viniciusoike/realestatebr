@@ -1,35 +1,20 @@
-#' Get Credit Indicators from Abecip
+#' Get Credit Indicators from Abecip (DEPRECATED)
 #'
 #' @section Deprecation:
-#' This function is deprecated. Use \code{\link{get_dataset}("abecip")} instead.
+#' This function is deprecated since v0.4.0.
+#' Use \code{\link{get_dataset}}("abecip") instead:
 #'
-#' Downloads updated housing credit data from Abecip. Abecip represents the major
-#' financial institutions that integrate Brazil's finance housing system (SFH).
-#' Provides modern error handling, progress reporting, and robust download capabilities.
+#' \preformatted{
+#'   # Old way:
+#'   data <- get_abecip_indicators()
+#'
+#'   # New way:
+#'   data <- get_dataset("abecip")
+#' }
 #'
 #' @details
-#' This function returns three tables:
-#' 1. The `sbpe` table summarizes the monetary flows from SBPE. Values are nominal
-#' and currency changes over the years. Data is available since January 1982. Original
-#' data from Abecip is split into rural (`rural_` and non-rural (`sbpe_`). The total
-#' columns sum rural and non-rural financing.
-#' 2. The `units` table summarizes the number of units financed by SBPE. Data
-#' is available since January 2002. The original data discriminates loans that
-#' are used to finance new units (`_construction`) and to finance acquisitions in
-#' the secondary market (`_acquisition`). The `units_` columns are in absolute units.
-#' The `currency_` columns are in millions of nominal BRL (R$ million).
-#' 3. The `cgi` table returns summary data on home-equity loans. Data is available
-#' since January 2017. All columns are in absolute/nominal units except `default_rate` which
-#' is in percentage and `average_term` which is in months.
-#'
-#' @section Progress Reporting:
-#' When `quiet = FALSE`, the function provides detailed progress information
-#' including download status and data processing steps.
-#'
-#' @section Error Handling:
-#' The function includes retry logic for failed downloads and graceful fallback
-#' to cached data when downloads fail. Web scraping errors are handled with
-#' automatic retries and informative error messages.
+#' Downloads housing credit data from Abecip including SBPE monetary flows, financed
+#' units, and home-equity loan data.
 #'
 #' @param table Character. One of `'sbpe'` (default), `'units'`, or `'cgi'`.
 #' @param cached Logical. If `TRUE`, attempts to load data from package cache
@@ -54,20 +39,8 @@
 #' @importFrom readxl read_excel
 #' @importFrom rvest html_elements html_attr
 #' @importFrom xml2 read_html
-#'
-#' @examples \dontrun{
-#' # Download all available data (with progress)
-#' all_data <- get_abecip_indicators(quiet = FALSE)
-#'
-#' # Get specific table
-#' units <- get_abecip_indicators("units")
-#'
-#' # Use cached data for faster access
-#' cached_data <- get_abecip_indicators(cached = TRUE)
-#'
-#' # Check download metadata
-#' attr(units, "download_info")
-#' }
+#' @keywords internal
+#' @export
 get_abecip_indicators <- function(
   table = "sbpe",
   cached = FALSE,

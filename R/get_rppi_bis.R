@@ -1,23 +1,20 @@
-#' Get Residential Property Price Indices from BIS
+#' Get Residential Property Price Indices from BIS (DEPRECATED)
 #'
-#' Get specific tables from the Residential Property Price Indices series from the Bank for
-#' International Settlements (BIS) with modern error handling, progress reporting, and robust
-#' Excel download capabilities. Always returns a single tibble.
+#' @section Deprecation:
+#' This function is deprecated since v0.4.0.
+#' Use \code{\link{get_dataset}}("rppi_bis") instead:
+#'
+#' \preformatted{
+#'   # Old way:
+#'   data <- get_rppi_bis()
+#'
+#'   # New way:
+#'   data <- get_dataset("rppi_bis")
+#' }
 #'
 #' @details
-#' For the simple selected series use `table = 'selected'`. More information
-#' on these series is available at the [BIS website](https://www.bis.org/statistics/pp_selected.htm)
-#'
-#' For detailed datasets, choose from monthly, quarterly, annual, or semiannual tables.
-#' More information is available at the [BIS website](https://data.bis.org/topics/RPP)
-#'
-#' @section Progress Reporting:
-#' When `quiet = FALSE`, the function provides detailed progress information
-#' including Excel download status and data processing steps.
-#'
-#' @section Error Handling:
-#' The function includes retry logic for failed Excel downloads and robust
-#' error handling for multi-sheet processing operations.
+#' Downloads Residential Property Price Indices from BIS with support for selected
+#' series and detailed monthly/quarterly/annual/semiannual datasets.
 #'
 #' @param table Character. Which dataset table to return:
 #'   \describe{
@@ -46,20 +43,8 @@
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr rename mutate left_join select filter if_else
 #' @importFrom tidyr pivot_longer
-#'
-#' @examples \dontrun{
-#' # Download selected RPPI data from BIS (with progress)
-#' bis <- get_rppi_bis(quiet = FALSE)
-#'
-#' # Get monthly detailed data
-#' monthly <- get_rppi_bis("detailed_monthly")
-#'
-#' # For faster download time use cached data
-#' bis <- get_rppi_bis("detailed_quarterly", cached = TRUE)
-#'
-#' # Check download metadata
-#' attr(bis, "download_info")
-#' }
+#' @keywords internal
+#' @export
 get_rppi_bis <- function(
   table = "selected",
   cached = FALSE,

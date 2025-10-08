@@ -1,3 +1,52 @@
+# realestatebr 0.6.0 (Development)
+
+## BREAKING CHANGES: Documentation Simplification
+
+### Removed Examples from Deprecated Functions
+**Version 0.6.0 removes usage examples from deprecated legacy functions to simplify the codebase. Since we are pre-1.0.0, this is an acceptable breaking change.**
+
+#### What Changed
+- **Removed**: All `@examples` blocks from 8 deprecated functions:
+  - `get_secovi()`
+  - `get_bcb_realestate()`
+  - `get_abrainc_indicators()`
+  - `get_abecip_indicators()`
+  - `get_rppi_bis()`
+  - `get_bcb_series()`
+  - `get_fgv_ibre()`
+  - `get_nre_ire()`
+
+- **Removed**: Verbose `@section` blocks (Progress Reporting, Error Handling)
+- **Simplified**: `@details` sections to 1-3 essential lines
+- **Enhanced**: `@section Deprecation` blocks with code migration examples
+
+#### Impact
+- ~260-290 lines of documentation removed
+- Documentation now focuses on **migration guidance** rather than usage examples
+- All functions still exported and callable (no functionality changes)
+- Help pages now emphasize using `get_dataset()` instead
+
+#### Migration
+These functions were deprecated in v0.4.0. Users should migrate to the modern API:
+
+```r
+# Old way (still works, but no longer documented with examples):
+data <- get_secovi()
+
+# New way (recommended):
+data <- get_dataset("secovi")
+```
+
+Full migration examples are available in each function's `@section Deprecation` block.
+
+#### Rationale
+- **Pre-1.0.0**: Breaking changes are acceptable before stable release
+- **Codebase simplification**: Reduces maintenance burden and package size
+- **Focus on modern API**: Encourages users to adopt `get_dataset()` interface
+- **Clear migration path**: Enhanced deprecation warnings guide users to new API
+
+---
+
 # realestatebr 0.5.1
 
 ## Bug Fixes

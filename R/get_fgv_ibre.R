@@ -1,24 +1,20 @@
-#' Get FGV IBRE Confidence Indicators
+#' Get FGV IBRE Confidence Indicators (DEPRECATED)
 #'
-#' Download and clean construction confidence indicators estimated and released
-#' by the Getulio Vargas Foundation (FGV IBRE) with modern error handling and
-#' progress reporting capabilities.
+#' @section Deprecation:
+#' This function is deprecated since v0.4.0.
+#' Use \code{\link{get_dataset}}("fgv_ibre") instead:
+#'
+#' \preformatted{
+#'   # Old way:
+#'   data <- get_fgv_ibre()
+#'
+#'   # New way:
+#'   data <- get_dataset("fgv_ibre")
+#' }
 #'
 #' @details
-#' This function provides access to construction confidence indicators from FGV IBRE,
-#' including confidence indices, expectation indicators, and INCC price indices.
-#' The function supports both cached data access and fallback to package data.
-#'
-#' \strong{Note:} Fresh data downloads from FGV APIs are not currently supported.
-#' The function accesses cached data or internal package data objects.
-#'
-#' @section Progress Reporting:
-#' When `quiet = FALSE`, the function provides progress information
-#' about data access operations.
-#'
-#' @section Error Handling:
-#' The function includes robust error handling for data access and
-#' provides informative error messages when data is unavailable.
+#' Downloads construction confidence indicators from FGV IBRE including confidence
+#' indices, expectation indicators, and INCC price indices.
 #'
 #' @param table Character. Which dataset to return: "indicators" (default) or "all".
 #' @param cached Logical. If `TRUE` (default), loads data from package cache
@@ -36,17 +32,8 @@
 #'   }
 #'
 #' @importFrom cli cli_inform cli_warn cli_abort
-#'
-#' @examples \dontrun{
-#' # Get FGV IBRE indicators from cache (with progress)
-#' fgv <- get_fgv_ibre(quiet = FALSE)
-#'
-#' # Use internal package data
-#' fgv <- get_fgv_ibre(cached = FALSE)
-#'
-#' # Check access metadata
-#' attr(fgv, "download_info")
-#' }
+#' @keywords internal
+#' @export
 get_fgv_ibre <- function(
   table = "indicators",
   cached = TRUE,

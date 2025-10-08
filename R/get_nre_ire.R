@@ -1,27 +1,20 @@
-#' Get the IRE Index
+#' Get the IRE Index (DEPRECATED)
 #'
-#' Imports the Real Estate Index from NRE-Poli (USP) with modern error handling
-#' and progress reporting capabilities.
+#' @section Deprecation:
+#' This function is deprecated since v0.4.0.
+#' Use \code{\link{get_dataset}}("nre_ire") instead:
+#'
+#' \preformatted{
+#'   # Old way:
+#'   data <- get_nre_ire()
+#'
+#'   # New way:
+#'   data <- get_dataset("nre_ire")
+#' }
 #'
 #' @details
-#' The Real Estate Index (IRE) tracks the average stock price of real estate
-#' companies in Brazil. The Index is maintained by the Real Estate Research
-#' Group by the Polytechnich School of the University of São Paulo (NRE-Poli-USP).
-#'
-#' The values are indexed (100 = May/2006). Check `return` for a definition of each
-#' column.
-#'
-#' \strong{Note:} This function currently only supports cached data loading.
-#' Fresh data downloads are not available as the original data source requires
-#' manual processing.
-#'
-#' @section Progress Reporting:
-#' When `quiet = FALSE`, the function provides progress information
-#' about cache loading operations.
-#'
-#' @section Error Handling:
-#' The function includes robust error handling for cache access and
-#' provides informative error messages when data is unavailable.
+#' Downloads the Real Estate Index (IRE) from NRE-Poli (USP) tracking average stock
+#' prices of real estate companies in Brazil. Values indexed to 100 = May/2006.
 #'
 #' @param table Character. Which dataset to return: "indicators" (default) or "all".
 #' @param cached Logical. If `TRUE` (default), loads data from package cache
@@ -48,17 +41,8 @@
 #'
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @source Original series and methodology available at [https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html](https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html).
-#'
-#' @examples \dontrun{
-#' # Import the IRE Index (with progress)
-#' ire <- get_nre_ire(quiet = FALSE)
-#'
-#' # Import quietly
-#' ire <- get_nre_ire(cached = TRUE, quiet = TRUE)
-#'
-#' # Check access metadata
-#' attr(ire, "download_info")
-#' }
+#' @keywords internal
+#' @export
 get_nre_ire <- function(
   table = "indicators",
   cached = TRUE,

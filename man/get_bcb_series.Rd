@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_bcb_series.R
 \name{get_bcb_series}
 \alias{get_bcb_series}
-\title{Download macroeconomic time-series from BCB}
+\title{Download macroeconomic time-series from BCB (DEPRECATED)}
 \source{
 \url{https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries}
 }
@@ -44,43 +44,24 @@ The tibble includes metadata attributes:
 }
 }
 \description{
-Download a compilation of macroeconomic time series data from the Brazilian
-Central Bank with modern error handling, progress reporting, and robust API access.
+Download macroeconomic time-series from BCB (DEPRECATED)
 }
 \details{
-This function downloads macroeconomic indicators from the BCB based on the
-series defined in the \code{bcb_metadata} dataset. The series cover various
-categories relevant for real estate analysis, including price indices,
-interest rates, credit indicators, production metrics, and more.
-
-The default value for \code{date_start} is January 2010. While arbitrary, I advise
-against setting \code{date_start} to dates prior to July 1994. To download all
-available data the user can set a date such as \verb{as.Date("1900-01-01)}.
+Downloads macroeconomic time series from BCB including price indices, interest
+rates, credit indicators, and production metrics.
 }
-\section{Progress Reporting}{
+\section{Deprecation}{
 
-When \code{quiet = FALSE}, the function provides detailed progress information
-including BCB API access status and data processing steps.
-}
+This function is deprecated since v0.4.0.
+Use \code{\link{get_dataset}}("bcb_series") instead:
 
-\section{Error Handling}{
+\preformatted{
+  # Old way:
+  data <- get_bcb_series()
 
-The function includes retry logic for failed BCB API calls and robust
-error handling for metadata processing and data validation.
-}
-
-\examples{
-\dontrun{
-# Get price indicators (with progress)
-prices <- get_bcb_series(table = "price", quiet = FALSE)
-
-# Get all series
-bcb_series <- get_bcb_series(date_start = as.Date("2020-01-01"))
-
-# Use cached data for faster access
-cached_data <- get_bcb_series(cached = TRUE)
-
-# Check download metadata
-attr(prices, "download_info")
+  # New way:
+  data <- get_dataset("bcb_series")
 }
 }
+
+\keyword{internal}

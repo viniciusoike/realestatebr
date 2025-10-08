@@ -1,26 +1,20 @@
-#' Import data from Secovi-SP
+#' Import data from Secovi-SP (DEPRECATED)
 #'
 #' @section Deprecation:
-#' This function is deprecated. Use \code{\link{get_dataset}("secovi")} instead.
+#' This function is deprecated since v0.4.0.
+#' Use \code{\link{get_dataset}}("secovi") instead:
 #'
-#' Download and clean real estate information from Sao Paulo (SP) made available
-#' by SECOVI-SP with modern error handling, progress reporting, and robust
-#' web scraping capabilities.
+#' \preformatted{
+#'   # Old way:
+#'   data <- get_secovi()
+#'
+#'   # New way:
+#'   data <- get_dataset("secovi")
+#' }
 #'
 #' @details
-#' This function scrapes real estate data from SECOVI-SP website including
-#' condominium fees, rental market data, launches, and sales information.
-#' The function handles parallel processing for data cleaning while maintaining
-#' progress reporting.
-#'
-#' @section Progress Reporting:
-#' When `quiet = FALSE`, the function provides detailed progress information
-#' including web scraping status and data processing steps, even during
-#' parallel operations.
-#'
-#' @section Error Handling:
-#' The function includes retry logic for failed web scraping attempts and
-#' robust error handling for parallel data processing operations.
+#' Scrapes real estate data from SECOVI-SP including condominium fees, rental
+#' market data, launches, and sales information.
 #'
 #' @param table Character. One of `'condo'`, `'rent'`, `'launch'`, `'sale'` or `'all'`
 #'   (default).
@@ -42,20 +36,8 @@
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter select bind_rows left_join
 #' @importFrom parallel mclapply
-#'
-#' @examples \dontrun{
-#' # Download all available data (with progress)
-#' secovi <- get_secovi(quiet = FALSE)
-#'
-#' # Download only a specific series
-#' sales <- get_secovi("sale")
-#'
-#' # Use cached data for faster access
-#' cached_data <- get_secovi(cached = TRUE)
-#'
-#' # Check download metadata
-#' attr(sales, "download_info")
-#' }
+#' @keywords internal
+#' @export
 get_secovi <- function(
   table = "all",
   cached = FALSE,
