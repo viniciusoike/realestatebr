@@ -133,21 +133,21 @@
 <div class="section level4">
 <h4 id="new-functions-0-5-0">New Functions<a class="anchor" aria-label="anchor" href="#new-functions-0-5-0"></a></h4>
 <ul><li>
-<code>get_user_cache_dir()</code>: Get path to user cache directory</li>
+<code><a href="../reference/get_user_cache_dir.html">get_user_cache_dir()</a></code>: Get path to user cache directory</li>
 <li>
-<code>list_cached_files()</code>: List all cached datasets</li>
+<code><a href="../reference/list_cached_files.html">list_cached_files()</a></code>: List all cached datasets</li>
 <li>
-<code>clear_user_cache()</code>: Remove cached datasets</li>
+<code><a href="../reference/clear_user_cache.html">clear_user_cache()</a></code>: Remove cached datasets</li>
 <li>
-<code>is_cached()</code>: Check if dataset is in cache</li>
+<code><a href="../reference/is_cached.html">is_cached()</a></code>: Check if dataset is in cache</li>
 <li>
-<code>list_github_assets()</code>: List available datasets on GitHub releases</li>
+<code><a href="../reference/list_github_assets.html">list_github_assets()</a></code>: List available datasets on GitHub releases</li>
 <li>
-<code>download_from_github_release()</code>: Download specific dataset from releases</li>
+<code><a href="../reference/download_from_github_release.html">download_from_github_release()</a></code>: Download specific dataset from releases</li>
 <li>
-<code>update_cache_from_github()</code>: Update cached datasets from GitHub</li>
+<code><a href="../reference/update_cache_from_github.html">update_cache_from_github()</a></code>: Update cached datasets from GitHub</li>
 <li>
-<code>is_cache_up_to_date()</code>: Compare local vs GitHub cache timestamps</li>
+<code><a href="../reference/is_cache_up_to_date.html">is_cache_up_to_date()</a></code>: Compare local vs GitHub cache timestamps</li>
 </ul></div>
 <div class="section level4">
 <h4 id="migration-guide-0-5-0">Migration Guide<a class="anchor" aria-label="anchor" href="#migration-guide-0-5-0"></a></h4>
@@ -164,12 +164,12 @@
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check cache location</span></span>
-<span><span class="fu">get_user_cache_dir</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/get_user_cache_dir.html">get_user_cache_dir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Manage cache</span></span>
-<span><span class="fu">list_cached_files</span><span class="op">(</span><span class="op">)</span>           <span class="co"># See what's cached</span></span>
-<span><span class="fu">clear_user_cache</span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span>    <span class="co"># Clear specific dataset</span></span>
-<span><span class="fu">clear_user_cache</span><span class="op">(</span><span class="op">)</span>            <span class="co"># Clear all (with confirmation)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/list_cached_files.html">list_cached_files</a></span><span class="op">(</span><span class="op">)</span>           <span class="co"># See what's cached</span></span>
+<span><span class="fu"><a href="../reference/clear_user_cache.html">clear_user_cache</a></span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span>    <span class="co"># Clear specific dataset</span></span>
+<span><span class="fu"><a href="../reference/clear_user_cache.html">clear_user_cache</a></span><span class="op">(</span><span class="op">)</span>            <span class="co"># Clear all (with confirmation)</span></span></code></pre></div>
 </div>
 <div class="section level5">
 <h5 id="for-package-developers-0-5-0">For Package Developers<a class="anchor" aria-label="anchor" href="#for-package-developers-0-5-0"></a></h5>

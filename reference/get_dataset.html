@@ -67,16 +67,16 @@ Use get_dataset_info(name) to see available tables.</p></dd>
 
 <dt id="arg-source">source<a class="anchor" aria-label="anchor" href="#arg-source"></a></dt>
 <dd><p>Character. Data source preference:</p><dl><dt>"auto"</dt>
-<dd><p>Automatic fallback: cache → GitHub → fresh (default)</p></dd>
+<dd><p>Automatic fallback: user cache → GitHub releases → fresh (default)</p></dd>
 
 <dt>"cache"</dt>
-<dd><p>Local package cache only</p></dd>
+<dd><p>User cache only (stored in ~/.local/share/realestatebr/)</p></dd>
 
 <dt>"github"</dt>
-<dd><p>GitHub repository cache</p></dd>
+<dd><p>Download from GitHub releases (requires piggyback package)</p></dd>
 
 <dt>"fresh"</dt>
-<dd><p>Fresh download from original source</p></dd>
+<dd><p>Fresh download from original source (saves to user cache)</p></dd>
 
 
 </dl></dd>

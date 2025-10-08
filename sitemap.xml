@@ -12,7 +12,11 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/apply_translations.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/b3_real_estate.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/bcb_metadata.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/cache-deprecated.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/cache-github.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/cache-user.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/check_cache_status.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/check_github_available.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clean_cbic_cement_annual.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clean_cbic_cement_cub.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clean_cbic_cement_monthly.html</loc></url>
@@ -27,6 +31,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clean_cbic_string.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clean_column_name.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clear_cache.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/clear_user_cache.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/cli_debug.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/cli_user.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/dim_city.html</loc></url>
@@ -35,10 +40,13 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_abecip_sbpe.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_abecip_units.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_abrainc_excel.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/download_and_cache.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_and_process_bcb_data.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_bis_excel_robust.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/download_from_github_release.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_ri_excel.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/encoding-utils.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/ensure_cache_dir.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/explore_cbic_structure.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/extract_property_table.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_abecip_indicators.html</loc></url>
@@ -46,7 +54,10 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_available_tables.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_bcb_realestate.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_bcb_series.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cache_metadata.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cache_path.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cache_release_tag.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cached_file_path.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cached_name.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cbic.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cbic_cement.html</loc></url>
@@ -65,6 +76,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_from_github_cache.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_from_legacy_function.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_from_local_cache.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/get_github_repo.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_itbi.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_nre_ire.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_property_records.html</loc></url>
@@ -84,7 +96,9 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_rppi_ivgr.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_rppi_secovi_sp.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_secovi.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/get_user_cache_dir.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/harmonize_fipezap_for_stacking.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/has_piggyback.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/import_bcb_realestate_robust.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/import_bcb_series_robust.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/import_cached.html</loc></url>
@@ -94,10 +108,15 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/import_cbic_materials.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/import_secovi_robust.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/index.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/is_cache_up_to_date.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/is_cached.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/is_debug_mode.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/list_cached_files.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/list_datasets.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/list_github_assets.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/load_dataset_registry.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/load_file_by_extension.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/load_from_user_cache.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/load_specific_format.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/process_bis_detailed_data.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/process_bis_selected_data.html</loc></url>
@@ -105,6 +124,8 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/realestatebr-package.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/registry_to_tibble.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/rppi-helpers.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/save_cache_metadata.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/save_to_user_cache.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/scrape_registro_imoveis_links.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/show_import_message.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/standardize_rppi_structure.html</loc></url>
@@ -119,6 +140,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/translate_state_names.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/translate_tibble.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/try_load_formats.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/update_cache_from_github.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/validate_abecip_data.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/validate_and_resolve_table.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/validate_cached_dataset.html</loc></url>

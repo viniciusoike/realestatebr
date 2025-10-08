@@ -93,18 +93,8 @@ downloads. Defaults to 3.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>tibble</code> with the requested property records table. The return includes
-metadata attributes:</p><dl><dt>download_info</dt>
-<dd><p>List with download statistics</p></dd>
-
-<dt>source</dt>
-<dd><p>Data source used (web or cache)</p></dd>
-
-<dt>download_time</dt>
-<dd><p>Timestamp of download</p></dd>
-
-
-</dl></div>
+    <p>A <code>tibble</code> with the requested property records table.</p>
+    </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function scrapes download links from the Registro de Imoveis website
@@ -126,29 +116,6 @@ including web scraping status, download progress, and data processing steps.</p>
 handling for web scraping and Excel processing operations.</p>
     </div>
 
-    <div class="section level2">
-    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Get capitals records data (default)</span></span></span>
-<span class="r-in"><span><span class="va">capitals</span> <span class="op">&lt;-</span> <span class="fu">get_property_records</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Get transfer data for capital cities</span></span></span>
-<span class="r-in"><span><span class="va">transfers</span> <span class="op">&lt;-</span> <span class="fu">get_property_records</span><span class="op">(</span><span class="st">"capitals_transfers"</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Get all cities records data</span></span></span>
-<span class="r-in"><span><span class="va">cities</span> <span class="op">&lt;-</span> <span class="fu">get_property_records</span><span class="op">(</span><span class="st">"cities"</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Get SP regional aggregates</span></span></span>
-<span class="r-in"><span><span class="va">aggregates</span> <span class="op">&lt;-</span> <span class="fu">get_property_records</span><span class="op">(</span><span class="st">"aggregates"</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Use cached data for faster access</span></span></span>
-<span class="r-in"><span><span class="va">cached_data</span> <span class="op">&lt;-</span> <span class="fu">get_property_records</span><span class="op">(</span><span class="st">"capitals"</span>, cached <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Check download metadata</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">capitals</span>, <span class="st">"download_info"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
-</code></pre></div>
-    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

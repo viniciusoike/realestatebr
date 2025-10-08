@@ -105,11 +105,10 @@ The tibble includes metadata attributes:</p><dl><dt>download_info</dt>
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function downloads 15 essential macroeconomic indicators relevant for
-real estate analysis, including price indices, interest rates, and credit indicators.
-The series selection has been simplified for v0.4.0 to focus on core indicators.</p>
-<p>The 15 essential series are: 190, 192, 432, 433, 20704, 20756, 20768,
-20914, 21072, 21084, 21340, 24364, 28545, 28763, 28770.</p>
+    <p>This function downloads macroeconomic indicators from the BCB based on the
+series defined in the <code>bcb_metadata</code> dataset. The series cover various
+categories relevant for real estate analysis, including price indices,
+interest rates, credit indicators, production metrics, and more.</p>
 <p>The default value for <code>date_start</code> is January 2010. While arbitrary, I advise
 against setting <code>date_start</code> to dates prior to July 1994. To download all
 available data the user can set a date such as <code>as.Date("1900-01-01)</code>.</p>
