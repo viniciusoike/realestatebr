@@ -33,6 +33,65 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.0" id="realestatebr-060-development">realestatebr 0.6.0 (Development)<a class="anchor" aria-label="anchor" href="#realestatebr-060-development"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-documentation-simplification-0-6-0">BREAKING CHANGES: Documentation Simplification<a class="anchor" aria-label="anchor" href="#breaking-changes-documentation-simplification-0-6-0"></a></h3>
+<div class="section level4">
+<h4 id="removed-examples-from-deprecated-functions-0-6-0">Removed Examples from Deprecated Functions<a class="anchor" aria-label="anchor" href="#removed-examples-from-deprecated-functions-0-6-0"></a></h4>
+<p><strong>Version 0.6.0 removes usage examples from deprecated legacy functions to simplify the codebase. Since we are pre-1.0.0, this is an acceptable breaking change.</strong></p>
+<div class="section level5">
+<h5 id="what-changed-0-6-0">What Changed<a class="anchor" aria-label="anchor" href="#what-changed-0-6-0"></a></h5>
+<ul><li>
+<strong>Removed</strong>: All <code>@examples</code> blocks from 8 deprecated functions:
+<ul><li><code><a href="../reference/get_secovi.html">get_secovi()</a></code></li>
+<li><code><a href="../reference/get_bcb_realestate.html">get_bcb_realestate()</a></code></li>
+<li><code><a href="../reference/get_abrainc_indicators.html">get_abrainc_indicators()</a></code></li>
+<li><code><a href="../reference/get_abecip_indicators.html">get_abecip_indicators()</a></code></li>
+<li><code><a href="../reference/get_rppi_bis.html">get_rppi_bis()</a></code></li>
+<li><code><a href="../reference/get_bcb_series.html">get_bcb_series()</a></code></li>
+<li><code><a href="../reference/get_fgv_ibre.html">get_fgv_ibre()</a></code></li>
+<li><code><a href="../reference/get_nre_ire.html">get_nre_ire()</a></code></li>
+</ul></li>
+<li>
+<strong>Removed</strong>: Verbose <code>@section</code> blocks (Progress Reporting, Error Handling)</li>
+<li>
+<strong>Simplified</strong>: <code>@details</code> sections to 1-3 essential lines</li>
+<li>
+<strong>Enhanced</strong>: <code>@section Deprecation</code> blocks with code migration examples</li>
+</ul></div>
+<div class="section level5">
+<h5 id="impact-0-6-0">Impact<a class="anchor" aria-label="anchor" href="#impact-0-6-0"></a></h5>
+<ul><li>~260-290 lines of documentation removed</li>
+<li>Documentation now focuses on <strong>migration guidance</strong> rather than usage examples</li>
+<li>All functions still exported and callable (no functionality changes)</li>
+<li>Help pages now emphasize using <code><a href="../reference/get_dataset.html">get_dataset()</a></code> instead</li>
+</ul></div>
+<div class="section level5">
+<h5 id="migration-0-6-0">Migration<a class="anchor" aria-label="anchor" href="#migration-0-6-0"></a></h5>
+<p>These functions were deprecated in v0.4.0. Users should migrate to the modern API:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Old way (still works, but no longer documented with examples):</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_secovi.html">get_secovi</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># New way (recommended):</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span><span class="op">)</span></span></code></pre></div>
+<p>Full migration examples are available in each function’s <code>@section Deprecation</code> block.</p>
+</div>
+<div class="section level5">
+<h5 id="rationale-0-6-0">Rationale<a class="anchor" aria-label="anchor" href="#rationale-0-6-0"></a></h5>
+<ul><li>
+<strong>Pre-1.0.0</strong>: Breaking changes are acceptable before stable release</li>
+<li>
+<strong>Codebase simplification</strong>: Reduces maintenance burden and package size</li>
+<li>
+<strong>Focus on modern API</strong>: Encourages users to adopt <code><a href="../reference/get_dataset.html">get_dataset()</a></code> interface</li>
+<li>
+<strong>Clear migration path</strong>: Enhanced deprecation warnings guide users to new API</li>
+</ul><hr></div>
+</div>
+</div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.1" id="realestatebr-051">realestatebr 0.5.1<a class="anchor" aria-label="anchor" href="#realestatebr-051"></a></h2>
 <div class="section level3">
 <h3 id="bug-fixes-0-5-1">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-1"></a></h3>
@@ -55,7 +114,7 @@
 <li>Data completeness: 1,939 → 9,398 rows</li>
 <li>Categories: condo (1,939), launch (780), rent (2,779), sale (3,900)</li>
 </ul></li>
-</ul><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+</ul><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Now returns all categories by default</span></span>
 <span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span><span class="op">)</span>  <span class="co"># → 9,398 rows, 4 categories ✅</span></span>
 <span></span>
@@ -100,7 +159,7 @@
 </ul></div>
 <div class="section level4">
 <h4 id="new-cache-behavior-0-5-0">New Cache Behavior<a class="anchor" aria-label="anchor" href="#new-cache-behavior-0-5-0"></a></h4>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># First use: downloads from GitHub releases to user cache</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span>  <span class="co"># Downloads once</span></span>
 <span></span>
@@ -153,7 +212,7 @@
 <h4 id="migration-guide-0-5-0">Migration Guide<a class="anchor" aria-label="anchor" href="#migration-guide-0-5-0"></a></h4>
 <div class="section level5">
 <h5 id="for-users-0-5-0">For Users<a class="anchor" aria-label="anchor" href="#for-users-0-5-0"></a></h5>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install updated package</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"realestatebr"</span><span class="op">)</span>  <span class="co"># or devtools::install_github()</span></span>
 <span></span>
@@ -417,7 +476,7 @@
 <p><strong>Note</strong>: In v0.4.0, the CBIC dataset is limited to <strong>cement tables only</strong> (validated data). Steel and PIM tables will be added in v0.4.1.</p>
 <p><strong>Available in v0.4.0</strong>: - ✅ <code>cement_monthly_consumption</code> - Monthly cement consumption by state - ✅ <code>cement_annual_consumption</code> - Annual cement consumption by region - ✅ <code>cement_production_exports</code> - Production, consumption, and export data - ✅ <code>cement_monthly_production</code> - Monthly cement production by state - ✅ <code>cement_cub_prices</code> - CUB cement prices by state</p>
 <p><strong>Coming in v0.4.1</strong>: - ⏳ Steel prices and production data - ⏳ PIM industrial production indices</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Works in v0.4.0</span></span>
 <span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"cbic"</span><span class="op">)</span>  <span class="co"># Default: cement_monthly_consumption</span></span>
 <span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"cbic"</span>, <span class="st">"cement_cub_prices"</span><span class="op">)</span></span>
@@ -442,7 +501,7 @@
 <div class="section level4">
 <h4 id="id_-simplified-public-api-0-4-0">📋 Simplified Public API<a class="anchor" aria-label="anchor" href="#id_-simplified-public-api-0-4-0"></a></h4>
 <p><strong>New unified interface:</strong></p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get data from any dataset</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span>               <span class="co"># Default table</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span>  <span class="co"># Specific table</span></span>
@@ -480,7 +539,7 @@
 <h3 id="migration-guide-0-4-0">Migration Guide<a class="anchor" aria-label="anchor" href="#migration-guide-0-4-0"></a></h3>
 <div class="section level4">
 <h4 id="for-existing-code-breaking-changes-0-4-0">For Existing Code (Breaking Changes)<a class="anchor" aria-label="anchor" href="#for-existing-code-breaking-changes-0-4-0"></a></h4>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># OLD (0.3.x) - Will no longer work</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_abecip_indicators.html">get_abecip_indicators</a></span><span class="op">(</span>table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_rppi.html">get_rppi</a></span><span class="op">(</span>table <span class="op">=</span> <span class="st">"fipezap"</span><span class="op">)</span></span>
@@ -524,7 +583,7 @@
 </tr></tbody></table></div>
 <div class="section level4">
 <h4 id="rppi-consolidation-0-4-0">RPPI Consolidation<a class="anchor" aria-label="anchor" href="#rppi-consolidation-0-4-0"></a></h4>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># OLD - Multiple functions</span></span>
 <span><span class="va">fipezap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_rppi_fipezap.html">get_rppi_fipezap</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">igmi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_rppi_igmi.html">get_rppi_igmi</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -844,7 +903,7 @@
 <h3 id="migration-guide-0-2-0">Migration Guide<a class="anchor" aria-label="anchor" href="#migration-guide-0-2-0"></a></h3>
 <div class="section level4">
 <h4 id="for-existing-code-0-2-0">For Existing Code<a class="anchor" aria-label="anchor" href="#for-existing-code-0-2-0"></a></h4>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Old (deprecated but still works)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_abecip_indicators.html">get_abecip_indicators</a></span><span class="op">(</span>category <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span>
 <span></span>
@@ -853,7 +912,7 @@
 </div>
 <div class="section level4">
 <h4 id="for-new-code-0-2-0">For New Code<a class="anchor" aria-label="anchor" href="#for-new-code-0-2-0"></a></h4>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Discover available datasets</span></span>
 <span><span class="va">datasets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_datasets.html">list_datasets</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
