@@ -44,7 +44,6 @@
 #' @importFrom dplyr rename mutate left_join select filter if_else
 #' @importFrom tidyr pivot_longer
 #' @keywords internal
-#' @export
 get_rppi_bis <- function(
   table = "selected",
   cached = FALSE,

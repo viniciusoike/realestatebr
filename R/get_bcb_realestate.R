@@ -45,7 +45,6 @@
 #' @importFrom dplyr filter mutate select rename_with inner_join tibble
 #' @importFrom tidyr pivot_wider unnest
 #' @keywords internal
-#' @export
 get_bcb_realestate <- function(
   table = "all",
   cached = FALSE,

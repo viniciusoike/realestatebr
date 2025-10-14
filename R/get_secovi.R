@@ -37,7 +37,6 @@
 #' @importFrom dplyr filter select bind_rows left_join
 #' @importFrom parallel mclapply
 #' @keywords internal
-#' @export
 get_secovi <- function(
   table = "all",
   cached = FALSE,

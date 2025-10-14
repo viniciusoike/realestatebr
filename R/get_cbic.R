@@ -1,7 +1,3 @@
-# ==============================================================================
-# HELPER FUNCTIONS
-# ==============================================================================
-
 #' Conditional warning based on warning level
 #' @param message Warning message
 #' @param level Warning level: "user" (default), "dev" (development only)
@@ -1922,7 +1918,10 @@ get_cbic_pim <- function(
   )
 
   # Final user message
-  cli_user("\u2713 CBIC PIM data retrieved: {total_records} records", quiet = quiet)
+  cli_user(
+    "\u2713 CBIC PIM data retrieved: {total_records} records",
+    quiet = quiet
+  )
 
   return(result)
 }
@@ -1978,7 +1977,12 @@ get_cbic <- function(
 ) {
   # TEMPORARY: Only cement tables validated for v0.4.0
   # Steel and PIM tables will be added in v0.4.1
-  steel_pim_tables <- c("steel_prices", "steel_production", "pim", "pim_production_index")
+  steel_pim_tables <- c(
+    "steel_prices",
+    "steel_production",
+    "pim",
+    "pim_production_index"
+  )
 
   if (table %in% steel_pim_tables) {
     cli::cli_abort(c(

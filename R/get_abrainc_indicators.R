@@ -39,7 +39,6 @@
 #' @importFrom readxl read_excel
 #' @importFrom httr GET write_disk set_config config
 #' @keywords internal
-#' @export
 get_abrainc_indicators <- function(
   table = "indicator",
   cached = FALSE,

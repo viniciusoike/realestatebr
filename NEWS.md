@@ -1,6 +1,62 @@
 # realestatebr 0.6.0 (Development)
 
-## BREAKING CHANGES: Documentation Simplification
+## BREAKING CHANGES: API Simplification (Phase 2)
+
+### Removed Deprecated Function Exports
+**Version 0.6.0 removes 8 deprecated functions from the public API. These functions are now internal-only. Since we are pre-1.0.0, this is an acceptable breaking change.**
+
+#### What Changed
+- **Removed from NAMESPACE**: 8 deprecated functions no longer exported:
+  - `get_abecip_indicators()`
+  - `get_abrainc_indicators()`
+  - `get_bcb_realestate()`
+  - `get_bcb_series()`
+  - `get_fgv_ibre()`
+  - `get_nre_ire()`
+  - `get_rppi_bis()`
+  - `get_secovi()`
+
+- **Still callable internally**: Functions remain in the package for `get_dataset()` to use
+- **NAMESPACE reduction**: Exports reduced from 23 to 15 functions
+
+#### Impact
+- **Users must migrate**: These functions can no longer be called directly
+- **get_dataset() is the only supported API**: All data access must go through `get_dataset()`
+- **Cleaner public interface**: Package exports only essential user-facing functions
+
+#### Migration
+These functions were deprecated in v0.4.0 (18+ months ago). Users must now use `get_dataset()`:
+
+```r
+# Old way (NO LONGER WORKS):
+data <- get_secovi()
+data <- get_bcb_series(table = "price")
+data <- get_abecip_indicators(table = "sbpe")
+
+# New way (REQUIRED):
+data <- get_dataset("secovi")
+data <- get_dataset("bcb_series", "price")
+data <- get_dataset("abecip", "sbpe")
+```
+
+#### Rationale
+- **Simpler API**: One function (`get_dataset()`) instead of 15+
+- **Reduced maintenance**: Fewer exported functions to document and test
+- **Pre-1.0.0 flexibility**: Breaking changes acceptable before stable release
+- **18-month deprecation period**: Functions were deprecated since v0.4.0
+
+### Code Clarity Improvements
+
+#### Renamed Confusing "Legacy" Terminology
+- **Renamed**: `get_from_legacy_function()` → `get_from_internal_function()`
+- **Rationale**: These functions call internal worker functions, not "legacy" code
+- **Impact**: Internal only - no user-facing changes
+
+**Files changed**: `R/get-dataset.R`
+
+---
+
+## BREAKING CHANGES: Documentation Simplification (Phase 1)
 
 ### Removed Examples from Deprecated Functions
 **Version 0.6.0 removes usage examples from deprecated legacy functions to simplify the codebase. Since we are pre-1.0.0, this is an acceptable breaking change.**

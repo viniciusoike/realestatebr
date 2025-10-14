@@ -31,7 +31,7 @@ Use get_dataset_info(name) to see available tables.}
 
 \item{date_end}{Date. End date for time series data (where applicable)}
 
-\item{...}{Additional arguments passed to legacy functions}
+\item{...}{Additional arguments passed to internal functions}
 }
 \value{
 Dataset as tibble or list, depending on the dataset structure.

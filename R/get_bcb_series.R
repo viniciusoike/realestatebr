@@ -40,7 +40,6 @@
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr as_tibble rename select left_join filter
 #' @keywords internal
-#' @export
 get_bcb_series <- function(
   table = "all",
   cached = FALSE,

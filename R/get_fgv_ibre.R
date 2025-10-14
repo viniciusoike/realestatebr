@@ -33,7 +33,6 @@
 #'
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @keywords internal
-#' @export
 get_fgv_ibre <- function(
   table = "indicators",
   cached = TRUE,

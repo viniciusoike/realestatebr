@@ -19,7 +19,7 @@
 #'   }
 #' @param date_start Date. Start date for time series data (where applicable)
 #' @param date_end Date. End date for time series data (where applicable)
-#' @param ... Additional arguments passed to legacy functions
+#' @param ... Additional arguments passed to internal functions
 #'
 #' @return Dataset as tibble or list, depending on the dataset structure.
 #'   Use get_dataset_info(name) to see the expected structure.
@@ -298,7 +298,7 @@ get_dataset_from_source <- function(
     source,
     "cache" = get_from_local_cache(name, dataset_info, table),
     "github" = get_from_github_cache(name, dataset_info, table),
-    "fresh" = get_from_legacy_function(
+    "fresh" = get_from_internal_function(
       name,
       dataset_info,
       table,
@@ -531,10 +531,10 @@ get_from_github_cache <- function(name, dataset_info, table) {
   return(data)
 }
 
-#' Get Data from Legacy Function
+#' Get Data from Internal Function
 #'
 #' @keywords internal
-get_from_legacy_function <- function(
+get_from_internal_function <- function(
   name,
   dataset_info,
   table,
@@ -542,26 +542,26 @@ get_from_legacy_function <- function(
   date_end,
   ...
 ) {
-  legacy_function <- dataset_info$legacy_function
+  internal_function <- dataset_info$legacy_function
 
-  if (is.null(legacy_function) || legacy_function == "") {
+  if (is.null(internal_function) || internal_function == "") {
     cli::cli_abort(
-      "No legacy function available for fresh download of '{name}'"
+      "No internal function available for fresh download of '{name}'"
     )
   }
 
-  # Build arguments for legacy function
+  # Build arguments for internal function
   args <- list(...)
 
   # Special parameter mappings based on function requirements
-  if (legacy_function == "get_rppi") {
+  if (internal_function == "get_rppi") {
     # RPPI uses 'table' parameter (fixed from old 'category')
     if (!is.null(table)) {
       args$table <- table
     } else {
       args$table <- "sale"
     }
-  } else if (legacy_function == "get_property_records") {
+  } else if (internal_function == "get_property_records") {
     # Property records now uses 'table' parameter
     if (!is.null(table)) {
       args$table <- table
@@ -572,9 +572,9 @@ get_from_legacy_function <- function(
     # All other functions use 'table' parameter
     if (!is.null(table)) {
       args$table <- table
-    } else if (supports_table_all(legacy_function)) {
+    } else if (supports_table_all(internal_function)) {
       # Set appropriate defaults based on function
-      if (legacy_function == "get_cbic") {
+      if (internal_function == "get_cbic") {
         args$table <- "cement_monthly_consumption" # CBIC default
       } else {
         args$table <- "all" # Others default to all
@@ -593,8 +593,8 @@ get_from_legacy_function <- function(
   # Set cached = FALSE for fresh download
   args$cached <- FALSE
 
-  # Call the legacy function
-  func <- get(legacy_function, mode = "function")
+  # Call the internal function
+  func <- get(internal_function, mode = "function")
   data <- do.call(func, args)
 
   # Save freshly downloaded data to user cache for future use
@@ -674,7 +674,7 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
   return(name_mapping[[name]])
 }
 
-#' Check if Legacy Function Supports table="all"
+#' Check if Internal Function Supports table="all"
 #'
 #' @keywords internal
 supports_table_all <- function(func_name) {

@@ -40,7 +40,6 @@
 #' @importFrom rvest html_elements html_attr
 #' @importFrom xml2 read_html
 #' @keywords internal
-#' @export
 get_abecip_indicators <- function(
   table = "sbpe",
   cached = FALSE,

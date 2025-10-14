@@ -2,11 +2,11 @@
 % Please edit documentation in R/get-dataset.R
 \name{supports_table_all}
 \alias{supports_table_all}
-\title{Check if Legacy Function Supports table="all"}
+\title{Check if Internal Function Supports table="all"}
 \usage{
 supports_table_all(func_name)
 }
 \description{
-Check if Legacy Function Supports table="all"
+Check if Internal Function Supports table="all"
 }
 \keyword{internal}
