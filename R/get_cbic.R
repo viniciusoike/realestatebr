@@ -13,20 +13,6 @@ warn_if_level <- function(message, level = "user", warn_level = "user") {
   cli::cli_warn(message)
 }
 
-#' Suppress external package warnings and messages
-#' @param expr Expression to evaluate with suppressed warnings
-#' @param warn_level Current warning level setting
-#' @keywords internal
-suppress_external_warnings <- function(expr, warn_level = "user") {
-  if (warn_level == "none") {
-    # Suppress all warnings and messages
-    suppressWarnings(suppressMessages(expr))
-  } else {
-    # Suppress only messages (geobr progress), keep warnings
-    suppressMessages(expr)
-  }
-}
-
 #' Get specific CBIC file for a table instead of downloading all
 #' @param material_url URL of the material page
 #' @param table_type Type of table needed
@@ -874,108 +860,6 @@ clean_cbic_cement <- function(path, table = NULL, quiet = TRUE) {
   }
 
   return(cleaned_data)
-
-  # all_data <- list()
-
-  # for (i in seq_len(nrow(successful_files))) {
-  #   file_path <- successful_files$file_path[i]
-  #   file_title <- successful_files$title[i]
-
-  #   cli_debug("Processing file {i}: {file_title}")
-
-  #   # Detect file type based on content or title patterns
-  #   if (stringr::str_detect(file_title, "consumo anual|07\\.A\\.01")) {
-  #     # File 1: Annual consumption by region
-  #     cli_debug("  Detected as annual consumption file")
-  #     cleaned_data <- clean_cbic_cement_annual(file_path)
-  #     all_data[["annual_consumption"]] <- cleaned_data
-  #   } else if (
-  #     stringr::str_detect(
-  #       file_title,
-  #       "produ\u00e7\u00e3o.*consumo.*exporta\u00e7\u00e3o|07\\.A\\.02"
-  #     )
-  #   ) {
-  #     # File 2: Production, consumption, exports
-  #     cli_debug("  Detected as production/export file")
-  #     cleaned_data <- clean_cbic_cement_production(file_path)
-  #     all_data[["production_exports"]] <- cleaned_data
-  #   } else if (stringr::str_detect(file_title, "consumo mensal|07\\.A\\.03")) {
-  #     # File 3: Monthly consumption by state (multiple year sheets)
-  #     cli_debug("  Detected as monthly consumption file")
-  #     sheets <- readxl::excel_sheets(file_path)
-  #     year_sheets <- sheets[!is.na(as.numeric(sheets))]
-
-  #     monthly_data <- list()
-  #     for (sheet in year_sheets) {
-  #       cli_debug("    Processing sheet: {sheet}")
-  #       dat <- read_excel_safe(
-  #         file_path,
-  #         skip = skip_rows,
-  #         sheet = sheet,
-  #         .name_repair = "minimal"
-  #       )
-
-  #       if (is.null(dat) || nrow(dat) == 0) {
-  #         if (!quiet) {
-  #           cli::cli_warn("Failed to read sheet {sheet}")
-  #         }
-  #         next
-  #       }
-
-  #       names(dat)[1] <- "localidade"
-  #       cleaned_sheet <- clean_cbic_cement_monthly(
-  #         dat,
-  #         as.numeric(sheet),
-  #         quiet = quiet,
-  #         warn_level = warn_level
-  #       )
-  #       monthly_data[[sheet]] <- cleaned_sheet
-  #     }
-  #     all_data[["monthly_consumption"]] <- dplyr::bind_rows(monthly_data)
-  #   } else if (
-  #     stringr::str_detect(file_title, "produ\u00e7\u00e3o mensal|07\\.A\\.04")
-  #   ) {
-  #     # File 4: Monthly production by state (multiple year sheets)
-  #     cli_debug("  Detected as monthly production file")
-  #     sheets <- readxl::excel_sheets(file_path)
-  #     year_sheets <- sheets[!is.na(as.numeric(sheets))]
-
-  #     production_data <- list()
-  #     for (sheet in year_sheets) {
-  #       cli_debug("    Processing sheet: {sheet}")
-  #       dat <- read_excel_safe(
-  #         file_path,
-  #         skip = skip_rows,
-  #         sheet = sheet,
-  #         .name_repair = "minimal"
-  #       )
-
-  #       if (is.null(dat) || nrow(dat) == 0) {
-  #         if (!quiet) {
-  #           cli::cli_warn("Failed to read sheet {sheet}")
-  #         }
-  #         next
-  #       }
-
-  #       cleaned_sheet <- clean_cbic_cement_monthly_production(
-  #         dat,
-  #         as.numeric(sheet)
-  #       )
-  #       production_data[[sheet]] <- cleaned_sheet
-  #     }
-  #     all_data[["monthly_production"]] <- dplyr::bind_rows(production_data)
-  #   } else if (stringr::str_detect(file_title, "CUB|07\\.A\\.05")) {
-  #     # File 5: CUB cement prices
-  #     cli_debug("  Detected as CUB price file")
-  #     cleaned_data <- clean_cbic_cement_cub(file_path)
-  #     all_data[["cub_prices"]] <- cleaned_data
-  #   } else {
-  #     cli_debug("Unknown file type, skipping: {file_title}")
-  #   }
-  # }
-
-  # cli_debug("Processed cement data successfully")
-  # return(all_data)
 }
 
 #' Process CBIC cement Excel sheets specifically
@@ -1105,65 +989,6 @@ clean_cbic_cement_sheets <- function(
 
   cli_debug("Processed cement data successfully")
   return(all_data)
-}
-
-#' Explore CBIC Excel file structure (for messy data investigation)
-#'
-#' **Use this function first** when working with new CBIC materials.
-#' CBIC data is very inconsistent - always explore structure before creating cleaning functions.
-#'
-#' @param file_path Character. Path to downloaded Excel file
-#' @param sheet Character. Sheet name or number to explore (default: first sheet)
-#'
-#' @return Prints structure information and returns raw data for inspection
-#'
-#' @examples
-#' \dontrun{
-#' files <- get_cbic_files("aco")
-#' explore_cbic_structure(files$file_path[1])
-#' }
-#'
-#' @keywords internal
-explore_cbic_structure <- function(file_path, sheet = 1) {
-  cli_debug("Exploring CBIC file structure: {basename(file_path)}")
-
-  # Get all sheets
-  sheets <- readxl::excel_sheets(file_path)
-  cli_debug("Available sheets: {paste(sheets, collapse = ', ')}")
-
-  # Read the specified sheet
-  cli_debug("Reading sheet: {sheet}")
-
-  dat_raw <- readxl::read_excel(
-    file_path,
-    sheet = sheet,
-    .name_repair = "minimal"
-  )
-  cli_debug("Raw dimensions: {nrow(dat_raw)} rows x {ncol(dat_raw)} columns")
-  cli_debug("Column names: {paste(names(dat_raw), collapse = ', ')}")
-
-  # Try with skip = 4 (common for CBIC)
-  dat_skip <- readxl::read_excel(
-    file_path,
-    sheet = sheet,
-    skip = 4,
-    .name_repair = "minimal"
-  )
-  cli_debug("With skip=4: {nrow(dat_skip)} rows x {ncol(dat_skip)} columns")
-  cli_debug("Columns after skip: {paste(names(dat_skip), collapse = ', ')}")
-
-  # Look for patterns
-  cli_debug("First few rows (skip=4):")
-  print(utils::head(dat_skip))
-
-  cli_debug("Data types:")
-  print(sapply(dat_skip, class))
-
-  cli::cli_warn(
-    "IMPORTANT: Inspect this output carefully before creating cleaning functions!"
-  )
-
-  return(invisible(dat_skip))
 }
 
 # ==============================================================================
@@ -1440,46 +1265,6 @@ clean_cbic_steel_sheets <- function(download_results, quiet = FALSE) {
 # GET FUNCTIONS (Main user-facing functions)
 # ==============================================================================
 
-#' Get raw CBIC files for a specific material
-#'
-#' Downloads all Excel files for a construction material from CBIC database.
-#' Returns raw download results for custom processing.
-#'
-#' @param material_name Character vector of length 1. Name of material (e.g., "cimento")
-#' @param quiet Logical. If TRUE, suppress progress messages
-#'
-#' @return A tibble with download results including file paths
-#'
-#' @examples
-#' \dontrun{
-#' cement_files <- get_cbic_files("cimento")
-#' }
-#'
-get_cbic_files <- function(material_name, quiet = FALSE) {
-  if (!quiet) {
-    cli::cli_alert_info("Getting CBIC files for {material_name}")
-  }
-
-  materials <- import_cbic_materials()
-
-  material_matches <- stringr::str_detect(
-    stringr::str_to_lower(materials$title),
-    stringr::str_to_lower(material_name)
-  )
-
-  if (!any(material_matches) & !quiet) {
-    cli::cli_abort("Material '{material_name}' not found")
-  }
-
-  material_url <- materials$link[which(material_matches)[1]]
-
-  file_params <- import_cbic_material_links(material_url)
-  download_results <- import_cbic_files(file_params)
-
-  cli_user("CBIC file download complete", quiet = quiet)
-  return(download_results)
-}
-
 #' Get CBIC cement consumption data
 #'
 #' Complete workflow to get cleaned cement consumption data from CBIC.
@@ -1720,45 +1505,6 @@ get_cbic_steel <- function(
     result <- production_tables[[1]]
   }
 
-  # Add metadata attributes ----
-  attr(result, "source") <- "web"
-  attr(result, "download_time") <- Sys.time()
-
-  # Calculate total records safely
-  total_records <- tryCatch(
-    {
-      if (is.data.frame(result)) {
-        nrow(result)
-      } else if (is.list(result)) {
-        # Only count data frames, skip nested lists
-        df_elements <- result[sapply(result, is.data.frame)]
-        if (length(df_elements) > 0) {
-          sum(sapply(df_elements, nrow))
-        } else {
-          0
-        }
-      } else {
-        0
-      }
-    },
-    error = function(e) {
-      0
-    }
-  )
-
-  attr(result, "download_info") <- list(
-    table = table,
-    total_records = total_records,
-    retry_attempts = attempts,
-    source = "CBIC"
-  )
-
-  # Final user message
-  cli_user(
-    "\u2713 CBIC steel data retrieved: {total_records} records",
-    quiet = quiet
-  )
-
   return(result)
 }
 
@@ -1884,61 +1630,7 @@ get_cbic_pim <- function(
     }
   }
 
-  # Add metadata attributes ----
-  attr(result, "source") <- "web"
-  attr(result, "download_time") <- Sys.time()
-
-  # Calculate total records safely
-  total_records <- tryCatch(
-    {
-      if (is.data.frame(result)) {
-        nrow(result)
-      } else if (is.list(result)) {
-        # Only count data frames, skip nested lists
-        df_elements <- result[sapply(result, is.data.frame)]
-        if (length(df_elements) > 0) {
-          sum(sapply(df_elements, nrow))
-        } else {
-          0
-        }
-      } else {
-        0
-      }
-    },
-    error = function(e) {
-      0
-    }
-  )
-
-  attr(result, "download_info") <- list(
-    table = table,
-    total_records = total_records,
-    retry_attempts = attempts,
-    source = "CBIC"
-  )
-
-  # Final user message
-  cli_user(
-    "\u2713 CBIC PIM data retrieved: {total_records} records",
-    quiet = quiet
-  )
-
   return(result)
-}
-
-#' Get available CBIC materials
-#'
-#' Get metadata about all construction materials available in CBIC database.
-#'
-#' @return A tibble with material titles, descriptions, and links
-#'
-#' @examples
-#' \dontrun{
-#' materials <- get_cbic_materials()
-#' }
-#'
-get_cbic_materials <- function() {
-  import_cbic_materials()
 }
 
 #' Get CBIC Data (Unified Interface)
@@ -1975,21 +1667,16 @@ get_cbic <- function(
   max_retries = 3L,
   warn_level = "none"
 ) {
-  # TEMPORARY: Only cement tables validated for v0.4.0
-  # Steel and PIM tables will be added in v0.4.1
-  steel_pim_tables <- c(
-    "steel_prices",
-    "steel_production",
-    "pim",
-    "pim_production_index"
-  )
-
-  if (table %in% steel_pim_tables) {
+  # Block broken table
+  if (table == "steel_production") {
     cli::cli_abort(c(
-      "Table '{table}' not available in this release",
-      "i" = "Only cement tables are available in v0.4.0",
-      "i" = "Steel and PIM tables will be added in v0.4.1",
-      "i" = "Available tables: cement_monthly_consumption, cement_annual_consumption, cement_production_exports, cement_monthly_production, cement_cub_prices"
+      "Table 'steel_production' is currently unavailable",
+      "x" = "This table has data quality issues and needs to be fixed",
+      "i" = "This will be addressed in a future release",
+      "i" = "Available CBIC tables:",
+      "i" = "  Cement: cement_monthly_consumption, cement_annual_consumption, cement_production_exports, cement_monthly_production, cement_cub_prices",
+      "i" = "  Steel: steel_prices",
+      "i" = "  PIM: pim, pim_production_index"
     ))
   }
 
@@ -2064,8 +1751,10 @@ get_cbic <- function(
     # Error for invalid tables
     cli::cli_abort(c(
       "Invalid table '{table}' for CBIC dataset",
-      "i" = "Available tables (v0.4.0): cement_monthly_consumption, cement_annual_consumption, cement_production_exports, cement_monthly_production, cement_cub_prices",
-      "i" = "Note: Steel and PIM tables will be added in v0.4.1"
+      "i" = "Available CBIC tables:",
+      "i" = "  Cement: cement_monthly_consumption, cement_annual_consumption, cement_production_exports, cement_monthly_production, cement_cub_prices",
+      "i" = "  Steel: steel_prices (steel_production unavailable)",
+      "i" = "  PIM: pim, pim_production_index"
     ))
   )
 

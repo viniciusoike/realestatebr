@@ -54,6 +54,37 @@ data <- get_dataset("abecip", "sbpe")
 
 **Files changed**: `R/get-dataset.R`
 
+### CBIC Code Simplification and Table Availability
+
+#### Code Reduction (~223 lines, 11% smaller)
+- **Removed**: 100+ lines of commented-out old implementation code
+- **Removed**: 4 unused helper functions (124 lines total):
+  - `suppress_external_warnings()` - Never called
+  - `explore_cbic_structure()` - Only in examples
+  - `get_cbic_files()` - Only in examples
+  - `get_cbic_materials()` - Only in examples
+- **Removed**: Unnecessary metadata attributes from `get_cbic_steel()` and `get_cbic_pim()`:
+  - `attr(result, "source")`
+  - `attr(result, "download_time")`
+  - `attr(result, "download_info")`
+  - Associated tryCatch blocks and cli_user messages (~69 lines)
+
+#### Table Availability Fixed
+- **Unblocked**: `steel_prices` and `pim` tables now accessible
+- **Blocked**: Only `steel_production` remains blocked (has data quality issues)
+- **Updated**: Error messages now accurately reflect v0.6.0 status
+- **Available tables**:
+  - Cement: cement_monthly_consumption, cement_annual_consumption, cement_production_exports, cement_monthly_production, cement_cub_prices
+  - Steel: steel_prices
+  - PIM: pim, pim_production_index
+
+#### Rationale
+- **Simplification**: Removed dead code and unused functions for better maintainability
+- **Accuracy**: Updated table availability to reflect actual working status
+- **User experience**: Clear error messages guide users to available tables
+
+**Files changed**: `R/get_cbic.R`
+
 ---
 
 ## BREAKING CHANGES: Documentation Simplification (Phase 1)

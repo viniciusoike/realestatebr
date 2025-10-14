@@ -8,10 +8,22 @@ This file contains configuration and commands for Claude Code to help with packa
 - **Main Branch**: main
 - **Mission**: Create the definitive R package for Brazilian real estate data - reliable, well-documented, and easy to use
 
+## Guidelines for writting
+These apply when writting text for documentation like README.md or vignettes.
+
+- Avoid ending sentences with a colon.
+`
+# Bad
+Multiple data sources with automatic fallback:
+# Good
+Multiple data sources with automatic fallback.
+`
+- Avoid emojis (e.g 🎯, 📊, etc.)
+
+
 ## Current challenges
 
-- Multiple legacy functions with inconsistent interfaces leading to unexpected errors.
-- Core functions aren't working at all.
+- [review] Core functions aren't working at all.
 
 ## Goals for v0.6.x
 
