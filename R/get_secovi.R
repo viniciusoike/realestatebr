@@ -45,67 +45,21 @@ get_secovi <- function(
 ) {
   # Input validation ----
   valid_tables <- c("all", "condo", "launch", "rent", "sale")
-
-  if (!is.character(table) || length(table) != 1) {
-    cli::cli_abort(c(
-      "Invalid {.arg table} parameter",
-      "x" = "{.arg table} must be a single character string"
-    ))
-  }
-
-  if (!table %in% valid_tables) {
-    cli::cli_abort(c(
-      "Invalid table: {.val {table}}",
-      "i" = "Valid categories: {.val {valid_categories}}"
-    ))
-  }
-
-  if (!is.logical(cached) || length(cached) != 1) {
-    cli::cli_abort("{.arg cached} must be a logical value")
-  }
-
-  if (!is.logical(quiet) || length(quiet) != 1) {
-    cli::cli_abort("{.arg quiet} must be a logical value")
-  }
-
-  if (!is.numeric(max_retries) || length(max_retries) != 1 || max_retries < 1) {
-    cli::cli_abort("{.arg max_retries} must be a positive integer")
-  }
+  validate_dataset_params(table, valid_tables, cached, quiet, max_retries, allow_all = TRUE)
 
   # Handle cached data ----
   if (cached) {
-    cli_debug("Loading SECOVI-SP data from cache...")
+    data <- handle_dataset_cache("secovi", table = NULL, quiet = quiet, on_miss = "download")
 
-    tryCatch(
-      {
-        tbl_secovi <- get_dataset("secovi", source = "github")
-
-        # Filter category if needed
-        if (table != "all") {
-          tbl_secovi <- dplyr::filter(tbl_secovi, category == !!table)
-        }
-
-        cli_debug("Successfully loaded {nrow(tbl_secovi)} SECOVI-SP records from cache")
-
-        # Add metadata
-        attr(tbl_secovi, "source") <- "cache"
-        attr(tbl_secovi, "download_time") <- Sys.time()
-        attr(tbl_secovi, "download_info") <- list(
-          table = table,
-          source = "cache"
-        )
-
-        return(tbl_secovi)
-      },
-      error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load cached data: {e$message}",
-            "i" = "Falling back to fresh download from SECOVI-SP"
-          ))
-        }
+    if (!is.null(data)) {
+      # Filter category if needed
+      if (table != "all") {
+        data <- dplyr::filter(data, category == !!table)
       }
-    )
+
+      data <- attach_dataset_metadata(data, source = "cache", category = table)
+      return(data)
+    }
   }
 
   # Download and process data ----
@@ -150,12 +104,11 @@ get_secovi <- function(
     dplyr::select(date, category = cat, variable, name, value)
 
   # Add metadata attributes
-  attr(tbl_secovi, "source") <- "web"
-  attr(tbl_secovi, "download_time") <- Sys.time()
-  attr(tbl_secovi, "download_info") <- list(
-    table = table,
-    tables_processed = length(scrape),
-    source = "web"
+  tbl_secovi <- attach_dataset_metadata(
+    tbl_secovi,
+    source = "web",
+    category = table,
+    extra_info = list(tables_processed = length(scrape))
   )
 
   record_count <- nrow(tbl_secovi)
@@ -177,50 +130,34 @@ get_secovi <- function(
 #' @return List of scraped data tables
 #' @keywords internal
 import_secovi_robust <- function(table, quiet, max_retries) {
-  attempts <- 0
-  last_error <- NULL
+  # Use download_with_retry() from rppi-helpers.R
+  tryCatch(
+    {
+      download_with_retry(
+        fn = function() {
+          result <- import_secovi(table)
 
-  while (attempts <= max_retries) {
-    attempts <- attempts + 1
+          # Validate we got some data
+          if (length(result) == 0) {
+            stop("No data returned from SECOVI website")
+          }
 
-    tryCatch(
-      {
-        # Try the original import function
-        result <- import_secovi(table)
-
-        # Validate we got some data
-        if (length(result) > 0) {
           return(result)
-        } else {
-          last_error <<- "No data returned from SECOVI website"
-        }
-      },
-      error = function(e) {
-        last_error <<- e$message
-
-        if (!quiet && attempts <= max_retries) {
-          cli::cli_warn(c(
-            "SECOVI web scraping failed (attempt {attempts}/{max_retries + 1})",
-            "x" = "Error: {e$message}",
-            "i" = "Retrying in {min(attempts * 0.5, 3)} second{?s}..."
-          ))
-        }
-
-        # Add delay before retry
-        if (attempts <= max_retries) {
-          Sys.sleep(min(attempts * 0.5, 3))
-        }
-      }
-    )
-  }
-
-  # All attempts failed
-  cli::cli_abort(c(
-    "Failed to download SECOVI-SP data",
-    "x" = "All {max_retries + 1} attempt{?s} failed",
-    "i" = "Last error: {last_error}",
-    "i" = "The SECOVI-SP website may be temporarily unavailable"
-  ))
+        },
+        max_retries = max_retries,
+        quiet = quiet,
+        desc = "Scrape SECOVI data"
+      )
+    },
+    error = function(e) {
+      cli::cli_abort(c(
+        "Failed to download SECOVI-SP data",
+        "x" = "All {max_retries + 1} attempt{?s} failed",
+        "i" = "Error: {e$message}",
+        "i" = "The SECOVI-SP website may be temporarily unavailable"
+      ))
+    }
+  )
 }
 
 
