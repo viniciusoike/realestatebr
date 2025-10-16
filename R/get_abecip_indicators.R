@@ -48,83 +48,16 @@ get_abecip_indicators <- function(
 ) {
   # Input validation ----
   valid_tables <- c("sbpe", "cgi", "units")
-
-  if (!is.character(table) || length(table) != 1) {
-    cli::cli_abort(c(
-      "Invalid {.arg table} parameter",
-      "x" = "{.arg table} must be a single character string"
-    ))
-  }
-
-  if (!table %in% valid_tables) {
-    cli::cli_abort(c(
-      "Invalid table: {.val {table}}",
-      "i" = "Valid tables: {.val {valid_tables}}"
-    ))
-  }
-
-  if (!is.logical(cached) || length(cached) != 1) {
-    cli::cli_abort("{.arg cached} must be a logical value")
-  }
-
-  if (!is.logical(quiet) || length(quiet) != 1) {
-    cli::cli_abort("{.arg quiet} must be a logical value")
-  }
-
-  if (!is.numeric(max_retries) || length(max_retries) != 1 || max_retries < 1) {
-    cli::cli_abort("{.arg max_retries} must be a positive number")
-  }
+  validate_dataset_params(table, valid_tables, cached, quiet, max_retries, allow_all = FALSE)
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading Abecip data from cache...")
+    data <- handle_dataset_cache("abecip", table = table, quiet = quiet, on_miss = "download")
+
+    if (!is.null(data)) {
+      data <- attach_dataset_metadata(data, source = "cache", category = table)
+      return(data)
     }
-
-    tryCatch(
-      {
-        # Load from user cache
-        cached_data <- load_from_user_cache("abecip", quiet = quiet)
-
-        if (is.null(cached_data)) {
-          if (!quiet) {
-            cli::cli_warn("Data not found in user cache, falling back to fresh download")
-          }
-        } else {
-          # Filter by table
-          if (table %in% names(cached_data)) {
-            data <- cached_data[[table]]
-          } else {
-            available_tables <- paste(names(cached_data), collapse = ", ")
-            cli::cli_abort(
-              "Table '{table}' not found in cached data. Available: {available_tables}"
-            )
-          }
-
-          if (!quiet) {
-            cli::cli_inform("Successfully loaded data from cache")
-          }
-
-          # Add metadata
-          attr(data, "source") <- "cache"
-          attr(data, "download_time") <- Sys.time()
-          attr(data, "download_info") <- list(
-            source = "cache",
-            category = table
-          )
-
-          return(data)
-        }
-      },
-      error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load cached data: {e$message}",
-            "i" = "Falling back to fresh download"
-          ))
-        }
-      }
-    )
   }
 
   # Download fresh data ----
@@ -192,17 +125,14 @@ get_abecip_indicators <- function(
 
   # Add metadata
   if (table == "cgi") {
-    attr(abecip, "source") <- "cache"
-    attr(abecip, "download_time") <- Sys.time()
-    attr(abecip, "download_info") <- list(
+    abecip <- attach_dataset_metadata(
+      abecip,
       source = "cache",
       category = table,
-      note = "CGI is a static historical dataset"
+      extra_info = list(note = "CGI is a static historical dataset")
     )
   } else {
-    attr(abecip, "source") <- "web"
-    attr(abecip, "download_time") <- Sys.time()
-    attr(abecip, "download_info") <- download_info
+    abecip <- attach_dataset_metadata(abecip, source = "web", category = table, extra_info = download_info)
   }
 
   if (!quiet) {
@@ -408,69 +338,41 @@ download_abecip_file <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
-  attempts <- 0
-  last_error <- NULL
+  # Use existing download_with_retry() from rppi-helpers.R
+  download_with_retry(
+    fn = function() {
+      # Parse the page to find download link
+      page <- xml2::read_html(url_page)
+      url <- rvest::html_elements(page, xpath = xpath) |>
+        rvest::html_attr("href")
 
-  while (attempts < max_retries) {
-    attempts <- attempts + 1
-
-    tryCatch(
-      {
-        # Find the download URL
-        if (!quiet && attempts > 1) {
-          cli::cli_inform("Retry attempt {attempts}/{max_retries}...")
-        }
-
-        # Parse the page to find download link
-        page <- xml2::read_html(url_page)
-        url <- rvest::html_elements(page, xpath = xpath) |>
-          rvest::html_attr("href")
-
-        if (length(url) == 0) {
-          stop("Could not find download link on page")
-        }
-
-        # Take first URL if multiple found
-        url <- url[1]
-
-        # Ensure URL is absolute
-        if (!stringr::str_detect(url, "^http")) {
-          url <- paste0("https://www.abecip.org.br", url)
-        }
-
-        # Download the file
-        temp_path <- tempfile(paste0(file_prefix, ".xlsx"))
-        utils::download.file(
-          url,
-          destfile = temp_path,
-          mode = "wb",
-          quiet = TRUE
-        )
-
-        # Verify file was downloaded
-        if (!file.exists(temp_path) || file.size(temp_path) == 0) {
-          stop("Downloaded file is empty or missing")
-        }
-
-        return(temp_path)
-      },
-      error = function(e) {
-        last_error <<- e$message
-
-        # Add delay before retry
-        if (attempts < max_retries) {
-          Sys.sleep(min(attempts * 2, 5)) # Progressive backoff
-        }
+      if (length(url) == 0) {
+        stop("Could not find download link on page")
       }
-    )
-  }
 
-  # All attempts failed
-  cli::cli_abort(c(
-    "Failed to download file from Abecip after {max_retries} attempts",
-    "x" = "Last error: {last_error}",
-    "i" = "Check your internet connection or try again later"
-  ))
+      # Take first URL if multiple found
+      url <- url[1]
+
+      # Ensure URL is absolute
+      if (!stringr::str_detect(url, "^http")) {
+        url <- paste0("https://www.abecip.org.br", url)
+      }
+
+      # Download the file
+      temp_path <- tempfile(paste0(file_prefix, ".xlsx"))
+      utils::download.file(url, destfile = temp_path, mode = "wb", quiet = TRUE)
+
+      # Verify file was downloaded
+      if (!file.exists(temp_path) || file.size(temp_path) == 0) {
+        stop("Downloaded file is empty or missing")
+      }
+
+      return(temp_path)
+    },
+    max_retries = max_retries,
+    quiet = quiet,
+    desc = paste("Download", file_prefix)
+  )
 }
 
 #' Process SBPE Data
@@ -505,47 +407,25 @@ process_sbpe_data <- function(df) {
 #' @return NULL (validates or errors)
 #' @keywords internal
 validate_abecip_data <- function(data, type) {
-  # Check if data is empty
-  if (nrow(data) == 0) {
-    cli::cli_abort(c(
-      "Downloaded {type} data is empty",
-      "i" = "The data source may be temporarily unavailable"
-    ))
-  }
-
-  # Check for required columns
+  # Use generic validate_dataset() helper
   if (type == "sbpe") {
-    required_cols <- "date"
-    if (!all(required_cols %in% names(data))) {
-      cli::cli_abort(c(
-        "Missing required columns in {type} data",
-        "x" = "Expected columns: {.val {required_cols}}",
-        "i" = "The data format may have changed"
-      ))
-    }
-  }
-
-  if (type == "units") {
-    required_cols <- c("date", "units_construction", "units_acquisition")
-    if (!all(required_cols %in% names(data))) {
-      cli::cli_abort(c(
-        "Missing required columns in {type} data",
-        "x" = "Expected columns: {.val {required_cols}}",
-        "i" = "The data format may have changed"
-      ))
-    }
-  }
-
-  # Check date range is reasonable
-  date_range <- range(data$date, na.rm = TRUE)
-  if (any(is.na(date_range))) {
-    cli::cli_abort("Invalid dates in {type} data")
-  }
-
-  # Check dates are not in the future
-  if (max(data$date, na.rm = TRUE) > Sys.Date() + 90) {
-    cli::cli_warn(
-      "Some dates in {type} data are more than 90 days in the future"
+    validate_dataset(
+      data,
+      dataset_name = paste0("abecip_", type),
+      required_cols = "date",
+      check_dates = TRUE,
+      max_future_days = 90
     )
+  } else if (type == "units") {
+    validate_dataset(
+      data,
+      dataset_name = paste0("abecip_", type),
+      required_cols = c("date", "units_construction", "units_acquisition"),
+      check_dates = TRUE,
+      max_future_days = 90
+    )
+  } else {
+    # Generic validation for other types
+    validate_dataset(data, dataset_name = paste0("abecip_", type))
   }
 }
