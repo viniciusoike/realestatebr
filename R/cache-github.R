@@ -282,6 +282,7 @@ is_cache_up_to_date <- function(dataset_name) {
 #' @param dataset_names Character vector. Datasets to update, or NULL for all
 #' @param quiet Logical. Suppress messages
 #' @return Named logical vector indicating success/failure for each dataset
+#' @importFrom stats setNames
 #' @export
 #'
 #' @examples

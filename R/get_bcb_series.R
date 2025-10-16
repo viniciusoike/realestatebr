@@ -82,7 +82,7 @@ get_bcb_series <- function(
   if (table != "all") {
     # Get codes for requested table from metadata
     codes_bcb <- bcb_metadata |>
-      dplyr::filter(bcb_category == table) |>
+      dplyr::filter(.data$bcb_category == table) |>
       dplyr::pull(code_bcb)
 
     if (length(codes_bcb) == 0) {
@@ -112,8 +112,8 @@ get_bcb_series <- function(
       # Filter by codes and date
       data <- dplyr::filter(
         data,
-        code_bcb %in% codes_bcb,
-        date >= date_start
+        .data$code_bcb %in% codes_bcb,
+        .data$date >= date_start
       )
 
       data <- attach_dataset_metadata(
