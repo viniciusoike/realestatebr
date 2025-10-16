@@ -45,80 +45,18 @@ get_abrainc_indicators <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Input validation and backward compatibility ----
+  # Input validation ----
   valid_tables <- c("all", "indicator", "radar", "leading")
-
-
-  if (!is.character(table) || length(table) != 1) {
-    cli::cli_abort(c(
-      "Invalid {.arg table} parameter",
-      "x" = "{.arg table} must be a single character string"
-    ))
-  }
-
-  if (!table %in% valid_tables) {
-    cli::cli_abort(c(
-      "Invalid table: {.val {table}}",
-      "i" = "Valid tables: {.val {valid_tables}}"
-    ))
-  }
-
-  if (!is.logical(cached) || length(cached) != 1) {
-    cli::cli_abort("{.arg cached} must be a logical value")
-  }
-
-  if (!is.logical(quiet) || length(quiet) != 1) {
-    cli::cli_abort("{.arg quiet} must be a logical value")
-  }
-
-  if (!is.numeric(max_retries) || length(max_retries) != 1 || max_retries < 1) {
-    cli::cli_abort("{.arg max_retries} must be a positive integer")
-  }
+  validate_dataset_params(table, valid_tables, cached, quiet, max_retries, allow_all = TRUE)
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading Abrainc-Fipe indicators from cache...")
+    data <- handle_dataset_cache("abrainc", table = table, quiet = quiet, on_miss = "download")
+
+    if (!is.null(data)) {
+      data <- attach_dataset_metadata(data, source = "cache", category = table)
+      return(data)
     }
-
-    tryCatch(
-      {
-        # Map category to unified architecture
-        if (table == "all") {
-          data <- get_dataset("abrainc", source = "github")
-        } else {
-          data <- get_dataset(
-            "abrainc",
-            source = "github",
-            category = table
-          )
-        }
-
-        if (!quiet) {
-          cli::cli_inform(
-            "Successfully loaded Abrainc-Fipe indicators from cache"
-          )
-        }
-
-        # Add metadata
-        attr(data, "source") <- "cache"
-        attr(data, "download_time") <- Sys.time()
-        attr(data, "download_info") <- list(
-          category = table,
-          source = "cache"
-        )
-
-        return(data)
-      },
-      error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load cached data: {e$message}",
-            "i" = "Falling back to fresh download"
-          ))
-        }
-      }
-    )
   }
 
   # Download Excel file ----
@@ -191,12 +129,11 @@ get_abrainc_indicators <- function(
   }
 
   # Add metadata attributes
-  attr(out, "source") <- "web"
-  attr(out, "download_time") <- Sys.time()
-  attr(out, "download_info") <- list(
+  out <- attach_dataset_metadata(
+    out,
+    source = "web",
     category = table,
-    retry_attempts = download_result$attempts,
-    source = "web"
+    extra_info = list(retry_attempts = download_result$attempts)
   )
 
   if (!quiet) {
@@ -219,88 +156,52 @@ get_abrainc_indicators <- function(
 download_abrainc_excel <- function(max_retries, quiet) {
   url <- "https://downloads.fipe.org.br/indices/abrainc/series-historicas-abraincfipe.xlsx"
   temp_path <- tempfile("abrainc_fipe.xlsx")
-  attempts <- 0
-  last_error <- NULL
+  expected_sheets <- c(
+    "Indicadores Abrainc-Fipe",
+    "Radar Abrainc-Fipe",
+    "Indicador Antecedente (SP)"
+  )
 
-  while (attempts <= max_retries) {
-    attempts <- attempts + 1
+  # Use download_with_retry() from rppi-helpers.R
+  result <- tryCatch(
+    {
+      download_with_retry(
+        fn = function() {
+          # Configure SSL settings
+          httr::set_config(httr::config(ssl_verifypeer = 0L))
 
-    tryCatch(
-      {
-        # Configure SSL settings
-        httr::set_config(httr::config(ssl_verifypeer = 0L))
-
-        # Attempt download
-        response <- httr::GET(
-          url = url,
-          httr::write_disk(path = temp_path, overwrite = TRUE)
-        )
-
-        # Check if download was successful
-        if (httr::status_code(response) == 200 && file.exists(temp_path)) {
-          # Validate file has content and is a valid Excel file
-          if (file.size(temp_path) > 1000) {
-            # Minimum reasonable file size
-            tryCatch(
-              {
-                # Test if we can read the Excel file structure
-                sheets <- readxl::excel_sheets(temp_path)
-                expected_sheets <- c(
-                  "Indicadores Abrainc-Fipe",
-                  "Radar Abrainc-Fipe",
-                  "Indicador Antecedente (SP)"
-                )
-
-                # Check if we have the expected sheets
-                if (all(expected_sheets %in% sheets)) {
-                  return(list(
-                    path = temp_path,
-                    attempts = attempts,
-                    error = NULL
-                  ))
-                } else {
-                  last_error <<- "Downloaded file does not contain expected Excel sheets"
-                }
-              },
-              error = function(e) {
-                last_error <<- paste(
-                  "Downloaded file is not a valid Excel file:",
-                  e$message
-                )
-              }
-            )
-          } else {
-            last_error <<- "Downloaded file is too small or empty"
-          }
-        } else {
-          last_error <<- paste(
-            "HTTP request failed with status:",
-            httr::status_code(response)
+          # Attempt download
+          response <- httr::GET(
+            url = url,
+            httr::write_disk(path = temp_path, overwrite = TRUE)
           )
-        }
-      },
-      error = function(e) {
-        last_error <<- e$message
 
-        # Only retry if we haven't exceeded max_retries
-        if (attempts > max_retries) {
-          return(NULL)
-        }
+          # Check HTTP response
+          if (httr::status_code(response) != 200) {
+            stop("HTTP request failed with status: ", httr::status_code(response))
+          }
 
-        # Add small delay before retry
-        if (attempts > 1) {
-          Sys.sleep(min(attempts * 0.5, 3)) # Progressive backoff, max 3 seconds
-        }
-      }
-    )
+          # Validate the downloaded Excel file
+          validate_excel_file(temp_path, expected_sheets, min_size = 1000)
+
+          return(temp_path)
+        },
+        max_retries = max_retries,
+        quiet = quiet,
+        desc = "Download Abrainc Excel"
+      )
+    },
+    error = function(e) {
+      return(NULL)
+    }
+  )
+
+  # Return in the expected format
+  if (!is.null(result)) {
+    list(path = result, attempts = 1, error = NULL)
+  } else {
+    list(path = NULL, attempts = max_retries + 1, error = "Download failed")
   }
-
-  # All attempts failed
-  return(list(
-    path = NULL,
-    attempts = attempts,
-    error = last_error
-  ))
 }
 
 abrainc_basic_clean <- function(df, subcategories) {
