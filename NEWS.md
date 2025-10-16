@@ -1,4 +1,4 @@
-# realestatebr 0.6.0 (Development)
+# realestatebr 0.6.0 (2025-10-15)
 
 ## Code Simplification: Logic Consolidation (Phase 3)
 
