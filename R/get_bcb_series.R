@@ -60,33 +60,7 @@ get_bcb_series <- function(
   }
 
   valid_tables <- c(unique(bcb_metadata$bcb_category), "all")
-
-  if (!is.character(table) || length(table) != 1) {
-    cli::cli_abort(c(
-      "Invalid {.arg table} parameter",
-      "x" = "{.arg table} must be a single character string",
-      "i" = "Valid tables: {.val {valid_tables}}"
-    ))
-  }
-
-  if (!table %in% valid_tables) {
-    cli::cli_abort(c(
-      "Invalid table: {.val {table}}",
-      "i" = "Valid tables: {.val {valid_tables}}"
-    ))
-  }
-
-  if (!is.logical(cached) || length(cached) != 1) {
-    cli::cli_abort("{.arg cached} must be a logical value")
-  }
-
-  if (!is.logical(quiet) || length(quiet) != 1) {
-    cli::cli_abort("{.arg quiet} must be a logical value")
-  }
-
-  if (!is.numeric(max_retries) || length(max_retries) != 1 || max_retries < 1) {
-    cli::cli_abort("{.arg max_retries} must be a positive integer")
-  }
+  validate_dataset_params(table, valid_tables, cached, quiet, max_retries, allow_all = TRUE)
 
   # Validate and process date_start
   if (!inherits(date_start, "Date")) {
@@ -132,51 +106,24 @@ get_bcb_series <- function(
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading BCB series data from cache...")
+    data <- handle_dataset_cache("bcb_series", table = NULL, quiet = quiet, on_miss = "download")
+
+    if (!is.null(data)) {
+      # Filter by codes and date
+      data <- dplyr::filter(
+        data,
+        code_bcb %in% codes_bcb,
+        date >= date_start
+      )
+
+      data <- attach_dataset_metadata(
+        data,
+        source = "cache",
+        category = table,
+        extra_info = list(series_count = length(codes_bcb), date_start = date_start)
+      )
+      return(data)
     }
-
-    tryCatch(
-      {
-        # Use new unified architecture for cached data
-        bcb_series <- get_dataset(
-          "bcb_series",
-          source = "github",
-          date_start = date_start
-        )
-        bcb_series <- dplyr::filter(
-          bcb_series,
-          code_bcb %in% codes_bcb,
-          date >= date_start
-        )
-
-        if (!quiet) {
-          cli::cli_inform(
-            "Successfully loaded {nrow(bcb_series)} BCB records from cache"
-          )
-        }
-
-        # Add metadata
-        attr(bcb_series, "source") <- "cache"
-        attr(bcb_series, "download_time") <- Sys.time()
-        attr(bcb_series, "download_info") <- list(
-          table = table,
-          series_count = length(codes_bcb),
-          date_start = date_start,
-          source = "cache"
-        )
-
-        return(bcb_series)
-      },
-      error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load cached data: {e$message}",
-            "i" = "Falling back to fresh download from BCB API"
-          ))
-        }
-      }
-    )
   }
 
   # Download and process data ----
@@ -201,13 +148,11 @@ get_bcb_series <- function(
   bcb_series <- dplyr::left_join(bcb_series, bcb_metadata, by = "code_bcb")
 
   # Add metadata attributes
-  attr(bcb_series, "source") <- "api"
-  attr(bcb_series, "download_time") <- Sys.time()
-  attr(bcb_series, "download_info") <- list(
-    table = table,
-    series_count = length(codes_bcb),
-    date_start = date_start,
-    source = "api"
+  bcb_series <- attach_dataset_metadata(
+    bcb_series,
+    source = "web",
+    category = table,
+    extra_info = list(series_count = length(codes_bcb), date_start = date_start)
   )
 
   if (!quiet) {
