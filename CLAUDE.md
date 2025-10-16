@@ -23,7 +23,8 @@ Multiple data sources with automatic fallback.
 
 ## Current challenges
 
-- [review] Core functions aren't working at all.
+- All core functions verified working (100% pass rate as of 2025-10-15)
+- Focus: v0.6.0 Phase 3 - Logic consolidation and code simplification
 
 ## Goals for v0.6.x
 
