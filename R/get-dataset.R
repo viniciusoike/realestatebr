@@ -333,86 +333,8 @@ get_from_local_cache <- function(name, dataset_info, table) {
     ))
   }
 
-  # Apply same filtering logic as get_from_github_cache
-  # Special handling for property_records nested structure
-  if (name == "property_records" && !is.null(table)) {
-    data <- extract_property_table(data, table)
-  } else if (!is.null(table) && is.list(data) && !inherits(data, "data.frame")) {
-    # Filter by table if requested and data is a list
-    if (table %in% names(data)) {
-      data <- data[[table]]
-    } else {
-      available_tables <- paste(names(data), collapse = ", ")
-      cli::cli_abort("Table '{table}' not found. Available: {available_tables}")
-    }
-  }
-
-  # Special handling for SECOVI table filtering
-  if (!is.null(table) && name == "secovi" && table != "all") {
-    if ("category" %in% names(data)) {
-      valid_tables <- c("condo", "rent", "launch", "sale")
-      if (table %in% valid_tables) {
-        data <- data[data$category == table, ]
-        if (nrow(data) == 0) {
-          cli::cli_abort("No data found for SECOVI table '{table}'")
-        }
-      } else {
-        cli::cli_abort(
-          "Invalid SECOVI table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}"
-        )
-      }
-    }
-  }
-
-  # Special handling for BCB Real Estate table filtering
-  if (!is.null(table) && name == "bcb_realestate" && table != "all") {
-    if ("category" %in% names(data)) {
-      # Map user-facing table names to internal category values
-      category_mapping <- c(
-        "accounting" = "contabil",
-        "application" = "direcionamento",
-        "indices" = "indices",
-        "sources" = "fontes",
-        "units" = "imoveis"
-      )
-
-      target_category <- category_mapping[[table]]
-      if (!is.null(target_category)) {
-        # Filter data by category
-        data <- data[data$category == target_category, ]
-        if (nrow(data) == 0) {
-          cli::cli_abort("No data found for BCB Real Estate table '{table}'")
-        }
-      } else {
-        valid_tables <- names(category_mapping)
-        cli::cli_abort(
-          "Invalid BCB Real Estate table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}, all"
-        )
-      }
-    }
-  }
-
-  # Special handling for BCB Series table filtering
-  if (!is.null(table) && name == "bcb_series" && table != "all") {
-    if ("bcb_category" %in% names(data)) {
-      valid_tables <- c(
-        "price", "credit", "production", "interest-rate",
-        "exchange", "government", "real-estate"
-      )
-
-      if (table %in% valid_tables) {
-        # Filter data by bcb_category
-        data <- data[data$bcb_category == table, ]
-        if (nrow(data) == 0) {
-          cli::cli_abort("No data found for BCB Series table '{table}'")
-        }
-      } else {
-        cli::cli_abort(
-          "Invalid BCB Series table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}, all"
-        )
-      }
-    }
-  }
+  # Apply table filtering if needed
+  data <- apply_table_filtering(data, name, table)
 
   return(data)
 }
@@ -445,93 +367,18 @@ get_from_github_cache <- function(name, dataset_info, table) {
   # Download from GitHub releases to user cache
   data <- download_from_github_release(cached_name, overwrite = FALSE, quiet = FALSE)
 
-  # Special handling for property_records nested structure
-  if (name == "property_records" && !is.null(table)) {
-    data <- extract_property_table(data, table)
-  } else if (!is.null(table) && is.list(data) && !inherits(data, "data.frame")) {
-    # Filter by table if requested and data is a list
-    if (table %in% names(data)) {
-      data <- data[[table]]
-    } else {
-      available_tables <- paste(names(data), collapse = ", ")
-      cli::cli_abort("Table '{table}' not found. Available: {available_tables}")
-    }
-  }
-
-  # Special handling for SECOVI table filtering
-  if (!is.null(table) && name == "secovi" && table != "all") {
-    if ("category" %in% names(data)) {
-      valid_tables <- c("condo", "rent", "launch", "sale")
-      if (table %in% valid_tables) {
-        data <- data[data$category == table, ]
-        if (nrow(data) == 0) {
-          cli::cli_abort("No data found for SECOVI table '{table}'")
-        }
-      } else {
-        cli::cli_abort(
-          "Invalid SECOVI table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}"
-        )
-      }
-    }
-  }
-
-  # Special handling for BCB Real Estate table filtering
-  if (!is.null(table) && name == "bcb_realestate" && table != "all") {
-    if ("category" %in% names(data)) {
-      # Map user-facing table names to internal category values
-      category_mapping <- c(
-        "accounting" = "contabil",
-        "application" = "direcionamento",
-        "indices" = "indices",
-        "sources" = "fontes",
-        "units" = "imoveis"
-      )
-
-      target_category <- category_mapping[[table]]
-      if (!is.null(target_category)) {
-        # Filter data by category
-        data <- data[data$category == target_category, ]
-        if (nrow(data) == 0) {
-          cli::cli_abort("No data found for BCB Real Estate table '{table}'")
-        }
-      } else {
-        valid_tables <- names(category_mapping)
-        cli::cli_abort(
-          "Invalid BCB Real Estate table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}, all"
-        )
-      }
-    }
-  }
-
-  # Special handling for BCB Series table filtering
-  if (!is.null(table) && name == "bcb_series" && table != "all") {
-    if ("bcb_category" %in% names(data)) {
-      valid_tables <- c(
-        "price", "credit", "production", "interest-rate",
-        "exchange", "government", "real-estate"
-      )
-
-      if (table %in% valid_tables) {
-        # Filter data by bcb_category
-        data <- data[data$bcb_category == table, ]
-        if (nrow(data) == 0) {
-          cli::cli_abort("No data found for BCB Series table '{table}'")
-        }
-      } else {
-        cli::cli_abort(
-          "Invalid BCB Series table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}, all"
-        )
-      }
-    }
-  }
-
+  # Apply table filtering if needed
   # Note: For datasets with table-specific cached files (like BIS),
   # the table filtering is handled by get_cached_name() above
+  data <- apply_table_filtering(data, name, table)
 
   return(data)
 }
 
 #' Get Data from Internal Function
+#'
+#' Calls internal dataset-specific functions (e.g., get_abecip_indicators) for
+#' fresh data downloads. These are the core internal functions, not legacy code.
 #'
 #' @keywords internal
 get_from_internal_function <- function(
@@ -542,6 +389,8 @@ get_from_internal_function <- function(
   date_end,
   ...
 ) {
+  # Note: 'legacy_function' field name in registry is a misnomer from v0.4.0 transition
+  # These are actually the core internal functions, not legacy
   internal_function <- dataset_info$legacy_function
 
   if (is.null(internal_function) || internal_function == "") {
@@ -609,6 +458,103 @@ get_from_internal_function <- function(
     }
   }
 
+  return(data)
+}
+
+#' Apply Table Filtering to Loaded Dataset
+#'
+#' Applies table/category filtering logic for datasets that support multiple tables.
+#' Used by both get_from_local_cache() and get_from_github_cache().
+#'
+#' @param data Dataset to filter
+#' @param name Dataset name
+#' @param table Table name to filter by (or NULL)
+#' @return Filtered dataset
+#' @keywords internal
+apply_table_filtering <- function(data, name, table) {
+  # No filtering needed if table is NULL or "all"
+  if (is.null(table) || table == "all") {
+    return(data)
+  }
+
+  # Special handling for property_records nested structure
+  if (name == "property_records") {
+    return(extract_property_table(data, table))
+  }
+
+  # For list data (not data frames), extract the named element
+  if (is.list(data) && !inherits(data, "data.frame")) {
+    if (table %in% names(data)) {
+      return(data[[table]])
+    } else {
+      available_tables <- paste(names(data), collapse = ", ")
+      cli::cli_abort("Table '{table}' not found. Available: {available_tables}")
+    }
+  }
+
+  # Special handling for SECOVI table filtering
+  if (name == "secovi" && "category" %in% names(data)) {
+    valid_tables <- c("condo", "rent", "launch", "sale")
+    if (table %in% valid_tables) {
+      data <- data[data$category == table, ]
+      if (nrow(data) == 0) {
+        cli::cli_abort("No data found for SECOVI table '{table}'")
+      }
+      return(data)
+    } else {
+      cli::cli_abort(
+        "Invalid SECOVI table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}"
+      )
+    }
+  }
+
+  # Special handling for BCB Real Estate table filtering
+  if (name == "bcb_realestate" && "category" %in% names(data)) {
+    # Map user-facing table names to internal category values
+    category_mapping <- c(
+      "accounting" = "contabil",
+      "application" = "direcionamento",
+      "indices" = "indices",
+      "sources" = "fontes",
+      "units" = "imoveis"
+    )
+
+    target_category <- category_mapping[[table]]
+    if (!is.null(target_category)) {
+      data <- data[data$category == target_category, ]
+      if (nrow(data) == 0) {
+        cli::cli_abort("No data found for BCB Real Estate table '{table}'")
+      }
+      return(data)
+    } else {
+      valid_tables <- names(category_mapping)
+      cli::cli_abort(
+        "Invalid BCB Real Estate table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}, all"
+      )
+    }
+  }
+
+  # Special handling for BCB Series table filtering
+  if (name == "bcb_series" && "bcb_category" %in% names(data)) {
+    valid_tables <- c(
+      "price", "credit", "production", "interest-rate",
+      "exchange", "government", "real-estate"
+    )
+
+    if (table %in% valid_tables) {
+      data <- data[data$bcb_category == table, ]
+      if (nrow(data) == 0) {
+        cli::cli_abort("No data found for BCB Series table '{table}'")
+      }
+      return(data)
+    } else {
+      cli::cli_abort(
+        "Invalid BCB Series table: '{table}'. Valid options: {paste(valid_tables, collapse = ', ')}, all"
+      )
+    }
+  }
+
+  # If no special handling applies, return data as-is
   return(data)
 }
 
