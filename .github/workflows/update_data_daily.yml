@@ -1,9 +1,13 @@
 name: Daily Data Updates
 
+# DISABLED: This workflow is currently disabled because the B3 stocks targets
+# (b3_stocks_data, cache_daily_data) are not yet implemented in _targets.R.
+# Re-enable this workflow once B3 data collection is added to the pipeline.
+
 on:
-  schedule:
-    # 6 AM Brazil time (UTC-3) = 9 AM UTC
-    - cron: '0 9 * * *'
+  # schedule:
+  #   # 6 AM Brazil time (UTC-3) = 9 AM UTC
+  #   - cron: '0 9 * * *'
   workflow_dispatch:
     inputs:
       force_update:
