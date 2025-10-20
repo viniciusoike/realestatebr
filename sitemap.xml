@@ -9,7 +9,9 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/authors.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/index.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/news/index.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/apply_table_filtering.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/apply_translations.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/attach_dataset_metadata.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/b3_real_estate.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/bcb_metadata.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/cache-deprecated.html</loc></url>
@@ -47,7 +49,6 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_ri_excel.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/encoding-utils.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/ensure_cache_dir.html</loc></url>
-<url><loc>https://viniciusoike.github.io/realestatebr/reference/explore_cbic_structure.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/extract_property_table.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_abecip_indicators.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_abrainc_indicators.html</loc></url>
@@ -62,8 +63,6 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cbic.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cbic_cement.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cbic_dim_state.html</loc></url>
-<url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cbic_files.html</loc></url>
-<url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cbic_materials.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cbic_pim.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cbic_specific_file.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cbic_steel.html</loc></url>
@@ -97,6 +96,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_rppi_secovi_sp.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_secovi.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_user_cache_dir.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/handle_dataset_cache.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/harmonize_fipezap_for_stacking.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/has_piggyback.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/import_bcb_realestate_robust.html</loc></url>
@@ -130,7 +130,6 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/show_import_message.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/standardize_rppi_structure.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/supports_table_all.html</loc></url>
-<url><loc>https://viniciusoike.github.io/realestatebr/reference/suppress_external_warnings.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/test_encoding_patterns.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/translate_column_names.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/translate_column_values.html</loc></url>
@@ -144,6 +143,9 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/validate_abecip_data.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/validate_and_resolve_table.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/validate_cached_dataset.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/validate_dataset.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/validate_dataset_params.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/validate_excel_file.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/warn_if_level.html</loc></url>
 </urlset>
 

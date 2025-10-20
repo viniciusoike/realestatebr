@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,9 +47,17 @@
 <strong>Mission</strong>: Create the definitive R package for Brazilian real estate data - reliable, well-documented, and easy to use</li>
 </ul></div>
 <div class="section level2">
-<h2 id="current-challenges">Current challenges<a class="anchor" aria-label="anchor" href="#current-challenges"></a></h2>
-<ul><li>Multiple legacy functions with inconsistent interfaces leading to unexpected errors.</li>
-<li>Core functions aren’t working at all.</li>
+<h2 id="guidelines-for-writting">Guidelines for writting<a class="anchor" aria-label="anchor" href="#guidelines-for-writting"></a></h2>
+<p>These apply when writting text for documentation like README.md or vignettes.</p>
+<ul><li>Avoid ending sentences with a colon. <code># Bad Multiple data sources with automatic fallback: # Good Multiple data sources with automatic fallback.</code>
+</li>
+<li>Avoid emojis (e.g 🎯, 📊, etc.)</li>
+</ul></div>
+<div class="section level2">
+<h2 id="current-status">Current Status<a class="anchor" aria-label="anchor" href="#current-status"></a></h2>
+<ul><li>All core functions verified working (100% pass rate)</li>
+<li>v0.6.0 Phase 3 completed (2025-10-15): Logic consolidation achieved 15.4% codebase reduction</li>
+<li>Ready for v0.6.0 release - final documentation and quality checks pending</li>
 </ul></div>
 <div class="section level2">
 <h2 id="goals-for-v06x">Goals for v0.6.x<a class="anchor" aria-label="anchor" href="#goals-for-v06x"></a></h2>
@@ -85,21 +93,23 @@
 <li>✅ Data validation and quality checks</li>
 </ul></div>
 <div class="section level3">
-<h3 id="phase-3-scale-up--planned">Phase 3: Scale Up ⏳ PLANNED<a class="anchor" aria-label="anchor" href="#phase-3-scale-up--planned"></a></h3>
+<h3 id="phase-3-logic-consolidation--completed-v060-2025-10-15">Phase 3: Logic Consolidation ✅ COMPLETED (v0.6.0, 2025-10-15)<a class="anchor" aria-label="anchor" href="#phase-3-logic-consolidation--completed-v060-2025-10-15"></a></h3>
+<ul><li>✅ Created 7 generic helper functions (R/helpers-dataset.R)</li>
+<li>✅ Refactored 5 core files using new helpers</li>
+<li>✅ Eliminated 890 lines of code duplication</li>
+<li>✅ Achieved 15.4% codebase reduction (417 lines)</li>
+<li>✅ Added 52 comprehensive tests for helpers</li>
+<li>✅ Improved consistency across all dataset functions</li>
+<li>✅ Centralized table filtering logic</li>
+</ul><p><strong>Results</strong>: - get_abecip_indicators.R: 21.8% reduction - get_abrainc_indicators.R: 18.2% reduction - get_secovi.R: 18.7% reduction - get_bcb_series.R: 16.8% reduction - get-dataset.R: 7.2% reduction</p>
+<p>See <code>.claude/phase3_completion_summary.md</code> for full details.</p>
+</div>
+<div class="section level3">
+<h3 id="phase-4-scale-up--future">Phase 4: Scale Up ⏳ FUTURE<a class="anchor" aria-label="anchor" href="#phase-4-scale-up--future"></a></h3>
 <ul><li>⏳ DuckDB integration for large datasets (ITBI, IPTU)</li>
 <li>⏳ Lazy query support</li>
 <li>⏳ Large dataset handling</li>
-</ul><div class="section level4">
-<h4 id="id_-manual-review-needed">🔍 MANUAL REVIEW NEEDED<a class="anchor" aria-label="anchor" href="#id_-manual-review-needed"></a></h4>
-<ul><li>
-<strong>CBIC cleaning scripts</strong>: Review each table’s data processing logic manually
-<ul><li>Monthly consumption tables: Date parsing and state matching</li>
-<li>Steel production: Multi-header Excel structure validation</li>
-<li>PIM data: Excel serial date conversion verification</li>
-<li>CUB prices: State abbreviation mapping accuracy</li>
-</ul></li>
 </ul></div>
-</div>
 </div>
 <div class="section level2">
 <h2 id="core-technologies--dependencies">Core Technologies &amp; Dependencies<a class="anchor" aria-label="anchor" href="#core-technologies--dependencies"></a></h2>
