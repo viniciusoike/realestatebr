@@ -84,6 +84,7 @@ datasets:
     legacy_function: "get_bcb_realestate"
     data_type: "tibble"
     cached_file: "bcb_realestate.csv.gz"
+    default_table: "all"
     translation_notes: "Complex multi-level series structure; v1-v5 columns contain series components"
     
   secovi:
@@ -275,6 +276,7 @@ datasets:
     legacy_function: "get_bcb_series"
     data_type: "tibble"
     cached_file: "bcb_series.csv.gz"
+    default_table: "all"
     metadata_table: "bcb_metadata"
     translation_notes: "Metadata available in both Portuguese and English"
 
