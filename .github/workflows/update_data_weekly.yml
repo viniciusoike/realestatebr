@@ -142,46 +142,50 @@ jobs:
           git add inst/reports/
           git add _targets/
 
-          # Create detailed commit message
+          # Create detailed commit message using heredoc
           target_group="${{ steps.determine-targets.outputs.group }}"
-          commit_msg="Weekly data update ($target_group): $(date +'%Y-%m-%d %H:%M UTC')"
 
-          # Add summary based on target group
           if [ "$target_group" == "weekly" ]; then
-            commit_msg="$commit_msg
+            git commit -m "$(cat <<'EOF'
+          Weekly data update (weekly): $(date +'%Y-%m-%d %H:%M UTC')
 
-Updated datasets:
-- BCB Series (macroeconomic indicators)
-- BCB Real Estate (market data)
-- FGV IBRE (economic indicators)
-- ABECIP (housing credit)
-- ABRAINC (primary market)
-- SECOVI-SP (São Paulo market)
-- RPPI (sale and rent price indices)
+          Updated datasets:
+          - BCB Series (macroeconomic indicators)
+          - BCB Real Estate (market data)
+          - FGV IBRE (economic indicators)
+          - ABECIP (housing credit)
+          - ABRAINC (primary market)
+          - SECOVI-SP (São Paulo market)
+          - RPPI (sale and rent price indices)
 
-Report: inst/reports/pipeline_status.md"
-
+          Report: inst/reports/pipeline_status.md
+          EOF
+          )"
           elif [ "$target_group" == "monthly" ]; then
-            commit_msg="$commit_msg
+            git commit -m "$(cat <<'EOF'
+          Weekly data update (monthly): $(date +'%Y-%m-%d %H:%M UTC')
 
-Updated datasets:
-- BIS RPPI (international property prices)
-- CBIC (construction materials)
-- Property Records (ITBI transactions)
+          Updated datasets:
+          - BIS RPPI (international property prices)
+          - CBIC (construction materials)
+          - Property Records (ITBI transactions)
 
-Report: inst/reports/pipeline_status.md"
-
+          Report: inst/reports/pipeline_status.md
+          EOF
+          )"
           elif [ "$target_group" == "all" ]; then
-            commit_msg="$commit_msg
+            git commit -m "$(cat <<'EOF'
+          Weekly data update (all): $(date +'%Y-%m-%d %H:%M UTC')
 
-Comprehensive update of all weekly and monthly datasets.
-- 8 weekly datasets (BCB, FGV, ABECIP, ABRAINC, SECOVI, RPPI)
-- 3 monthly datasets (BIS, CBIC, Property Records)
+          Comprehensive update of all weekly and monthly datasets.
+          - 8 weekly datasets (BCB, FGV, ABECIP, ABRAINC, SECOVI, RPPI)
+          - 3 monthly datasets (BIS, CBIC, Property Records)
 
-Report: inst/reports/pipeline_status.md"
+          Report: inst/reports/pipeline_status.md
+          EOF
+          )"
           fi
 
-          git commit -m "$commit_msg"
           git push
 
       - name: Report completion status

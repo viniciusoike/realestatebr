@@ -118,20 +118,21 @@ jobs:
           git add inst/reports/
           git add _targets/
 
-          # Create commit message with timestamp
-          commit_msg="Daily data update: $(date +'%Y-%m-%d %H:%M UTC')"
-
-          # Add summary of updated datasets
+          # Create commit message using heredoc
           if [ -f "inst/reports/pipeline_status.md" ]; then
-            commit_msg="$commit_msg
+            git commit -m "$(cat <<'EOF'
+          Daily data update: $(date +'%Y-%m-%d %H:%M UTC')
 
-Updated datasets:
-- B3 Stock prices (daily updates)
+          Updated datasets:
+          - B3 Stock prices (daily updates)
 
-Report: inst/reports/pipeline_status.md"
+          Report: inst/reports/pipeline_status.md
+          EOF
+          )"
+          else
+            git commit -m "Daily data update: $(date +'%Y-%m-%d %H:%M UTC')"
           fi
 
-          git commit -m "$commit_msg"
           git push
 
       - name: Report completion status
