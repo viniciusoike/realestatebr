@@ -7,8 +7,8 @@ library(readr)
 library(cli)
 
 # Source validation functions
-source("data-raw/validation.R")
-source("data-raw/targets_helpers.R")
+source("data-raw/pipeline/validation.R")
+source("data-raw/pipeline/targets_helpers.R")
 
 #' Generate Comprehensive Pipeline Report
 #'

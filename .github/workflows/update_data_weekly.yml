@@ -43,6 +43,7 @@ jobs:
             any::readr
             any::dplyr
             any::purrr
+            any::remotes
 
       - name: Install package
         run: |
