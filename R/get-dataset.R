@@ -389,9 +389,8 @@ get_from_internal_function <- function(
   date_end,
   ...
 ) {
-  # Note: 'legacy_function' field name in registry is a misnomer from v0.4.0 transition
-  # These are actually the core internal functions, not legacy
-  internal_function <- dataset_info$legacy_function
+  # Get the dataset-specific function name from registry
+  internal_function <- dataset_info$dataset_function
 
   if (is.null(internal_function) || internal_function == "") {
     cli::cli_abort(

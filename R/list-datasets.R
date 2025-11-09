@@ -24,7 +24,7 @@
 #'     \item{categories}{Number of categories/subtables}
 #'     \item{available_tables}{Names of available tables (for multi-table datasets)}
 #'     \item{data_type}{Type of data structure (tibble/list)}
-#'     \item{legacy_function}{Original function name for backward compatibility}
+#'     \item{legacy_function}{Internal function name (for reference only)}
 #'   }
 #'
 #' @examples
@@ -151,7 +151,7 @@ registry_to_tibble <- function(registry) {
       categories = n_categories,
       available_tables = available_tables,
       data_type = dataset$data_type %||% "unknown",
-      legacy_function = dataset$legacy_function %||% "",
+      legacy_function = dataset$dataset_function %||% "",
       url = dataset$url %||% "",
       status = dataset$status %||% "available"
     )
@@ -206,7 +206,7 @@ get_dataset_info <- function(name) {
       frequency = dataset$frequency,
       coverage = dataset$coverage,
       data_type = dataset$data_type,
-      legacy_function = dataset$legacy_function
+      legacy_function = dataset$dataset_function
     ),
     categories = dataset$categories,
     source_info = list(
