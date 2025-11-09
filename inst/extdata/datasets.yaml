@@ -11,6 +11,8 @@ datasets:
     geography: "Brazil"
     frequency: "monthly"
     coverage: "1982-present (varies by category)"
+    update_schedule: "weekly"
+    warn_after_days: 14
     categories:
       sbpe:
         name: "SBPE Monetary Flows"
@@ -39,6 +41,8 @@ datasets:
     geography: "Brazil (major cities)"
     frequency: "quarterly"
     coverage: "2014-present"
+    update_schedule: "weekly"
+    warn_after_days: 14
     categories:
       indicator:
         name: "Market Indicators"
@@ -64,6 +68,8 @@ datasets:
     geography: "Brazil (by state)"
     frequency: "monthly"
     coverage: "2001-present (varies by category)"
+    update_schedule: "weekly"
+    warn_after_days: 14
     categories:
       accounting:
         name: "Credit Accounting"
@@ -96,6 +102,8 @@ datasets:
     geography: "São Paulo"
     frequency: "monthly"
     coverage: "2004-present (varies by category)"
+    update_schedule: "weekly"
+    warn_after_days: 14
     categories:
       condo:
         name: "Condominium Fees"
@@ -125,6 +133,8 @@ datasets:
     geography: "International (60+ countries including Brazil)"
     frequency: "quarterly"
     coverage: "1970-present (varies by country)"
+    update_schedule: "monthly"
+    warn_after_days: 60
     categories:
       selected:
         name: "Selected Series"
@@ -166,6 +176,8 @@ datasets:
     geography: "Brazil"
     frequency: "monthly"
     coverage: "varies by index"
+    update_schedule: "weekly"
+    warn_after_days: 14
     categories:
       # Individual indices
       fipezap:
@@ -250,6 +262,8 @@ datasets:
     geography: "Brazil"
     frequency: "varies (daily/monthly/quarterly)"
     coverage: "varies by series"
+    update_schedule: "weekly"
+    warn_after_days: 14
     categories:
       price:
         name: "Price Indices"
@@ -297,6 +311,8 @@ datasets:
     translation_notes: "Technical economic terms; standard translations applied"
     manual_update: true
     update_notes: "No public API available; requires manual download and processing"
+    update_schedule: "weekly"
+    warn_after_days: 14
 
   cbic:
     name: "CBIC Cement Data"
@@ -307,6 +323,8 @@ datasets:
     geography: "Brazil (by state for some metrics)"
     frequency: "monthly"
     coverage: "varies by table"
+    update_schedule: "monthly"
+    warn_after_days: 60
     categories:
       cement_monthly_consumption:
         name: "Cement Monthly Consumption"
@@ -346,6 +364,8 @@ datasets:
     manual_update: true
     update_notes: "Requires manual data extraction from source website"
     translation_notes: "Index values (100 = May 2006); includes IRE, IRE-BI, and Ibovespa comparison"
+    update_schedule: "manual"
+    warn_after_days: null
 
   property_records:
     name: "ITBI Property Transaction Records"
@@ -356,6 +376,8 @@ datasets:
     geography: "Brazil (varies by municipality)"
     frequency: "transaction-level (real-time)"
     coverage: "varies by municipality"
+    update_schedule: "monthly"
+    warn_after_days: 60
     categories:
       capitals:
         name: "Capital Cities Records"

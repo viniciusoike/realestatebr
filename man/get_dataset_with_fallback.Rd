@@ -4,7 +4,15 @@
 \alias{get_dataset_with_fallback}
 \title{Get Dataset with Fallback Strategy}
 \usage{
-get_dataset_with_fallback(name, dataset_info, table, date_start, date_end, ...)
+get_dataset_with_fallback(
+  name,
+  dataset_info,
+  table,
+  date_start,
+  date_end,
+  max_age = NULL,
+  ...
+)
 }
 \arguments{
 \item{name}{Dataset name}
@@ -16,6 +24,8 @@ get_dataset_with_fallback(name, dataset_info, table, date_start, date_end, ...)
 \item{date_start}{Optional start date}
 
 \item{date_end}{Optional end date}
+
+\item{max_age}{Optional maximum cache age in days}
 
 \item{...}{Additional arguments}
 }

@@ -109,8 +109,25 @@ load_from_user_cache <- function(dataset_name, quiet = FALSE) {
       "csv" = readr::read_delim(file_path, show_col_types = FALSE)
     )
 
+    # Check cache age and warn ONLY if significantly stale (relaxed thresholds)
     if (!quiet) {
-      cli::cli_inform("Loaded '{dataset_name}' from user cache")
+      age <- get_cache_age(dataset_name)
+      if (!is.na(age)) {
+        stale <- is_cache_stale(dataset_name)
+
+        if (isTRUE(stale)) {
+          # Only warn if 2x update frequency exceeded (relaxed)
+          cli::cli_warn(c(
+            "Cached data for '{dataset_name}' is {round(age, 1)} days old",
+            "i" = "Consider updating: update_cache_from_github('{dataset_name}')",
+            "i" = "Or force fresh data: get_dataset('{dataset_name}', source='fresh')"
+          ))
+        }
+        # NO MESSAGE for fresh cache - keep it quiet
+      } else {
+        # Only basic message if no metadata
+        cli::cli_inform("Loaded '{dataset_name}' from user cache")
+      }
     }
 
     return(data)
@@ -382,4 +399,172 @@ save_cache_metadata <- function(dataset_name, format, source = NULL) {
 is_cached <- function(dataset_name) {
   file_path <- get_cached_file_path(dataset_name)
   return(!is.null(file_path))
+}
+
+#' Get Cache Age in Days
+#'
+#' Calculate how old a cached dataset is in days.
+#'
+#' @param dataset_name Character. Name of dataset
+#' @return Numeric. Age in days, or NA if can't determine
+#' @keywords internal
+get_cache_age <- function(dataset_name) {
+  metadata <- get_cache_metadata(dataset_name)
+  if (is.null(metadata) || is.null(metadata$cached_at)) {
+    return(NA_real_)
+  }
+  as.numeric(difftime(Sys.time(), metadata$cached_at, units = "days"))
+}
+
+#' Check if Cache is Stale
+#'
+#' Determine if a cached dataset is older than its update schedule.
+#' Uses relaxed thresholds by default (2x update frequency) to avoid
+#' annoying users with unnecessary warnings.
+#'
+#' @param dataset_name Character. Name of dataset
+#' @param warn_after_days Numeric. Override default warning threshold
+#' @return Logical. TRUE if stale, FALSE if fresh, NA if can't determine
+#' @keywords internal
+#' @export
+is_cache_stale <- function(dataset_name, warn_after_days = NULL) {
+  age <- get_cache_age(dataset_name)
+  if (is.na(age)) return(NA)
+
+  if (is.null(warn_after_days)) {
+    # Get default from registry (relaxed thresholds)
+    registry <- load_dataset_registry()
+    if (dataset_name %in% names(registry$datasets)) {
+      dataset_info <- registry$datasets[[dataset_name]]
+
+      # Use warn_after_days from registry, or default based on schedule
+      warn_after_days <- dataset_info$warn_after_days
+
+      if (is.null(warn_after_days)) {
+        # Fallback defaults: 2x the update frequency
+        schedule <- dataset_info$update_schedule %||% "weekly"
+        warn_after_days <- switch(schedule,
+          "weekly" = 14,   # 2 weeks
+          "monthly" = 60,  # 2 months
+          "manual" = 999999  # Never warn for manual datasets
+        )
+      }
+    } else {
+      warn_after_days <- 14  # Default to 2 weeks
+    }
+  }
+
+  return(age > warn_after_days)
+}
+
+#' Check Cache Status
+#'
+#' Display status of all locally cached datasets. Uses relaxed staleness
+#' thresholds (2x update frequency) to identify datasets that may benefit
+#' from updating.
+#'
+#' @param verbose Logical. Show detailed formatted output (default: TRUE)
+#' @return Tibble with cache status information (invisibly)
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Check which datasets might benefit from updating
+#' check_cache_status()
+#'
+#' # Get status table for programmatic use
+#' status <- check_cache_status(verbose = FALSE)
+#' old_datasets <- status[status$age_days > 30, ]
+#' }
+check_cache_status <- function(verbose = TRUE) {
+  cached_files <- list_cached_files()
+
+  if (nrow(cached_files) == 0) {
+    if (verbose) {
+      cli::cli_inform("No cached datasets found")
+    }
+    return(invisible(cached_files))
+  }
+
+  # Load registry
+  registry <- load_dataset_registry()
+
+  # Enhance with age and staleness info
+  status <- cached_files
+  status$age_days <- NA_real_
+  status$stale <- NA
+  status$update_schedule <- NA_character_
+  status$warn_threshold <- NA_real_
+
+  for (i in seq_len(nrow(status))) {
+    dataset <- status$dataset[i]
+
+    age <- get_cache_age(dataset)
+    status$age_days[i] <- age
+
+    stale <- is_cache_stale(dataset)
+    status$stale[i] <- stale
+
+    if (dataset %in% names(registry$datasets)) {
+      ds_info <- registry$datasets[[dataset]]
+      status$update_schedule[i] <- ds_info$update_schedule %||% "unknown"
+
+      # Show warning threshold
+      schedule <- ds_info$update_schedule %||% "weekly"
+      status$warn_threshold[i] <- switch(schedule,
+        "weekly" = 14,
+        "monthly" = 60,
+        "manual" = NA_real_
+      )
+    }
+  }
+
+  # Sort by staleness, then age
+  status <- status[order(status$stale, status$age_days, decreasing = TRUE, na.last = TRUE), ]
+
+  if (verbose) {
+    cli::cli_h1("Cache Status")
+
+    stale_count <- sum(status$stale, na.rm = TRUE)
+    fresh_count <- sum(!status$stale, na.rm = TRUE)
+
+    cli::cli_alert_info("Using relaxed thresholds: weekly=14 days, monthly=60 days")
+    cli::cli_text("")
+
+    if (stale_count > 0) {
+      cli::cli_alert_warning("{stale_count} dataset{?s} could benefit from updating")
+    }
+    if (fresh_count > 0) {
+      cli::cli_alert_success("{fresh_count} dataset{?s} are reasonably fresh")
+    }
+
+    if (stale_count > 0) {
+      cli::cli_h2("Consider Updating")
+      stale_datasets <- status[isTRUE(status$stale), ]
+      for (i in seq_len(nrow(stale_datasets))) {
+        ds <- stale_datasets[i, ]
+        cli::cli_li(
+          "{ds$dataset}: {round(ds$age_days, 1)} days old (threshold: {ds$warn_threshold} days)"
+        )
+      }
+      cli::cli_text("")
+      cli::cli_code("update_cache_from_github(c('{paste(stale_datasets$dataset, collapse=\"', '\")}'))")
+    }
+
+    cli::cli_h2("Recently Updated")
+    fresh_datasets <- status[!isTRUE(status$stale) & !is.na(status$stale), ]
+    if (nrow(fresh_datasets) > 0) {
+      for (i in seq_len(min(5, nrow(fresh_datasets)))) {  # Show max 5
+        ds <- fresh_datasets[i, ]
+        cli::cli_li(
+          "{ds$dataset}: {round(ds$age_days, 1)} days old"
+        )
+      }
+      if (nrow(fresh_datasets) > 5) {
+        cli::cli_text("... and {nrow(fresh_datasets) - 5} more")
+      }
+    }
+  }
+
+  return(invisible(status))
 }

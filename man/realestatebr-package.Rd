@@ -6,7 +6,7 @@
 \alias{realestatebr-package}
 \title{realestatebr: Import Brazilian Real Estate Data into R}
 \description{
-Provides functions to import Brazilian real estate market data from various sources including BCB, FGV, ABECIP, ABRAINC, SECOVI, and BIS. Data is returned in tidy format for easy analysis and visualization.
+Provides functions to import Brazilian real estate data from various sources including BCB, FGV, ABECIP, ABRAINC, SECOVI, and BIS. Data is returned in tidy format.
 }
 \seealso{
 Useful links:

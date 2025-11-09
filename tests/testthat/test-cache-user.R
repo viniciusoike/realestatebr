@@ -151,3 +151,113 @@ test_that("load_from_user_cache handles corrupted files gracefully", {
   # Clean up
   file.remove(corrupted_file)
 })
+
+# Cache Freshness Tests ----
+
+test_that("get_cache_age returns NA for non-existent dataset", {
+  age <- get_cache_age("nonexistent_dataset_12345")
+  expect_true(is.na(age))
+})
+
+test_that("get_cache_age returns numeric age for cached dataset", {
+  skip_if_not_installed("tibble")
+
+  # Create and save test data
+  test_data <- tibble::tibble(x = 1:3)
+  save_to_user_cache(test_data, "test_age", format = "rds", quiet = TRUE)
+
+  # Get age
+  age <- get_cache_age("test_age")
+
+  expect_type(age, "double")
+  expect_true(!is.na(age))
+  expect_true(age >= 0)
+  expect_true(age < 1) # Should be less than 1 day old
+
+  # Clean up
+  clear_user_cache("test_age", confirm = FALSE)
+})
+
+test_that("is_cache_stale returns NA for non-existent dataset", {
+  stale <- is_cache_stale("nonexistent_dataset_12345")
+  expect_true(is.na(stale))
+})
+
+test_that("is_cache_stale uses relaxed defaults from registry", {
+  skip_if_not_installed("tibble")
+
+  # Create and save test data for a weekly dataset
+  test_data <- tibble::tibble(x = 1:3)
+  save_to_user_cache(test_data, "bcb_series", format = "rds", quiet = TRUE)
+
+  # Fresh cache should not be stale
+  stale <- is_cache_stale("bcb_series")
+  expect_false(stale)
+
+  # Clean up
+  clear_user_cache("bcb_series", confirm = FALSE)
+})
+
+test_that("is_cache_stale respects custom warn_after_days", {
+  skip_if_not_installed("tibble")
+
+  # Create and save test data
+  test_data <- tibble::tibble(x = 1:3)
+  save_to_user_cache(test_data, "test_stale_custom", format = "rds", quiet = TRUE)
+
+  # Artificially age the cache
+  cache_dir <- get_user_cache_dir()
+  metadata_file <- file.path(cache_dir, "cache_metadata.rds")
+  all_metadata <- readRDS(metadata_file)
+  all_metadata$test_stale_custom$cached_at <- Sys.time() - (10 * 24 * 60 * 60)
+  saveRDS(all_metadata, metadata_file)
+
+  # With warn_after_days = 5, should be stale
+  stale_5 <- is_cache_stale("test_stale_custom", warn_after_days = 5)
+  expect_true(stale_5)
+
+  # With warn_after_days = 15, should not be stale
+  stale_15 <- is_cache_stale("test_stale_custom", warn_after_days = 15)
+  expect_false(stale_15)
+
+  # Clean up
+  clear_user_cache("test_stale_custom", confirm = FALSE)
+})
+
+test_that("check_cache_status returns correct structure", {
+  result <- check_cache_status(verbose = FALSE)
+
+  expect_s3_class(result, "tbl_df")
+  expect_true("age_days" %in% names(result))
+  expect_true("stale" %in% names(result))
+  expect_true("update_schedule" %in% names(result))
+  expect_true("warn_threshold" %in% names(result))
+})
+
+test_that("check_cache_status handles empty cache", {
+  skip_if_not_installed("tibble")
+
+  # Clear all cache first
+  cache_dir <- get_user_cache_dir()
+  files <- list.files(cache_dir, full.names = TRUE)
+  # Only remove non-metadata files for this test
+  data_files <- files[!grepl("cache_metadata", files)]
+  if (length(data_files) > 0) {
+    file.remove(data_files)
+  }
+
+  result <- check_cache_status(verbose = FALSE)
+  expect_s3_class(result, "tbl_df")
+})
+
+test_that("max_age parameter in get_dataset skips old cache", {
+  skip_if_not_installed("tibble")
+  skip_on_cran()
+
+  # This test requires network access and GitHub releases
+  # We'll just verify the parameter is accepted without error
+  expect_error(
+    get_dataset("bcb_series", table = "price", max_age = 0.001),
+    NA # Expect no error
+  )
+})

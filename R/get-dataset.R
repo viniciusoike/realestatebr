@@ -19,6 +19,12 @@
 #'   }
 #' @param date_start Date. Start date for time series data (where applicable)
 #' @param date_end Date. End date for time series data (where applicable)
+#' @param max_age Numeric. Optional. Maximum acceptable cache age in days.
+#'   If specified, cached data older than this will be skipped and fresh data
+#'   will be downloaded. This is an **advanced parameter** for users who need
+#'   very recent data. Most users don't need to set this - the package uses
+#'   relaxed thresholds by default (weekly datasets: 14 days, monthly: 60 days)
+#'   and only warns when cache is significantly stale.
 #' @param ... Additional arguments passed to internal functions
 #'
 #' @return Dataset as tibble or list, depending on the dataset structure.
@@ -38,6 +44,12 @@
 #' # Get BCB data for specific time period
 #' bcb_recent <- get_dataset("bcb_series",
 #'                          date_start = as.Date("2020-01-01"))
+#'
+#' # Advanced: Force very fresh data (< 1 day old)
+#' very_fresh <- get_dataset("bcb_series", max_age = 1)
+#'
+#' # Advanced: Only use cache if less than 3 days old
+#' recent_data <- get_dataset("rppi", table = "sale", max_age = 3)
 #' }
 #'
 #' @section Debug Mode:
@@ -90,6 +102,7 @@ get_dataset <- function(
   source = "auto",
   date_start = NULL,
   date_end = NULL,
+  max_age = NULL,
   ...
 ) {
   # Validate inputs
@@ -125,6 +138,7 @@ get_dataset <- function(
       resolved_table,
       date_start,
       date_end,
+      max_age,
       ...
     )
   } else {
@@ -162,6 +176,7 @@ get_dataset <- function(
 #' @param table Optional table filter
 #' @param date_start Optional start date
 #' @param date_end Optional end date
+#' @param max_age Optional maximum cache age in days
 #' @param ... Additional arguments
 #' @return Dataset or NULL if all methods fail
 #' @keywords internal
@@ -171,35 +186,51 @@ get_dataset_with_fallback <- function(
   table,
   date_start,
   date_end,
+  max_age = NULL,
   ...
 ) {
   # Initialize error tracking
   errors <- list()
 
   # Try 1: User cache (fastest - no network needed)
-  cli::cli_inform("Checking user cache for {name}...")
-  data <- tryCatch(
-    {
-      get_dataset_from_source(
-        name,
-        dataset_info,
-        "cache",
-        table,
-        date_start,
-        date_end,
-        ...
+  # Check if cache is too old before attempting to load
+  skip_cache <- FALSE
+  if (!is.null(max_age)) {
+    cache_age <- get_cache_age(name)
+    if (!is.na(cache_age) && cache_age > max_age) {
+      cli::cli_inform(
+        "Skipping user cache (age: {round(cache_age, 1)} days > max_age: {max_age} days)"
       )
-    },
-    error = function(e) {
-      errors$cache <<- e$message
-      cli::cli_inform("User cache not available: {e$message}")
-      NULL
+      skip_cache <- TRUE
     }
-  )
+  }
 
-  if (!is.null(data)) {
-    cli::cli_inform("Successfully loaded from user cache")
-    return(data)
+  data <- NULL
+  if (!skip_cache) {
+    cli::cli_inform("Checking user cache for {name}...")
+    data <- tryCatch(
+      {
+        get_dataset_from_source(
+          name,
+          dataset_info,
+          "cache",
+          table,
+          date_start,
+          date_end,
+          ...
+        )
+      },
+      error = function(e) {
+        errors$cache <<- e$message
+        cli::cli_inform("User cache not available: {e$message}")
+        NULL
+      }
+    )
+
+    if (!is.null(data)) {
+      cli::cli_inform("Successfully loaded from user cache")
+      return(data)
+    }
   }
 
   # Try 2: GitHub releases (pre-processed data)

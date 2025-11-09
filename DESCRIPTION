@@ -8,9 +8,9 @@ Authors@R: person(
     email = "viniciusoike@gmail.com",
     role = c("aut", "cre")
     )
-Description: Provides functions to import Brazilian real estate market data
+Description: Provides functions to import Brazilian real estate data
     from various sources including BCB, FGV, ABECIP, ABRAINC, SECOVI, and BIS.
-    Data is returned in tidy format for easy analysis and visualization.
+    Data is returned in tidy format.
 License: MIT + file LICENSE
 BugReports: https://github.com/viniciusoike/realestatebr/issues
 Encoding: UTF-8

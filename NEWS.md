@@ -1,4 +1,55 @@
-# realestatebr 0.6.0 (2025-10-15)
+# realestatebr 0.6.0 (2025-11-09)
+
+## Cache Freshness Detection (Phase 2)
+
+**Version 0.6.0 introduces an intelligent cache freshness detection system with relaxed defaults to avoid annoying users with unnecessary warnings.**
+
+### New Features
+
+#### Cache Age Tracking
+- **`get_cache_age()`**: Returns cache age in days for any dataset
+- **`is_cache_stale()`**: Checks if cache exceeds recommended freshness thresholds
+- **`check_cache_status()`**: Diagnostic function showing status of all cached datasets
+
+#### Relaxed Warning Thresholds
+Cache warnings only appear when data is **significantly stale** (exceeds 2x the update frequency):
+- Weekly datasets: warn after 14 days (not 7)
+- Monthly datasets: warn after 60 days (not 30)
+- Manual datasets: never warn
+
+#### Advanced Cache Control
+- **`max_age` parameter** in `get_dataset()`: Force fresh download if cache exceeds specified age
+- Useful for users who need very recent data
+- Most users won't need this - relaxed defaults handle typical use cases
+
+#### Registry Enhancements
+All datasets in `inst/extdata/datasets.yaml` now include:
+- `update_schedule`: "weekly", "monthly", or "manual"
+- `warn_after_days`: Custom threshold for staleness warnings (NULL for manual datasets)
+
+### Examples
+
+```r
+# Check status of all cached datasets
+check_cache_status()
+
+# Get age of specific dataset
+get_cache_age("bcb_series")
+
+# Check if dataset is stale (uses relaxed defaults from registry)
+is_cache_stale("bcb_series")
+
+# Advanced: Force very fresh data (< 1 day old)
+get_dataset("bcb_series", max_age = 1)
+
+# Advanced: Only use cache if less than 3 days old
+get_dataset("rppi", table = "sale", max_age = 3)
+```
+
+### Tests
+- Added 8 comprehensive tests for cache freshness system
+- All tests passing (41 total cache tests)
+- Validated relaxed thresholds and max_age behavior
 
 ## Code Simplification: Logic Consolidation (Phase 3)
 
