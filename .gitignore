@@ -67,9 +67,24 @@ rb3/
 # Backup directory
 backup/
 
+# Cache directories (data cached locally or on GitHub releases, not in repo)
+inst/cached_data/
+data-raw/cache_output/
+
 /.quarto/
 README.html
 
 # Development/debugging test scripts (not formal tests)
 tests/basic_checks*.R
 tests/fixes_*.R
+
+# Archive and backup directories in data-raw
+data-raw/archive/
+data-raw/*_backup/
+
+# Test reports
+tests/**/*.html
+tests/**/*.pdf
+
+# Root level .Rcheck variant
+..Rcheck/
