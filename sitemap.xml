@@ -17,6 +17,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/cache-deprecated.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/cache-github.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/cache-user.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/check_cache_status.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/check_github_available.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clean_cbic_cement_annual.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clean_cbic_cement_cub.html</loc></url>
@@ -53,6 +54,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_available_tables.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_bcb_realestate.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_bcb_series.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cache_age.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cache_metadata.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cache_release_tag.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_cached_file_path.html</loc></url>
@@ -105,6 +107,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/import_cbic_materials.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/import_secovi_robust.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/index.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/is_cache_stale.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/is_cache_up_to_date.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/is_cached.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/is_debug_mode.html</loc></url>

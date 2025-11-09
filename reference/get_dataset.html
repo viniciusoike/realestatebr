@@ -49,6 +49,7 @@ fallback between different data sources (cache, GitHub, fresh download).</p>
 <span>  source <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  date_start <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  date_end <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  max_age <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -89,6 +90,15 @@ Use get_dataset_info(name) to see available tables.</p></dd>
 
 <dt id="arg-date-end">date_end<a class="anchor" aria-label="anchor" href="#arg-date-end"></a></dt>
 <dd><p>Date. End date for time series data (where applicable)</p></dd>
+
+
+<dt id="arg-max-age">max_age<a class="anchor" aria-label="anchor" href="#arg-max-age"></a></dt>
+<dd><p>Numeric. Optional. Maximum acceptable cache age in days.
+If specified, cached data older than this will be skipped and fresh data
+will be downloaded. This is an <strong>advanced parameter</strong> for users who need
+very recent data. Most users don't need to set this - the package uses
+relaxed thresholds by default (weekly datasets: 14 days, monthly: 60 days)
+and only warns when cache is significantly stale.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -158,6 +168,12 @@ understanding complex dataset processing, or developing new functionality.</p>
 <span class="r-in"><span><span class="co"># Get BCB data for specific time period</span></span></span>
 <span class="r-in"><span><span class="va">bcb_recent</span> <span class="op">&lt;-</span> <span class="fu">get_dataset</span><span class="op">(</span><span class="st">"bcb_series"</span>,</span></span>
 <span class="r-in"><span>                         date_start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2020-01-01"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Advanced: Force very fresh data (&lt; 1 day old)</span></span></span>
+<span class="r-in"><span><span class="va">very_fresh</span> <span class="op">&lt;-</span> <span class="fu">get_dataset</span><span class="op">(</span><span class="st">"bcb_series"</span>, max_age <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Advanced: Only use cache if less than 3 days old</span></span></span>
+<span class="r-in"><span><span class="va">recent_data</span> <span class="op">&lt;-</span> <span class="fu">get_dataset</span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"sale"</span>, max_age <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

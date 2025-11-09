@@ -6,7 +6,15 @@ GitHub → fresh download
 ## Usage
 
 ``` r
-get_dataset_with_fallback(name, dataset_info, table, date_start, date_end, ...)
+get_dataset_with_fallback(
+  name,
+  dataset_info,
+  table,
+  date_start,
+  date_end,
+  max_age = NULL,
+  ...
+)
 ```
 
 ## Arguments
@@ -30,6 +38,10 @@ get_dataset_with_fallback(name, dataset_info, table, date_start, date_end, ...)
 - date_end:
 
   Optional end date
+
+- max_age:
+
+  Optional maximum cache age in days
 
 - ...:
 

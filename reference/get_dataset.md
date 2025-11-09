@@ -13,6 +13,7 @@ get_dataset(
   source = "auto",
   date_start = NULL,
   date_end = NULL,
+  max_age = NULL,
   ...
 )
 ```
@@ -55,6 +56,15 @@ get_dataset(
 - date_end:
 
   Date. End date for time series data (where applicable)
+
+- max_age:
+
+  Numeric. Optional. Maximum acceptable cache age in days. If specified,
+  cached data older than this will be skipped and fresh data will be
+  downloaded. This is an **advanced parameter** for users who need very
+  recent data. Most users don't need to set this - the package uses
+  relaxed thresholds by default (weekly datasets: 14 days, monthly: 60
+  days) and only warns when cache is significantly stale.
 
 - ...:
 
@@ -138,5 +148,11 @@ fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 # Get BCB data for specific time period
 bcb_recent <- get_dataset("bcb_series",
                          date_start = as.Date("2020-01-01"))
+
+# Advanced: Force very fresh data (< 1 day old)
+very_fresh <- get_dataset("bcb_series", max_age = 1)
+
+# Advanced: Only use cache if less than 3 days old
+recent_data <- get_dataset("rppi", table = "sale", max_age = 3)
 } # }
 ```
