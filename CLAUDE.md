@@ -189,8 +189,10 @@ tar_visnetwork()
 #### Pipeline Architecture
 The pipeline uses the modern `get_dataset()` interface with three targets per dataset:
 1. **`{dataset}_data`**: Fetches fresh data using `get_dataset(source="fresh")`
-2. **`{dataset}_cache`**: Saves to `inst/cached_data/` directory
+2. **`{dataset}_cache`**: Saves to `data-raw/cache_output/` (staging directory for GitHub releases)
 3. **`{dataset}_validation`**: Validates data quality
+
+After processing, GitHub Actions uploads files from `data-raw/cache_output/` to the "cache-latest" GitHub release.
 
 **Weekly Datasets** (7-day update cycle):
 - bcb_series, bcb_realestate, fgv_ibre
@@ -252,26 +254,49 @@ realestatebr/
 ├── .claude/                    # Claude Code configuration
 ├── _targets.R                  # Data processing pipeline (Phase 2)
 ├── data-raw/                   # Data processing scripts
-│   ├── functions.R             # Pipeline functions
-│   ├── validation.R            # Data validation rules
+│   ├── pipeline/               # Pipeline helper functions
+│   │   ├── targets_helpers.R   # Caching and validation helpers
+│   │   └── validation.R        # Data validation rules
+│   ├── cache_output/           # Staging directory for GitHub releases (git-ignored)
 │   └── [dataset].R             # Individual dataset scripts
 ├── R/                          # Package functions
 │   ├── list-datasets.R         # Dataset discovery
 │   ├── get-dataset.R           # Unified data access
-│   ├── get-*.R                 # Legacy functions
-│   ├── database.R              # DuckDB integration (Phase 3)
-│   ├── cache.R                 # Caching utilities
+│   ├── get-*.R                 # Internal dataset functions
+│   ├── database.R              # DuckDB integration (Phase 4)
+│   ├── cache.R                 # Deprecated cache utilities
+│   ├── cache-user.R            # User-level cache management
+│   ├── cache-github.R          # GitHub releases cache
 │   ├── utils.R                 # Helper functions
 │   └── data-*.R                # Dataset documentation
 ├── inst/extdata/
 │   ├── datasets.yaml           # Dataset registry
-│   ├── cache/                  # Cached datasets
 │   └── validation/             # Validation rules
 ├── tests/testthat/             # Unit tests
 ├── vignettes/                  # Package documentation
 ├── man/                        # Generated documentation
 └── docs/                       # pkgdown website
 ```
+
+## Caching Architecture
+
+The package uses a three-tier caching system:
+
+1. **User Cache** (~/.local/share/realestatebr/)
+   - Fastest access
+   - Managed by R/cache-user.R
+   - Used for runtime caching
+
+2. **GitHub Releases** (tag: cache-latest)
+   - Medium speed (download from GitHub)
+   - Managed by R/cache-github.R
+   - Updated weekly/monthly by GitHub Actions
+
+3. **Fresh Download** (original sources)
+   - Slowest but always current
+   - Automatically saves to user cache after download
+
+The `data-raw/cache_output/` directory is a git-ignored staging location where the targets pipeline saves processed datasets before GitHub Actions uploads them to releases.
 
 ## Adding New Datasets
 

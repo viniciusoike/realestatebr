@@ -51,7 +51,7 @@ jobs:
 
       - name: Create required directories
         run: |
-          mkdir -p inst/cached_data
+          mkdir -p data-raw/cache_output
           mkdir -p inst/reports
           mkdir -p _targets
 
@@ -99,42 +99,53 @@ jobs:
         run: |
           Rscript -e 'source("data-raw/pipeline/generate_report.R"); generate_pipeline_report()'
 
-      - name: Check if there are changes to commit
-        id: verify-changed-files
+      - name: Create or update cache-latest release
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
+          # Check if release exists
+          if gh release view cache-latest > /dev/null 2>&1; then
+            echo "Release 'cache-latest' already exists"
           else
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Creating release 'cache-latest'"
+            gh release create cache-latest \
+              --title "Latest Cached Data" \
+              --notes "Automatically updated cached datasets. This release is continuously updated by the data pipeline." \
+              --prerelease
           fi
 
-      - name: Commit and push changes
-        if: steps.verify-changed-files.outputs.changed == 'true'
+      - name: Upload cached datasets to GitHub release
         run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
+          # Upload all files from cache_output to the release
+          if [ -d "data-raw/cache_output" ] && [ "$(ls -A data-raw/cache_output)" ]; then
+            echo "Uploading cached datasets to release 'cache-latest'"
 
-          # Add all changes
-          git add inst/cached_data/
-          git add inst/reports/
-          git add _targets/
+            # Upload files, overwriting existing ones
+            for file in data-raw/cache_output/*; do
+              if [ -f "$file" ]; then
+                filename=$(basename "$file")
+                echo "Uploading $filename..."
+                gh release upload cache-latest "$file" --clobber
+              fi
+            done
 
-          # Create commit message using heredoc
-          if [ -f "inst/reports/pipeline_status.md" ]; then
-            git commit -m "$(cat <<'EOF'
-          Daily data update: $(date +'%Y-%m-%d %H:%M UTC')
-
-          Updated datasets:
-          - B3 Stock prices (daily updates)
-
-          Report: inst/reports/pipeline_status.md
-          EOF
-          )"
+            echo "Upload completed successfully"
           else
-            git commit -m "Daily data update: $(date +'%Y-%m-%d %H:%M UTC')"
+            echo "No cached data files to upload"
           fi
 
-          git push
+      - name: Commit and push reports
+        run: |
+          # Only commit reports, not data files
+          if [ -n "$(git status --porcelain inst/reports/)" ]; then
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Actions"
+
+            git add inst/reports/
+
+            git commit -m "chore: update data pipeline reports (daily) - $(date +'%Y-%m-%d')"
+            git push
+          else
+            echo "No report changes to commit"
+          fi
 
       - name: Report completion status
         if: always()

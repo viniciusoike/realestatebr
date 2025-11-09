@@ -51,7 +51,7 @@ jobs:
 
       - name: Create required directories
         run: |
-          mkdir -p inst/cached_data
+          mkdir -p data-raw/cache_output
           mkdir -p inst/reports
           mkdir -p _targets
 
@@ -123,71 +123,56 @@ jobs:
         run: |
           Rscript -e 'source("data-raw/pipeline/generate_report.R"); generate_pipeline_report()'
 
-      - name: Check if there are changes to commit
-        id: verify-changed-files
+      - name: Create or update cache-latest release
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
+          # Check if release exists
+          if gh release view cache-latest > /dev/null 2>&1; then
+            echo "Release 'cache-latest' already exists"
           else
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Creating release 'cache-latest'"
+            gh release create cache-latest \
+              --title "Latest Cached Data" \
+              --notes "Automatically updated cached datasets. This release is continuously updated by the data pipeline." \
+              --prerelease
           fi
 
-      - name: Commit and push changes
-        if: steps.verify-changed-files.outputs.changed == 'true'
+      - name: Upload cached datasets to GitHub release
         run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
-
-          # Add all changes
-          git add inst/cached_data/
-          git add inst/reports/
-          git add _targets/
-
-          # Create detailed commit message using heredoc
           target_group="${{ steps.determine-targets.outputs.group }}"
 
-          if [ "$target_group" == "weekly" ]; then
-            git commit -m "$(cat <<'EOF'
-          Weekly data update (weekly): $(date +'%Y-%m-%d %H:%M UTC')
+          # Upload all files from cache_output to the release
+          if [ -d "data-raw/cache_output" ] && [ "$(ls -A data-raw/cache_output)" ]; then
+            echo "Uploading cached datasets to release 'cache-latest'"
 
-          Updated datasets:
-          - BCB Series (macroeconomic indicators)
-          - BCB Real Estate (market data)
-          - FGV IBRE (economic indicators)
-          - ABECIP (housing credit)
-          - ABRAINC (primary market)
-          - SECOVI-SP (São Paulo market)
-          - RPPI (sale and rent price indices)
+            # Upload files, overwriting existing ones
+            for file in data-raw/cache_output/*; do
+              if [ -f "$file" ]; then
+                filename=$(basename "$file")
+                echo "Uploading $filename..."
+                gh release upload cache-latest "$file" --clobber
+              fi
+            done
 
-          Report: inst/reports/pipeline_status.md
-          EOF
-          )"
-          elif [ "$target_group" == "monthly" ]; then
-            git commit -m "$(cat <<'EOF'
-          Weekly data update (monthly): $(date +'%Y-%m-%d %H:%M UTC')
-
-          Updated datasets:
-          - BIS RPPI (international property prices)
-          - CBIC (construction materials)
-          - Property Records (ITBI transactions)
-
-          Report: inst/reports/pipeline_status.md
-          EOF
-          )"
-          elif [ "$target_group" == "all" ]; then
-            git commit -m "$(cat <<'EOF'
-          Weekly data update (all): $(date +'%Y-%m-%d %H:%M UTC')
-
-          Comprehensive update of all weekly and monthly datasets.
-          - 8 weekly datasets (BCB, FGV, ABECIP, ABRAINC, SECOVI, RPPI)
-          - 3 monthly datasets (BIS, CBIC, Property Records)
-
-          Report: inst/reports/pipeline_status.md
-          EOF
-          )"
+            echo "Upload completed successfully"
+          else
+            echo "No cached data files to upload"
           fi
 
-          git push
+      - name: Commit and push reports
+        run: |
+          # Only commit reports and targets metadata, not data files
+          if [ -n "$(git status --porcelain inst/reports/)" ]; then
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Actions"
+
+            git add inst/reports/
+
+            target_group="${{ steps.determine-targets.outputs.group }}"
+            git commit -m "chore: update data pipeline reports ($target_group) - $(date +'%Y-%m-%d')"
+            git push
+          else
+            echo "No report changes to commit"
+          fi
 
       - name: Report completion status
         if: always()

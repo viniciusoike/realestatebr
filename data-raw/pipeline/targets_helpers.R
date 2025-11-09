@@ -12,7 +12,7 @@
 #'
 save_dataset_to_cache <- function(data, name, format = "auto") {
   # Ensure cache directory exists
-  cache_dir <- file.path("inst", "cached_data")
+  cache_dir <- file.path("data-raw", "cache_output")
   if (!dir.exists(cache_dir)) {
     dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
   }
@@ -70,7 +70,7 @@ should_update_dataset <- function(dataset_name, max_age = 24, force_update = FAL
   if (force_update) return(TRUE)
 
   # Check if cached metadata exists
-  cache_dir <- file.path("inst", "cached_data")
+  cache_dir <- file.path("data-raw", "cache_output")
   metadata_path <- file.path(cache_dir, paste0(dataset_name, "_metadata.rds"))
 
   if (!file.exists(metadata_path)) {
@@ -96,7 +96,7 @@ should_update_dataset <- function(dataset_name, max_age = 24, force_update = FAL
 #' Generate summary information about cached datasets
 #'
 get_cache_summary <- function() {
-  cache_dir <- file.path("inst", "cached_data")
+  cache_dir <- file.path("data-raw", "cache_output")
 
   if (!dir.exists(cache_dir)) {
     return(data.frame(
@@ -144,7 +144,7 @@ get_cache_summary <- function() {
 #' Check that cached files exist and are readable
 #'
 validate_cache_integrity <- function() {
-  cache_dir <- file.path("inst", "cached_data")
+  cache_dir <- file.path("data-raw", "cache_output")
 
   if (!dir.exists(cache_dir)) {
     cli::cli_warn("Cache directory does not exist: {cache_dir}")
