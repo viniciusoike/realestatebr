@@ -41,6 +41,6 @@ utils::globalVariables(c(
   "cols", "col_character", "col_number", "col_date",
 
   # Other data processing variables
-  "city_name", "month", "weighted_median_contract_rent_per_sqm",
+  "city_name", "month", "month_label", "weighted_median_contract_rent_per_sqm",
   "var_percent_12_meses", "name", "zone", "label", "title"
 ))

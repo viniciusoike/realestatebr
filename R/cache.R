@@ -22,7 +22,6 @@ NULL
 #'
 #' @seealso \code{\link{load_from_user_cache}}, \code{\link{get_dataset}}
 #' @keywords internal
-#' @export
 import_cached <- function(dataset_name,
                          cache_dir = "cached_data",
                          format = "auto",

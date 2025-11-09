@@ -6,13 +6,17 @@
 \alias{realestatebr-package}
 \title{realestatebr: Import Brazilian Real Estate Data into R}
 \description{
-This package offers a suite of functions that import real estate data from market reports in a convenient 'tidy' format in R.
+Provides functions to import Brazilian real estate data in a tidy format.
 }
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://viniciusoike.github.io/realestatebr/}
+  \item Report bugs at \url{https://github.com/viniciusoike/realestatebr/issues}
 }
+
+}
+\author{
+\strong{Maintainer}: Vinicius Oike Reginatto \email{viniciusoike@gmail.com}
 
 }
 \keyword{internal}

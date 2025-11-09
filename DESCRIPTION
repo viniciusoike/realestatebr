@@ -3,10 +3,10 @@ Type: Package
 Title: Import Brazilian Real Estate Data into R
 Version: 0.6.0
 Authors@R: person(
-    "Vinicius Oike", "Reginatto",
+    given = "Vinicius Oike",
+    family = "Reginatto",
     email = "viniciusoike@gmail.com",
-    role = c("aut", "cre"),
-    comment = c(ORCID = "0000-0002-4425-9994")
+    role = c("aut", "cre")
     )
 Description: Provides functions to import Brazilian real estate market data
     from various sources including BCB, FGV, ABECIP, ABRAINC, SECOVI, and BIS.
