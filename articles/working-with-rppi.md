@@ -1,0 +1,607 @@
+# Working with Property Price Indices
+
+### Introduction
+
+Brazil has several Residential Property Price Indices (RPPI) from
+different sources, each with unique methodologies and coverage. This
+vignette shows how to access and analyze these indices using the
+realestatebr package.
+
+``` r
+library(realestatebr)
+library(dplyr)
+library(ggplot2)
+
+# Helper function for consistent plot styling
+theme_series <- function() {
+  theme_minimal() +
+    theme(
+      panel.grid.minor = element_blank(),
+      legend.position = "bottom",
+      palette.colour.discrete = c("#27708CFF", "#85A693FF", "#A6511FFF", "#BFA575FF", "#B4D9CEFF")
+    )
+}
+```
+
+### Available RPPI Datasets
+
+#### Individual Indices
+
+Indexes from different sources can be accessed individually using the
+‘table’ argument from the
+[`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
+function.
+
+``` r
+# FipeZap Index (most comprehensive - 20 cities)
+fipezap <- get_dataset("rppi", "fipezap")
+
+# IVGR - National sales index from BCB
+ivgr <- get_dataset("rppi", "ivgr")
+
+# IGMI - Hedonic sales index from FGV
+igmi <- get_dataset("rppi", "igmi")
+
+# IVAR - Rent index from FGV
+ivar <- get_dataset("rppi", "ivar")
+
+# IQA - QuintoAndar rent prices
+iqa <- get_dataset("rppi", "iqa")
+
+# Secovi-SP - São Paulo market index
+secovi_sp <- get_dataset("rppi", "secovi_sp")
+```
+
+#### Stacked Indices
+
+To facilitate comparisons, all sale and rent indices are available in
+stacked format. This is especially useful for comparing multiple indices
+across different cities or regions.
+
+``` r
+# All sale indices in one table
+sale_indices <- get_dataset("rppi", "sale")
+unique(sale_indices$source)
+# Shows: IGMI-R, IVG-R, FipeZap, Secovi-SP
+
+# All rent indices
+rent_indices <- get_dataset("rppi", "rent")
+unique(rent_indices$source)
+# Shows: IVAR, IQA, Secovi-SP, FipeZap
+```
+
+### Understanding the Data Structure
+
+#### Common Columns
+
+Most RPPI datasets share these columns:
+
+- **date**: reference date (YMD format)
+- **name_muni**: city or region name
+- **index**: index number (base varies by source)
+- **chg**: monthly percent change
+- **acum12m**: 12-month accumulated change
+- **price_m2**: median price per square meter (if available)
+
+#### Specific Cases
+
+#### QuintoAndar (IQA)
+
+Unlike other indices, IQA provides actual rent prices instead of an
+index. Creating a base index from these prices is straightforward. The
+code below shows how to create a base 100 index for each municipality,
+using the first available rent price as the base (i.e. 2019/06 = 100).
+
+``` r
+iqa <- get_dataset("rppi", "iqa")
+
+iqa <- iqa |>
+  mutate(
+    index = rent_price / first(rent_price) * 100,
+    .by = name_muni
+  )
+```
+
+It’s important to note that IQA went through a significant change in
+methodology in mid-2022, which may affect trend analysis.
+
+#### FipeZap
+
+FipeZap is the most detailed RPPI, it includes both residential and
+non-residential markets, rent and sales indices, and breakdowns by
+number of bedrooms. The full level of granularity, however, is not
+available for all cities.
+
+- **market**: residential or commercial.
+- **rent_sale**: sale or rent market.
+- **rooms**: breakdown by number of bedrooms (1, 2, 3, 4+, total).
+- **variable**: index, chg, acum12m, price_m2 (median listing price),
+  yield (rental yield).
+
+## Examples
+
+### Regional Comparison with IGMI
+
+The IGMI-R index from Abecip/FGV providesprice indices for major
+Brazilian cities. The code below compares the IGMI sale index across São
+Paulo, Rio de Janeiro, Belo Horizonte, and Brasília.
+
+For most use cases, this is the most reliable (i.e. best) RPPI
+available. The index is based on actual transaction prices that are
+adjusted for property characteristics using hedonic methods and provides
+city-level coverage. Its primary limitation is the relatively short time
+series, covering only 2014 to the present.
+
+``` r
+# Get IGMI data
+igmi <- get_dataset("rppi", "igmi")
+
+# Major cities comparison
+cities_igmi <- igmi |>
+  filter(name_muni %in% c("São Paulo", "Rio De Janeiro",
+                          "Belo Horizonte", "Brasília"))
+
+# Plot with facets
+ggplot(cities_igmi, aes(x = date, y = index, color = name_muni)) +
+  geom_line(linewidth = 0.8) +
+  labs(title = "IGMI Sale Index by City",
+       x = NULL,
+       y = "Index") +
+  theme_series()
+```
+
+### IVG-R: the ‘official’ sales index
+
+IVG-R is the national sales index published by the Central Bank of
+Brazil (BACEN). It is based on median prices from actual transactions
+but does not include hedonic adjustments. The index offers a long time
+series (2001-present) but is only available at the national level.
+
+IVG-R is often considered the “official” RPPI in Brazil and is widely
+used by economists and policymakers. While based on median prices (see
+MVG-R), the final index applies both a 3-month moving average and the HP
+filter to smooth volatility, making it less volatile than other indices.
+
+``` r
+ivgr <- get_dataset("rppi", "ivgr")
+
+# Plot national IVG-R index
+ggplot(ivgr, aes(x = date, y = index)) +
+  geom_line(color = "#27708CFF", linewidth = 0.8) +
+  labs(title = "IVG-R National Sale Index",
+       x = NULL,
+       y = "Index (base varies by source)") +
+  theme_series()
+```
+
+### FipeZap: the broad sales index
+
+FipeZap is the most comprehensive RPPI in terms of geographic coverage,
+with indices for 50 cities. However, it is based on median **listing
+prices** rather than actual transaction prices. The index is available
+from 2008 to the present and includes both sales and rental markets.
+
+Working with this dataset requires filtering for specific cities and
+market segments. The example below compares the residential sales index
+across São Paulo, Rio de Janeiro, and Belo Horizonte.
+
+``` r
+# Get FipeZap data
+fz <- get_dataset("rppi", "fipezap")
+
+# Filter for major cities - residential sale index
+cities <- fz |>
+  filter(
+    # residential x commercial market
+    market == "residential",
+    # sale x rent market
+    rent_sale == "sale",
+    # all bedroom counts (1, 2, 3, 4+, total)
+    rooms == "total",
+    variable == "index",
+    name_muni %in% c("São Paulo", "Rio De Janeiro", "Belo Horizonte")
+  )
+
+# Plot
+ggplot(cities, aes(x = date, y = value, color = name_muni)) +
+  geom_line(linewidth = 0.8) +
+  labs(
+    title = "FipeZap Sale Index - Major Cities",
+    x = NULL,
+    y = "Index",
+    color = "City"
+  ) +
+  theme_series()
+```
+
+### Comparing National Sale Indices
+
+``` r
+# Get stacked sale data
+sales <- get_dataset("rppi", "sale")
+
+# Filter for national indices
+national <- sales |>
+  filter(name_muni == "Brazil")
+
+# Plot comparison
+ggplot(national, aes(x = date, y = index, color = source)) +
+  geom_line(linewidth = 0.8) +
+  facet_wrap(vars(source), scales = "free") +
+  labs(title = "Brazil National RPPI - Sales",
+       x = NULL,
+       y = "Index (base varies by source)",
+       color = "Source") +
+  theme_series()
+```
+
+To actually make the indices comparable, we need to normalize them to a
+common base. The code below normalizes all indices to 100 at the start
+of 2018 and then compares their growth over time. The total variation
+from 2018 to 2024 is also annotated on the plot.
+
+``` r
+comp_indexes <- national |>
+  filter(date >= as.Date("2018-01-01"), date <= as.Date("2024-12-31")) |>
+  mutate(
+    index_2018 = index / first(index) * 100,
+    .by = source
+  )
+
+total_variation <- comp_indexes |>
+  summarise(
+    total_variation = last(index_2018) - first(index_2018),
+    date = last(date),
+    index_2018 = last(index_2018),
+    .by = source
+  ) |>
+  mutate(label = glue::glue("{source}: {round(total_variation, 1)}%"))
+
+ggplot(comp_indexes, aes(x = date, y = index_2018, color = source)) +
+  geom_line(linewidth = 0.8) +
+  geom_hline(yintercept = 100) +
+  geom_label(
+    data = total_variation,
+    aes(x = date, y = index_2018, label = label),
+    hjust = 0,
+    nudge_x = 30,
+    show.legend = FALSE
+  ) +
+  scale_x_date(limits = c(as.Date("2018-01-01"), as.Date("2025-08-01"))) +
+  guides(color = guide_legend()) +
+  labs(
+    title = "Brazil National RPPI - Sales",
+    x = NULL,
+    y = "Index (base varies by source)",
+    color = "Source"
+  ) +
+  theme_series()
+```
+
+Alternatively, we can compare the 12-month growth rates of each index,
+which are directly comparable across sources. Note, however, that
+overall trends may point to different conclusions depending on the index
+used. This reflects differences in methodology and coverage across
+indices.
+
+``` r
+ggplot(comp_indexes, aes(x = date, y = acum12m, color = source)) +
+  geom_line(linewidth = 0.8) +
+  geom_hline(yintercept = 0) +
+  scale_x_date(limits = c(as.Date("2018-01-01"), as.Date("2025-08-01"))) +
+  scale_y_continuous(labels = scales::label_percent(scale = 100)) +
+  guides(color = guide_legend()) +
+  labs(
+    title = "Brazil National RPPI - Sales",
+    x = NULL,
+    y = NULL,
+    color = "Source"
+  ) +
+  theme_series()
+```
+
+### IVAR: the repeat-rent index
+
+IVAR is the rental index published by FGV, based on an unique
+“repeat-rent” methodology. It covers major Brazilian cities and is
+available from 2019 to the present. The index is based on actual rental
+contract prices, making it a reliable measure of rental market trends.
+
+``` r
+ivar <- get_dataset("rppi", "ivar")
+
+ivar_cities <- ivar |>
+  filter(name_muni != "Brazil")
+
+# Major cities comparison
+ggplot(ivar_cities, aes(x = date, y = index, color = name_muni)) +
+  geom_line(linewidth = 0.8) +
+  labs(title = "IVAR Rent Index by City",
+       x = NULL,
+       y = "Index (base varies by source)") +
+  theme_series()
+```
+
+IVAR is a “raw” index, meaning it does not apply any smoothing
+techniques like moving averages or the HP filter. As a result, it may
+appear more volatile than other indices.
+
+Applying a filter can help visualize underlying trends. The code below
+applies a 6-month moving average to the national IVAR index.
+
+``` r
+# National IVAR index
+ivar_national <- ivar |>
+  filter(name_muni == "Brazil") |>
+  mutate(ma_index = zoo::rollmean(index, 6, fill = NA, align = "right"))
+
+ggplot(ivar_national, aes(x = date)) +
+  geom_line(aes(y = index), color = "#A6511FFF", linewidth = 0.5, alpha = 0.6) +
+  geom_line(aes(y = ma_index), color = "#27708CFF", linewidth = 0.8) +
+  labs(title = "IVAR National Rent Index (raw vs 6-month MA)",
+       x = NULL,
+       y = "Index (base varies by source)") +
+  theme_series()
+```
+
+### FipeZap: the broad rental index
+
+Once again, FipeZap offers the most comprehensive geographic coverage.
+However, it is based on median **listing rent prices** rather than
+actual contract prices.
+
+``` r
+# Get FipeZap data
+fz <- get_dataset("rppi", "fipezap")
+
+# Filter for major cities - residential rent index
+
+start_date <- as.Date("2021-01-01")
+
+#
+cities_rent <- fz |>
+  filter(
+    market == "residential",
+    rooms == "total",
+    variable == "acum12m",
+    rent_sale == "rent",
+    date >= start_date,
+    !is.na(value)
+  )
+#
+cities <- cities_rent |>
+  filter(date == start_date) |>
+  pull(name_muni)
+
+cities_rent <- cities_rent |>
+  filter(name_muni %in% cities)
+
+
+# Plot all cities
+ggplot(cities_rent, aes(x = date, y = value)) +
+  geom_line(linewidth = 0.8, color = "#27708CFF") +
+  facet_wrap(vars(name_muni)) +
+  labs(
+    title = "FipeZap Rent Index - Major Cities",
+    x = NULL,
+    y = "Index"
+  ) +
+  theme_series()
+```
+
+### IQA: QuintoAndar Rent Prices
+
+QuintoAndar is an online brokerage platform that provides rental price
+data for major cities in Brazil. Initially, the IQA was a simple median
+price index based on rental contract prices. However, in mid-2023,
+QuintoAndar adopted a hedonic pricing model that incorporates both
+listing and contract prices. Together with this methodological change,
+the index rebranded to Índice QuintoAndar ImovelWeb (IQAIW).
+
+``` r
+iqa <- get_dataset("rppi", "iqa")
+
+iqa
+```
+
+### FipeZap by City
+
+``` r
+cities_count <- fz |>
+  filter(
+    market == "residential",
+    rooms == "total",
+    name_muni != "Índice Fipezap",
+    variable == "index",
+    !is.na(value)
+  ) |>
+  mutate(year = lubridate::year(date)) |>
+  count(year, name_muni, rent_sale) |>
+  count(year, rent_sale)
+
+ggplot(cities_count, aes(x = year, y = n, fill = rent_sale)) +
+  geom_col() +
+  geom_hline(yintercept = 0) +
+  geom_text(aes(label = n), vjust = -0.5) +
+  facet_wrap(vars(rent_sale)) +
+  labs(
+    title = "FipeZap Coverage Over Time",
+    x = "Year",
+    y = "Number of Cities",
+    fill = "Market"
+  ) +
+  theme_series()
+```
+
+``` r
+# Get FipeZap data
+fz <- get_dataset("rppi", "fipezap")
+
+# Filter for major cities - residential sale index
+cities <- fz |>
+  filter(
+    market == "residential",
+    rooms == "total",
+    variable == "index",
+    rent_sale == "sale",
+    name_muni %in% c("São Paulo", "Rio De Janeiro", "Belo Horizonte")
+  )
+
+# Plot
+ggplot(cities, aes(x = date, y = value, color = name_muni)) +
+  geom_line(linewidth = 0.8) +
+  labs(title = "FipeZap Sale Index - Major Cities",
+       x = NULL,
+       y = "Index",
+       color = "City") +
+  theme_series()
+```
+
+### Rent vs Sale - São Paulo
+
+``` r
+# Filter for São Paulo - both rent and sale
+cities <- fz |>
+  filter(
+    name_muni %in% c("São Paulo", "Rio De Janeiro", "Belo Horizonte"),
+    market == "residential",
+    rooms == "total",
+    variable == "index",
+    date >= as.Date("2019-01-01")
+  ) |>
+  select(date, name_muni, rent_sale, value)
+
+base_index <- cities |>
+  filter(between(date, as.Date("2019-01-01"), as.Date("2019-12-31"))) |>
+  summarise(base_index = mean(value), .by = c(name_muni, rent_sale))
+
+cities <- cities |>
+  left_join(base_index, join_by(name_muni, rent_sale)) |>
+  mutate(new_index = 100 * value / base_index) |>
+  select(-base_index)
+
+# Plot comparison
+ggplot(cities, aes(x = date, y = new_index, color = rent_sale)) +
+  geom_line() +
+  geom_hline(yintercept = 100) +
+  facet_wrap(vars(name_muni)) +
+  labs(
+    title = "Post-pandemic Rent vs Sale Divide",
+    subtitle = "FipeZap residential index",
+    x = NULL,
+    y = "Index (100 = 2019 average)",
+    color = "Market"
+  ) +
+  theme_series()
+```
+
+### International Comparison
+
+The package includes international RPPI data from the Bank for
+International Settlements (BIS):
+
+``` r
+# Get BIS international RPPI
+bis <- get_dataset("rppi_bis")
+
+# Filter for select countries
+countries <- bis |>
+  filter(
+    reference_area %in% c("Brazil", "United States", "Japan", "Germany"),
+    is_nominal == FALSE,
+    unit == "Index, 2010 = 100",
+    date >= as.Date("2000-01-01")
+  )
+
+# Plot comparison
+ggplot(countries, aes(x = date, y = value, color = reference_area)) +
+  geom_line(linewidth = 0.8) +
+  geom_hline(yintercept = 100) +
+  labs(title = "Residential Property Prices - International",
+       subtitle = "Nominal indices, 2010 = 100",
+       x = NULL,
+       y = "Index (2010 = 100)",
+       color = "Country") +
+  theme_series()
+```
+
+### Key Differences Between Indices
+
+#### Coverage
+
+- **FipeZap**: 20 cities, most comprehensive geographic coverage
+- **IVGR**: National
+- **IGMI**: Major cities with hedonic adjustment
+- **IVAR**: Major cities
+- **IQA**: 2 cities (São Paulo, Rio de Janeiro)
+
+#### Methodology
+
+- **IVGR**: Median prices from actual transactions.
+- **IGMI**: Hedonic pricing model (controls for property
+  characteristics).
+- **IVAR**: Repeat-sales methodology.
+- **FipeZap**: Median prices from listings.
+- **IQA** (old): Median prices from rental contract prices.
+- **IQA** (new): Hedonic pricing model from both listing and contract
+  prices.
+
+#### Frequency
+
+All indices are monthly, but historical coverage varies: - IVGR:
+2001-present - IGMI: 2014-present - FipeZap: 2008-present - IVAR:
+2002-present - IQA: 2019-present - Secovi-SP: 2008-present
+
+### Analysis Tips
+
+#### 1. Use Stacked Data for Easy Comparisons
+
+Stacked data makes it easier to compare multiple indices:
+
+``` r
+# Get all sale indices in one table
+all_sale <- get_dataset("rppi", table = "sale")
+
+# Compare across sources
+all_sale |>
+  filter(name_muni == "São Paulo") |>
+  ggplot(aes(x = date, y = acum12m, color = source)) +
+  geom_line() +
+  labs(title = "São Paulo Sale Indices Comparison")
+```
+
+#### 2. Normalize Indices When Comparing Levels
+
+Since each index has a different base period, normalize them for direct
+comparison:
+
+``` r
+sales <- get_dataset("rppi", table = "sale")
+
+sales_normalized <- sales |>
+  mutate(index_normalized = 100 * index / first(index), .by = source)
+```
+
+#### 3. Compare Growth Rates, Not Levels
+
+Growth rates are more meaningful than absolute index levels:
+
+``` r
+# 12-month growth comparison
+sales |>
+  ggplot(aes(x = date, y = acum12m, color = source)) +
+  geom_line() +
+  labs(y = "12-month change (%)")
+```
+
+### Next Steps
+
+- See
+  [`vignette("getting-started")`](https://viniciusoike.github.io/realestatebr/articles/getting-started.md)
+  for package basics
+- See
+  [`?get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
+  for all available tables
+- Explore city-level data with FipeZap
+- Compare methodologies across indices
+- Analyze rent vs sale dynamics

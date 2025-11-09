@@ -1,0 +1,45 @@
+# Get QuintoAndar ImovelWeb Rental Index (IQAIW)
+
+Get QuintoAndar ImovelWeb Rental Index (IQAIW)
+
+## Usage
+
+``` r
+get_rppi_iqaiw(cached = FALSE, quiet = FALSE, max_retries = 3L)
+```
+
+## Arguments
+
+- cached:
+
+  Logical. If TRUE, loads from GitHub cache
+
+- quiet:
+
+  Logical. If TRUE, suppresses warnings
+
+- max_retries:
+
+  Integer. Maximum retry attempts for downloads
+
+## Value
+
+Tibble with columns: date, name_muni, index, chg, acum12m, price_m2
+
+## Details
+
+The IQAIW (Índice QuintoAndar ImovelWeb) is a rental index for major
+Brazilian cities. The index is based on both new rental contracts
+(managed by QuintoAndar) and online listings from QuintoAndar's listings
+(including ImovelWeb). The IQAIW was develoepd in 2023 and replaced the
+former IQA index. Given the change in methodology and data sources, the
+IQAIW is not directly comparable to the IQA index. Formally, the index
+is a hedonic double imputed index, controlling for quality changes using
+a flexible GAM specification with location variables. In this sense, the
+IQAIW is more theoretically sound than median stratified indices like
+FipeZap or the former IQA. The mixture of listings and contracts,
+however, lacks theoretical support and seems to be mainly driven by
+branding purposes. The ImovelWeb brand was purchased by QuintoAndar in
+2021-22 and the IQAIW symbolizes the merging of both brands. In other
+words, the original IQA could've been improved simply by adopting a
+hedonic methodology, without the need to mix data sources.

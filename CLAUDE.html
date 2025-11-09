@@ -20,6 +20,7 @@
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/viniciusoike/realestatebr/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -29,7 +30,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Claude Code Configuration</h1>
-
+      <small class="dont-index">Source: <a href="https://github.com/viniciusoike/realestatebr/blob/main/CLAUDE.md" class="external-link"><code>CLAUDE.md</code></a></small>
     </div>
 
 <div id="claude-code-configuration" class="section level1">
@@ -244,7 +245,8 @@
 </ul></div>
 <div class="section level4">
 <h4 id="pipeline-architecture">Pipeline Architecture<a class="anchor" aria-label="anchor" href="#pipeline-architecture"></a></h4>
-<p>The pipeline uses the modern <code><a href="reference/get_dataset.html">get_dataset()</a></code> interface with three targets per dataset: 1. <strong><code>{dataset}_data</code></strong>: Fetches fresh data using <code>get_dataset(source="fresh")</code> 2. <strong><code>{dataset}_cache</code></strong>: Saves to <code>inst/cached_data/</code> directory 3. <strong><code>{dataset}_validation</code></strong>: Validates data quality</p>
+<p>The pipeline uses the modern <code><a href="reference/get_dataset.html">get_dataset()</a></code> interface with three targets per dataset: 1. <strong><code>{dataset}_data</code></strong>: Fetches fresh data using <code>get_dataset(source="fresh")</code> 2. <strong><code>{dataset}_cache</code></strong>: Saves to <code>data-raw/cache_output/</code> (staging directory for GitHub releases) 3. <strong><code>{dataset}_validation</code></strong>: Validates data quality</p>
+<p>After processing, GitHub Actions uploads files from <code>data-raw/cache_output/</code> to the “cache-latest” GitHub release.</p>
 <p><strong>Weekly Datasets</strong> (7-day update cycle): - bcb_series, bcb_realestate, fgv_ibre - abecip, abrainc, secovi - rppi_sale, rppi_rent</p>
 <p><strong>Monthly Datasets</strong> (30-day update cycle): - bis_rppi, cbic, property_records</p>
 <p><strong>Manual Only</strong>: - nre_ire (never auto-updates)</p>
@@ -310,25 +312,50 @@
 ├── .claude/                    # Claude Code configuration
 ├── _targets.R                  # Data processing pipeline (Phase 2)
 ├── data-raw/                   # Data processing scripts
-│   ├── functions.R             # Pipeline functions
-│   ├── validation.R            # Data validation rules
+│   ├── pipeline/               # Pipeline helper functions
+│   │   ├── targets_helpers.R   # Caching and validation helpers
+│   │   └── validation.R        # Data validation rules
+│   ├── cache_output/           # Staging directory for GitHub releases (git-ignored)
 │   └── [dataset].R             # Individual dataset scripts
 ├── R/                          # Package functions
 │   ├── list-datasets.R         # Dataset discovery
 │   ├── get-dataset.R           # Unified data access
-│   ├── get-*.R                 # Legacy functions
-│   ├── database.R              # DuckDB integration (Phase 3)
-│   ├── cache.R                 # Caching utilities
+│   ├── get-*.R                 # Internal dataset functions
+│   ├── database.R              # DuckDB integration (Phase 4)
+│   ├── cache.R                 # Deprecated cache utilities
+│   ├── cache-user.R            # User-level cache management
+│   ├── cache-github.R          # GitHub releases cache
 │   ├── utils.R                 # Helper functions
 │   └── data-*.R                # Dataset documentation
 ├── inst/extdata/
 │   ├── datasets.yaml           # Dataset registry
-│   ├── cache/                  # Cached datasets
 │   └── validation/             # Validation rules
 ├── tests/testthat/             # Unit tests
 ├── vignettes/                  # Package documentation
 ├── man/                        # Generated documentation
 └── docs/                       # pkgdown website</code></pre>
+</div>
+<div class="section level2">
+<h2 id="caching-architecture">Caching Architecture<a class="anchor" aria-label="anchor" href="#caching-architecture"></a></h2>
+<p>The package uses a three-tier caching system:</p>
+<ol style="list-style-type: decimal"><li>
+<strong>User Cache</strong> (~/.local/share/realestatebr/)
+<ul><li>Fastest access</li>
+<li>Managed by R/cache-user.R</li>
+<li>Used for runtime caching</li>
+</ul></li>
+<li>
+<strong>GitHub Releases</strong> (tag: cache-latest)
+<ul><li>Medium speed (download from GitHub)</li>
+<li>Managed by R/cache-github.R</li>
+<li>Updated weekly/monthly by GitHub Actions</li>
+</ul></li>
+<li>
+<strong>Fresh Download</strong> (original sources)
+<ul><li>Slowest but always current</li>
+<li>Automatically saves to user cache after download</li>
+</ul></li>
+</ol><p>The <code>data-raw/cache_output/</code> directory is a git-ignored staging location where the targets pipeline saves processed datasets before GitHub Actions uploads them to releases.</p>
 </div>
 <div class="section level2">
 <h2 id="adding-new-datasets">Adding New Datasets<a class="anchor" aria-label="anchor" href="#adding-new-datasets"></a></h2>
@@ -372,7 +399,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>
