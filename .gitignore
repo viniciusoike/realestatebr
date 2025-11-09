@@ -77,6 +77,9 @@ README.html
 # Development/debugging test scripts (not formal tests)
 tests/basic_checks*.R
 tests/fixes_*.R
+tests/sanity_check*.R
+tests/comprehensive_check*.qmd
+tests/comprehensive_check*.html
 
 # Archive and backup directories in data-raw
 data-raw/archive/
@@ -85,6 +88,16 @@ data-raw/*_backup/
 # Test reports
 tests/**/*.html
 tests/**/*.pdf
+
+# Temporal reports with date stamps
+inst/reports/*_202*.csv
+inst/reports/*_202*.md
+inst/reports/cache_summary*.csv
+inst/reports/pipeline_status*.md
+
+# Additional build artifacts
+*.tgz
+index.html
 
 # Root level .Rcheck variant
 ..Rcheck/
