@@ -21,7 +21,6 @@ RoxygenNote: 7.3.3
 Imports:
     cli,
     dplyr,
-    glue,
     httr,
     janitor,
     lifecycle,
@@ -33,7 +32,6 @@ Imports:
     readxl,
     rlang,
     rvest,
-    stringi,
     stringr,
     tibble,
     tidyr,
@@ -51,6 +49,7 @@ Suggests:
     rmarkdown,
     scales,
     sf,
+    stringi,
     targets,
     tarchetypes,
     testthat,

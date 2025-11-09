@@ -58,10 +58,10 @@ get_itbi <- function(city = "bhe") {
   )
 
   if (!any(city %in% available_cities_itbi)) {
-
-    stop(glue::glue("Argument 'city' must be one of {paste(available_cities_itbi, collapse = ', ')}."))
-
-    }
+    cli::cli_abort(
+      "Argument {.arg city} must be one of {.val {available_cities_itbi}}."
+    )
+  }
 
   if (city == "bhe" | city == "Belo Horizonte") {
 

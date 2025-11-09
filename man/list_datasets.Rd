@@ -36,7 +36,7 @@ A tibble with columns:
 \item{categories}{Number of categories/subtables}
 \item{available_tables}{Names of available tables (for multi-table datasets)}
 \item{data_type}{Type of data structure (tibble/list)}
-\item{legacy_function}{Original function name for backward compatibility}
+\item{legacy_function}{Internal function name (for reference only)}
 }
 }
 \description{

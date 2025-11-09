@@ -1197,7 +1197,14 @@ get_cbic_dim_state <- function() {
 #' @keywords internal
 clean_cbic_string <- function(x) {
   y <- stringr::str_remove_all(x, "\\\\d+")
-  y <- stringi::stri_trans_general(y, "latin-ascii")
+
+  # Use stringi if available, otherwise fall back to base R
+  if (requireNamespace("stringi", quietly = TRUE)) {
+    y <- stringi::stri_trans_general(y, "latin-ascii")
+  } else {
+    y <- iconv(y, to = "ASCII//TRANSLIT")
+  }
+
   y <- stringr::str_remove_all(y, "[:punct:]")
   y <- stringr::str_squish(y)
   y <- stringr::str_replace_all(y, " ", "_")

@@ -207,8 +207,7 @@ import_secovi <- function(table) {
     # Get the names of the missing tables
     missing_tables <- names(tables[sapply(tables, length) == 0])
     # Report a warning
-    warn_msg <- glue::glue("Failed to import data for: {paste(missing_tables, collapse = ', ')}")
-    warning(warn_msg)
+    cli::cli_warn("Failed to import data for: {.val {missing_tables}}")
     # Remove elements with less than 0 length
     tables <- tables[sapply(tables, length) > 0]
   }
