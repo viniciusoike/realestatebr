@@ -1,89 +1,48 @@
 #' Get FGV IBRE Confidence Indicators (DEPRECATED)
 #'
-#' @section Deprecation:
-#' This function is deprecated since v0.4.0.
-#' Use \code{\link{get_dataset}}("fgv_ibre") instead:
-#'
-#' \preformatted{
-#'   # Old way:
-#'   data <- get_fgv_ibre()
-#'
-#'   # New way:
-#'   data <- get_dataset("fgv_ibre")
-#' }
-#'
-#' @details
-#' Downloads construction confidence indicators from FGV IBRE including confidence
+#' @description
+#' Deprecated since v0.4.0. Use \code{\link{get_dataset}}("fgv_ibre") instead.
+#' Loads construction confidence indicators from FGV IBRE including confidence
 #' indices, expectation indicators, and INCC price indices.
 #'
 #' @param table Character. Which dataset to return: "indicators" (default) or "all".
-#' @param cached Logical. If `TRUE` (default), loads data from package cache
-#'   using the unified dataset architecture. If `FALSE`, uses internal
-#'   package data objects.
-#' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
-#'   If `FALSE` (default), provides detailed progress reporting.
+#' @param cached Logical. If `TRUE` (default), loads data from cache.
+#' @param quiet Logical. If `TRUE`, suppresses progress messages.
 #'
-#' @return A `tibble` containing all construction confidence indicator series from FGV IBRE.
-#'   The tibble includes metadata attributes:
-#'   \describe{
-#'     \item{download_info}{List with access statistics}
-#'     \item{source}{Data source used (cache or internal)}
-#'     \item{download_time}{Timestamp of access}
-#'   }
+#' @return Tibble with FGV IBRE indicators. Includes metadata attributes:
+#'   source, download_time.
 #'
-#' @importFrom cli cli_inform cli_warn cli_abort
 #' @keywords internal
 get_fgv_ibre <- function(
   table = "indicators",
   cached = TRUE,
   quiet = FALSE
 ) {
-  # Input validation and backward compatibility ----
-  valid_tables <- c("indicators", "all")
+  # Input validation ----
+  valid_tables <- c("indicators")
 
-
-  if (!is.character(table) || length(table) != 1) {
-    cli::cli_abort(c(
-      "Invalid {.arg table} parameter",
-      "x" = "{.arg table} must be a single character string",
-      "i" = "Valid tables: {.val {valid_tables}}"
-    ))
-  }
-
-  if (!table %in% valid_tables) {
-    cli::cli_abort(c(
-      "Invalid table: {.val {table}}",
-      "i" = "Valid tables: {.val {valid_tables}}"
-    ))
-  }
-
-  if (!is.logical(cached) || length(cached) != 1) {
-    cli::cli_abort("{.arg cached} must be a logical value")
-  }
-
-  if (!is.logical(quiet) || length(quiet) != 1) {
-    cli::cli_abort("{.arg quiet} must be a logical value")
-  }
+  validate_dataset_params(
+    table,
+    valid_tables,
+    cached,
+    quiet,
+    max_retries = 3,
+    allow_all = TRUE
+  )
 
   # Handle cached data ----
   if (cached) {
-    cli_debug("Loading FGV IBRE indicators from cache...")
-
-    # Use new unified architecture for cached data
-    fgv_data <- get_dataset("fgv_ibre", source = "github")
-
-    cli_debug("Successfully loaded {nrow(fgv_data)} FGV IBRE indicator records from cache")
-
-    # Add metadata
-    attr(fgv_data, "source") <- "cache"
-    attr(fgv_data, "download_time") <- Sys.time()
-    attr(fgv_data, "download_info") <- list(
-      table = table,
-      dataset = "fgv_ibre",
-      source = "cache"
+    fgv_data <- handle_dataset_cache(
+      "fgv_ibre",
+      table = NULL,
+      quiet = quiet,
+      on_miss = "error"
     )
 
-    return(fgv_data)
+    if (!is.null(fgv_data)) {
+      fgv_data <- attach_dataset_metadata(fgv_data, source = "cache", category = table)
+      return(fgv_data)
+    }
   }
 
   # Fresh downloads not supported ----
