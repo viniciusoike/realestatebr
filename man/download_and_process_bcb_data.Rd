@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_bcb_realestate.R
 \name{download_and_process_bcb_data}
 \alias{download_and_process_bcb_data}
-\title{Download and Process BCB Real Estate Data with Retry Logic}
+\title{Download and Process BCB Real Estate Data}
 \usage{
 download_and_process_bcb_data(quiet, max_retries)
 }
@@ -15,7 +15,6 @@ download_and_process_bcb_data(quiet, max_retries)
 Processed BCB real estate data tibble
 }
 \description{
-Internal function to download and process BCB real estate data with
-retry logic and proper error handling.
+Download and Process BCB Real Estate Data
 }
 \keyword{internal}

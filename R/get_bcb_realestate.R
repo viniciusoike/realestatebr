@@ -1,49 +1,20 @@
 #' Import Real Estate data from the Brazilian Central Bank (DEPRECATED)
 #'
-#' @section Deprecation:
-#' This function is deprecated since v0.4.0.
-#' Use \code{\link{get_dataset}}("bcb_realestate") instead:
-#'
-#' \preformatted{
-#'   # Old way:
-#'   data <- get_bcb_realestate()
-#'
-#'   # New way:
-#'   data <- get_dataset("bcb_realestate")
-#' }
-#'
-#' @details
-#' Imports real estate data from BCB including credit sources, credit applications,
+#' @description
+#' Deprecated since v0.4.0. Use \code{\link{get_dataset}}("bcb_realestate") instead.
+#' Imports real estate data from BCB including credit sources, applications,
 #' financed units, and real estate indices.
 #'
 #' @param table Character. One of `'accounting'`, `'application'`, `'indices'`,
 #'   `'sources'`, `'units'`, or `'all'` (default).
-#' @param cached Logical. If `TRUE`, attempts to load data from package cache
-#'   using the unified dataset architecture.
-#' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
-#'   If `FALSE` (default), provides detailed progress reporting.
-#' @param max_retries Integer. Maximum number of retry attempts for failed
-#'   API calls. Defaults to 3.
+#' @param cached Logical. If `TRUE`, attempts to load data from cache.
+#' @param quiet Logical. If `TRUE`, suppresses progress messages.
+#' @param max_retries Integer. Maximum retry attempts. Defaults to 3.
 #'
-#' @source [https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario](https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario)
-#' @return If `table = 'all'` returns a `tibble` with 13 columns where:
-#' * `series_info`: the full name identifying each series.
-#' * `category`: category of the series (first element of `series_info`).
-#' * `type`: subcategory of the series (second element of `series_info`).
-#' * `v1` to `v5`: elements of `series_info`.
-#' * `value`: numeric value of the series.
-#' * `abbrev_state`: two letter state abbreviation.
+#' @return Tibble with BCB real estate data. Includes metadata attributes:
+#'   source, download_time.
 #'
-#'   The tibble includes metadata attributes:
-#'   \describe{
-#'     \item{download_info}{List with download statistics}
-#'     \item{source}{Data source used (api or cache)}
-#'     \item{download_time}{Timestamp of download}
-#'   }
-#'
-#' @importFrom cli cli_inform cli_warn cli_abort
-#' @importFrom dplyr filter mutate select rename_with inner_join tibble
-#' @importFrom tidyr pivot_wider unnest
+#' @source \url{https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario}
 #' @keywords internal
 get_bcb_realestate <- function(
   table = "all",
@@ -53,7 +24,6 @@ get_bcb_realestate <- function(
 ) {
   # Input validation ----
   valid_tables <- c(
-    "all",
     "accounting",
     "application",
     "indices",
@@ -61,61 +31,34 @@ get_bcb_realestate <- function(
     "units"
   )
 
-  if (!is.character(table) || length(table) != 1) {
-    cli::cli_abort(c(
-      "Invalid {.arg table} parameter",
-      "x" = "{.arg table} must be a single character string"
-    ))
-  }
-
-  if (!table %in% valid_tables) {
-    cli::cli_abort(c(
-      "Invalid table: {.val {table}}",
-      "i" = "Valid tables: {.val {valid_tables}}"
-    ))
-  }
-
-  if (!is.logical(cached) || length(cached) != 1) {
-    cli::cli_abort("{.arg cached} must be a logical value")
-  }
-
-  if (!is.logical(quiet) || length(quiet) != 1) {
-    cli::cli_abort("{.arg quiet} must be a logical value")
-  }
-
-  if (!is.numeric(max_retries) || length(max_retries) != 1 || max_retries < 1) {
-    cli::cli_abort("{.arg max_retries} must be a positive integer")
-  }
+  validate_dataset_params(
+    table,
+    valid_tables,
+    cached,
+    quiet,
+    max_retries,
+    allow_all = TRUE
+  )
 
   # Handle cached data ----
   if (cached) {
-    cli_debug("Loading BCB real estate data from cache...")
-
-    tryCatch(
-      {
-        clean_bcb <- get_dataset("bcb_realestate", source = "github")
-
-        cli_debug("Successfully loaded {nrow(clean_bcb)} records from cache")
-
-        # Add metadata
-        attr(clean_bcb, "source") <- "cache"
-        attr(clean_bcb, "download_time") <- Sys.time()
-        attr(clean_bcb, "download_info") <- list(
-          category = table,
-          source = "cache"
-        )
-      },
-      error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load cached data: {e$message}",
-            "i" = "Falling back to fresh download from BCB API"
-          ))
-        }
-        # Fallback to fresh download
-        clean_bcb <<- download_and_process_bcb_data(quiet, max_retries)
-      }
+    clean_bcb <- handle_dataset_cache(
+      "bcb_realestate",
+      table = NULL,
+      quiet = quiet,
+      on_miss = "download"
     )
+
+    if (!is.null(clean_bcb)) {
+      clean_bcb <- attach_dataset_metadata(
+        clean_bcb,
+        source = "cache",
+        category = table
+      )
+    } else {
+      # Fallback to fresh download
+      clean_bcb <- download_and_process_bcb_data(quiet, max_retries)
+    }
   } else {
     # Download fresh data from BCB API
     clean_bcb <- download_and_process_bcb_data(quiet, max_retries)
@@ -176,49 +119,44 @@ get_bcb_realestate <- function(
     tidyr::unnest(cols = tab) |>
     dplyr::select(-cat, -id_cols, -names_from)
 
-  # Add metadata attributes
-  attr(tbl_bcb, "source") <- if (is.null(attr(clean_bcb, "source"))) {
-    "api"
-  } else {
-    attr(clean_bcb, "source")
+  # Preserve metadata from clean_bcb
+  source_val <- attr(clean_bcb, "source", exact = TRUE)
+  if (is.null(source_val)) {
+    source_val <- "web"
   }
-  attr(tbl_bcb, "download_time") <- if (
-    is.null(attr(clean_bcb, "download_time"))
-  ) {
-    Sys.time()
-  } else {
-    attr(clean_bcb, "download_time")
-  }
-  attr(tbl_bcb, "download_info") <- if (
-    is.null(attr(clean_bcb, "download_info"))
-  ) {
-    list(category = table, source = "api")
-  } else {
-    attr(clean_bcb, "download_info")
-  }
+
+  tbl_bcb <- attach_dataset_metadata(
+    tbl_bcb,
+    source = source_val,
+    category = table
+  )
 
   # Compute nrow before cli message to avoid serialization issues
   n_records <- nrow(tbl_bcb)
-  cli_user("\u2713 BCB real estate data retrieved: {n_records} records", quiet = quiet)
+  cli_user(
+    "\u2713 BCB real estate data retrieved: {n_records} records",
+    quiet = quiet
+  )
 
   return(tbl_bcb)
 }
 
-#' Download and Process BCB Real Estate Data with Retry Logic
-#'
-#' Internal function to download and process BCB real estate data with
-#' retry logic and proper error handling.
+#' Download and Process BCB Real Estate Data
 #'
 #' @param quiet Logical controlling messages
 #' @param max_retries Maximum number of retry attempts
-#'
 #' @return Processed BCB real estate data tibble
 #' @keywords internal
 download_and_process_bcb_data <- function(quiet, max_retries) {
   cli_user("Downloading real estate data from BCB API", quiet = quiet)
 
   # Download and import most recent data available with retry logic
-  bcb <- import_bcb_realestate_robust(quiet = quiet, max_retries = max_retries)
+  bcb <- download_with_retry(
+    fn = import_bcb_realestate,
+    max_retries = max_retries,
+    quiet = quiet,
+    desc = "BCB API"
+  )
 
   cli_debug("Processing and cleaning BCB data...")
 
@@ -226,66 +164,10 @@ download_and_process_bcb_data <- function(quiet, max_retries) {
   clean_bcb <- clean_bcb_realestate(bcb)
 
   # Add metadata
-  attr(clean_bcb, "source") <- "api"
-  attr(clean_bcb, "download_time") <- Sys.time()
-  attr(clean_bcb, "download_info") <- list(
-    source = "api",
-    records_processed = nrow(clean_bcb)
-  )
+  clean_bcb <- attach_dataset_metadata(clean_bcb, source = "web")
 
   return(clean_bcb)
 }
-
-#' Import BCB Real Estate Data with Robust Error Handling
-#'
-#' Modern version of import_bcb_realestate with retry logic.
-#'
-#' @param quiet Logical controlling messages
-#' @param max_retries Maximum number of retry attempts
-#'
-#' @return Raw BCB data or error
-#' @keywords internal
-import_bcb_realestate_robust <- function(quiet, max_retries) {
-  attempts <- 0
-  last_error <- NULL
-
-  while (attempts <= max_retries) {
-    attempts <- attempts + 1
-
-    tryCatch(
-      {
-        # Try the original import function
-        result <- import_bcb_realestate()
-        return(result)
-      },
-      error = function(e) {
-        last_error <<- e$message
-
-        if (!quiet && attempts <= max_retries) {
-          cli::cli_warn(c(
-            "BCB API request failed (attempt {attempts}/{max_retries + 1})",
-            "x" = "Error: {e$message}",
-            "i" = "Retrying in {min(attempts * 0.5, 3)} second{?s}..."
-          ))
-        }
-
-        # Add delay before retry
-        if (attempts <= max_retries) {
-          Sys.sleep(min(attempts * 0.5, 3))
-        }
-      }
-    )
-  }
-
-  # All attempts failed
-  cli::cli_abort(c(
-    "Failed to download BCB real estate data",
-    "x" = "All {max_retries + 1} attempt{?s} failed",
-    "i" = "Last error: {last_error}",
-    "i" = "Check your internet connection and BCB API status"
-  ))
-}
-
 
 import_bcb_realestate <- function() {
   tryCatch(
