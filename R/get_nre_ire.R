@@ -1,106 +1,49 @@
 #' Get the IRE Index (DEPRECATED)
 #'
-#' @section Deprecation:
-#' This function is deprecated since v0.4.0.
-#' Use \code{\link{get_dataset}}("nre_ire") instead:
-#'
-#' \preformatted{
-#'   # Old way:
-#'   data <- get_nre_ire()
-#'
-#'   # New way:
-#'   data <- get_dataset("nre_ire")
-#' }
-#'
-#' @details
-#' Downloads the Real Estate Index (IRE) from NRE-Poli (USP) tracking average stock
-#' prices of real estate companies in Brazil. Values indexed to 100 = May/2006.
+#' @description
+#' Deprecated since v0.4.0. Use \code{\link{get_dataset}}("nre_ire") instead.
+#' Loads the Real Estate Index (IRE) from NRE-Poli (USP) tracking average stock
+#' prices of real estate companies in Brazil.
 #'
 #' @param table Character. Which dataset to return: "indicators" (default) or "all".
-#' @param cached Logical. If `TRUE` (default), loads data from package cache
-#'   using the unified dataset architecture. This is currently the only
-#'   supported method for this dataset.
-#' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
-#'   If `FALSE` (default), provides detailed progress reporting.
+#' @param cached Logical. If `TRUE` (default), loads data from cache.
+#' @param quiet Logical. If `TRUE`, suppresses progress messages.
 #'
-#' @return A tibble with 8 columns where:
-#' * `ire` is the IRE Index.
-#' * `ire_r50_plus` is the IRE Index of the top 50% companies.
-#' * `ire_r50_minus` is the IRE Index of the bottom 50% companies.
-#' * `ire_bi` is the IRE-BI Index (non-residential).
-#' * `ibov` is the Ibovespa Index.
-#' * `ibov_points` is the Ibovespa Index in points.
-#' * `ire_ibov` is the ratio of the IRE Index and the Ibovespa Index.
+#' @return Tibble with NRE-IRE index data. Includes metadata attributes:
+#'   source, download_time.
 #'
-#' The tibble includes metadata attributes:
-#' \describe{
-#'   \item{download_info}{List with access statistics}
-#'   \item{source}{Data source used (cache)}
-#'   \item{download_time}{Timestamp of access}
-#' }
-#'
-#' @importFrom cli cli_inform cli_warn cli_abort
-#' @source Original series and methodology available at [https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html](https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html).
+#' @source \url{https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html}
 #' @keywords internal
 get_nre_ire <- function(
   table = "indicators",
   cached = TRUE,
   quiet = FALSE
 ) {
-  # Input validation and backward compatibility ----
-  valid_tables <- c("indicators", "all")
+  # Input validation ----
+  valid_tables <- c("indicators")
 
-
-  if (!is.character(table) || length(table) != 1) {
-    cli::cli_abort(c(
-      "Invalid {.arg table} parameter",
-      "x" = "{.arg table} must be a single character string",
-      "i" = "Valid tables: {.val {valid_tables}}"
-    ))
-  }
-
-  if (!table %in% valid_tables) {
-    cli::cli_abort(c(
-      "Invalid table: {.val {table}}",
-      "i" = "Valid tables: {.val {valid_tables}}"
-    ))
-  }
-
-  if (!is.logical(cached) || length(cached) != 1) {
-    cli::cli_abort("{.arg cached} must be a logical value")
-  }
-
-  if (!is.logical(quiet) || length(quiet) != 1) {
-    cli::cli_abort("{.arg quiet} must be a logical value")
-  }
-
-  # Note: Fresh downloads not supported, but we can fall back to internal data
+  validate_dataset_params(
+    table,
+    valid_tables,
+    cached,
+    quiet,
+    max_retries = 3,
+    allow_all = TRUE
+  )
 
   # Handle cached data ----
   if (cached) {
-    if (!quiet) {
-      cli::cli_inform("Loading NRE-IRE index data from cache...")
-    }
-
-    # Use new unified architecture for cached data
-    ire_data <- get_dataset("nre_ire", source = "github")
-
-    if (!quiet) {
-      cli::cli_inform(
-        "Successfully loaded {nrow(ire_data)} NRE-IRE records from cache"
-      )
-    }
-
-    # Add metadata
-    attr(ire_data, "source") <- "cache"
-    attr(ire_data, "download_time") <- Sys.time()
-    attr(ire_data, "download_info") <- list(
-      table = table,
-      dataset = "nre_ire",
-      source = "cache"
+    ire_data <- handle_dataset_cache(
+      "nre_ire",
+      table = NULL,
+      quiet = quiet,
+      on_miss = "error"
     )
 
-    return(ire_data)
+    if (!is.null(ire_data)) {
+      ire_data <- attach_dataset_metadata(ire_data, source = "cache", category = table)
+      return(ire_data)
+    }
   }
 
   # Fresh downloads not supported ----
