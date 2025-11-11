@@ -1,8 +1,7 @@
-# Get Property Records Table
+# Get Property Records Table (DEPRECATED)
 
-Imports and cleans specific tables from the most up to date property
-transaction records available from Registro de Imoveis with modern error
-handling, progress reporting, and robust download capabilities.
+Downloads property transaction records from Registro de Imoveis
+including capitals, cities, and regional aggregates data.
 
 ## Usage
 
@@ -19,60 +18,27 @@ get_property_records(
 
 - table:
 
-  Character. One of:
-
-  "capitals"
-
-  :   Records data for capital cities (default)
-
-  "capitals_transfers"
-
-  :   Transfer data for capital cities
-
-  "cities"
-
-  :   Records data for all cities
-
-  "aggregates"
-
-  :   Records data for SP regional aggregates
-
-  "aggregates_transfers"
-
-  :   Transfer data for SP aggregates
+  Character. One of "capitals", "capitals_transfers", "cities",
+  "aggregates", or "aggregates_transfers".
 
 - cached:
 
-  Logical. If `TRUE`, attempts to load data from package cache.
+  Logical. If `TRUE`, loads data from package cache.
 
 - quiet:
 
-  Logical. If `TRUE`, suppresses progress messages and warnings. If
-  `FALSE` (default), provides detailed progress reporting.
+  Logical. If `TRUE`, suppresses progress messages.
 
 - max_retries:
 
-  Integer. Maximum number of retry attempts for failed downloads.
-  Defaults to 3.
+  Integer. Maximum retry attempts. Defaults to 3.
 
 ## Value
 
-A `tibble` with the requested property records table.
+A tibble with property records data.
 
-## Details
+## Deprecation
 
-This function scrapes download links from the Registro de Imoveis
-website and processes Excel files containing property transaction data.
-The function handles multiple data categories and includes comprehensive
-data cleaning.
-
-## Progress Reporting
-
-When `quiet = FALSE`, the function provides detailed progress
-information including web scraping status, download progress, and data
-processing steps.
-
-## Error Handling
-
-The function includes retry logic for failed downloads and robust error
-handling for web scraping and Excel processing operations.
+This function is deprecated since v0.4.0. Use
+[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("property_records")
+instead.

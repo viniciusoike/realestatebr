@@ -43,9 +43,9 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_abrainc_excel.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_and_cache.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_and_process_bcb_data.html</loc></url>
-<url><loc>https://viniciusoike.github.io/realestatebr/reference/download_bis_excel_robust.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/download_bis_excel.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_from_github_release.html</loc></url>
-<url><loc>https://viniciusoike.github.io/realestatebr/reference/download_ri_excel.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/download_ri_excel_core.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/encoding-utils.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/ensure_cache_dir.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/extract_property_table.html</loc></url>
@@ -123,7 +123,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/rppi-helpers.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/save_cache_metadata.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/save_to_user_cache.html</loc></url>
-<url><loc>https://viniciusoike.github.io/realestatebr/reference/scrape_registro_imoveis_links.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/scrape_registro_imoveis_links_core.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/show_import_message.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/standardize_rppi_structure.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/supports_table_all.html</loc></url>

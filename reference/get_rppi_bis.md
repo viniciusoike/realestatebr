@@ -1,6 +1,10 @@
 # Get Residential Property Price Indices from BIS (DEPRECATED)
 
-Get Residential Property Price Indices from BIS (DEPRECATED)
+Deprecated since v0.4.0. Use
+[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("rppi_bis")
+instead. Downloads Residential Property Price Indices from BIS with
+support for selected series and detailed
+monthly/quarterly/annual/semiannual datasets.
 
 ## Usage
 
@@ -21,74 +25,22 @@ get_rppi_bis(
 
 - table:
 
-  Character. Which dataset table to return:
-
-  "selected"
-
-  :   Selected RPPI series for major countries (default)
-
-  "detailed_monthly"
-
-  :   Monthly detailed RPPI data
-
-  "detailed_quarterly"
-
-  :   Quarterly detailed RPPI data
-
-  "detailed_annual"
-
-  :   Annual detailed RPPI data
-
-  "detailed_semiannual"
-
-  :   Semiannual detailed RPPI data
+  Character. Dataset table: "selected", "detailed_monthly",
+  "detailed_quarterly", "detailed_annual", or "detailed_semiannual".
 
 - cached:
 
-  Logical. If `TRUE`, attempts to load data from package cache using the
-  unified dataset architecture.
+  Logical. If `TRUE`, loads data from cache.
 
 - quiet:
 
-  Logical. If `TRUE`, suppresses progress messages and warnings. If
-  `FALSE` (default), provides detailed progress reporting.
+  Logical. If `TRUE`, suppresses progress messages.
 
 - max_retries:
 
-  Integer. Maximum number of retry attempts for failed Excel download
-  operations. Defaults to 3.
+  Integer. Maximum retry attempts. Defaults to 3.
 
 ## Value
 
-A `tibble` with the requested RPPI data. The return includes metadata
-attributes:
-
-- download_info:
-
-  List with download statistics
-
-- source:
-
-  Data source used (web or cache)
-
-- download_time:
-
-  Timestamp of download
-
-## Details
-
-Downloads Residential Property Price Indices from BIS with support for
-selected series and detailed monthly/quarterly/annual/semiannual
-datasets.
-
-## Deprecation
-
-This function is deprecated since v0.4.0. Use
-[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("rppi_bis")
-instead:
-
-      # Old way:
-      data <- get_rppi_bis()
-
-      # New way:
-      data <- get_dataset("rppi_bis")
+Tibble with BIS RPPI data. Includes metadata attributes: source,
+download_time.

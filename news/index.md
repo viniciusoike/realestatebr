@@ -600,9 +600,8 @@ clear_user_cache()            # Clear all (with confirmation)
   `download_info`) that were never used
 - **Simplified**: Documentation for internal function (removed verbose
   examples and sections)
-- **Improved**:
-  [`scrape_registro_imoveis_links()`](https://viniciusoike.github.io/realestatebr/reference/scrape_registro_imoveis_links.md)
-  with better connection cleanup and reduced complexity
+- **Improved**: `scrape_registro_imoveis_links()` with better connection
+  cleanup and reduced complexity
 
 #### BCB Dataset Critical Fixes (Commit bb580c8)
 
