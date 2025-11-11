@@ -146,7 +146,10 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
   )
 ```
 
+<p align="center">
+
 <img src="man/figures/README-rppi-example-1.png" width="80%"/>
+</p>
 
 ## International Comparison
 
@@ -178,7 +181,10 @@ ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
   )
 ```
 
+<p align="center">
+
 <img src="man/figures/README-bis-example-1.png" width="80%"/>
+</p>
 
 ## Learn More
 
