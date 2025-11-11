@@ -1,42 +1,20 @@
-#' Get Property Records Table
+#' Get Property Records Table (DEPRECATED)
 #'
-#' Imports and cleans specific tables from the most up to date property transaction
-#' records available from Registro de Imoveis with modern error handling, progress
-#' reporting, and robust download capabilities.
+#' @section Deprecation:
+#' This function is deprecated since v0.4.0.
+#' Use \code{\link{get_dataset}}("property_records") instead.
 #'
-#' @details
-#' This function scrapes download links from the Registro de Imoveis website
-#' and processes Excel files containing property transaction data. The function
-#' handles multiple data categories and includes comprehensive data cleaning.
+#' @description
+#' Downloads property transaction records from Registro de Imoveis including
+#' capitals, cities, and regional aggregates data.
 #'
-#' @section Progress Reporting:
-#' When `quiet = FALSE`, the function provides detailed progress information
-#' including web scraping status, download progress, and data processing steps.
+#' @param table Character. One of "capitals", "capitals_transfers", "cities",
+#'   "aggregates", or "aggregates_transfers".
+#' @param cached Logical. If `TRUE`, loads data from package cache.
+#' @param quiet Logical. If `TRUE`, suppresses progress messages.
+#' @param max_retries Integer. Maximum retry attempts. Defaults to 3.
 #'
-#' @section Error Handling:
-#' The function includes retry logic for failed downloads and robust error
-#' handling for web scraping and Excel processing operations.
-#'
-#' @param table Character. One of:
-#'   \describe{
-#'     \item{"capitals"}{Records data for capital cities (default)}
-#'     \item{"capitals_transfers"}{Transfer data for capital cities}
-#'     \item{"cities"}{Records data for all cities}
-#'     \item{"aggregates"}{Records data for SP regional aggregates}
-#'     \item{"aggregates_transfers"}{Transfer data for SP aggregates}
-#'   }
-#' @param cached Logical. If `TRUE`, attempts to load data from package cache.
-#' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
-#'   If `FALSE` (default), provides detailed progress reporting.
-#' @param max_retries Integer. Maximum number of retry attempts for failed
-#'   downloads. Defaults to 3.
-#'
-#' @return A `tibble` with the requested property records table.
-#'
-#' @importFrom cli cli_inform cli_warn cli_abort
-#' @importFrom dplyr filter select mutate inner_join left_join
-#' @importFrom xml2 read_html
-#' @importFrom rvest html_elements html_attr
+#' @return A tibble with property records data.
 #'
 #' @keywords internal
 get_property_records <- function(
@@ -54,70 +32,26 @@ get_property_records <- function(
     "aggregates_transfers"
   )
 
-  if (!is.character(table) || length(table) != 1) {
-    cli::cli_abort(c(
-      "Invalid {.arg table} parameter",
-      "x" = "{.arg table} must be a single character string"
-    ))
-  }
-
-  if (!table %in% valid_tables) {
-    cli::cli_abort(c(
-      "Invalid table: {.val {table}}",
-      "i" = "Valid tables: {.val {valid_tables}}"
-    ))
-  }
-
-  if (!is.logical(cached) || length(cached) != 1) {
-    cli::cli_abort("{.arg cached} must be a logical value")
-  }
-
-  if (!is.logical(quiet) || length(quiet) != 1) {
-    cli::cli_abort("{.arg quiet} must be a logical value")
-  }
-
-  if (!is.numeric(max_retries) || length(max_retries) != 1 || max_retries < 1) {
-    cli::cli_abort("{.arg max_retries} must be a positive integer")
-  }
+  validate_dataset_params(table, valid_tables, cached, quiet, max_retries)
 
   # Handle cached data ----
   if (cached) {
-    cli_debug("Loading property records from cache...")
-
-    tryCatch(
-      {
-        prop <- load_from_user_cache("property_records", quiet = quiet)
-
-        if (is.null(prop)) {
-          if (!quiet) {
-            cli::cli_warn("Property records not found in user cache, falling back to fresh download")
-          }
-        } else {
-          cli_debug("Successfully loaded property records from cache")
-
-          # Extract the specific table from cached data
-          result <- extract_property_table(prop, table)
-
-          return(result)
-        }
-      },
-      error = function(e) {
-        if (!quiet) {
-          cli::cli_warn(c(
-            "Failed to load cached data: {e$message}",
-            "i" = "Falling back to fresh download"
-          ))
-        }
-      }
-    )
+    prop_data <- handle_dataset_cache("property_records", table = NULL, quiet, on_miss = "download")
+    if (!is.null(prop_data)) {
+      # Extract the specific table from cached data
+      result <- extract_property_table(prop_data, table)
+      return(attach_dataset_metadata(result, source = "cache", category = table))
+    }
   }
 
   # Scrape download links ----
   cli_user("Downloading property records data for '{table}'", quiet = quiet)
 
-  download_links <- scrape_registro_imoveis_links(
+  download_links <- download_with_retry(
+    fn = scrape_registro_imoveis_links_core,
+    max_retries = max_retries,
     quiet = quiet,
-    max_retries = max_retries
+    desc = "Property records links"
   )
 
   if (is.null(download_links) || length(download_links) < 2) {
@@ -168,119 +102,59 @@ get_property_records <- function(
   return(out)
 }
 
-#' Scrape Download Links from Registro de Imoveis Website
+#' Scrape Download Links from Registro de Imoveis Website (Core Logic)
 #'
-#' Internal function to scrape Excel file download links with retry logic.
+#' Internal function to scrape Excel file download links.
 #'
-#' @param quiet Logical controlling messages
-#' @param max_retries Maximum number of retry attempts
-#'
-#' @return Character vector of download links or NULL if failed
+#' @return Character vector of download links
 #' @keywords internal
-scrape_registro_imoveis_links <- function(quiet, max_retries) {
-  attempts <- 0
-  last_error <- NULL
+scrape_registro_imoveis_links_core <- function() {
+  url <- "https://www.registrodeimoveis.org.br/portal-estatistico-registral"
+  con <- url(url, "rb")
+  on.exit(try(close(con), silent = TRUE), add = TRUE)
 
-  while (attempts <= max_retries) {
-    attempts <- attempts + 1
+  # Scrape and process links in one pipe
+  dlinks <- xml2::read_html(con) |>
+    rvest::html_elements(xpath = "//*[@id='section-contact']/div/p[5]/a") |>
+    rvest::html_attr("href") |>
+    stringr::str_replace_all(" ", "%20") |>
+    stringr::str_remove("\\t") |>
+    stringr::str_extract("https.+\\.xlsx$")
 
-    result <- tryCatch(
-      {
-        url <- "https://www.registrodeimoveis.org.br/portal-estatistico-registral"
-        con <- url(url, "rb")
-        on.exit(try(close(con), silent = TRUE), add = TRUE)
-
-        # Scrape and process links in one pipe
-        dlinks <- xml2::read_html(con) |>
-          rvest::html_elements(xpath = "//*[@id='section-contact']/div/p[5]/a") |>
-          rvest::html_attr("href") |>
-          stringr::str_replace_all(" ", "%20") |>
-          stringr::str_remove("\\t") |>
-          stringr::str_extract("https.+\\.xlsx$")
-
-        # Validate
-        if (length(dlinks) >= 2 && !any(is.na(dlinks))) {
-          return(as.list(dlinks))
-        }
-        NULL
-      },
-      error = function(e) {
-        last_error <<- e$message
-        if (attempts <= max_retries) Sys.sleep(min(attempts * 0.5, 3))
-        NULL
-      }
-    )
-
-    if (!is.null(result)) return(result)
+  # Validate
+  if (length(dlinks) < 2 || any(is.na(dlinks))) {
+    stop("Failed to find valid download links")
   }
 
-  # All attempts failed
-  if (!quiet) {
-    cli::cli_warn(c(
-      "Failed to scrape download links after {max_retries} attempt{?s}",
-      "x" = "Last error: {last_error}"
-    ))
-  }
-  return(NULL)
+  return(as.list(dlinks))
 }
 
-#' Download Excel File with Retry Logic for Registro de Imoveis
+#' Download Excel File for Registro de Imoveis (Core Logic)
 #'
-#' Internal helper function to download Excel files with retry attempts.
+#' Internal helper function to download Excel files.
 #'
 #' @param url Download URL
 #' @param filename Base filename for temp file
-#' @param quiet Logical controlling messages
-#' @param max_retries Maximum retry attempts
 #'
-#' @return List with path (character or NULL) and attempt count
+#' @return Path to downloaded file
 #' @keywords internal
-download_ri_excel <- function(url, filename, quiet, max_retries) {
+download_ri_excel_core <- function(url, filename) {
   temp_path <- tempfile(filename)
-  attempts <- 0
-  last_error <- NULL
 
-  while (attempts <= max_retries) {
-    attempts <- attempts + 1
+  # Attempt download
+  utils::download.file(
+    url = url,
+    destfile = temp_path,
+    mode = "wb",
+    quiet = TRUE
+  )
 
-    tryCatch(
-      {
-        # Attempt download
-        utils::download.file(
-          url = url,
-          destfile = temp_path,
-          mode = "wb",
-          quiet = TRUE
-        )
-
-        # Validate file was downloaded successfully
-        if (file.exists(temp_path) && file.size(temp_path) > 1000) {
-          return(list(
-            path = temp_path,
-            attempts = attempts,
-            error = NULL
-          ))
-        } else {
-          last_error <<- "Downloaded file is empty or too small"
-        }
-      },
-      error = function(e) {
-        last_error <<- e$message
-
-        # Add small delay before retry
-        if (attempts <= max_retries) {
-          Sys.sleep(min(attempts * 0.5, 3))
-        }
-      }
-    )
+  # Validate file was downloaded successfully
+  if (!file.exists(temp_path) || file.size(temp_path) <= 1000) {
+    stop("Downloaded file is empty or too small")
   }
 
-  # All attempts failed
-  return(list(
-    path = NULL,
-    attempts = attempts,
-    error = last_error
-  ))
+  return(temp_path)
 }
 
 #' Get Capitals Data with Robust Error Handling
@@ -297,25 +171,17 @@ get_ri_capitals_robust <- function(url, quiet, max_retries) {
   cli_debug("Downloading capitals data...")
 
   # Download with retry logic
-  download_result <- download_ri_excel(
-    url = url,
-    filename = "registro_imoveis_capitals.xlsx",
+  temp_path <- download_with_retry(
+    fn = function() download_ri_excel_core(url, "registro_imoveis_capitals.xlsx"),
+    max_retries = max_retries,
     quiet = quiet,
-    max_retries = max_retries
+    desc = "Capitals Excel"
   )
-
-  if (is.null(download_result$path)) {
-    cli::cli_abort(c(
-      "Failed to download capitals data",
-      "x" = "All {max_retries} download attempt{?s} failed",
-      "i" = "Error: {download_result$error}"
-    ))
-  }
 
   # Import and clean sheets
   cli_debug("Processing capitals Excel file...")
 
-  capitals <- suppressMessages(import_ri_capitals(download_result$path))
+  capitals <- suppressMessages(import_ri_capitals(temp_path))
   clean_capitals <- suppressWarnings(clean_ri_capitals(capitals))
 
   return(clean_capitals)
@@ -335,25 +201,17 @@ get_ri_aggregates_robust <- function(url, quiet, max_retries) {
   cli_debug("Downloading aggregates data...")
 
   # Download with retry logic
-  download_result <- download_ri_excel(
-    url = url,
-    filename = "registro_imoveis_aggregates.xlsx",
+  temp_path <- download_with_retry(
+    fn = function() download_ri_excel_core(url, "registro_imoveis_aggregates.xlsx"),
+    max_retries = max_retries,
     quiet = quiet,
-    max_retries = max_retries
+    desc = "Aggregates Excel"
   )
-
-  if (is.null(download_result$path)) {
-    cli::cli_abort(c(
-      "Failed to download aggregates data",
-      "x" = "All {max_retries} download attempt{?s} failed",
-      "i" = "Error: {download_result$error}"
-    ))
-  }
 
   # Import and clean sheets
   cli_debug("Processing aggregates Excel file...")
 
-  aggregates <- suppressMessages(import_ri_aggregates(download_result$path))
+  aggregates <- suppressMessages(import_ri_aggregates(temp_path))
   clean_aggregates <- suppressWarnings(clean_ri_aggregates(aggregates))
 
   return(clean_aggregates)

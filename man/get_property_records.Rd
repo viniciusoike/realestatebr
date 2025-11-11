@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_property_records.R
 \name{get_property_records}
 \alias{get_property_records}
-\title{Get Property Records Table}
+\title{Get Property Records Table (DEPRECATED)}
 \usage{
 get_property_records(
   table = "capitals",
@@ -12,46 +12,26 @@ get_property_records(
 )
 }
 \arguments{
-\item{table}{Character. One of:
-\describe{
-\item{"capitals"}{Records data for capital cities (default)}
-\item{"capitals_transfers"}{Transfer data for capital cities}
-\item{"cities"}{Records data for all cities}
-\item{"aggregates"}{Records data for SP regional aggregates}
-\item{"aggregates_transfers"}{Transfer data for SP aggregates}
-}}
+\item{table}{Character. One of "capitals", "capitals_transfers", "cities",
+"aggregates", or "aggregates_transfers".}
 
-\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache.}
+\item{cached}{Logical. If \code{TRUE}, loads data from package cache.}
 
-\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
-If \code{FALSE} (default), provides detailed progress reporting.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages.}
 
-\item{max_retries}{Integer. Maximum number of retry attempts for failed
-downloads. Defaults to 3.}
+\item{max_retries}{Integer. Maximum retry attempts. Defaults to 3.}
 }
 \value{
-A \code{tibble} with the requested property records table.
+A tibble with property records data.
 }
 \description{
-Imports and cleans specific tables from the most up to date property transaction
-records available from Registro de Imoveis with modern error handling, progress
-reporting, and robust download capabilities.
+Downloads property transaction records from Registro de Imoveis including
+capitals, cities, and regional aggregates data.
 }
-\details{
-This function scrapes download links from the Registro de Imoveis website
-and processes Excel files containing property transaction data. The function
-handles multiple data categories and includes comprehensive data cleaning.
-}
-\section{Progress Reporting}{
+\section{Deprecation}{
 
-When \code{quiet = FALSE}, the function provides detailed progress information
-including web scraping status, download progress, and data processing steps.
-}
-
-\section{Error Handling}{
-
-The function includes retry logic for failed downloads and robust error
-handling for web scraping and Excel processing operations.
+This function is deprecated since v0.4.0.
+Use \code{\link{get_dataset}}("property_records") instead.
 }
 
 \keyword{internal}
