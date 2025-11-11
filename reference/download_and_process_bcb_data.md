@@ -1,7 +1,6 @@
-# Download and Process BCB Real Estate Data with Retry Logic
+# Download and Process BCB Real Estate Data
 
-Internal function to download and process BCB real estate data with
-retry logic and proper error handling.
+Download and Process BCB Real Estate Data
 
 ## Usage
 
