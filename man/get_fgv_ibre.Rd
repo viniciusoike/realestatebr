@@ -9,41 +9,17 @@ get_fgv_ibre(table = "indicators", cached = TRUE, quiet = FALSE)
 \arguments{
 \item{table}{Character. Which dataset to return: "indicators" (default) or "all".}
 
-\item{cached}{Logical. If \code{TRUE} (default), loads data from package cache
-using the unified dataset architecture. If \code{FALSE}, uses internal
-package data objects.}
+\item{cached}{Logical. If \code{TRUE} (default), loads data from cache.}
 
-\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
-If \code{FALSE} (default), provides detailed progress reporting.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages.}
 }
 \value{
-A \code{tibble} containing all construction confidence indicator series from FGV IBRE.
-The tibble includes metadata attributes:
-\describe{
-\item{download_info}{List with access statistics}
-\item{source}{Data source used (cache or internal)}
-\item{download_time}{Timestamp of access}
-}
+Tibble with FGV IBRE indicators. Includes metadata attributes:
+source, download_time.
 }
 \description{
-Get FGV IBRE Confidence Indicators (DEPRECATED)
-}
-\details{
-Downloads construction confidence indicators from FGV IBRE including confidence
+Deprecated since v0.4.0. Use \code{\link{get_dataset}}("fgv_ibre") instead.
+Loads construction confidence indicators from FGV IBRE including confidence
 indices, expectation indicators, and INCC price indices.
 }
-\section{Deprecation}{
-
-This function is deprecated since v0.4.0.
-Use \code{\link{get_dataset}}("fgv_ibre") instead:
-
-\preformatted{
-  # Old way:
-  data <- get_fgv_ibre()
-
-  # New way:
-  data <- get_dataset("fgv_ibre")
-}
-}
-
 \keyword{internal}
