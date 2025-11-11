@@ -15,52 +15,22 @@ get_rppi_bis(
 )
 }
 \arguments{
-\item{table}{Character. Which dataset table to return:
-\describe{
-\item{"selected"}{Selected RPPI series for major countries (default)}
-\item{"detailed_monthly"}{Monthly detailed RPPI data}
-\item{"detailed_quarterly"}{Quarterly detailed RPPI data}
-\item{"detailed_annual"}{Annual detailed RPPI data}
-\item{"detailed_semiannual"}{Semiannual detailed RPPI data}
-}}
+\item{table}{Character. Dataset table: "selected", "detailed_monthly",
+"detailed_quarterly", "detailed_annual", or "detailed_semiannual".}
 
-\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
-using the unified dataset architecture.}
+\item{cached}{Logical. If \code{TRUE}, loads data from cache.}
 
-\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
-If \code{FALSE} (default), provides detailed progress reporting.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages.}
 
-\item{max_retries}{Integer. Maximum number of retry attempts for failed
-Excel download operations. Defaults to 3.}
+\item{max_retries}{Integer. Maximum retry attempts. Defaults to 3.}
 }
 \value{
-A \code{tibble} with the requested RPPI data.
-The return includes metadata attributes:
-\describe{
-\item{download_info}{List with download statistics}
-\item{source}{Data source used (web or cache)}
-\item{download_time}{Timestamp of download}
-}
+Tibble with BIS RPPI data. Includes metadata attributes:
+source, download_time.
 }
 \description{
-Get Residential Property Price Indices from BIS (DEPRECATED)
-}
-\details{
+Deprecated since v0.4.0. Use \code{\link{get_dataset}}("rppi_bis") instead.
 Downloads Residential Property Price Indices from BIS with support for selected
 series and detailed monthly/quarterly/annual/semiannual datasets.
 }
-\section{Deprecation}{
-
-This function is deprecated since v0.4.0.
-Use \code{\link{get_dataset}}("rppi_bis") instead:
-
-\preformatted{
-  # Old way:
-  data <- get_rppi_bis()
-
-  # New way:
-  data <- get_dataset("rppi_bis")
-}
-}
-
 \keyword{internal}
