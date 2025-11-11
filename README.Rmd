@@ -9,14 +9,15 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "80%",
-  fig.align = "center"
+  out.width = "100%",
+  dpi = 300
 )
 ```
 
 # realestatebr <img src="man/figures/hexlogo.png" align="right" height="139" />
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 **realestatebr** aims to provide an unified interface to Brazilian real estate information, delivering data from different sources in a tidy format. The package is organized by source, with each source having multiple associated tables (datasets).

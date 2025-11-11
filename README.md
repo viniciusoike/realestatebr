@@ -5,6 +5,7 @@
 
 <!-- badges: start -->
 
+[![R-CMD-check](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 **realestatebr** aims to provide an unified interface to Brazilian real
@@ -152,7 +153,7 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
 #> (`geom_line()`).
 ```
 
-<img src="man/figures/README-rppi-example-1.png" width="80%" style="display: block; margin: auto;" />
+<img src="man/figures/README-rppi-example-1.png" width="100%" />
 
 ## International Comparison
 
@@ -189,7 +190,7 @@ ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
   )
 ```
 
-<img src="man/figures/README-bis-example-1.png" width="80%" style="display: block; margin: auto;" />
+<img src="man/figures/README-bis-example-1.png" width="100%" />
 
 ## Learn More
 
