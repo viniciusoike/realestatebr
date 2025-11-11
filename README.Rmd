@@ -10,14 +10,14 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "man/figures/README-",
   out.width = "100%",
-  dpi = 300
+  dpi = 300,
+  dev = "ragg_png"
 )
 ```
 
 # realestatebr <img src="man/figures/hexlogo.png" align="right" height="139" />
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 **realestatebr** aims to provide an unified interface to Brazilian real estate information, delivering data from different sources in a tidy format. The package is organized by source, with each source having multiple associated tables (datasets).
@@ -115,7 +115,7 @@ data <- get_dataset("abecip", source = "fresh")
 
 ## Example: Property Price Indices
 
-```{r rppi-example}
+```{r rppi-example, eval = FALSE}
 library(ggplot2)
 library(realestatebr)
 library(dplyr, warn.conflicts = FALSE)
@@ -151,9 +151,11 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
   )
 ```
 
+![](man/figures/README-rppi-example-1.png){out.width="80%"}
+
 ## International Comparison
 
-```{r bis-example}
+```{r bis-example, eval = FALSE}
 # Get BIS international data
 bis <- get_dataset("rppi_bis")
 
@@ -180,6 +182,8 @@ ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
     palette.colour.discrete = c("#2C6BB3", "#1abc9c", "#f39c12")
   )
 ```
+
+![](man/figures/README-bis-example-1.png){out.width="80%"}
 
 ## Learn More
 

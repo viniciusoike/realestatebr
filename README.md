@@ -5,7 +5,6 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 **realestatebr** aims to provide an unified interface to Brazilian real
@@ -118,10 +117,6 @@ library(dplyr, warn.conflicts = FALSE)
 
 # Get FipeZap index
 fipezap <- get_dataset("rppi", table = "fipezap")
-#> Checking user cache for rppi...
-#> Successfully loaded from user cache
-#> Retrieved 'fipezap' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',
-#> 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'
 
 # Brazil national index
 rppi_spo <- fipezap |>
@@ -149,22 +144,15 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
     legend.position = "bottom",
     palette.colour.discrete = c("#2C6BB3", "#1abc9c", "#f39c12")
   )
-#> Warning: Removed 1 row containing missing values or values outside the scale range
-#> (`geom_line()`).
 ```
 
-<img src="man/figures/README-rppi-example-1.png" width="100%" />
+<img src="man/figures/README-rppi-example-1.png" data-out.width="80%" />
 
 ## International Comparison
 
 ``` r
 # Get BIS international data
 bis <- get_dataset("rppi_bis")
-#> Checking user cache for rppi_bis...
-#> Successfully loaded from user cache
-#> Retrieved 'selected' from 'rppi_bis' (default table). Available tables:
-#> 'selected', 'detailed_monthly', 'detailed_quarterly', 'detailed_annual',
-#> 'detailed_semiannual'
 
 # Compare countries
 bis_compare <- bis |>
@@ -190,7 +178,7 @@ ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
   )
 ```
 
-<img src="man/figures/README-bis-example-1.png" width="100%" />
+<img src="man/figures/README-bis-example-1.png" data-out.width="80%" />
 
 ## Learn More
 
