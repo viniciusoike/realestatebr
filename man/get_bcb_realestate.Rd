@@ -18,52 +18,19 @@ get_bcb_realestate(
 \item{table}{Character. One of \code{'accounting'}, \code{'application'}, \code{'indices'},
 \code{'sources'}, \code{'units'}, or \code{'all'} (default).}
 
-\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
-using the unified dataset architecture.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from cache.}
 
-\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
-If \code{FALSE} (default), provides detailed progress reporting.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages.}
 
-\item{max_retries}{Integer. Maximum number of retry attempts for failed
-API calls. Defaults to 3.}
+\item{max_retries}{Integer. Maximum retry attempts. Defaults to 3.}
 }
 \value{
-If \code{table = 'all'} returns a \code{tibble} with 13 columns where:
-\itemize{
-\item \code{series_info}: the full name identifying each series.
-\item \code{category}: category of the series (first element of \code{series_info}).
-\item \code{type}: subcategory of the series (second element of \code{series_info}).
-\item \code{v1} to \code{v5}: elements of \code{series_info}.
-\item \code{value}: numeric value of the series.
-\item \code{abbrev_state}: two letter state abbreviation.
-
-The tibble includes metadata attributes:
-\describe{
-\item{download_info}{List with download statistics}
-\item{source}{Data source used (api or cache)}
-\item{download_time}{Timestamp of download}
-}
-}
+Tibble with BCB real estate data. Includes metadata attributes:
+source, download_time.
 }
 \description{
-Import Real Estate data from the Brazilian Central Bank (DEPRECATED)
-}
-\details{
-Imports real estate data from BCB including credit sources, credit applications,
+Deprecated since v0.4.0. Use \code{\link{get_dataset}}("bcb_realestate") instead.
+Imports real estate data from BCB including credit sources, applications,
 financed units, and real estate indices.
 }
-\section{Deprecation}{
-
-This function is deprecated since v0.4.0.
-Use \code{\link{get_dataset}}("bcb_realestate") instead:
-
-\preformatted{
-  # Old way:
-  data <- get_bcb_realestate()
-
-  # New way:
-  data <- get_dataset("bcb_realestate")
-}
-}
-
 \keyword{internal}
