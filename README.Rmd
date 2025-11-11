@@ -14,12 +14,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-# realestatebr
+# realestatebr <img src="man/figures/hexlogo.png" align="right" height="139" />
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The **realestatebr** package provides easy access to Brazilian real estate market data from multiple authoritative sources. Access property price indices, housing credit indicators, construction materials data, and more—all through a unified, consistent interface.
+**realestatebr** aims to provide an unified interface to Brazilian real estate information, delivering data from different sources in a tidy format. The package is organized by source, with each source having multiple associated tables (datasets).
+
 
 ## Installation
 
@@ -30,33 +31,41 @@ remotes::install_github("viniciusoike/realestatebr")
 
 ## Quick Start
 
+There are two key functions in **realestatebr**: `get_dataset()` and `list_datasets()`. The former retrieves data, while the latter lists all available datasets. `get_dataset()` expects a `name` and a (optional) `table` argument. If no `table` is specified, the function returns the first available table.
+
 ```{r example, eval=FALSE}
 library(realestatebr)
 
 # Discover available datasets
 datasets <- list_datasets()
 
-# Get housing credit data
-abecip <- get_dataset("abecip")
-
 # Get specific table
-sbpe <- get_dataset("abecip", table = "sbpe")
+sbpe <- get_dataset(name = "abecip", table = "sbpe")
 
 # Get property price indices
-rppi <- get_dataset("rppi", table = "fipezap")
+fipezap <- get_dataset("rppi", "fipezap")
 ```
 
-## Data Caching
+## Available Datasets
 
-**New in v0.5.0**: The package now uses user-level caching instead of bundled data files. This makes the package CRAN-compliant (<5MB) while providing faster access after first download.
+Some of the available datasets are listed below.
+
+| Dataset | Producer | Description |
+|---------|--------|-------------|
+| `abecip` | ABECIP | Housing credit flows, financed units, home equity |
+| `abrainc` | ABRAINC/FIPE | Primary market indicators (launches, sales) |
+| `bcb_realestate` | BCB | Real estate credit and market data |
+| `secovi` | SECOVI-SP | São Paulo market indicators |
+| `rppi` | Multiple | Property price indices (sale/rent, 50+ cities) |
+| `rppi_bis` | BIS | International property price indices (60+ countries) |
+| `bcb_series` | BCB | Economic time series |
+| `cbic` | CBIC | Cement consumption and production |
+
+## Caching
 
 ### How Caching Works
 
-On first use, datasets are automatically downloaded from GitHub releases and cached in your user directory:
-- **Linux/Mac**: `~/.local/share/realestatebr/`
-- **Windows**: `%LOCALAPPDATA%/realestatebr/Cache/`
-
-Subsequent uses load data instantly from cache, even offline:
+On first use, datasets are automatically downloaded from GitHub releases and cached in your user directory. Subsequent uses load data instantly from cache, even offline.
 
 ```r
 # First use: downloads and caches (~3-5 seconds)
@@ -87,7 +96,7 @@ update_cache_from_github("abecip")
 
 ### Data Sources
 
-The `source` parameter controls where data comes from:
+The `source` parameter controls where data comes from.
 
 ```r
 # Auto (default): cache → GitHub → fresh
@@ -101,34 +110,6 @@ data <- get_dataset("abecip", source = "github")
 
 # Fresh download from original source
 data <- get_dataset("abecip", source = "fresh")
-```
-
-**Tip**: Install `piggyback` for faster GitHub downloads:
-```r
-install.packages("piggyback")
-```
-
-## Available Datasets
-
-The package provides access to 10+ datasets from authoritative sources:
-
-| Dataset | Source | Description |
-|---------|--------|-------------|
-| `abecip` | ABECIP | Housing credit flows, financed units, home equity |
-| `abrainc` | ABRAINC/FIPE | Primary market indicators (launches, sales) |
-| `bcb_realestate` | BCB | Real estate credit and market data |
-| `secovi` | SECOVI-SP | São Paulo market indicators |
-| `rppi` | Multiple | Property price indices (sale/rent, 50+ cities) |
-| `rppi_bis` | BIS | International property price indices (60+ countries) |
-| `bcb_series` | BCB | Economic time series |
-| `cbic` | CBIC | Cement consumption and production |
-
-```{r, eval=FALSE}
-# See all datasets
-list_datasets()
-
-# Filter by source
-list_datasets(source = "BCB")
 ```
 
 ## Example: Property Price Indices
@@ -198,12 +179,6 @@ ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
     palette.colour.discrete = c("#2C6BB3", "#1abc9c", "#f39c12")
   )
 ```
-
-## What's New
-
-**v0.5.0** introduces user-level caching architecture. Package no longer bundles data files (now <5MB, CRAN-compliant). Data is automatically downloaded to user cache on first use. See [NEWS.md](NEWS.md) for migration details.
-
-**v0.4.0** introduced a unified `get_dataset()` interface replacing all individual `get_*()` functions.
 
 ## Learn More
 
