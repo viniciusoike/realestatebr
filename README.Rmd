@@ -7,11 +7,7 @@ output: github_document
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%",
-  dpi = 300,
-  dev = "ragg_png"
+  comment = "#>"
 )
 ```
 
@@ -151,7 +147,7 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
   )
 ```
 
-![](man/figures/README-rppi-example-1.png){out.width="80%"}
+<img src="man/figures/README-rppi-example-1.png" width="80%"/>
 
 ## International Comparison
 
@@ -183,7 +179,7 @@ ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
   )
 ```
 
-![](man/figures/README-bis-example-1.png){out.width="80%"}
+<img src="man/figures/README-bis-example-1.png" width="80%"/>
 
 ## Learn More
 
