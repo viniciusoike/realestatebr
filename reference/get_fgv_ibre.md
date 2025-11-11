@@ -1,6 +1,10 @@
 # Get FGV IBRE Confidence Indicators (DEPRECATED)
 
-Get FGV IBRE Confidence Indicators (DEPRECATED)
+Deprecated since v0.4.0. Use
+[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("fgv_ibre")
+instead. Loads construction confidence indicators from FGV IBRE
+including confidence indices, expectation indicators, and INCC price
+indices.
 
 ## Usage
 
@@ -16,45 +20,13 @@ get_fgv_ibre(table = "indicators", cached = TRUE, quiet = FALSE)
 
 - cached:
 
-  Logical. If `TRUE` (default), loads data from package cache using the
-  unified dataset architecture. If `FALSE`, uses internal package data
-  objects.
+  Logical. If `TRUE` (default), loads data from cache.
 
 - quiet:
 
-  Logical. If `TRUE`, suppresses progress messages and warnings. If
-  `FALSE` (default), provides detailed progress reporting.
+  Logical. If `TRUE`, suppresses progress messages.
 
 ## Value
 
-A `tibble` containing all construction confidence indicator series from
-FGV IBRE. The tibble includes metadata attributes:
-
-- download_info:
-
-  List with access statistics
-
-- source:
-
-  Data source used (cache or internal)
-
-- download_time:
-
-  Timestamp of access
-
-## Details
-
-Downloads construction confidence indicators from FGV IBRE including
-confidence indices, expectation indicators, and INCC price indices.
-
-## Deprecation
-
-This function is deprecated since v0.4.0. Use
-[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("fgv_ibre")
-instead:
-
-      # Old way:
-      data <- get_fgv_ibre()
-
-      # New way:
-      data <- get_dataset("fgv_ibre")
+Tibble with FGV IBRE indicators. Includes metadata attributes: source,
+download_time.
