@@ -4,7 +4,7 @@
 \alias{get_nre_ire}
 \title{Get the IRE Index (DEPRECATED)}
 \source{
-Original series and methodology available at \url{https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html}.
+\url{https://www.realestate.br/site/conteudo/pagina/1,84+Indice_IRE.html}
 }
 \usage{
 get_nre_ire(table = "indicators", cached = TRUE, quiet = FALSE)
@@ -12,51 +12,17 @@ get_nre_ire(table = "indicators", cached = TRUE, quiet = FALSE)
 \arguments{
 \item{table}{Character. Which dataset to return: "indicators" (default) or "all".}
 
-\item{cached}{Logical. If \code{TRUE} (default), loads data from package cache
-using the unified dataset architecture. This is currently the only
-supported method for this dataset.}
+\item{cached}{Logical. If \code{TRUE} (default), loads data from cache.}
 
-\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
-If \code{FALSE} (default), provides detailed progress reporting.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages.}
 }
 \value{
-A tibble with 8 columns where:
-\itemize{
-\item \code{ire} is the IRE Index.
-\item \code{ire_r50_plus} is the IRE Index of the top 50\% companies.
-\item \code{ire_r50_minus} is the IRE Index of the bottom 50\% companies.
-\item \code{ire_bi} is the IRE-BI Index (non-residential).
-\item \code{ibov} is the Ibovespa Index.
-\item \code{ibov_points} is the Ibovespa Index in points.
-\item \code{ire_ibov} is the ratio of the IRE Index and the Ibovespa Index.
-}
-
-The tibble includes metadata attributes:
-\describe{
-\item{download_info}{List with access statistics}
-\item{source}{Data source used (cache)}
-\item{download_time}{Timestamp of access}
-}
+Tibble with NRE-IRE index data. Includes metadata attributes:
+source, download_time.
 }
 \description{
-Get the IRE Index (DEPRECATED)
+Deprecated since v0.4.0. Use \code{\link{get_dataset}}("nre_ire") instead.
+Loads the Real Estate Index (IRE) from NRE-Poli (USP) tracking average stock
+prices of real estate companies in Brazil.
 }
-\details{
-Downloads the Real Estate Index (IRE) from NRE-Poli (USP) tracking average stock
-prices of real estate companies in Brazil. Values indexed to 100 = May/2006.
-}
-\section{Deprecation}{
-
-This function is deprecated since v0.4.0.
-Use \code{\link{get_dataset}}("nre_ire") instead:
-
-\preformatted{
-  # Old way:
-  data <- get_nre_ire()
-
-  # New way:
-  data <- get_dataset("nre_ire")
-}
-}
-
 \keyword{internal}
