@@ -18,9 +18,6 @@ tar_option_set(
   error = "continue"  # Continue pipeline even if some targets fail
 )
 
-# Ensure latest package functions are loaded (always load development version)
-devtools::load_all()
-
 # Source helper functions
 source("data-raw/pipeline/targets_helpers.R")
 source("data-raw/pipeline/validation.R")
