@@ -92,7 +92,7 @@ jobs:
             # Run targets with extended timeout for slower sources
             options(timeout = 600)  # 10 minutes per target
 
-            tar_make(names = all_of(target_list))
+            tar_make(names = any_of(target_list), callr_function = NULL)
 
             cli::cli_alert_success("{target_group} pipeline completed")
           '
