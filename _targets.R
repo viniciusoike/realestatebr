@@ -292,24 +292,6 @@ list(
     command = validate_dataset(property_records_data, "property_records")
   ),
 
-  # ---- NRE-IRE - Real Estate Index (cached only, manual update) ----
-  # NOTE: NRE-IRE requires manual data processing (no download capability)
-  # Uses source="github" to access cached data
-  tar_target(
-    name = nre_ire_data,
-    command = fetch_dataset("nre_ire", source = "github"),
-    cue = tar_cue(mode = "never")  # Manual update only
-  ),
-  tar_target(
-    name = nre_ire_cache,
-    command = save_to_cache(nre_ire_data, "nre_ire"),
-    format = "file"
-  ),
-  tar_target(
-    name = nre_ire_validation,
-    command = validate_dataset(nre_ire_data, "nre_ire")
-  ),
-
   # ========================================================================
   # PIPELINE SUMMARY
   # ========================================================================
@@ -331,8 +313,7 @@ list(
         rppi_rent_cache,
         bis_rppi_cache,
         cbic_cache,
-        property_records_cache,
-        nre_ire_cache
+        property_records_cache
       )
 
       # Collect all validations
@@ -347,8 +328,7 @@ list(
         rppi_rent = rppi_rent_validation,
         bis_rppi = bis_rppi_validation,
         cbic = cbic_validation,
-        property_records = property_records_validation,
-        nre_ire = nre_ire_validation
+        property_records = property_records_validation
       )
 
       summary_info <- list(
@@ -357,7 +337,7 @@ list(
           "bcb_series", "bcb_realestate", "fgv_ibre",
           "abecip", "abrainc", "secovi",
           "rppi_sale", "rppi_rent",
-          "bis_rppi", "cbic", "property_records", "nre_ire"
+          "bis_rppi", "cbic", "property_records"
         ),
         weekly_datasets = c(
           "bcb_series", "bcb_realestate", "fgv_ibre",
@@ -365,7 +345,7 @@ list(
           "rppi_sale", "rppi_rent"
         ),
         monthly_datasets = c(
-          "bis_rppi", "cbic", "property_records", "nre_ire"
+          "bis_rppi", "cbic", "property_records"
         ),
         cache_files = cache_files,
         validations = validations

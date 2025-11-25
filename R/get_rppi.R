@@ -424,7 +424,7 @@ get_rppi_ivar <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
       ))
     }
 
-    # Force load from cache
+    # Try user cache first
     data <- tryCatch(
       {
         load_from_user_cache("rppi_ivar", quiet = quiet)
@@ -433,6 +433,23 @@ get_rppi_ivar <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
         NULL
       }
     )
+
+    # If user cache fails, try GitHub cache
+    if (is.null(data)) {
+      if (!quiet) {
+        cli::cli_inform(c(
+          "i" = "User cache not available, trying GitHub cache..."
+        ))
+      }
+      data <- tryCatch(
+        {
+          download_from_github_release("rppi_ivar", quiet = quiet)
+        },
+        error = function(e) {
+          NULL
+        }
+      )
+    }
 
     if (is.null(data)) {
       cli::cli_abort(c(

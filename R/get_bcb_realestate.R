@@ -151,12 +151,50 @@ download_and_process_bcb_data <- function(quiet, max_retries) {
   cli_user("Downloading real estate data from BCB API", quiet = quiet)
 
   # Download and import most recent data available with retry logic
-  bcb <- download_with_retry(
-    fn = import_bcb_realestate,
-    max_retries = max_retries,
-    quiet = quiet,
-    desc = "BCB API"
+  bcb <- tryCatch(
+    {
+      download_with_retry(
+        fn = import_bcb_realestate,
+        max_retries = max_retries,
+        quiet = quiet,
+        desc = "BCB API"
+      )
+    },
+    error = function(e) {
+      if (!quiet) {
+        cli::cli_warn("BCB API download failed: {e$message}")
+      }
+      NULL
+    }
   )
+
+  # Fallback to GitHub cache if API fails
+  if (is.null(bcb)) {
+    if (!quiet) {
+      cli::cli_inform(c(
+        "i" = "BCB API failed, trying GitHub cache..."
+      ))
+    }
+    clean_bcb <- tryCatch(
+      {
+        download_from_github_release("bcb_realestate", quiet = quiet)
+      },
+      error = function(e) {
+        NULL
+      }
+    )
+
+    if (!is.null(clean_bcb) && nrow(clean_bcb) > 0) {
+      clean_bcb <- attach_dataset_metadata(clean_bcb, source = "github_cache")
+      return(clean_bcb)
+    }
+
+    cli::cli_abort(c(
+      "BCB API failed after {max_retries} attempts",
+      "x" = "GitHub cache is also unavailable",
+      "i" = "The BCB API may be temporarily down"
+    ))
+  }
 
   cli_debug("Processing and cleaning BCB data...")
 

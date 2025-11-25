@@ -66,7 +66,48 @@ get_secovi <- function(
   cli_user("Downloading SECOVI-SP data from website", quiet = quiet)
 
   # Import data from SECOVI with retry logic
-  scrape <- import_secovi_robust(table = table, quiet = quiet, max_retries = max_retries)
+  scrape <- tryCatch(
+    {
+      import_secovi_robust(table = table, quiet = quiet, max_retries = max_retries)
+    },
+    error = function(e) {
+      if (!quiet) {
+        cli::cli_warn("Web scraping failed: {e$message}")
+      }
+      NULL
+    }
+  )
+
+  # Fallback to GitHub cache if scraping fails or returns empty
+  if (is.null(scrape) || length(scrape) == 0) {
+    if (!quiet) {
+      cli::cli_inform(c(
+        "i" = "Fresh download failed or returned empty, trying GitHub cache..."
+      ))
+    }
+    data <- tryCatch(
+      {
+        download_from_github_release("secovi_sp", quiet = quiet)
+      },
+      error = function(e) {
+        NULL
+      }
+    )
+
+    if (!is.null(data) && nrow(data) > 0) {
+      if (table != "all") {
+        data <- dplyr::filter(data, category == !!table)
+      }
+      data <- attach_dataset_metadata(data, source = "github_cache", category = table)
+      return(data)
+    }
+
+    cli::cli_abort(c(
+      "Failed to retrieve SECOVI-SP data",
+      "x" = "Web scraping returned empty and GitHub cache is unavailable",
+      "i" = "The SECOVI-SP website may be blocking automated requests"
+    ))
+  }
 
   cli_debug("Processing {length(scrape)} data table{?s}...")
 
