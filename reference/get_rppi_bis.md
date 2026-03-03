@@ -1,10 +1,8 @@
-# Get Residential Property Price Indices from BIS (DEPRECATED)
+# Get Residential Property Price Indices from BIS
 
-Deprecated since v0.4.0. Use
-[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("rppi_bis")
-instead. Downloads Residential Property Price Indices from BIS with
-support for selected series and detailed
-monthly/quarterly/annual/semiannual datasets.
+Downloads Residential Property Price Indices from BIS with support for
+selected series and detailed monthly/quarterly/annual/halfyearly
+datasets.
 
 ## Usage
 
@@ -26,7 +24,7 @@ get_rppi_bis(
 - table:
 
   Character. Dataset table: "selected", "detailed_monthly",
-  "detailed_quarterly", "detailed_annual", or "detailed_semiannual".
+  "detailed_quarterly", "detailed_annual", or "detailed_halfyearly".
 
 - cached:
 

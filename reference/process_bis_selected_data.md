@@ -1,18 +1,19 @@
-# Process BIS Selected Data
+# Process BIS Selected CSV Data
 
-Internal function to process BIS selected Excel data.
+Reads the column-oriented CSV from the BIS SPP dataset, pivots date
+columns to long format, and standardises column names.
 
 ## Usage
 
 ``` r
-process_bis_selected_data(temp_path, quiet)
+process_bis_selected_data(csv_path, quiet)
 ```
 
 ## Arguments
 
-- temp_path:
+- csv_path:
 
-  Path to downloaded Excel file
+  Path to the extracted CSV file
 
 - quiet:
 
@@ -20,4 +21,4 @@ process_bis_selected_data(temp_path, quiet)
 
 ## Value
 
-Processed BIS selected data
+Processed BIS selected data tibble

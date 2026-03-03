@@ -1,18 +1,19 @@
-# Process BIS Detailed Data
+# Process BIS Detailed CSV Data (orchestrator)
 
-Internal function to process BIS detailed Excel data.
+Reads the flat CSV, parses compound columns, then splits by frequency
+with appropriate date parsing for each.
 
 ## Usage
 
 ``` r
-process_bis_detailed_data(temp_path, quiet)
+process_bis_detailed_data(csv_path, quiet)
 ```
 
 ## Arguments
 
-- temp_path:
+- csv_path:
 
-  Path to downloaded Excel file
+  Path to the extracted CSV file
 
 - quiet:
 
@@ -20,4 +21,4 @@ process_bis_detailed_data(temp_path, quiet)
 
 ## Value
 
-Processed BIS detailed data as named list
+Named list with elements: monthly, quarterly, annual, halfyearly

@@ -1,6 +1,6 @@
-# Get RPPI BIS Detailed Data with Robust Error Handling
+# Download BIS RPPI Detailed Data
 
-Internal function to download BIS RPPI detailed data with retry logic.
+Download BIS RPPI Detailed Data
 
 ## Usage
 
@@ -20,4 +20,5 @@ get_rppi_bis_detailed_robust(quiet, max_retries)
 
 ## Value
 
-Downloaded and processed BIS detailed data
+Named list of processed detailed data (monthly, quarterly, annual,
+halfyearly)

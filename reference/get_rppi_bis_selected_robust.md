@@ -1,6 +1,6 @@
-# Get RPPI BIS Selected Data with Robust Error Handling
+# Download BIS RPPI Selected Data
 
-Internal function to download BIS RPPI selected data with retry logic.
+Download BIS RPPI Selected Data
 
 ## Usage
 
@@ -20,4 +20,4 @@ get_rppi_bis_selected_robust(quiet, max_retries)
 
 ## Value
 
-Downloaded and processed BIS selected data
+Processed BIS selected data tibble
