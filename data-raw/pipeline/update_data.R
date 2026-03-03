@@ -31,24 +31,26 @@ log_message <- function(msg) {
 # Main execution
 log_message("Starting data update process using targets pipeline")
 
-tryCatch({
-  # Run the full pipeline
-  cli::cli_h1("Running targets pipeline")
-  tar_make()
+tryCatch(
+  {
+    # Run the full pipeline
+    cli::cli_h1("Running targets pipeline")
+    tar_make()
 
-  # Generate status report
-  if (file.exists("data-raw/generate_report.R")) {
-    source("data-raw/generate_report.R")
-    generate_pipeline_report()
+    # Generate status report
+    if (file.exists("data-raw/generate_report.R")) {
+      source("data-raw/generate_report.R")
+      generate_pipeline_report()
+    }
+
+    log_message("Targets pipeline completed successfully")
+    cli::cli_alert_success("Pipeline completed using targets")
+  },
+  error = function(e) {
+    log_message(sprintf("Targets pipeline failed: %s", e$message))
+    cli::cli_alert_danger("Targets pipeline failed: {e$message}")
+    stop(e)
   }
-
-  log_message("Targets pipeline completed successfully")
-  cli::cli_alert_success("Pipeline completed using targets")
-
-}, error = function(e) {
-  log_message(sprintf("Targets pipeline failed: %s", e$message))
-  cli::cli_alert_danger("Targets pipeline failed: {e$message}")
-  stop(e)
-})
+)
 
 log_message("Data update process completed")

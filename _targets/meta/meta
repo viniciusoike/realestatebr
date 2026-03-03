@@ -1,52 +1,53 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-cbic_validation|stem|410840cf6c8ce249|977dc80967b266b3|5a8e2b1d28d9b767|-417786618||t20368.0673917592s|s414b|414|rds|local|vector|||0.047||
-cbic_cache|stem|467c311305b8082e|605985fd9751bf45|c3033e68b10b44d0|1956496878|inst/cached_data/cbic.csv.gz|t20368.0673925002s|s43110b|43110|file|local|vector|||0.064||
-rppi_rent_cache|stem|3c3794f2c93caf7d|999384aa22478b59|4cf41eda956c540a|1551090311|inst/cached_data/rppi_rent.csv.gz|t20368.0673931178s|s168746b|168746|file|local|vector|||0.042||
-rppi_rent_validation|stem|2813caa9877e09fb|e7d6d7e124bd3a1d|6f2196db24e6d5dd|646465075||t20368.0673937552s|s401b|401|rds|local|vector|||0.044||
-rppi_sale_cache|stem|e42f5bb4dd7f8d65|f6ca4d77f737790d|c794e31139782919|1208095534|inst/cached_data/rppi_sale.csv.gz|t20368.0673968636s|s296520b|296520|file|local|vector|||0.047||
-rppi_sale_validation|stem|5f7175c706b160b7|989298b0143a232b|8c130af2e3ad98a7|-1617890911||t20368.0673974104s|s393b|393|rds|local|vector|||0.035||
-fgv_ibre_data|stem|b94de4b338a3954a|a2efbff0eafdaff4|0131f54341ea7b62|1381348509||t20368.2040989899s|s5388b|5388|rds|local|vector|||0.116||
 fgv_ibre_validation|stem|ee7c5e8e66514f31|95d21ba0a47f23c8|775a8ce10e90481c|889424086||t20368.2041000724s|s386b|386|rds|local|vector|||0.083||
-fgv_ibre_cache|stem|3927c6a593a97069|1c58563b06182903|4a959b622707ac7e|-2046427055|inst/cached_data/fgv_ibre.csv.gz|t20368.204101045s|s8731b|8731|file|local|vector|||0.073||
 nre_ire_data|stem|90cf6f2422bd074a|47308cd5736ca1d9|0131f54341ea7b62|-1169490141||t20368.2042945118s|s5759b|5759|rds|local|vector|||0.102||
 nre_ire_cache|stem|660f7d9db8326143|431e4f86ac953903|dbb61a578ab2d33e|1149768445|inst/cached_data/nre_ire.csv.gz|t20368.2042956777s|s5088b|5088|file|local|vector|||0.096||
 nre_ire_validation|stem|80ed80949e4b2ec7|133a0232f60c51c3|33e72a11ad491e4a|1726524036||t20368.2042963534s|s452b|452|rds|local|vector|||0.038||
-cbic_data|stem|babe5ff3574a3fb6|9ce61d95f6dd93af|0131f54341ea7b62|730876811||t20368.2058549657s|s30356b|30356|rds|local|vector|||3.558||
-rppi_rent_data|stem|cec808ffcfa4951d|284ae4e0a6d14e77|0131f54341ea7b62|884109466||t20368.2060686623s|s100410b|100410|rds|local|vector|||18.442||
-bis_rppi_data|stem|d87a20344ee0a386|7801f1d3e1f6d229|0131f54341ea7b62|-1082112674||t20368.2060890523s|s385721b|385721|rds|local|vector|||1.612||
-abecip_data|stem|fd954de93056332f|0123e70df6d460f5|0131f54341ea7b62|223287328||t20368.2061626414s|s34613b|34613|rds|local|vector|||3.055||
-property_records_data|stem|00afe062ecc5a3fc|639cd5161a64b70b|0131f54341ea7b62|-835099359||t20368.2061917359s|s12522b|12522|rds|local|vector|||2.505||
-rppi_sale_data|stem|a276d7c4da88d814|6d2a66cf91056c7b|0131f54341ea7b62|-316251275||t20368.206567287s|s195062b|195062|rds|local|vector|||15.735||
-abrainc_data|stem|bc1ef8b2a5fbce76|39646115c1251324|0131f54341ea7b62|-2012302923||t20368.2065705526s|s16433b|16433|rds|local|vector|||0.274||
-bis_rppi_validation|stem|e8b77e224c9e7b20|419df25a1cbac8fe|28903b8254ee5473|1653506553||t20368.2065757759s|s392b|392|rds|local|vector|||0.36||
-bis_rppi_cache|stem|3028c0f3dcc7c61a|fcae6b328f56045f|df856d7dc9c0b53b|1573177163|inst/cached_data/bis_selected.rds|t20368.2065784194s|s385715b|385715|file|local|vector|||0.145||
-abecip_cache|stem|d1b05e29d942d8b0|c9c27cd38b3c7fe7|6da45236d07f85df|878606778|inst/cached_data/abecip.csv.gz|t20368.2065799194s|s36716b|36716|file|local|vector|||0.017||
-abecip_validation|stem|795f9a6b6d3d2067|3511f2781c879a56|1537d6adfe4dcd31|-1823780572||t20368.2065801287s|s465b|465|rds|local|vector|||0.009||
-property_records_cache|stem|6deb371033a47de3|c18a68781280f209|0da43323295b824d|21956687|inst/cached_data/property_records.csv.gz|t20368.2065804919s|s19835b|19835|file|local|vector|||0.031||
 property_records_validation|stem|763c31bc8e2403e8|683c1aece0cfb8ba|47aa47478e942e64|993487915||t20368.2065807935s|s445b|445|rds|local|vector|||0.011||
-bcb_realestate_validation|stem|758c00b369408ac9|adca6f4e97d7fa75|16ed8cf20003df7e|1892371717||t20368.2065810409s|s456b|456|rds|local|vector|||0.005||
-bcb_series_validation|stem|e131a3994c07faab|b1f04a900e928b1d|e9536d65058ef07f|-523267963||t20368.2065815515s|s454b|454|rds|local|vector|||0.012||
-abrainc_cache|stem|89db61402834e61a|68af51ded053a2fa|d850fd376587b9ba|-299234936|inst/cached_data/abrainc.csv.gz|t20368.2065819565s|s28057b|28057|file|local|vector|||0.034||
-abrainc_validation|stem|fc8c64bbef4f0503|e834d4e64370c982|a93b5c372fedb9de|-1316246027||t20368.2065821926s|s388b|388|rds|local|vector|||0.011||
-pipeline_summary|stem|9c54b73d2f4a36aa|227ec98c705842ef|affa54fdc3654f7e|69072778||t20368.2065822961s|s1494b|1494|rds|local|vector|||0.003||
-secovi_data|stem|51b48cc4d1f1baa9|26616e6deb7e9f2f|0131f54341ea7b62|-1896769145||t20368.5254839378s|s33287b|33287|rds|local|vector|||16.972|Failed to import data for: launches_rmsp, sales_rmsp|
-secovi_cache|stem|9300d22ab6ededd8|c2663d9cfe363df0|87b075c75eb0bc6e|1344640477|inst/cached_data/secovi_sp.csv.gz|t20368.5254844914s|s54965b|54965|file|local|vector|||0.043||
-secovi_validation|stem|8fddf9c40983343c|2ca5d1ee0a2ada1a|934918c9e93bdfd2|736436229||t20368.5254853445s|s378b|378|rds|local|vector|||0.053||
-validate_cache_integrity|function|ad9ce9552752d199
+.Random.seed|object|73d62f75f2671c17
+target_list|object|04258f476920050c
+bis_rppi_data|stem|70d0b1570562bfb9|7801f1d3e1f6d229|0131f54341ea7b62|-1082112674||t20496.7809278244s|s385731b|385731|rds|local|vector|||2.373||
+cbic_data|stem|c3d883318515b71d|9ce61d95f6dd93af|0131f54341ea7b62|730876811||t20496.7809747994s|s31080b|31080|rds|local|vector|||4.037||
+bis_rppi_validation|stem|feddeb10a045cd79|419df25a1cbac8fe|61da9b1f8750f5c5|1653506553||t20496.7818952437s|s396b|396|rds|local|vector|||0.445||
+bis_rppi_cache|stem|0b89c5e037f20618|fcae6b328f56045f|0a9657a31c643c27|1573177163|data-raw/cache_output/bis_selected.rds|t20496.7818977253s|s385724b|385724|file|local|vector|||0.135||
+cbic_cache|stem|cfb6349fbb6febe4|605985fd9751bf45|bcba419f9b7122b5|1956496878|data-raw/cache_output/cbic.csv.gz|t20496.7818982574s|s44287b|44287|file|local|vector|||0.032||
+cbic_validation|stem|fb75fe90f1920bd6|977dc80967b266b3|0ea4c0e4ebf1c4af|-417786618||t20496.7818985665s|s411b|411|rds|local|vector|||0.017||
+fgv_ibre_cache|stem|3927c6a593a97069|1c58563b06182903|d20d8db71423b28b|-2046427055|data-raw/cache_output/fgv_ibre.csv.gz|t20496.7818989161s|s8731b|8731|file|local|vector|||0.025||
+validate_cache_integrity|function|18736347939ac712
 create_validation_summary|function|1b51fa0d2e126278
-should_update_dataset|function|31f7b09ca0c463ec
+should_update_dataset|function|c976491839c0ed05
 "%||%"|function|f62f4a37aa64d033
 check_variable_ranges|function|9fd0e10eef66c631
 get_required_columns|function|6dad1ec21bbced73
 validate_dataset_specific|function|a83dc58939a2a537
-save_dataset_to_cache|function|6b8133c0072bbfdd
-.Random.seed|object|73d62f75f2671c17
+save_dataset_to_cache|function|e9819a9ea9a7b7dc
 generate_validation_report|function|8135ed09d519ad7c
 fetch_dataset|function|c12a75dd81ab7d7d
-get_cache_summary|function|596bf2fda0ab343e
+get_cache_summary|function|62dc897b801b5ef7
 validate_dataset|function|cd260a4db779b992
-save_to_cache|function|5a6c366372ad4065
-bcb_realestate_data|stem|bc48186778afac05|5ed17f8528d2592a|0131f54341ea7b62|488098542||t20381.4812017225s|s3371127b|3371127|rds|local|vector|||8.694||
-bcb_series_data|stem|7c689b498f2a3902|8eff33fdc606ab8b|0131f54341ea7b62|-1132036977||t20381.4823053367s|s109661b|109661|rds|local|vector|||95.306|Failed to download 1 series after 4 attempts ✖ Failed series codes: 432 ℹ Returning 139/140 successful series|
-bcb_realestate_cache|stem|952aec1fe9be27da|977e4a8d6b14fd01|3b4240072789699c|1666291676|inst/cached_data/bcb_realestate.rds|t20381.4823154028s|s3371123b|3371123|file|local|vector|||0.575||
-bcb_series_cache|stem|06e9c9e5d8cc1a07|9d715d3884f38319|f5331bb89ccd7030|1460612295|inst/cached_data/bcb_series.csv.gz|t20381.4823164276s|s170984b|170984|file|local|vector|||0.066||
+save_to_cache|function|698012b2bf26620e
+bcb_series_data|stem|9e3fde1e8779b9ef|8eff33fdc606ab8b|0131f54341ea7b62|-1132036977||t20510.8009617068s|s111946b|111946|rds|local|vector|||122.206|package ‘dplyr’ was built under R version 4.5.2. Failed to download 1 series after 4 attempts ✖ Failed series codes: 432 ℹ Returning 139/140 successful series|
+property_records_data|stem|00afe062ecc5a3fc|639cd5161a64b70b|0131f54341ea7b62|-835099359||t20368.2061917359s||12522|rds|local|vector|||25.159|Property records links attempt 1/4 failed: Failed to find valid download links. Property records links attempt 2/4 failed: Failed to find valid download links. Property records links attempt 3/4 failed: Failed to find valid download links|Property records links failed after 4 attempts
+fgv_ibre_data|stem|b94de4b338a3954a|a2efbff0eafdaff4|0131f54341ea7b62|1381348509||t20510.8012562468s|s5388b|5388|rds|local|vector|||0.226|Cached data for 'fgv_ibre' is 14 days old ℹ Consider updating: update_cache_from_github('fgv_ibre') ℹ Or force fresh data: get_dataset('fgv_ibre', source='fresh')|
+abrainc_data|stem|a09e7d41af00952f|39646115c1251324|0131f54341ea7b62|-2012302923||t20510.8012663086s|s16875b|16875|rds|local|vector|||0.849||
+abecip_data|stem|458385fec69b238f|0123e70df6d460f5|0131f54341ea7b62|223287328||t20510.8012961978s|s35073b|35073|rds|local|vector|||2.574|Some dates in abecip_sbpe are more than 90 days in future ℹ Latest date: 2026-12-01 ℹ This may indicate a data quality issue|
+secovi_data|stem|92fcb0ec57b355dc|26616e6deb7e9f2f|0131f54341ea7b62|-1896769145||t20510.8075768271s|s31644b|31644|rds|local|vector|||542.633|Scrape SECOVI data attempt 1/4 failed: cannot open the connection. Failed to import data for: 'launches_rmsp' and 'sales_rmsp'|
+rppi_sale_data|stem|46d55b19f2a2c9c9|6d2a66cf91056c7b|0131f54341ea7b62|-316251275||t20510.8077900236s|s201427b|201427|rds|local|vector|||18.403||
+rppi_rent_data|stem|158dd14e9a348dc0|284ae4e0a6d14e77|0131f54341ea7b62|884109466||t20510.8080234952s|s104437b|104437|rds|local|vector|||20.158||
+bcb_realestate_data|stem|378fcb2c024882b5|5ed17f8528d2592a|0131f54341ea7b62|488098542||t20510.8082090809s|s3434349b|3434349|rds|local|vector|||15.364||
+bcb_series_validation|stem|be188889c9d0bb65|b1f04a900e928b1d|630b25a30043e6db|-523267963||t20510.8082118783s|s454b|454|rds|local|vector|||0.208||
+bcb_series_cache|stem|9662d39a7451ba85|9d715d3884f38319|c2e2abe61dfc91e1|1460612295|data-raw/cache_output/bcb_series.csv.gz|t20510.8082130414s|s174667b|174667|file|local|vector|||0.082||
+property_records_cache|stem|6deb371033a47de3|c18a68781280f209|407227e70960e7dd|21956687|inst/cached_data/property_records.csv.gz|t20368.2065804919s||19835|file|local|vector|||0.003||could not load dependency property_records_data of target property_records_cache. invalid 'description' argument
+abrainc_validation|stem|716eaa21c371eab4|e834d4e64370c982|dd2e1d80a8a58178|-1316246027||t20510.808213662s|s386b|386|rds|local|vector|||0.028||
+abrainc_cache|stem|86eb69319b10e7ac|68af51ded053a2fa|ab1d3b7f2bd6d38b|-299234936|data-raw/cache_output/abrainc.csv.gz|t20510.8082140617s|s28801b|28801|file|local|vector|||0.034||
+abecip_cache|stem|fe31d597bff2542d|c9c27cd38b3c7fe7|e4ec6bf7e1fb3dba|878606778|data-raw/cache_output/abecip.csv.gz|t20510.808214314s|s37201b|37201|file|local|vector|||0.016||
+abecip_validation|stem|ee1bf9ba284fb43d|3511f2781c879a56|003c0e7bc8b0f809|-1823780572||t20510.8082145075s|s464b|464|rds|local|vector|||0.008||
+secovi_validation|stem|a0992c26d511b9cb|2ca5d1ee0a2ada1a|5365a8ffa6ffff04|736436229||t20510.8082149983s|s354b|354|rds|local|vector|||0.035||
+secovi_cache|stem|6c252ca62e7dcb26|c2663d9cfe363df0|e34415069afb830d|1344640477|data-raw/cache_output/secovi_sp.csv.gz|t20510.8082153352s|s34193b|34193|file|local|vector|||0.027||
+rppi_sale_validation|stem|1d6e645ff25b0859|989298b0143a232b|5a40805842c65ffb|-1617890911||t20510.808215933s|s390b|390|rds|local|vector|||0.04||
+rppi_sale_cache|stem|fb83ed6faac77a98|f6ca4d77f737790d|d6843983e8d293c1|1208095534|data-raw/cache_output/rppi_sale.csv.gz|t20510.8082167774s|s305419b|305419|file|local|vector|||0.071||
+rppi_rent_cache|stem|b2f5431b5749f5b6|999384aa22478b59|aae599001bb7ac1b|1551090311|data-raw/cache_output/rppi_rent.csv.gz|t20510.8082173392s|s174624b|174624|file|local|vector|||0.039||
+rppi_rent_validation|stem|953c14bc18ce00b6|e7d6d7e124bd3a1d|287c6ae4b46c9688|646465075||t20510.8082179862s|s400b|400|rds|local|vector|||0.04||
+bcb_realestate_validation|stem|4d83196dc964bfb1|adca6f4e97d7fa75|3327056a1c191d3f|1892371717||t20510.8082440249s|s429b|429|rds|local|vector|||1.833||
+bcb_realestate_cache|stem|8dfabf6c41dc149d|977e4a8d6b14fd01|733b4c561febbb6a|1666291676|data-raw/cache_output/bcb_realestate.rds|t20510.8082556786s|s3434348b|3434348|file|local|vector|||0.684||
+pipeline_summary|stem|4095dc8b4f342743|c6fa8d2cbed11dac|d5b0671271faccb2|69072778||t20510.8082560049s|s1370b|1370|rds|local|vector|||0.008||
