@@ -25,12 +25,3 @@ import_cbic_file(url, dest_dir = tempdir(), delay = 1)
 ## Value
 
 Character vector of length 1. Path to downloaded file or NULL if failed
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-url <- "http://www.cbicdados.com.br/media/anexos/example.xlsx"
-file_path <- import_cbic_file(url)
-} # }
-```

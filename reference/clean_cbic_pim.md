@@ -39,11 +39,3 @@ A tibble with columns:
 - value:
 
   Numeric. Production index (base: 2022 = 100)
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-pim_data <- clean_cbic_pim("path/to/pim_file.xlsx")
-} # }
-```

@@ -529,8 +529,8 @@ clear_user_cache()            # Clear all (with confirmation)
 
 #### Deprecations
 
-- [`import_cached()`](https://viniciusoike.github.io/realestatebr/reference/import_cached.md):
-  Still works but now loads from user cache (previously from `inst/`)
+- `import_cached()`: Still works but now loads from user cache
+  (previously from `inst/`)
 - Old `cached=TRUE` parameter in legacy functions: Still supported but
   uses new cache
 

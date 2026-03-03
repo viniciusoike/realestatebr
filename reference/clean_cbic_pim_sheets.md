@@ -19,12 +19,3 @@ clean_cbic_pim_sheets(download_results, quiet = FALSE)
 ## Value
 
 A list with the cleaned PIM data
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-download_results <- import_cbic_files(pim_files)
-pim_data <- clean_cbic_pim_sheets(download_results)
-} # }
-```

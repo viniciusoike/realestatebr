@@ -49,12 +49,3 @@ A tibble with columns:
 
 Processes raw cement consumption data from CBIC Excel files by removing
 total rows/columns, pivoting to long format, and adding state codes.
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-# Only works for monthly consumption tables!
-cleaned_data <- clean_cbic_cement_monthly(raw_data, 2023)
-} # }
-```

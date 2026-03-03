@@ -24,11 +24,3 @@ A tibble with columns:
 - link:
 
   Character. URL to material-specific page
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-materials <- import_cbic_materials()
-} # }
-```

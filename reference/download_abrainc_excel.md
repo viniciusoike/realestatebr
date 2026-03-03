@@ -1,7 +1,7 @@
-# Download Abrainc Excel File with Retry Logic
+# Download Abrainc Excel File
 
-Internal function to download the Abrainc-Fipe Excel file with retry
-attempts and proper error handling.
+Downloads the Abrainc-Fipe Excel file using the generic download_excel()
+helper.
 
 ## Usage
 

@@ -35,36 +35,3 @@ attach_dataset_metadata(
 ## Value
 
 The data with metadata attributes attached.
-
-## Details
-
-Attaches three standard attributes:
-
-- `source`: Where the data came from ("web", "cache", "github")
-
-- `download_time`: Timestamp when data was retrieved
-
-- `download_info`: List with source, category, and any extra_info
-
-The metadata is preserved when subsetting but may be lost during some
-transformations. Use
-[`attributes()`](https://rdrr.io/r/base/attributes.html) to inspect
-metadata.
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-data <- attach_dataset_metadata(
-  data,
-  source = "web",
-  category = "sbpe",
-  extra_info = list(attempts = 1, url = "https://...")
-)
-
-# Inspect metadata
-attributes(data)$source # "web"
-attributes(data)$download_time # POSIXct timestamp
-attributes(data)$download_info # List with details
-} # }
-```

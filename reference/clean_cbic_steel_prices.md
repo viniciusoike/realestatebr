@@ -42,12 +42,3 @@ A tibble with columns:
 - avg_price:
 
   Numeric. Average steel price
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-steel_files <- get_cbic_files("aco")
-prices <- clean_cbic_steel_prices(steel_files$file_path[1])
-} # }
-```

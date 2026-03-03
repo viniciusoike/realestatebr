@@ -25,12 +25,3 @@ A tibble with columns:
 - link:
 
   Character. Direct URL to Excel file
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-cement_url <- "http://www.cbicdados.com.br/menu/materiais-de-construcao/cimento"
-files <- import_cbic_material_links(cement_url)
-} # }
-```

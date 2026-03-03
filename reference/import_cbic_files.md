@@ -21,12 +21,3 @@ import_cbic_files(file_params, dest_dir = tempdir(), quiet = FALSE)
 ## Value
 
 A tibble with download results including success status and file paths
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-files <- import_cbic_material_links(cement_url)
-results <- import_cbic_files(files)
-} # }
-```

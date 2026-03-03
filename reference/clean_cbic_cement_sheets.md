@@ -26,12 +26,3 @@ clean_cbic_cement_sheets(
 ## Value
 
 A list of cleaned cement data frames, named by file type
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-download_results <- import_cbic_files(cement_files)
-processed_data <- clean_cbic_cement_sheets(download_results)
-} # }
-```

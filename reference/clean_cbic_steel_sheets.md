@@ -17,12 +17,3 @@ clean_cbic_steel_sheets(download_results, quiet = FALSE)
 ## Value
 
 A list with 'prices' and 'production' data frames
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-steel_files <- get_cbic_files("aco")
-steel_data <- clean_cbic_steel_sheets(steel_files)
-} # }
-```

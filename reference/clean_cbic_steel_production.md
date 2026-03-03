@@ -38,12 +38,3 @@ A tibble with columns:
 - value:
 
   Numeric. Production value
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-steel_files <- get_cbic_files("aco")
-production <- clean_cbic_steel_production(steel_files$file_path[2])
-} # }
-```
