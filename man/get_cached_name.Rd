@@ -2,11 +2,11 @@
 % Please edit documentation in R/get-dataset.R
 \name{get_cached_name}
 \alias{get_cached_name}
-\title{Get Cached Name for import_cached Function}
+\title{Get Cached Name for Dataset}
 \usage{
 get_cached_name(name, dataset_info, table = NULL)
 }
 \description{
-Maps dataset names to the parameter names used by import_cached()
+Maps dataset names to the cached file names used by load_from_user_cache()
 }
 \keyword{internal}

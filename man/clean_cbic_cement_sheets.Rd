@@ -22,10 +22,4 @@ A list of cleaned cement data frames, named by file type
 \description{
 Routes to the appropriate cleaning function based on file type.
 }
-\examples{
-\dontrun{
-download_results <- import_cbic_files(cement_files)
-processed_data <- clean_cbic_cement_sheets(download_results)
-}
-}
 \keyword{internal}

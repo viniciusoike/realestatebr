@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_abrainc_indicators.R
 \name{download_abrainc_excel}
 \alias{download_abrainc_excel}
-\title{Download Abrainc Excel File with Retry Logic}
+\title{Download Abrainc Excel File}
 \usage{
 download_abrainc_excel(max_retries, quiet)
 }
@@ -15,7 +15,6 @@ download_abrainc_excel(max_retries, quiet)
 List with path (character or NULL) and attempt count
 }
 \description{
-Internal function to download the Abrainc-Fipe Excel file with retry attempts
-and proper error handling.
+Downloads the Abrainc-Fipe Excel file using the generic download_excel() helper.
 }
 \keyword{internal}

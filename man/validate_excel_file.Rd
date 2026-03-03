@@ -20,25 +20,4 @@ Invisible TRUE if all validations pass. Errors otherwise.
 Validates that a downloaded Excel file is valid and contains expected sheets.
 Useful for datasets downloaded from Excel sources (e.g., Abrainc, Abecip).
 }
-\details{
-Performs the following checks:
-\enumerate{
-\item File exists and is readable
-\item File size meets minimum threshold
-\item File is a valid Excel file (can read sheets)
-\item All expected sheets are present
-}
-
-This is particularly useful after download operations to ensure the
-download completed successfully and the file structure is as expected.
-}
-\examples{
-\dontrun{
-validate_excel_file(
-  temp_path,
-  expected_sheets = c("Indicadores Abrainc-Fipe", "Radar Abrainc-Fipe")
-)
-}
-
-}
 \keyword{internal}

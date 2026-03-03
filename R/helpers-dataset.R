@@ -180,12 +180,14 @@ handle_dataset_cache <- function(
 # HELPER 3: DOWNLOAD WITH RETRY
 # ==============================================================================
 
-# NOTE: download_with_retry() already exists in R/rppi-helpers.R
-# We reuse that existing implementation rather than creating a duplicate.
-# The existing function signature is:
-#   download_with_retry(fn, max_retries = 3, quiet = FALSE, desc = "Download")
-#
-# This consolidates retry logic across all dataset functions.
+# NOTE: download_with_retry() and other download helpers are in R/helpers-download.R
+# See that file for:
+#   - download_with_retry(fn, max_retries, quiet, desc) - Core retry logic
+#   - download_file(url, file_ext, ssl_verify, ...) - Generic file download
+#   - download_excel(url, expected_sheets, ...) - Excel download with validation
+#   - download_csv(url, ...) - CSV download
+#   - scrape_download_url(page_url, xpath, ...) - URL extraction from web pages
+#   - download_multiple_files(urls, ...) - Batch downloads
 
 # ==============================================================================
 # HELPER 4: METADATA ATTACHMENT
@@ -202,30 +204,6 @@ handle_dataset_cache <- function(
 #' @param extra_info List. Additional metadata to include in download_info.
 #'
 #' @return The data with metadata attributes attached.
-#'
-#' @details
-#' Attaches three standard attributes:
-#' - `source`: Where the data came from ("web", "cache", "github")
-#' - `download_time`: Timestamp when data was retrieved
-#' - `download_info`: List with source, category, and any extra_info
-#'
-#' The metadata is preserved when subsetting but may be lost during some
-#' transformations. Use `attributes()` to inspect metadata.
-#'
-#' @examples
-#' \dontrun{
-#' data <- attach_dataset_metadata(
-#'   data,
-#'   source = "web",
-#'   category = "sbpe",
-#'   extra_info = list(attempts = 1, url = "https://...")
-#' )
-#'
-#' # Inspect metadata
-#' attributes(data)$source # "web"
-#' attributes(data)$download_time # POSIXct timestamp
-#' attributes(data)$download_info # List with details
-#' }
 #'
 #' @keywords internal
 attach_dataset_metadata <- function(
@@ -279,33 +257,6 @@ attach_dataset_metadata <- function(
 #'   Default 90.
 #'
 #' @return Invisible TRUE if all validations pass. Errors or warns otherwise.
-#'
-#' @details
-#' Performs the following checks:
-#' 1. Data is not empty (nrow > 0)
-#' 2. Minimum row count met
-#' 3. Required columns present
-#' 4. Date column valid (if check_dates = TRUE)
-#' 5. Dates not too far in future (if check_dates = TRUE)
-#'
-#' Throws errors for critical issues (empty data, missing columns, invalid dates).
-#' Issues warnings for suspicious values (low row count, future dates).
-#'
-#' @examples
-#' \dontrun{
-#' # Basic validation (just check for date column)
-#' validate_dataset(data, "abecip")
-#'
-#' # Validate specific columns
-#' validate_dataset(
-#'   data,
-#'   "abecip_units",
-#'   required_cols = c("date", "units_construction", "units_acquisition")
-#' )
-#'
-#' # Skip date validation
-#' validate_dataset(data, "cbic", check_dates = FALSE)
-#' }
 #'
 #' @keywords internal
 validate_dataset <- function(
@@ -397,24 +348,6 @@ validate_dataset <- function(
 #' @param min_size Numeric. Minimum file size in bytes. Default 1000.
 #'
 #' @return Invisible TRUE if all validations pass. Errors otherwise.
-#'
-#' @details
-#' Performs the following checks:
-#' 1. File exists and is readable
-#' 2. File size meets minimum threshold
-#' 3. File is a valid Excel file (can read sheets)
-#' 4. All expected sheets are present
-#'
-#' This is particularly useful after download operations to ensure the
-#' download completed successfully and the file structure is as expected.
-#'
-#' @examples
-#' \dontrun{
-#' validate_excel_file(
-#'   temp_path,
-#'   expected_sheets = c("Indicadores Abrainc-Fipe", "Radar Abrainc-Fipe")
-#' )
-#' }
 #'
 #' @keywords internal
 validate_excel_file <- function(

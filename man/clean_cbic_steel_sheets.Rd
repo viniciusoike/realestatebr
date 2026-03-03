@@ -15,10 +15,4 @@ A list with 'prices' and 'production' data frames
 \description{
 Handles both steel price and production files with appropriate cleaning.
 }
-\examples{
-\dontrun{
-steel_files <- get_cbic_files("aco")
-steel_data <- clean_cbic_steel_sheets(steel_files)
-}
-}
 \keyword{internal}

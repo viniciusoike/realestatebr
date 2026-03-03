@@ -27,31 +27,4 @@ The data with metadata attributes attached.
 Attaches standardized metadata attributes to a dataset. Consolidates
 metadata attachment logic used across all dataset functions.
 }
-\details{
-Attaches three standard attributes:
-\itemize{
-\item \code{source}: Where the data came from ("web", "cache", "github")
-\item \code{download_time}: Timestamp when data was retrieved
-\item \code{download_info}: List with source, category, and any extra_info
-}
-
-The metadata is preserved when subsetting but may be lost during some
-transformations. Use \code{attributes()} to inspect metadata.
-}
-\examples{
-\dontrun{
-data <- attach_dataset_metadata(
-  data,
-  source = "web",
-  category = "sbpe",
-  extra_info = list(attempts = 1, url = "https://...")
-)
-
-# Inspect metadata
-attributes(data)$source # "web"
-attributes(data)$download_time # POSIXct timestamp
-attributes(data)$download_info # List with details
-}
-
-}
 \keyword{internal}

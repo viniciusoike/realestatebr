@@ -588,9 +588,9 @@ apply_table_filtering <- function(data, name, table) {
   return(data)
 }
 
-#' Get Cached Name for import_cached Function
+#' Get Cached Name for Dataset
 #'
-#' Maps dataset names to the parameter names used by import_cached()
+#' Maps dataset names to the cached file names used by load_from_user_cache()
 #'
 #' @keywords internal
 get_cached_name <- function(name, dataset_info, table = NULL) {

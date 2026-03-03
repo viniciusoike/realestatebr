@@ -19,10 +19,4 @@ Character vector of length 1. Path to downloaded file or NULL if failed
 \description{
 Import Excel file from CBIC with error handling
 }
-\examples{
-\dontrun{
-url <- "http://www.cbicdados.com.br/media/anexos/example.xlsx"
-file_path <- import_cbic_file(url)
-}
-}
 \keyword{internal}

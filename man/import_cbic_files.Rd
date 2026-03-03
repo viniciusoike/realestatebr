@@ -17,10 +17,4 @@ A tibble with download results including success status and file paths
 \description{
 Import all Excel files for a specific CBIC material
 }
-\examples{
-\dontrun{
-files <- import_cbic_material_links(cement_url)
-results <- import_cbic_files(files)
-}
-}
 \keyword{internal}

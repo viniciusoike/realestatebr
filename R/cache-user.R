@@ -12,7 +12,6 @@ NULL
 #' This directory is used to store downloaded datasets for faster subsequent access.
 #'
 #' @return Character. Path to user cache directory
-#' @keywords internal
 #' @export
 #'
 #' @examples
@@ -79,7 +78,6 @@ get_cached_file_path <- function(dataset_name, extension = NULL) {
 #' @param dataset_name Character. Name of the cached dataset
 #' @param quiet Logical. Suppress informational messages (default: FALSE)
 #' @return Dataset as tibble or list, or NULL if not found
-#' @keywords internal
 #' @export
 load_from_user_cache <- function(dataset_name, quiet = FALSE) {
   # Ensure cache directory exists
@@ -394,7 +392,6 @@ save_cache_metadata <- function(dataset_name, format, source = NULL) {
 #'
 #' @param dataset_name Character. Name of dataset
 #' @return Logical. TRUE if cached
-#' @keywords internal
 #' @export
 is_cached <- function(dataset_name) {
   file_path <- get_cached_file_path(dataset_name)
@@ -425,7 +422,6 @@ get_cache_age <- function(dataset_name) {
 #' @param dataset_name Character. Name of dataset
 #' @param warn_after_days Numeric. Override default warning threshold
 #' @return Logical. TRUE if stale, FALSE if fresh, NA if can't determine
-#' @keywords internal
 #' @export
 is_cache_stale <- function(dataset_name, warn_after_days = NULL) {
   age <- get_cache_age(dataset_name)

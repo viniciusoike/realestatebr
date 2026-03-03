@@ -25,10 +25,4 @@ A tibble with columns:
 \strong{WARNING: This function only works for steel price tables.}
 Steel data has different structure than cement data.
 }
-\examples{
-\dontrun{
-steel_files <- get_cbic_files("aco")
-prices <- clean_cbic_steel_prices(steel_files$file_path[1])
-}
-}
 \keyword{internal}

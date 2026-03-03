@@ -19,10 +19,4 @@ A tibble with columns:
 \description{
 Import Excel file links for a specific CBIC material
 }
-\examples{
-\dontrun{
-cement_url <- "http://www.cbicdados.com.br/menu/materiais-de-construcao/cimento"
-files <- import_cbic_material_links(cement_url)
-}
-}
 \keyword{internal}

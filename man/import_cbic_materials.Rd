@@ -18,9 +18,4 @@ A tibble with columns:
 Scrapes the main CBIC materials page to extract information about
 all available construction materials data.
 }
-\examples{
-\dontrun{
-materials <- import_cbic_materials()
-}
-}
 \keyword{internal}

@@ -19,4 +19,3 @@ cache_dir <- get_user_cache_dir()
 print(cache_dir)
 }
 }
-\keyword{internal}

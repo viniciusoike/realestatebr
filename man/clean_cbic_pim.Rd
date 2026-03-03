@@ -25,9 +25,4 @@ Processes the PIM (Pesquisa Industrial Mensal) industrial production index
 for construction materials. This data uses a unique structure with Excel
 serial dates for January and month abbreviations for other months.
 }
-\examples{
-\dontrun{
-pim_data <- clean_cbic_pim("path/to/pim_file.xlsx")
-}
-}
 \keyword{internal}

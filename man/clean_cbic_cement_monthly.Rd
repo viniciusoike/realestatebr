@@ -30,10 +30,4 @@ its own cleaning function. Always inspect raw data first before applying cleanin
 Processes raw cement consumption data from CBIC Excel files by removing
 total rows/columns, pivoting to long format, and adding state codes.
 }
-\examples{
-\dontrun{
-# Only works for monthly consumption tables!
-cleaned_data <- clean_cbic_cement_monthly(raw_data, 2023)
-}
-}
 \keyword{internal}

@@ -17,10 +17,4 @@ Wrapper function to process PIM files. Currently handles only the
 current methodology file (file 3), as files 1 and 2 are historical
 data with discontinued methodologies.
 }
-\examples{
-\dontrun{
-download_results <- import_cbic_files(pim_files)
-pim_data <- clean_cbic_pim_sheets(download_results)
-}
-}
 \keyword{internal}

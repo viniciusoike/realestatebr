@@ -143,10 +143,9 @@ get_abrainc_indicators <- function(
   return(out)
 }
 
-#' Download Abrainc Excel File with Retry Logic
+#' Download Abrainc Excel File
 #'
-#' Internal function to download the Abrainc-Fipe Excel file with retry attempts
-#' and proper error handling.
+#' Downloads the Abrainc-Fipe Excel file using the generic download_excel() helper.
 #'
 #' @param max_retries Maximum number of retry attempts
 #' @param quiet Logical controlling messages
@@ -155,53 +154,31 @@ get_abrainc_indicators <- function(
 #' @keywords internal
 download_abrainc_excel <- function(max_retries, quiet) {
   url <- "https://downloads.fipe.org.br/indices/abrainc/series-historicas-abraincfipe.xlsx"
-  temp_path <- tempfile("abrainc_fipe.xlsx")
   expected_sheets <- c(
     "Indicadores Abrainc-Fipe",
     "Radar Abrainc-Fipe",
     "Indicador Antecedente (SP)"
   )
 
-  # Use download_with_retry() from rppi-helpers.R
+  # Use generic download_excel() from helpers-download.R
   result <- tryCatch(
     {
-      download_with_retry(
-        fn = function() {
-          # Configure SSL settings
-          httr::set_config(httr::config(ssl_verifypeer = 0L))
-
-          # Attempt download
-          response <- httr::GET(
-            url = url,
-            httr::write_disk(path = temp_path, overwrite = TRUE)
-          )
-
-          # Check HTTP response
-          if (httr::status_code(response) != 200) {
-            stop("HTTP request failed with status: ", httr::status_code(response))
-          }
-
-          # Validate the downloaded Excel file
-          validate_excel_file(temp_path, expected_sheets, min_size = 1000)
-
-          return(temp_path)
-        },
+      path <- download_excel(
+        url = url,
+        expected_sheets = expected_sheets,
+        min_size = 1000,
+        ssl_verify = FALSE,  # FIPE has SSL certificate issues
         max_retries = max_retries,
-        quiet = quiet,
-        desc = "Download Abrainc Excel"
+        quiet = quiet
       )
+      list(path = path, attempts = 1, error = NULL)
     },
     error = function(e) {
-      return(NULL)
+      list(path = NULL, attempts = max_retries + 1, error = e$message)
     }
   )
 
-  # Return in the expected format
-  if (!is.null(result)) {
-    list(path = result, attempts = 1, error = NULL)
-  } else {
-    list(path = NULL, attempts = max_retries + 1, error = "Download failed")
-  }
+  return(result)
 }
 
 abrainc_basic_clean <- function(df, subcategories) {

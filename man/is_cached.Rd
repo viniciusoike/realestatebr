@@ -15,4 +15,3 @@ Logical. TRUE if cached
 \description{
 Check if a dataset exists in the user cache.
 }
-\keyword{internal}

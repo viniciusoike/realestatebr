@@ -29,39 +29,8 @@ try_rppi_cached <- function(table, source_filter = NULL) {
   )
 }
 
-#' Download with Retry Logic
-#'
-#' Executes a download function with automatic retry on failure.
-#'
-#' @param fn Function to execute (should return data on success)
-#' @param max_retries Maximum number of retry attempts
-#' @param quiet If TRUE, suppresses retry warnings
-#' @param desc Description of what's being downloaded (for error messages)
-#' @return Result from fn() if successful
-#' @keywords internal
-#' @noRd
-download_with_retry <- function(
-  fn,
-  max_retries = 3,
-  quiet = FALSE,
-  desc = "Download"
-) {
-  for (i in seq_len(max_retries + 1)) {
-    result <- tryCatch(fn(), error = function(e) {
-      if (i <= max_retries && !quiet) {
-        cli::cli_warn(
-          "{desc} attempt {i}/{max_retries + 1} failed: {e$message}"
-        )
-      }
-      NULL
-    })
-    if (!is.null(result)) {
-      return(result)
-    }
-    if (i <= max_retries) Sys.sleep(min(i * 0.5, 3))
-  }
-  cli::cli_abort("{desc} failed after {max_retries + 1} attempts")
-}
+# NOTE: download_with_retry() has been moved to R/helpers-download.R
+# It is now a shared helper function used across all dataset functions.
 
 #' Calculate RPPI Changes
 #'
@@ -107,6 +76,8 @@ calculate_rppi_changes <- function(
 #' Download Excel File with Retry
 #'
 #' Downloads an Excel file to a temporary location with retry logic.
+#' This is a thin wrapper around download_excel() from helpers-download.R
+#' for backwards compatibility with existing RPPI code.
 #'
 #' @param url URL of the Excel file
 #' @param max_retries Maximum retry attempts
@@ -115,20 +86,13 @@ calculate_rppi_changes <- function(
 #' @keywords internal
 #' @noRd
 download_excel_with_retry <- function(url, max_retries = 3, quiet = FALSE) {
-  download_with_retry(
-    function() {
-      temp_path <- tempfile(fileext = ".xlsx")
-      response <- httr::GET(url, httr::write_disk(temp_path, overwrite = TRUE))
-      httr::stop_for_status(response)
-
-      if (!file.exists(temp_path) || file.size(temp_path) == 0) {
-        stop("Downloaded file is empty or missing")
-      }
-
-      temp_path
-    },
+  # Use the generic download_excel() from helpers-download.R
+  download_excel(
+    url = url,
+    expected_sheets = NULL,  # No sheet validation for generic RPPI downloads
+    min_size = 1000,
+    ssl_verify = TRUE,
     max_retries = max_retries,
-    quiet = quiet,
-    desc = "Excel file download"
+    quiet = quiet
   )
 }

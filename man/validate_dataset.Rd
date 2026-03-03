@@ -35,34 +35,4 @@ Invisible TRUE if all validations pass. Errors or warns otherwise.
 Validates basic dataset requirements. Consolidates validation logic
 used across all dataset functions.
 }
-\details{
-Performs the following checks:
-\enumerate{
-\item Data is not empty (nrow > 0)
-\item Minimum row count met
-\item Required columns present
-\item Date column valid (if check_dates = TRUE)
-\item Dates not too far in future (if check_dates = TRUE)
-}
-
-Throws errors for critical issues (empty data, missing columns, invalid dates).
-Issues warnings for suspicious values (low row count, future dates).
-}
-\examples{
-\dontrun{
-# Basic validation (just check for date column)
-validate_dataset(data, "abecip")
-
-# Validate specific columns
-validate_dataset(
-  data,
-  "abecip_units",
-  required_cols = c("date", "units_construction", "units_acquisition")
-)
-
-# Skip date validation
-validate_dataset(data, "cbic", check_dates = FALSE)
-}
-
-}
 \keyword{internal}

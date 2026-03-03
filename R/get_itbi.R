@@ -3,7 +3,7 @@ get_itbi_spo <- function(year, cached) {
   stopifnot(year %in% 2019:2023)
 
   if (cached) {
-    itbi <- import_cached("itbi_spo")
+    itbi <- load_from_user_cache("itbi_spo")
     itbi <- dplyr::filter(itbi, year == local(year))
     return(itbi)
   }
