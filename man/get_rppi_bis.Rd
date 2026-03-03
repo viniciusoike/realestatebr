@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_rppi_bis.R
 \name{get_rppi_bis}
 \alias{get_rppi_bis}
-\title{Get Residential Property Price Indices from BIS (DEPRECATED)}
+\title{Get Residential Property Price Indices from BIS}
 \source{
 \url{https://data.bis.org/topics/RPP}
 }
@@ -16,7 +16,7 @@ get_rppi_bis(
 }
 \arguments{
 \item{table}{Character. Dataset table: "selected", "detailed_monthly",
-"detailed_quarterly", "detailed_annual", or "detailed_semiannual".}
+"detailed_quarterly", "detailed_annual", or "detailed_halfyearly".}
 
 \item{cached}{Logical. If \code{TRUE}, loads data from cache.}
 
@@ -29,8 +29,7 @@ Tibble with BIS RPPI data. Includes metadata attributes:
 source, download_time.
 }
 \description{
-Deprecated since v0.4.0. Use \code{\link{get_dataset}}("rppi_bis") instead.
-Downloads Residential Property Price Indices from BIS with support for selected
-series and detailed monthly/quarterly/annual/semiannual datasets.
+Downloads Residential Property Price Indices from BIS with support for
+selected series and detailed monthly/quarterly/annual/halfyearly datasets.
 }
 \keyword{internal}

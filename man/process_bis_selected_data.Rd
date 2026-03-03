@@ -2,19 +2,20 @@
 % Please edit documentation in R/get_rppi_bis.R
 \name{process_bis_selected_data}
 \alias{process_bis_selected_data}
-\title{Process BIS Selected Data}
+\title{Process BIS Selected CSV Data}
 \usage{
-process_bis_selected_data(temp_path, quiet)
+process_bis_selected_data(csv_path, quiet)
 }
 \arguments{
-\item{temp_path}{Path to downloaded Excel file}
+\item{csv_path}{Path to the extracted CSV file}
 
 \item{quiet}{Logical controlling messages}
 }
 \value{
-Processed BIS selected data
+Processed BIS selected data tibble
 }
 \description{
-Internal function to process BIS selected Excel data.
+Reads the column-oriented CSV from the BIS SPP dataset, pivots date columns
+to long format, and standardises column names.
 }
 \keyword{internal}

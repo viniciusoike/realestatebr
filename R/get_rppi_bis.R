@@ -1,12 +1,11 @@
-#' Get Residential Property Price Indices from BIS (DEPRECATED)
+#' Get Residential Property Price Indices from BIS
 #'
 #' @description
-#' Deprecated since v0.4.0. Use \code{\link{get_dataset}}("rppi_bis") instead.
-#' Downloads Residential Property Price Indices from BIS with support for selected
-#' series and detailed monthly/quarterly/annual/semiannual datasets.
+#' Downloads Residential Property Price Indices from BIS with support for
+#' selected series and detailed monthly/quarterly/annual/halfyearly datasets.
 #'
 #' @param table Character. Dataset table: "selected", "detailed_monthly",
-#'   "detailed_quarterly", "detailed_annual", or "detailed_semiannual".
+#'   "detailed_quarterly", "detailed_annual", or "detailed_halfyearly".
 #' @param cached Logical. If `TRUE`, loads data from cache.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages.
 #' @param max_retries Integer. Maximum retry attempts. Defaults to 3.
@@ -28,7 +27,7 @@ get_rppi_bis <- function(
     "detailed_monthly",
     "detailed_quarterly",
     "detailed_annual",
-    "detailed_semiannual"
+    "detailed_halfyearly"
   )
 
   validate_dataset_params(
@@ -64,15 +63,15 @@ get_rppi_bis <- function(
 
   } else {
     # Handle detailed data tables
-    detailed_data <- get_rppi_bis_detailed_robust(quiet = quiet, max_retries = max_retries)
+    detailed_data <- get_rppi_bis_detailed_robust(
+      quiet = quiet, max_retries = max_retries
+    )
 
-    # Extract the specific table from detailed data
-    # Names are cleaned Excel sheet names (from sheets 3-6)
     df <- switch(table,
-      "detailed_monthly" = detailed_data[[1]],  # First detailed sheet (typically monthly)
-      "detailed_quarterly" = detailed_data[[2]], # Second detailed sheet (typically quarterly)
-      "detailed_annual" = detailed_data[[3]],   # Third detailed sheet (typically annual)
-      "detailed_semiannual" = detailed_data[[4]], # Fourth detailed sheet (typically semiannual)
+      "detailed_monthly"    = detailed_data[["monthly"]],
+      "detailed_quarterly"  = detailed_data[["quarterly"]],
+      "detailed_annual"     = detailed_data[["annual"]],
+      "detailed_halfyearly" = detailed_data[["halfyearly"]],
       stop("Unknown detailed table: ", table)
     )
 
@@ -90,203 +89,367 @@ get_rppi_bis <- function(
 }
 
 
-#' Get RPPI BIS Selected Data with Robust Error Handling
-#'
-#' Internal function to download BIS RPPI selected data with retry logic.
+# ==============================================================================
+# SELECTED DATA
+# ==============================================================================
+
+#' Download BIS RPPI Selected Data
 #'
 #' @param quiet Logical controlling messages
 #' @param max_retries Maximum number of retry attempts
 #'
-#' @return Downloaded and processed BIS selected data
+#' @return Processed BIS selected data tibble
 #' @keywords internal
 get_rppi_bis_selected_robust <- function(quiet, max_retries) {
-  cli_debug("Downloading BIS selected RPPI Excel file...")
+  cli_debug("Downloading BIS selected RPPI ZIP file...")
 
-  temp_path <- download_with_retry(
-    fn = function() download_bis_excel(
-      url = "https://www.bis.org/statistics/pp/pp_selected.xlsx",
-      filename = "bis_rppi_selected.xlsx"
-    ),
+  csv_path <- download_zip(
+    url = "https://data.bis.org/static/bulk/WS_SPP_csv_col.zip",
+    file_pattern = "\\.csv$",
+    min_size = 1000,
     max_retries = max_retries,
-    quiet = quiet,
-    desc = "BIS RPPI selected Excel"
+    quiet = quiet
   )
 
   cli_debug("Processing BIS selected RPPI data...")
-
-  return(process_bis_selected_data(temp_path, quiet))
+  process_bis_selected_data(csv_path, quiet)
 }
 
-#' Get RPPI BIS Detailed Data with Robust Error Handling
+#' Process BIS Selected CSV Data
 #'
-#' Internal function to download BIS RPPI detailed data with retry logic.
+#' Reads the column-oriented CSV from the BIS SPP dataset, pivots date columns
+#' to long format, and standardises column names.
+#'
+#' @param csv_path Path to the extracted CSV file
+#' @param quiet Logical controlling messages
+#'
+#' @return Processed BIS selected data tibble
+#' @keywords internal
+process_bis_selected_data <- function(csv_path, quiet) {
+  raw <- readr::read_csv(csv_path, show_col_types = FALSE)
+
+  # Date columns are named like "2005-Q1", "2005-Q2", etc.
+  col_names <- names(raw)
+  date_cols <- col_names[stringr::str_detect(col_names, "^[0-9]{4}")]
+
+  # Pivot date columns to long format
+  long <- raw |>
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(date_cols),
+      names_to = "date",
+      values_to = "value"
+    ) |>
+    dplyr::mutate(
+      date = zoo::as.yearqtr(date, format = "%Y-Q%q"),
+      date = zoo::as.Date(date)
+    )
+
+  # Rename columns to clean names
+  rename_map <- c(
+    "freq_code"       = "FREQ",
+    "frequency"       = "Frequency",
+    "ref_area_code"   = "REF_AREA",
+    "ref_area_name"   = "Reference area",
+    "unit_value_code" = "VALUE",
+    "unit_value"      = "Value",
+    "unit_code"       = "UNIT_MEASURE",
+    "unit_name"       = "Unit of measure",
+    "series_code"     = "Series"
+  )
+
+  cli_debug("Cleaning BIS selected data...")
+
+  clean <- long |>
+    dplyr::rename(dplyr::any_of(rename_map)) |>
+    dplyr::select(dplyr::where(\(x) !all(is.na(x)))) |>
+    dplyr::mutate(
+      unit = dplyr::if_else(unit_code == 771, "yoy_chg", "index"),
+      is_nominal = as.integer(dplyr::if_else(unit_value_code == "R", 0L, 1L))
+    ) |>
+    dplyr::select(dplyr::all_of(c(
+      "date", "ref_area_code", "ref_area_name",
+      "unit", "unit_name", "is_nominal",
+      "series_code", "value"
+    )))
+
+  clean
+}
+
+
+# ==============================================================================
+# DETAILED DATA
+# ==============================================================================
+
+#' Download BIS RPPI Detailed Data
 #'
 #' @param quiet Logical controlling messages
 #' @param max_retries Maximum number of retry attempts
 #'
-#' @return Downloaded and processed BIS detailed data
+#' @return Named list of processed detailed data (monthly, quarterly, annual,
+#'   halfyearly)
 #' @keywords internal
 get_rppi_bis_detailed_robust <- function(quiet, max_retries) {
-  cli_debug("Downloading BIS detailed RPPI Excel file...")
+  cli_debug("Downloading BIS detailed RPPI ZIP file...")
 
-  temp_path <- download_with_retry(
-    fn = function() download_bis_excel(
-      url = "https://www.bis.org/statistics/pp/pp_detailed.xlsx",
-      filename = "bis_rppi_detailed.xlsx"
-    ),
+  csv_path <- download_zip(
+    url = "https://data.bis.org/static/bulk/WS_DPP_csv_flat.zip",
+    file_pattern = "\\.csv$",
+    min_size = 1000,
     max_retries = max_retries,
-    quiet = quiet,
-    desc = "BIS RPPI detailed Excel"
+    quiet = quiet
   )
 
   cli_debug("Processing BIS detailed RPPI data...")
-
-  return(process_bis_detailed_data(temp_path, quiet))
+  process_bis_detailed_data(csv_path, quiet)
 }
 
-#' Download BIS Excel File
+#' Read and Clean BIS Detailed CSV
 #'
-#' Internal function to download BIS Excel file.
+#' Reads the flat CSV, applies `clean_names()` once, and drops all-NA columns.
 #'
-#' @param url URL to download from
-#' @param filename Filename for temporary file
+#' @param csv_path Path to the extracted CSV file
 #'
-#' @return Path to downloaded temporary Excel file
+#' @return Cleaned tibble
 #' @keywords internal
-download_bis_excel <- function(url, filename) {
-  temp_path <- tempfile(filename)
-  response <- httr::GET(url, httr::write_disk(temp_path, overwrite = TRUE))
+#' @noRd
+read_bis_detailed_csv <- function(csv_path) {
+  raw <- readr::read_csv(
+    csv_path,
+    col_types = readr::cols(.default = readr::col_character()),
+    show_col_types = FALSE
+  )
 
-  # Check if download was successful
-  httr::stop_for_status(response)
-
-  # Verify file exists and has content
-  if (!file.exists(temp_path) || file.size(temp_path) == 0) {
-    stop("Downloaded Excel file is empty or missing")
-  }
-
-  return(temp_path)
+  raw |>
+    janitor::clean_names() |>
+    dplyr::select(dplyr::where(\(x) !all(is.na(x))))
 }
 
-#' Process BIS Selected Data
+#' Parse BIS Detailed Columns
 #'
-#' Internal function to process BIS selected Excel data.
+#' Splits compound columns (e.g. "AE: United Arab Emirates") into separate
+#' code and name columns using a data-driven configuration.
 #'
-#' @param temp_path Path to downloaded Excel file
-#' @param quiet Logical controlling messages
+#' @param data Tibble from `read_bis_detailed_csv()`
 #'
-#' @return Processed BIS selected data
+#' @return Tibble with split columns
 #' @keywords internal
-process_bis_selected_data <- function(temp_path, quiet) {
-  # Import spreadsheet into R
-  series <- readxl::read_excel(
-    temp_path,
-    sheet = 3,
-    skip = 3
+#' @noRd
+parse_bis_detailed_columns <- function(data) {
+  cols_to_split <- list(
+    structure_id                     = c("series_code", "series_name"),
+    freq_frequency                   = c("freq_code", "freq_name"),
+    ref_area_reference_area          = c("ref_area_code", "ref_area_name"),
+    covered_area_covered_area        = c("covered_area_code", "covered_area_name"),
+    re_type_real_estate_type         = c("re_type_code", "re_type_name"),
+    re_vintage_real_estate_vintage   = c("re_vintage_code", "re_vintage_name"),
+    compiling_org_compiling_agency   = c("compiling_org_code", "compiling_org_name"),
+    priced_unit_priced_unit          = c("priced_unit_code", "priced_unit_name"),
+    adjust_coded_seasonal_adjustment = c("seas_adjust_code", "seas_adjust_name"),
+    availability_availability        = c("availability_code", "availability_name"),
+    unit_measure_unit_of_measure     = c("unit_code", "unit_name"),
+    unit_mult_unit_multiplier        = c("unit_mult_code", "unit_mult_name")
   )
 
-  # Import Dictionary into R and clean column names
-  dict <- readxl::read_excel(
-    temp_path,
-    sheet = 2,
-    .name_repair = janitor::make_clean_names
-  )
-
-  # Change column names
-  dict <- dplyr::rename(dict, is_nominal = value)
-
-  cli_debug("Cleaning and merging BIS selected data...")
-
-  # Fix date column
-  clean_series <- series |>
-    # Convert date column to YMD
-    dplyr::rename(date = Period) |>
-    dplyr::mutate(date = lubridate::ymd(date)) |>
-    # Convert data to long (every column is a series)
-    tidyr::pivot_longer(cols = -date, names_to = "code")
-
-  # Join with variable dictionary
-  clean_series <- clean_series |>
-    dplyr::mutate(code = stringr::str_remove(code, "BIS_SPP:")) |>
-    dplyr::left_join(dict, by = "code")
-
-  # Insert a numeric code for unit and a TRUE/FALSE for is_nominal
-  clean_series <- clean_series |>
-    dplyr::mutate(
-      unit_code = dplyr::if_else(stringr::str_detect(unit, "Index"), 1L, 2L),
-      is_nominal = dplyr::if_else(is_nominal == "Nominal", TRUE, FALSE)
-    )
-
-  return(clean_series)
-}
-
-#' Process BIS Detailed Data
-#'
-#' Internal function to process BIS detailed Excel data.
-#'
-#' @param temp_path Path to downloaded Excel file
-#' @param quiet Logical controlling messages
-#'
-#' @return Processed BIS detailed data as named list
-#' @keywords internal
-process_bis_detailed_data <- function(temp_path, quiet) {
-  # Import data from sheets 3 through 6
-  sheets <- purrr::map(3:6, function(x) {
-    readxl::read_excel(temp_path, skip = 3, sheet = x)
-  })
-
-  # Name each element according to sheet names
-  names(sheets) <- janitor::make_clean_names(readxl::excel_sheets(temp_path)[3:6])
-
-  # Import Dictionary into R and clean column names
-  dict <- readxl::read_excel(
-    temp_path,
-    sheet = 2,
-    .name_repair = janitor::make_clean_names
-  )
-
-  cli_debug("Processing {length(sheets)} detailed data sheets...")
-
-  # Define a function to clean the data.frames
-  clean_bis_detailed <- function(df) {
-    # Inputs are a mix of strings '1901.31.01' and excel numeric dates '366'
-    fix_date_column <- function(x) {
-      # In most sheets the Period column is read appropriately
-      if (lubridate::is.POSIXct(x)) {
-        x <- lubridate::ymd(x)
-        x <- lubridate::floor_date(x, unit = "month")
-      } else {
-        # Fix the yearly sheet
-        x <- dplyr::if_else(
-          nchar(x) < 7,
-          janitor::excel_numeric_to_date(as.numeric(x)),
-          lubridate::make_date(substr(x, 7, 10))
-        )
-        x <- lubridate::floor_date(x, unit = "year")
-      }
-
-      return(x)
-    }
-
-    # Fix date column and convert to long
-    clean_df <- df |>
-      dplyr::rename(date = Period) |>
-      dplyr::mutate(date = suppressWarnings(fix_date_column(date))) |>
-      tidyr::pivot_longer(cols = -"date", names_to = "code")
-
-    # Join data with dictionary and create a unit code
-    clean_df <- clean_df |>
-      dplyr::mutate(code = stringr::str_remove(code, "BIS_SPP:")) |>
-      dplyr::left_join(dict, by = "code") |>
-      dplyr::mutate(
-        unit_code = dplyr::if_else(stringr::str_detect(unit, "Index"), 1L, 2L)
+  for (col in names(cols_to_split)) {
+    if (col %in% names(data)) {
+      into <- cols_to_split[[col]]
+      data <- tidyr::separate(
+        data,
+        col = dplyr::all_of(col),
+        sep = ": ",
+        into = into
       )
-
-    return(clean_df)
+    }
   }
 
-  # Apply function over all sheets
-  clean_data <- purrr::map(sheets, clean_bis_detailed)
+  # Rename observation value column
+  if ("obs_value_observation_value" %in% names(data)) {
+    data <- dplyr::rename(data, value = obs_value_observation_value)
+  }
 
-  return(clean_data)
+  data
+}
+
+#' Process a Single BIS Frequency Subset
+#'
+#' Filters the parsed detailed data to a single frequency, applies a
+#' date-parsing function, drops metadata columns, and converts selected
+#' code columns to integer.
+#'
+#' @param data Full parsed detailed tibble
+#' @param freq_filter Frequency label to filter on (e.g. "Annual", "Monthly")
+#' @param parse_date_fn Function that receives filtered tibble and returns it
+#'   with `date` (and optional time-period columns like year, month) added
+#' @param drop_cols Character vector of columns to drop for this frequency
+#' @param num_code_cols Character vector of `*_code` columns to convert to
+#'   integer for this frequency
+#'
+#' @return Processed tibble for the given frequency
+#' @keywords internal
+#' @noRd
+process_bis_frequency <- function(data, freq_filter, parse_date_fn,
+                                  drop_cols, num_code_cols = character()) {
+  result <- data |>
+    dplyr::filter(freq_name == freq_filter) |>
+    dplyr::select(dplyr::where(\(x) !all(is.na(x))))
+
+  # Apply frequency-specific date parsing
+  result <- parse_date_fn(result)
+
+  # Drop metadata columns
+  result <- result |>
+    dplyr::select(-dplyr::any_of(drop_cols))
+
+  # Convert specific code columns to integer
+  if (length(num_code_cols) > 0) {
+    result <- result |>
+      dplyr::mutate(
+        dplyr::across(dplyr::all_of(num_code_cols), as.integer)
+      )
+  }
+
+  result
+}
+
+#' Process BIS Detailed CSV Data (orchestrator)
+#'
+#' Reads the flat CSV, parses compound columns, then splits by frequency
+#' with appropriate date parsing for each.
+#'
+#' @param csv_path Path to the extracted CSV file
+#' @param quiet Logical controlling messages
+#'
+#' @return Named list with elements: monthly, quarterly, annual, halfyearly
+#' @keywords internal
+process_bis_detailed_data <- function(csv_path, quiet) {
+  raw <- read_bis_detailed_csv(csv_path)
+  parsed <- parse_bis_detailed_columns(raw)
+
+  # Convert value column to numeric
+  parsed <- dplyr::mutate(parsed, value = as.numeric(value))
+
+  cli_debug("Splitting BIS detailed data by frequency...")
+
+  # -- Date parsers for each frequency --
+
+  parse_annual <- function(df) {
+    dplyr::mutate(df,
+      date = lubridate::make_date(
+        time_period_time_period_or_range, 1, 1
+      ),
+      year = as.integer(time_period_time_period_or_range),
+      .before = 1
+    )
+  }
+
+  parse_monthly <- function(df) {
+    dplyr::mutate(df,
+      date = lubridate::ymd(
+        paste0(time_period_time_period_or_range, "-01")
+      ),
+      year = lubridate::year(date),
+      month = lubridate::month(date),
+      .before = 1
+    )
+  }
+
+  parse_quarterly <- function(df) {
+    dplyr::mutate(df,
+      date = zoo::as.Date(zoo::as.yearqtr(
+        time_period_time_period_or_range, format = "%Y-Q%q"
+      )),
+      year = lubridate::year(date),
+      quarter = lubridate::quarter(date),
+      .before = 1
+    )
+  }
+
+  parse_halfyearly <- function(df) {
+    df |>
+      dplyr::rename(time = time_period_time_period_or_range) |>
+      dplyr::mutate(
+        date = dplyr::if_else(
+          stringr::str_detect(time, "S1$"),
+          lubridate::make_date(stringr::str_sub(time, 1, 4), 1, 1),
+          lubridate::make_date(stringr::str_sub(time, 1, 4), 7, 1)
+        ),
+        year = lubridate::year(date),
+        semester = lubridate::semester(date),
+        .before = 1
+      )
+  }
+
+  # -- Per-frequency columns to drop --
+  # Each frequency keeps different metadata columns, so these cannot be merged.
+
+  drop_cols_annual <- c(
+    "time_period_time_period_or_range",
+    "series_name", "structure", "action",
+    "freq_code", "freq_name",
+    "obs_conf_observation_confidentiality",
+    "obs_status_observation_status",
+    "seas_adjust_code", "seas_adjust_name"
+  )
+
+  drop_cols_monthly <- c(
+    "time_period_time_period_or_range",
+    "series_name", "structure", "action",
+    "freq_code", "freq_name",
+    "obs_conf_observation_confidentiality"
+  )
+
+  drop_cols_quarterly <- c(
+    "time_period_time_period_or_range",
+    "series_name", "structure", "action",
+    "freq_code", "freq_name",
+    "obs_conf_observation_confidentiality"
+  )
+
+  drop_cols_halfyearly <- c(
+    "time",
+    "series_name", "structure", "action",
+    "freq_code", "freq_name",
+    "obs_conf_observation_confidentiality"
+  )
+
+  # -- Per-frequency code columns to convert to integer --
+  # Each frequency has different code columns that are numeric-as-character.
+
+  num_cols_annual <- c(
+    "re_vintage_code", "compiling_org_code", "priced_unit_code"
+  )
+
+  num_cols_monthly <- c(
+    "covered_area_code", "re_vintage_code",
+    "compiling_org_code", "priced_unit_code", "seas_adjust_code"
+  )
+
+  num_cols_quarterly <- c(
+    "re_vintage_code", "compiling_org_code",
+    "priced_unit_code", "seas_adjust_code"
+  )
+
+  num_cols_halfyearly <- c(
+    "re_vintage_code", "compiling_org_code",
+    "priced_unit_code", "seas_adjust_code"
+  )
+
+  list(
+    monthly    = process_bis_frequency(
+      parsed, "Monthly", parse_monthly,
+      drop_cols_monthly, num_cols_monthly
+    ),
+    quarterly  = process_bis_frequency(
+      parsed, "Quarterly", parse_quarterly,
+      drop_cols_quarterly, num_cols_quarterly
+    ),
+    annual     = process_bis_frequency(
+      parsed, "Annual", parse_annual,
+      drop_cols_annual, num_cols_annual
+    ),
+    halfyearly = process_bis_frequency(
+      parsed, "Half-yearly", parse_halfyearly,
+      drop_cols_halfyearly, num_cols_halfyearly
+    )
+  )
 }

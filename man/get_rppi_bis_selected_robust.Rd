@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_rppi_bis.R
 \name{get_rppi_bis_selected_robust}
 \alias{get_rppi_bis_selected_robust}
-\title{Get RPPI BIS Selected Data with Robust Error Handling}
+\title{Download BIS RPPI Selected Data}
 \usage{
 get_rppi_bis_selected_robust(quiet, max_retries)
 }
@@ -12,9 +12,9 @@ get_rppi_bis_selected_robust(quiet, max_retries)
 \item{max_retries}{Maximum number of retry attempts}
 }
 \value{
-Downloaded and processed BIS selected data
+Processed BIS selected data tibble
 }
 \description{
-Internal function to download BIS RPPI selected data with retry logic.
+Download BIS RPPI Selected Data
 }
 \keyword{internal}

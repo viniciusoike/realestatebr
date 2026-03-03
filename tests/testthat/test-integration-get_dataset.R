@@ -40,7 +40,7 @@ test_that("rppi_bis all tables work with fresh source", {
     "detailed_monthly",
     "detailed_quarterly",
     "detailed_annual",
-    "detailed_semiannual"
+    "detailed_halfyearly"
   )
 
   for (tbl in tables) {

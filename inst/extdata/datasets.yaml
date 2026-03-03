@@ -152,9 +152,9 @@ datasets:
         name: "Detailed Annual"
         description: "Annual detailed RPPI data"
         url: "https://data.bis.org/topics/RPP"
-      detailed_semiannual:
-        name: "Detailed Semiannual"
-        description: "Semiannual detailed RPPI data"
+      detailed_halfyearly:
+        name: "Detailed Half-yearly"
+        description: "Half-yearly detailed RPPI data"
         url: "https://data.bis.org/topics/RPP"
     internal_function: "fetch_bis"
     dataset_function: "get_rppi_bis"
@@ -164,7 +164,7 @@ datasets:
       detailed_monthly: "rppi_bis_detailed_monthly.rds"
       detailed_quarterly: "rppi_bis_detailed_quarterly.rds"
       detailed_annual: "rppi_bis_detailed_annual.rds"
-      detailed_semiannual: "rppi_bis_detailed_semiannual.rds"
+      detailed_halfyearly: "rppi_bis_detailed_halfyearly.rds"
     translation_notes: "International data; minimal translation needed"
 
   rppi:

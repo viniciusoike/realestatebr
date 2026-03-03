@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_rppi_bis.R
 \name{get_rppi_bis_detailed_robust}
 \alias{get_rppi_bis_detailed_robust}
-\title{Get RPPI BIS Detailed Data with Robust Error Handling}
+\title{Download BIS RPPI Detailed Data}
 \usage{
 get_rppi_bis_detailed_robust(quiet, max_retries)
 }
@@ -12,9 +12,10 @@ get_rppi_bis_detailed_robust(quiet, max_retries)
 \item{max_retries}{Maximum number of retry attempts}
 }
 \value{
-Downloaded and processed BIS detailed data
+Named list of processed detailed data (monthly, quarterly, annual,
+halfyearly)
 }
 \description{
-Internal function to download BIS RPPI detailed data with retry logic.
+Download BIS RPPI Detailed Data
 }
 \keyword{internal}

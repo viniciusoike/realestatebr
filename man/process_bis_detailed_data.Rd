@@ -2,19 +2,20 @@
 % Please edit documentation in R/get_rppi_bis.R
 \name{process_bis_detailed_data}
 \alias{process_bis_detailed_data}
-\title{Process BIS Detailed Data}
+\title{Process BIS Detailed CSV Data (orchestrator)}
 \usage{
-process_bis_detailed_data(temp_path, quiet)
+process_bis_detailed_data(csv_path, quiet)
 }
 \arguments{
-\item{temp_path}{Path to downloaded Excel file}
+\item{csv_path}{Path to the extracted CSV file}
 
 \item{quiet}{Logical controlling messages}
 }
 \value{
-Processed BIS detailed data as named list
+Named list with elements: monthly, quarterly, annual, halfyearly
 }
 \description{
-Internal function to process BIS detailed Excel data.
+Reads the flat CSV, parses compound columns, then splits by frequency
+with appropriate date parsing for each.
 }
 \keyword{internal}
