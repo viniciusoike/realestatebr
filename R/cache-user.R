@@ -54,7 +54,7 @@ get_cached_file_path <- function(dataset_name, extension = NULL) {
 
   if (is.null(extension)) {
     # Try different extensions in order of preference
-    extensions <- c("rds", "csv.gz", "csv")
+    extensions <- c("rds", "csv.gz")
     for (ext in extensions) {
       file_path <- file.path(cache_dir, paste0(dataset_name, ".", ext))
       if (file.exists(file_path)) {

@@ -89,7 +89,7 @@ datasets:
     internal_function: "fetch_bcb_realestate"
     dataset_function: "get_bcb_realestate"
     data_type: "tibble"
-    cached_file: "bcb_realestate.csv.gz"
+    cached_file: "bcb_realestate.rds"
     default_table: "all"
     translation_notes: "Complex multi-level series structure; v1-v5 columns contain series components"
     
@@ -120,7 +120,7 @@ datasets:
     internal_function: "fetch_secovi"
     dataset_function: "get_secovi"
     data_type: "tibble"
-    cached_file: "secovi_sp.csv.gz"
+    cached_file: "secovi_sp.rds"
     default_table: "all"
     translation_notes: "Regional classifications specific to São Paulo metropolitan area"
     
@@ -160,7 +160,7 @@ datasets:
     dataset_function: "get_rppi_bis"
     data_type: "tibble"
     cached_file:
-      selected: "bis_selected.csv.gz"
+      selected: "bis_selected.rds"
       detailed_monthly: "rppi_bis_detailed_monthly.rds"
       detailed_quarterly: "rppi_bis_detailed_quarterly.rds"
       detailed_annual: "rppi_bis_detailed_annual.rds"
@@ -289,7 +289,7 @@ datasets:
     internal_function: "fetch_bcb_series"
     dataset_function: "get_bcb_series"
     data_type: "tibble"
-    cached_file: "bcb_series.csv.gz"
+    cached_file: "bcb_series.rds"
     default_table: "all"
     metadata_table: "bcb_metadata"
     translation_notes: "Metadata available in both Portuguese and English"
@@ -307,7 +307,7 @@ datasets:
     internal_function: "fetch_fgv"
     dataset_function: "get_fgv_ibre"
     data_type: "tibble"
-    cached_file: "fgv_ibre.csv.gz"
+    cached_file: "fgv_ibre.rds"
     translation_notes: "Technical economic terms; standard translations applied"
     manual_update: true
     update_notes: "No public API available; requires manual download and processing"
@@ -397,7 +397,7 @@ datasets:
     internal_function: "fetch_registro"
     dataset_function: "get_property_records"
     data_type: "tibble"
-    cached_file: "property_records.csv.gz"
+    cached_file: "property_records.rds"
     translation_notes: "Property types and addresses preserved; transaction values in local currency"
 
   itbi_summary:

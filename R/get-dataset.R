@@ -480,8 +480,7 @@ get_from_internal_function <- function(
   if (!is.null(data)) {
     cached_name <- get_cached_name(name, dataset_info, table)
     if (!is.null(cached_name)) {
-      # Determine format based on data type
-      format <- if (is.data.frame(data)) "csv.gz" else "rds"
+      format <- "rds"
 
       # Save to user cache (don't show message to avoid clutter)
       save_to_user_cache(data, cached_name, format = format, quiet = TRUE)

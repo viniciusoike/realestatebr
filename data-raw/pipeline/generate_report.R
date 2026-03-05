@@ -147,8 +147,8 @@ generate_pipeline_report <- function() {
     report_lines <- c(report_lines,
       "## Cache Status",
       "",
-      "| Dataset | Last Updated | Age (hours) | Size (MB) | Format |",
-      "|---------|--------------|-------------|-----------|--------|"
+      "| Dataset | Last Updated | Age (hours) | Size (MB) |",
+      "|---------|--------------|-------------|-----------|"
     )
 
     for (i in 1:nrow(cache_summary)) {
@@ -157,8 +157,7 @@ generate_pipeline_report <- function() {
         paste0("| ", cache_row$dataset, " | ",
                format(cache_row$last_updated, "%m-%d %H:%M"), " | ",
                round(cache_row$age_hours, 1), " | ",
-               cache_row$size_mb, " | ",
-               cache_row$format, " |")
+               cache_row$size_mb, " |")
       )
     }
 

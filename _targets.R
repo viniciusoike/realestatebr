@@ -15,7 +15,7 @@ library(tarchetypes)
 tar_option_set(
   packages = c("realestatebr", "dplyr", "readr", "cli"),
   format = "rds",
-  error = "continue"  # Continue pipeline even if some targets fail
+  error = "continue"
 )
 
 # Source helper functions
@@ -61,7 +61,13 @@ fetch_dataset <- function(dataset_name, table = NULL, source = "fresh") {
 save_to_cache <- function(data, cache_name) {
   cli::cli_inform("Saving {cache_name} to cache...")
 
-  # Use helper function from targets_helpers.R
+  # Validate data before saving
+  if (is.null(data)) stop("Cannot save NULL data for ", cache_name)
+  if (is.data.frame(data) && nrow(data) == 0) stop("Empty data frame for ", cache_name)
+  if (is.list(data) && !is.data.frame(data) && length(data) == 0) {
+    stop("Empty list for ", cache_name)
+  }
+
   file_path <- save_dataset_to_cache(data, cache_name)
 
   cli::cli_alert_success("Saved {cache_name}")

@@ -149,7 +149,7 @@ download_from_github_release <- function(dataset_name, overwrite = FALSE, quiet 
   tag <- get_cache_release_tag()
 
   # Try different file formats
-  extensions <- c("rds", "csv.gz", "csv")
+  extensions <- c("rds", "csv.gz")
   downloaded <- FALSE
 
   for (ext in extensions) {
@@ -242,7 +242,7 @@ is_cache_up_to_date <- function(dataset_name) {
     assets <- piggyback::pb_list(repo = repo, tag = tag)
 
     # Find matching file (try all extensions)
-    extensions <- c("rds", "csv.gz", "csv")
+    extensions <- c("rds", "csv.gz")
     github_time <- NULL
 
     for (ext in extensions) {
