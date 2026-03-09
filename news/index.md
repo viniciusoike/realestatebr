@@ -1,5 +1,18 @@
 # Changelog
 
+## realestatebr 0.6.1
+
+### CRAN Submission Fixes
+
+- Upgraded HTTP URLs to HTTPS in `get_secovi.R`
+- Added `URL` field to DESCRIPTION
+- Fixed incomplete `@source` tag for `dim_city` dataset documentation
+- Fixed typo in `b3_real_estate` documentation (“mian” -\> “main”)
+- Removed local
+  [`skip_on_cran()`](https://testthat.r-lib.org/reference/skip.html)
+  definition that shadowed `testthat`
+- Updated stale description for CBIC dataset in registry
+
 ## realestatebr 0.6.0 (2025-11-09)
 
 ### Cache Freshness Detection (Phase 2)
