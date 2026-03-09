@@ -317,7 +317,7 @@ datasets:
   cbic:
     name: "CBIC Cement Data"
     name_pt: "Dados de Cimento CBIC"
-    description: "Cement consumption, production, and price data (v0.4.0 includes cement only; steel and PIM coming in v0.4.1)"
+    description: "Cement consumption, production, and price data. Includes cement, steel, and PIM (Industrial Production of Construction Materials) data."
     source: "CBIC - Câmara Brasileira da Indústria da Construção"
     url: "http://www.cbicdados.com.br"
     geography: "Brazil (by state for some metrics)"

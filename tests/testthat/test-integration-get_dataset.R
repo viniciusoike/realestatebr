@@ -2,14 +2,6 @@
 # These tests verify that get_dataset() works correctly with real data sources
 # and catches regressions that devtools::check() might miss.
 
-# Skip on CRAN since these tests require network access
-skip_on_cran <- function() {
-  skip_if(
-    !identical(Sys.getenv("NOT_CRAN"), "true"),
-    "Skipping integration tests on CRAN"
-  )
-}
-
 # Helper to check if data is a single tibble (not a list)
 is_single_tibble <- function(x) {
   inherits(x, "data.frame") &&

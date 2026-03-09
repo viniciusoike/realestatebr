@@ -34,12 +34,12 @@
 #'   \item{name_region}{Name of the region}
 #'   \item{name_simplified}{Simplified version of the city name for easier subsetting.}
 #' }
-#' @source <IBGE ...>
+#' @source \url{https://www.ibge.gov.br/explica/codigos-dos-municipios.php}
 "dim_city"
 
 #' Real Estate Players listed on B3
 #'
-#' List of mian Brazilian real estate players listed on B3.
+#' List of main Brazilian real estate players listed on B3.
 #'
 #' @format ## `b3_real_estate`
 #' A tibble with 38 rows and 3 columns:

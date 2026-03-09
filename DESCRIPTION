@@ -1,7 +1,7 @@
 Package: realestatebr
 Type: Package
 Title: Import Brazilian Real Estate Data into R
-Version: 0.6.0
+Version: 0.6.1
 Authors@R: person(
     given = "Vinicius Oike",
     family = "Reginatto",
@@ -12,6 +12,7 @@ Description: Provides functions to import Brazilian real estate data
     from various sources including BCB, FGV, ABECIP, ABRAINC, SECOVI, and BIS.
     Data is returned in tidy format.
 License: MIT + file LICENSE
+URL: https://github.com/viniciusoike/realestatebr
 BugReports: https://github.com/viniciusoike/realestatebr/issues
 Encoding: UTF-8
 LazyData: true

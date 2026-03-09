@@ -52,11 +52,14 @@ Some of the available datasets are listed below.
 | `abecip` | ABECIP | Housing credit flows, financed units, home equity |
 | `abrainc` | ABRAINC/FIPE | Primary market indicators (launches, sales) |
 | `bcb_realestate` | BCB | Real estate credit and market data |
-| `secovi` | SECOVI-SP | São Paulo market indicators |
+| `bcb_series` | BCB | Real estate and economic time series |
 | `rppi` | Multiple | Property price indices (sale/rent, 50+ cities) |
 | `rppi_bis` | BIS | International property price indices (60+ countries) |
 | `bcb_series` | BCB | Economic time series |
 | `cbic` | CBIC | Cement consumption and production |
+| `property_records` | Registro de Imóveis | Real estate records |
+| `secovi` | SECOVI-SP | São Paulo market indicators |
+| `fgv_ibre`| FGV-Ibre | Real estate indicators from FGV |
 
 ## Caching
 

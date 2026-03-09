@@ -79,6 +79,7 @@ get_cbic_specific_file <- function(material_url, table_type, quiet = FALSE) {
 import_cbic_materials <- function(quiet = FALSE) {
   cli_debug("Fetching CBIC materials metadata...")
 
+  # Note: cbicdados.com.br does not support HTTPS (third-party limitation)
   session <- rvest::session("http://www.cbicdados.com.br")
   url <- "http://www.cbicdados.com.br/menu/materiais-de-construcao/"
 
@@ -122,7 +123,7 @@ import_cbic_material_links <- function(material_url, quiet = FALSE) {
     cli::cli_alert_info("Fetching file links from: {material_url}")
   }
 
-  session <- rvest::session("http://www.cbicdados.com.br")
+  session <- rvest::session("http://www.cbicdados.com.br") # no HTTPS available
 
   page <- session |>
     rvest::session_jump_to(material_url) |>

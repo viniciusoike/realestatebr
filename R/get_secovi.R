@@ -227,9 +227,9 @@ secovi_metadata <- dplyr::tribble(
 #' @noRd
 import_secovi <- function(table) {
 
-  message("Scraping data from http://indiceseconomicos.secovi.com.br/")
+  message("Scraping data from https://indiceseconomicos.secovi.com.br/")
 
-  url <- "http://indiceseconomicos.secovi.com.br/indicadormensal.php?idindicador="
+  url <- "https://indiceseconomicos.secovi.com.br/indicadormensal.php?idindicador="
 
   if (table != "all") {
     secovi <- subset(secovi_metadata, cat == table)

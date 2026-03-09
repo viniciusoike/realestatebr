@@ -38,13 +38,13 @@ bis <- get_dataset("rppi_bis", source = "fresh")
 # Compare countries
 bis_compare <- bis |>
   filter(
-    reference_area %in% c("Brazil", "United States", "Japan"),
-    is_nominal == FALSE,
-    unit == "Index, 2010 = 100",
+    ref_area_name %in% c("Brazil", "United States", "Japan"),
+    is_nominal == 0,
+    unit == "index",
     date >= as.Date("2010-01-01")
   )
 
-p2 <- ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
+p2 <- ggplot(bis_compare, aes(x = date, y = value, color = ref_area_name)) +
   geom_line(lwd = 0.8) +
   geom_hline(yintercept = 100) +
   labs(
@@ -72,3 +72,16 @@ ggsave(
   width = 6.5,
   height = 6.5 / 1.618
 )
+
+
+abecip <- get_dataset("abecip", source = "fresh")
+
+subabecip <- abecip |>
+  filter(
+    date >= as.Date("2019-01-01")
+  ) |>
+  mutate(sumflow = RcppRoll::roll_sumr(sbpe_netflow, n = 12, align = "right"))
+
+
+ggplot(subabecip, aes(date, sumflow)) +
+  geom_line()
