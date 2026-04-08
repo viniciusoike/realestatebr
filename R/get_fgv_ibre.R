@@ -54,6 +54,61 @@ get_fgv_ibre <- function(
   ))
 }
 
+#' Read and process FGV IBRE data from a local CSV file
+#'
+#' @param path Path to the `xgdvConsulta.csv` file downloaded from the FGV portal.
+#'
+#' @return Tibble with FGV IBRE indicators in long format.
+#'
+#' @keywords internal
+fetch_fgv_local <- function(path = "data-raw/xgdvConsulta.csv") {
+  fgv_data <- readr::read_delim(
+    path,
+    delim = ";",
+    locale = readr::locale(decimal_mark = ",", encoding = "ISO-8859-1"),
+    na = " - ",
+    col_types = "cddddddddddddddd"
+  )
+
+  fgv_data <- fgv_data |>
+    dplyr::rename(date = Data) |>
+    dplyr::mutate(date = readr::parse_date(date, format = "%m/%Y")) |>
+    tidyr::pivot_longer(-date, names_to = "name_series")
+
+  fgv_data <- fgv_data |>
+    dplyr::mutate(
+      code_series = stringr::str_extract(name_series, "(?<=\\()\\d{7}(?=\\))"),
+      code_series = as.numeric(code_series)
+    ) |>
+    dplyr::select(-name_series)
+
+  fgv_data |>
+    dplyr::left_join(fgv_dict, by = "code_series") |>
+    dplyr::left_join(fgv_key, by = "code_series") |>
+    dplyr::select(date, name_simplified, value, name_series, code_series, unit, source) |>
+    dplyr::filter(!is.na(value))
+}
+
+# fmt: skip
+fgv_key <- tibble::tribble(
+  ~code_series,      ~name_simplified,
+       1463201,         "ivar_brazil",
+       1463202,      "ivar_sao_paulo",
+       1463203, "ivar_rio_de_janeiro",
+       1463204, "ivar_belo_horizonte",
+       1463205,   "ivar_porto_alegre",
+       1428409,                "nuci",
+       1416233,              "ie_cst",
+       1416234,             "isa_cst",
+       1416232,              "ic_cst",
+       1464783,      "incc_brasil_di",
+       1465235,         "incc_brasil",
+       1464331,      "incc_brasil_10",
+       1000379,    "incc_1o_decendio",
+       1000366,    "incc_2o_decendio",
+       1000370,                "incc"
+)
+
 fgv_dict <- data.frame(
   id_series = 1:15,
   code_series = c(

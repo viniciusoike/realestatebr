@@ -22,9 +22,7 @@ tar_option_set(
 source("data-raw/pipeline/targets_helpers.R")
 source("data-raw/pipeline/validation.R")
 
-# ============================================================================
-# HELPER FUNCTIONS FOR TARGETS
-# ============================================================================
+# Helper functions -------------------------------------------------------
 
 #' Fetch Dataset Using Modern Architecture
 #'
@@ -36,7 +34,9 @@ source("data-raw/pipeline/validation.R")
 #' @param source Data source - "fresh" for downloadable datasets, "github" for manual-only
 #' @return Dataset (tibble or list)
 fetch_dataset <- function(dataset_name, table = NULL, source = "fresh") {
-  cli::cli_inform("Fetching {dataset_name}{if(!is.null(table)) paste0(' (', table, ')') else ''}...")
+  cli::cli_inform(
+    "Fetching {dataset_name}{if(!is.null(table)) paste0(' (', table, ')') else ''}..."
+  )
 
   # Use get_dataset with specified source
   # Most datasets use source="fresh" for real-time downloads
@@ -62,8 +62,12 @@ save_to_cache <- function(data, cache_name) {
   cli::cli_inform("Saving {cache_name} to cache...")
 
   # Validate data before saving
-  if (is.null(data)) stop("Cannot save NULL data for ", cache_name)
-  if (is.data.frame(data) && nrow(data) == 0) stop("Empty data frame for ", cache_name)
+  if (is.null(data)) {
+    stop("Cannot save NULL data for ", cache_name)
+  }
+  if (is.data.frame(data) && nrow(data) == 0) {
+    stop("Empty data frame for ", cache_name)
+  }
   if (is.list(data) && !is.data.frame(data) && length(data) == 0) {
     stop("Empty list for ", cache_name)
   }
@@ -123,14 +127,16 @@ list(
 
   # ---- FGV IBRE - Economic Indicators ----
   # NOTE: FGV data is manually updated (no API available)
-  # Uses source="github" to access cached data
+  # Update data-raw/xgdvConsulta.csv from https://autenticacao-ibre.fgv.br/ProdutosDigitais/
+  # then run tar_make() — the file tracker will detect the change and reprocess.
+  tar_target(
+    name = fgv_ibre_file,
+    command = "data-raw/xgdvConsulta.csv",
+    format = "file"
+  ),
   tar_target(
     name = fgv_ibre_data,
-    command = fetch_dataset("fgv_ibre", source = "github"),
-    cue = tar_cue_age(
-      name = fgv_ibre_data,
-      age = as.difftime(7, units = "days")
-    )
+    command = realestatebr:::fetch_fgv_local(fgv_ibre_file)
   ),
   tar_target(
     name = fgv_ibre_cache,
@@ -298,9 +304,7 @@ list(
     command = validate_dataset(property_records_data, "property_records")
   ),
 
-  # ========================================================================
-  # PIPELINE SUMMARY
-  # ========================================================================
+  # Pipeline summary -------------------------------------------------------
 
   tar_target(
     name = pipeline_summary,
@@ -340,18 +344,32 @@ list(
       summary_info <- list(
         timestamp = Sys.time(),
         datasets_updated = c(
-          "bcb_series", "bcb_realestate", "fgv_ibre",
-          "abecip", "abrainc", "secovi",
-          "rppi_sale", "rppi_rent",
-          "bis_rppi", "cbic", "property_records"
+          "bcb_series",
+          "bcb_realestate",
+          "fgv_ibre",
+          "abecip",
+          "abrainc",
+          "secovi",
+          "rppi_sale",
+          "rppi_rent",
+          "bis_rppi",
+          "cbic",
+          "property_records"
         ),
         weekly_datasets = c(
-          "bcb_series", "bcb_realestate", "fgv_ibre",
-          "abecip", "abrainc", "secovi",
-          "rppi_sale", "rppi_rent"
+          "bcb_series",
+          "bcb_realestate",
+          "fgv_ibre",
+          "abecip",
+          "abrainc",
+          "secovi",
+          "rppi_sale",
+          "rppi_rent"
         ),
         monthly_datasets = c(
-          "bis_rppi", "cbic", "property_records"
+          "bis_rppi",
+          "cbic",
+          "property_records"
         ),
         cache_files = cache_files,
         validations = validations
