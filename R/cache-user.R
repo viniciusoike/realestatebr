@@ -116,14 +116,13 @@ load_from_user_cache <- function(dataset_name, quiet = FALSE) {
         if (isTRUE(stale)) {
           # Only warn if 2x update frequency exceeded (relaxed)
           is_manual <- isTRUE(tryCatch(
-            get_dataset_info(dataset_name)[["manual_update"]],
+            load_dataset_registry()$datasets[[dataset_name]][["manual_update"]],
             error = function(e) FALSE
           ))
           if (is_manual) {
             cli::cli_warn(c(
               "Cached data for '{dataset_name}' is {round(age, 1)} days old",
-              "i" = "This dataset requires manual updates (no public API available)",
-              "i" = "Update the source file and run {.code tar_make()} to refresh"
+              "i" = "Get latest: {.code get_dataset('{dataset_name}', source='github')}"
             ))
           } else {
             cli::cli_warn(c(

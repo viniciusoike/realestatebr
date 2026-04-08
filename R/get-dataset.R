@@ -396,7 +396,8 @@ get_from_github_cache <- function(name, dataset_info, table) {
   }
 
   # Download from GitHub releases to user cache
-  data <- download_from_github_release(cached_name, overwrite = FALSE, quiet = FALSE)
+  # Always overwrite: source="github" means the user explicitly wants fresh data from GitHub
+  data <- download_from_github_release(cached_name, overwrite = TRUE, quiet = FALSE)
 
   # Apply table filtering if needed
   # Note: For datasets with table-specific cached files (like BIS),
