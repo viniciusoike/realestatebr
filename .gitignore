@@ -101,3 +101,5 @@ index.html
 
 # Root level .Rcheck variant
 ..Rcheck/
+.positai
+.claude/worktrees/
