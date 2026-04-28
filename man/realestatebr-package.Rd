@@ -11,6 +11,7 @@ Provides functions to import Brazilian real estate data from various sources inc
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://github.com/viniciusoike/realestatebr}
   \item Report bugs at \url{https://github.com/viniciusoike/realestatebr/issues}
 }
 

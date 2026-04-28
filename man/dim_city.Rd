@@ -8,7 +8,7 @@
 An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5570 rows and 8 columns.
 }
 \source{
-<IBGE ...>
+\url{https://www.ibge.gov.br/explica/codigos-dos-municipios.php}
 }
 \usage{
 dim_city
