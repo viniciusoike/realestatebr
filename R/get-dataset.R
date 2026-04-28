@@ -67,7 +67,7 @@
 #' \preformatted{
 #' # Enable debug mode via environment variable
 #' Sys.setenv(REALESTATEBR_DEBUG = "TRUE")
-#' data <- get_dataset("cbic")  # Shows detailed processing messages
+#' data <- get_dataset("bcb_series")  # Shows detailed processing messages
 #'
 #' # Enable debug mode via package option
 #' options(realestatebr.debug = TRUE)
@@ -446,12 +446,7 @@ get_from_internal_function <- function(
     if (!is.null(table)) {
       args$table <- table
     } else if (supports_table_all(internal_function)) {
-      # Set appropriate defaults based on function
-      if (internal_function == "get_cbic") {
-        args$table <- "cement_monthly_consumption" # CBIC default
-      } else {
-        args$table <- "all" # Others default to all
-      }
+      args$table <- "all"
     }
   }
 
@@ -648,7 +643,6 @@ supports_table_all <- function(func_name) {
     "get_secovi",
     "get_rppi_bis", # Updated function name
     "get_bcb_series",
-    "get_cbic",
     "get_fgv_ibre"
   )
 
@@ -770,25 +764,15 @@ show_import_message <- function(name, table_info) {
   # Multi-table dataset
   imported_table <- table_info$resolved_table
 
-  # Special formatting for CBIC's many tables
-  if (name == "cbic" && length(table_info$available_tables) > 5) {
-    cli::cli_inform(c(
-      "i" = "Retrieved '{imported_table}' from CBIC dataset",
-      "i" = "For other tables use: get_dataset('cbic', table = '[table_name]')",
-      "i" = "Run list_datasets() to see all available CBIC tables"
-    ))
-  } else {
-    # Standard message for other datasets
-    available_str <- paste(table_info$available_tables, collapse = "', '")
+  available_str <- paste(table_info$available_tables, collapse = "', '")
 
-    if (table_info$is_default) {
-      cli::cli_inform(
-        "Retrieved '{imported_table}' from '{name}' (default table). Available tables: '{available_str}'"
-      )
-    } else {
-      cli::cli_inform(
-        "Retrieved '{imported_table}' from '{name}'. Available tables: '{available_str}'"
-      )
-    }
+  if (table_info$is_default) {
+    cli::cli_inform(
+      "Retrieved '{imported_table}' from '{name}' (default table). Available tables: '{available_str}'"
+    )
+  } else {
+    cli::cli_inform(
+      "Retrieved '{imported_table}' from '{name}'. Available tables: '{available_str}'"
+    )
   }
 }

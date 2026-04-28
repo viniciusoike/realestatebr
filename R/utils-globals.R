@@ -12,11 +12,8 @@ utils::globalVariables(c(
   "name_simplified", "abbrev_state", "code_muni", "dim_city", "fgv_data",
   "mes", "date", "info",
 
-  # CBIC variables
-  "link", "file_path", "year", "consumption", "growth_pct", "region",
-  "Brasil", "state", "localidade", "code_state", "TOTAL", "name_state",
-  "download_success", "month_num", "month_abb", "avg_price", "series_name",
-  "product",
+  # Common data variables
+  "year",
 
   # BCB variables
   "Data", "Info", "Valor", "series_info", "bcb_metadata", "code_bcb",

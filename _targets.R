@@ -266,25 +266,6 @@ list(
     command = validate_dataset(bis_rppi_data, "rppi_bis")
   ),
 
-  # ---- CBIC - Construction Materials Data ----
-  tar_target(
-    name = cbic_data,
-    command = fetch_dataset("cbic"),
-    cue = tar_cue_age(
-      name = cbic_data,
-      age = as.difftime(30, units = "days")
-    )
-  ),
-  tar_target(
-    name = cbic_cache,
-    command = save_to_cache(cbic_data, "cbic"),
-    format = "file"
-  ),
-  tar_target(
-    name = cbic_validation,
-    command = validate_dataset(cbic_data, "cbic")
-  ),
-
   # Pipeline summary -------------------------------------------------------
 
   tar_target(
@@ -302,8 +283,7 @@ list(
         secovi_cache,
         rppi_sale_cache,
         rppi_rent_cache,
-        bis_rppi_cache,
-        cbic_cache
+        bis_rppi_cache
       )
 
       # Collect all validations
@@ -316,8 +296,7 @@ list(
         secovi = secovi_validation,
         rppi_sale = rppi_sale_validation,
         rppi_rent = rppi_rent_validation,
-        bis_rppi = bis_rppi_validation,
-        cbic = cbic_validation
+        bis_rppi = bis_rppi_validation
       )
 
       summary_info <- list(
@@ -331,8 +310,7 @@ list(
           "secovi",
           "rppi_sale",
           "rppi_rent",
-          "bis_rppi",
-          "cbic"
+          "bis_rppi"
         ),
         weekly_datasets = c(
           "bcb_series",
@@ -345,8 +323,7 @@ list(
           "rppi_rent"
         ),
         monthly_datasets = c(
-          "bis_rppi",
-          "cbic"
+          "bis_rppi"
         ),
         cache_files = cache_files,
         validations = validations

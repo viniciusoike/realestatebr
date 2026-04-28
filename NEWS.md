@@ -6,6 +6,9 @@
   automated pipeline support; it will be reconsidered for a future release.
 * `property_records` has been removed because the upstream data source is no
   longer available.
+* `cbic` has been removed. The upstream CBIC portal migrated to a
+  restricted-access platform. The five cement tables will be rebuilt from
+  IBGE open data in a future release.
 * `itbi_summary` and the internal ITBI helpers (`get_itbi`, `get_itbi_bhe`)
   have been removed. They were incomplete (single-municipality coverage) and
   are deferred to a future version.

@@ -65,7 +65,7 @@ file-by-file progress, data type detection, web scraping steps, and more.
 \preformatted{
 # Enable debug mode via environment variable
 Sys.setenv(REALESTATEBR_DEBUG = "TRUE")
-data <- get_dataset("cbic")  # Shows detailed processing messages
+data <- get_dataset("bcb_series")  # Shows detailed processing messages
 
 # Enable debug mode via package option
 options(realestatebr.debug = TRUE)
