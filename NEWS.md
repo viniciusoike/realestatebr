@@ -1,3 +1,15 @@
+# realestatebr 1.0.0
+
+## Breaking changes
+
+* `nre_ire` has been removed. It required fully manual updates and had no
+  automated pipeline support; it will be reconsidered for a future release.
+* `property_records` has been removed because the upstream data source is no
+  longer available.
+* `itbi_summary` and the internal ITBI helpers (`get_itbi`, `get_itbi_bhe`)
+  have been removed. They were incomplete (single-municipality coverage) and
+  are deferred to a future version.
+
 # realestatebr 0.6.1
 
 ## CRAN Submission Fixes

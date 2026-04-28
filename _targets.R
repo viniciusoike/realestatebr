@@ -285,25 +285,6 @@ list(
     command = validate_dataset(cbic_data, "cbic")
   ),
 
-  # ---- Property Records - ITBI Transaction Data ----
-  tar_target(
-    name = property_records_data,
-    command = fetch_dataset("property_records"),
-    cue = tar_cue_age(
-      name = property_records_data,
-      age = as.difftime(14, units = "days")
-    )
-  ),
-  tar_target(
-    name = property_records_cache,
-    command = save_to_cache(property_records_data, "property_records"),
-    format = "file"
-  ),
-  tar_target(
-    name = property_records_validation,
-    command = validate_dataset(property_records_data, "property_records")
-  ),
-
   # Pipeline summary -------------------------------------------------------
 
   tar_target(
@@ -322,8 +303,7 @@ list(
         rppi_sale_cache,
         rppi_rent_cache,
         bis_rppi_cache,
-        cbic_cache,
-        property_records_cache
+        cbic_cache
       )
 
       # Collect all validations
@@ -337,8 +317,7 @@ list(
         rppi_sale = rppi_sale_validation,
         rppi_rent = rppi_rent_validation,
         bis_rppi = bis_rppi_validation,
-        cbic = cbic_validation,
-        property_records = property_records_validation
+        cbic = cbic_validation
       )
 
       summary_info <- list(
@@ -353,8 +332,7 @@ list(
           "rppi_sale",
           "rppi_rent",
           "bis_rppi",
-          "cbic",
-          "property_records"
+          "cbic"
         ),
         weekly_datasets = c(
           "bcb_series",
@@ -368,8 +346,7 @@ list(
         ),
         monthly_datasets = c(
           "bis_rppi",
-          "cbic",
-          "property_records"
+          "cbic"
         ),
         cache_files = cache_files,
         validations = validations

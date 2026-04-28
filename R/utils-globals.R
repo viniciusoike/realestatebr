@@ -29,14 +29,6 @@ utils::globalVariables(c(
   "sbpe_netflow_pct", "inflow", "stock", "sbpe_stock", "rural_stock",
   "sbpe_netflow", "rural_netflow",
 
-  # ITBI/Property records variables
-  "df", "code_iptu_sql", "itbi_transaction_date", "yearmonth", "ts_date",
-  "house_address", "ts_year", "address", "data_type",
-
-  # Clean RI variables
-  "name_sp_region", "sale_total", "name_sp_label", "record_total",
-  "transfer_type", "code_region", "name_region",
-
   # Common tidyverse column specs
   "cols", "col_character", "col_number", "col_date",
 

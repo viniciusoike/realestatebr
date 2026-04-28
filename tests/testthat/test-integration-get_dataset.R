@@ -63,40 +63,6 @@ test_that("FipeZap uses 'Brazil' instead of 'Índice Fipezap' in name_muni", {
   )
 })
 
-# Property Records Tests
-test_that("property_records returns tibble, not nested list", {
-  skip_on_cran()
-
-  # Test default (should be capitals records)
-  result <- get_dataset("property_records")
-  expect_s3_class(result, "data.frame")
-  expect_false(
-    is.list(result) && !inherits(result, "data.frame"),
-    info = "Should return data.frame, not plain list"
-  )
-  expect_true(nrow(result) > 0)
-})
-
-test_that("property_records all tables return tibbles", {
-  skip_on_cran()
-
-  tables <- c(
-    "capitals",
-    "capitals_transfers",
-    "cities",
-    "aggregates",
-    "aggregates_transfers"
-  )
-
-  for (tbl in tables) {
-    result <- get_dataset("property_records", table = tbl)
-
-    expect_s3_class(result, "data.frame")
-    expect_false(is.list(result) && !inherits(result, "data.frame"))
-    expect_true(nrow(result) > 0)
-  }
-})
-
 # RPPI Individual Tables Tests
 test_that("RPPI individual tables work with fresh source", {
   skip_on_cran()

@@ -441,13 +441,6 @@ get_from_internal_function <- function(
     } else {
       args$table <- "sale"
     }
-  } else if (internal_function == "get_property_records") {
-    # Property records now uses 'table' parameter
-    if (!is.null(table)) {
-      args$table <- table
-    } else {
-      args$table <- "capitals" # Default to capitals since 'all' is no longer supported
-    }
   } else {
     # All other functions use 'table' parameter
     if (!is.null(table)) {
@@ -505,11 +498,6 @@ apply_table_filtering <- function(data, name, table) {
   # No filtering needed if table is NULL or "all"
   if (is.null(table) || table == "all") {
     return(data)
-  }
-
-  # Special handling for property_records nested structure
-  if (name == "property_records") {
-    return(extract_property_table(data, table))
   }
 
   # For list data (not data frames), extract the named element
@@ -643,8 +631,7 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
     },
     "bcb_series" = "bcb_series",
     "b3_stocks" = "b3_stocks",
-    "fgv_ibre" = "fgv_ibre",
-    "nre_ire" = "nre_ire"
+    "fgv_ibre" = "fgv_ibre"
   )
 
   return(name_mapping[[name]])
@@ -662,8 +649,7 @@ supports_table_all <- function(func_name) {
     "get_rppi_bis", # Updated function name
     "get_bcb_series",
     "get_cbic",
-    "get_fgv_ibre",
-    "get_property_records"
+    "get_fgv_ibre"
   )
 
   return(func_name %in% functions_with_table)
