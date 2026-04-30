@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,630 +60,506 @@
 
     
     
-<div class="section level3">
-<h3 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
-</h3>
-<p>Brazil has several Residential Property Price Indices (RPPI) from
-different sources, each with unique methodologies and coverage. This
-vignette shows how to access and analyze these indices using the
-realestatebr package.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/viniciusoike/realestatebr" class="external-link">realestatebr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Helper function for consistent plot styling</span></span>
 <span><span class="va">theme_series</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_family <span class="op">=</span> <span class="st">"Avenir"</span>, base_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
 <span>      panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>      panel.grid.major.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>      axis.line.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"gray10"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>      axis.ticks.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"gray10"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
 <span>      legend.position <span class="op">=</span> <span class="st">"bottom"</span>,</span>
-<span>      palette.colour.discrete <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#27708CFF"</span>, <span class="st">"#85A693FF"</span>, <span class="st">"#A6511FFF"</span>, <span class="st">"#BFA575FF"</span>, <span class="st">"#B4D9CEFF"</span><span class="op">)</span></span>
+<span>      palette.color.discrete <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>        <span class="st">"#1E3A5F"</span>,</span>
+<span>        <span class="st">"#DD6B20"</span>,</span>
+<span>        <span class="st">"#2C7A7B"</span>,</span>
+<span>        <span class="st">"#D69E2E"</span>,</span>
+<span>        <span class="st">"#805AD5"</span>,</span>
+<span>        <span class="st">"#C53030"</span></span>
+<span>      <span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
+<p>Brazil has several residential property price indices (RPPIs) from
+different institutions, each with distinct methodologies, geographic
+coverage, and time spans. This vignette shows how to access and work
+with each one.</p>
+<p>All indices are available through
+<code>get_dataset("rppi", table = &lt;index&gt;)</code>.</p>
+<div class="section level2">
+<h2 id="recommended-workflow">Recommended Workflow<a class="anchor" aria-label="anchor" href="#recommended-workflow"></a>
+</h2>
+<div class="section level3">
+<h3 id="the-best-indices">The best indices<a class="anchor" aria-label="anchor" href="#the-best-indices"></a>
+</h3>
+<p>The two most consistent indices are the IGMI-R (for sale prices) and
+the IVG-R (for rent prices). The only available option for commercial
+prices is FipeZap.</p>
+<p>The IGMI-R is a hedonic price index with a robust dataset
+(transaction prices). The only shortcoming of the index is its
+relatively short time span (2014-present) and geographic coverage (major
+cities only). The IVAR is a repeat-rent index with a robust dataset
+(residential rental contracts). Unfortunately, the dataset has a very
+short time span (2019-present) and even more limited geographic coverage
+(only 4 cities).</p>
+<p>FipeZap has the broadest geographic (50+ cities) and temporal
+coverage (2008-present), but is based on median listing prices rather
+than transaction prices. As a result, the index is much less
+reliable.</p>
 </div>
 <div class="section level3">
-<h3 id="available-rppi-datasets">Available RPPI Datasets<a class="anchor" aria-label="anchor" href="#available-rppi-datasets"></a>
+<h3 id="working-with-realestatebr">Working with realestatebr<a class="anchor" aria-label="anchor" href="#working-with-realestatebr"></a>
 </h3>
-<div class="section level4">
-<h4 id="individual-indices">Individual Indices<a class="anchor" aria-label="anchor" href="#individual-indices"></a>
-</h4>
-<p>Indexes from different sources can be accessed individually using the
-‘table’ argument from the <code><a href="../reference/get_dataset.html">get_dataset()</a></code> function.</p>
+<p>For easier comparison, the <code>table</code> parameter accepts a
+<code>"sale"</code> or <code>"rent"</code> argument, which stakcs all
+available indices into a single <code>tibble</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># FipeZap Index (most comprehensive - 20 cities)</span></span>
-<span><span class="va">fipezap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># IVGR - National sales index from BCB</span></span>
-<span><span class="va">ivgr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"ivgr"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># IGMI - Hedonic sales index from FGV</span></span>
-<span><span class="va">igmi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"igmi"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># IVAR - Rent index from FGV</span></span>
-<span><span class="va">ivar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"ivar"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># IQA - QuintoAndar rent prices</span></span>
-<span><span class="va">iqa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"iqa"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Secovi-SP - São Paulo market index</span></span>
-<span><span class="va">secovi_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"secovi_sp"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="stacked-indices">Stacked Indices<a class="anchor" aria-label="anchor" href="#stacked-indices"></a>
-</h4>
-<p>To facilitate comparisons, all sale and rent indices are available in
-stacked format. This is especially useful for comparing multiple indices
-across different cities or regions.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># All sale indices in one table</span></span>
-<span><span class="va">sale_indices</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"sale"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">sale_indices</span><span class="op">$</span><span class="va">source</span><span class="op">)</span></span>
-<span><span class="co"># Shows: IGMI-R, IVG-R, FipeZap, Secovi-SP</span></span>
-<span></span>
-<span><span class="co"># All rent indices</span></span>
-<span><span class="va">rent_indices</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"rent"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">rent_indices</span><span class="op">$</span><span class="va">source</span><span class="op">)</span></span>
-<span><span class="co"># Shows: IVAR, IQA, Secovi-SP, FipeZap</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level3">
-<h3 id="understanding-the-data-structure">Understanding the Data Structure<a class="anchor" aria-label="anchor" href="#understanding-the-data-structure"></a>
-</h3>
-<div class="section level4">
-<h4 id="common-columns">Common Columns<a class="anchor" aria-label="anchor" href="#common-columns"></a>
-</h4>
-<p>Most RPPI datasets share these columns:</p>
-<ul>
-<li>
-<strong>date</strong>: reference date (YMD format)</li>
-<li>
-<strong>name_muni</strong>: city or region name</li>
-<li>
-<strong>index</strong>: index number (base varies by source)</li>
-<li>
-<strong>chg</strong>: monthly percent change</li>
-<li>
-<strong>acum12m</strong>: 12-month accumulated change</li>
-<li>
-<strong>price_m2</strong>: median price per square meter (if
-available)</li>
-</ul>
-</div>
-<div class="section level4">
-<h4 id="specific-cases">Specific Cases<a class="anchor" aria-label="anchor" href="#specific-cases"></a>
-</h4>
-</div>
-<div class="section level4">
-<h4 id="quintoandar-iqa">QuintoAndar (IQA)<a class="anchor" aria-label="anchor" href="#quintoandar-iqa"></a>
-</h4>
-<p>Unlike other indices, IQA provides actual rent prices instead of an
-index. Creating a base index from these prices is straightforward. The
-code below shows how to create a base 100 index for each municipality,
-using the first available rent price as the base (i.e. 2019/06 =
-100).</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">iqa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"iqa"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">iqa</span> <span class="op">&lt;-</span> <span class="va">iqa</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    index <span class="op">=</span> <span class="va">rent_price</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">rent_price</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>,</span>
-<span>    .by <span class="op">=</span> <span class="va">name_muni</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
-<p>It’s important to note that IQA went through a significant change in
-methodology in mid-2022, which may affect trend analysis.</p>
-</div>
-<div class="section level4">
-<h4 id="fipezap">FipeZap<a class="anchor" aria-label="anchor" href="#fipezap"></a>
-</h4>
-<p>FipeZap is the most detailed RPPI, it includes both residential and
-non-residential markets, rent and sales indices, and breakdowns by
-number of bedrooms. The full level of granularity, however, is not
-available for all cities.</p>
-<ul>
-<li>
-<strong>market</strong>: residential or commercial.</li>
-<li>
-<strong>rent_sale</strong>: sale or rent market.</li>
-<li>
-<strong>rooms</strong>: breakdown by number of bedrooms (1, 2, 3,
-4+, total).</li>
-<li>
-<strong>variable</strong>: index, chg, acum12m, price_m2 (median
-listing price), yield (rental yield).</li>
-</ul>
+<code class="sourceCode R"><span><span class="va">sale</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"sale"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
+<h2 id="sale-indices">Sale Indices<a class="anchor" aria-label="anchor" href="#sale-indices"></a>
 </h2>
 <div class="section level3">
-<h3 id="regional-comparison-with-igmi">Regional Comparison with IGMI<a class="anchor" aria-label="anchor" href="#regional-comparison-with-igmi"></a>
+<h3 id="ivg-r">IVG-R<a class="anchor" aria-label="anchor" href="#ivg-r"></a>
 </h3>
-<p>The IGMI-R index from Abecip/FGV providesprice indices for major
-Brazilian cities. The code below compares the IGMI sale index across São
-Paulo, Rio de Janeiro, Belo Horizonte, and Brasília.</p>
-<p>For most use cases, this is the most reliable (i.e. best) RPPI
-available. The index is based on actual transaction prices that are
-adjusted for property characteristics using hedonic methods and provides
-city-level coverage. Its primary limitation is the relatively short time
-series, covering only 2014 to the present.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get IGMI data</span></span>
-<span><span class="va">igmi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"igmi"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Major cities comparison</span></span>
-<span><span class="va">cities_igmi</span> <span class="op">&lt;-</span> <span class="va">igmi</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"São Paulo"</span>, <span class="st">"Rio De Janeiro"</span>,</span>
-<span>                          <span class="st">"Belo Horizonte"</span>, <span class="st">"Brasília"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Plot with facets</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">cities_igmi</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">index</span>, color <span class="op">=</span> <span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"IGMI Sale Index by City"</span>,</span>
-<span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>       y <span class="op">=</span> <span class="st">"Index"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="ivg-r-the-official-sales-index">IVG-R: the ‘official’ sales index<a class="anchor" aria-label="anchor" href="#ivg-r-the-official-sales-index"></a>
-</h3>
-<p>IVG-R is the national sales index published by the Central Bank of
-Brazil (BACEN). It is based on median prices from actual transactions
-but does not include hedonic adjustments. The index offers a long time
-series (2001-present) but is only available at the national level.</p>
-<p>IVG-R is often considered the “official” RPPI in Brazil and is widely
-used by economists and policymakers. While based on median prices (see
-MVG-R), the final index applies both a 3-month moving average and the HP
-filter to smooth volatility, making it less volatile than other
-indices.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>The IVG-R (Índice de Valores de Garantia de Imóveis Residenciais) is
+published by the Central Bank of Brazil. It covers the national market
+from 2001 and is widely regarded as the official RPPI in Brazil. The
+index is based on median appraisal prices from mortgage contracts,
+smoothed with a 3-month moving average and the HP filter.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ivgr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"ivgr"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Plot national IVG-R index</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">ivgr</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">index</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"#27708CFF"</span>, linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"IVG-R National Sale Index"</span>,</span>
-<span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>       y <span class="op">=</span> <span class="st">"Index (base varies by source)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">ivgr</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">index</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"#27708C"</span>, linewidth <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"IVG-R — National Sale Index"</span>,</span>
+<span>    x     <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y     <span class="op">=</span> <span class="st">"Index"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="fipezap-the-broad-sales-index">FipeZap: the broad sales index<a class="anchor" aria-label="anchor" href="#fipezap-the-broad-sales-index"></a>
+<h3 id="igmi-r">IGMI-R<a class="anchor" aria-label="anchor" href="#igmi-r"></a>
 </h3>
-<p>FipeZap is the most comprehensive RPPI in terms of geographic
-coverage, with indices for 50 cities. However, it is based on median
-<strong>listing prices</strong> rather than actual transaction prices.
-The index is available from 2008 to the present and includes both sales
-and rental markets.</p>
-<p>Working with this dataset requires filtering for specific cities and
-market segments. The example below compares the residential sales index
-across São Paulo, Rio de Janeiro, and Belo Horizonte.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get FipeZap data</span></span>
-<span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span>
+<p>The IGMI-R (Índice Geral do Mercado Imobiliário Residencial) is
+published by Abecip/FGV. It uses a hedonic pricing model applied to
+actual transaction prices, making it the most methodologically rigorous
+city-level index available. Coverage spans major Brazilian cities from
+2014.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">igmi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"igmi"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Filter for major cities - residential sale index</span></span>
-<span><span class="va">cities</span> <span class="op">&lt;-</span> <span class="va">fz</span> <span class="op">|&gt;</span></span>
+<span><span class="va">igmi</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="co"># residential x commercial market</span></span>
+<span>    <span class="va">name_muni</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"São Paulo"</span>, <span class="st">"Rio De Janeiro"</span>, <span class="st">"Belo Horizonte"</span>, <span class="st">"Brasília"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">index</span>, color <span class="op">=</span> <span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"IGMI-R — Sale Index by City"</span>,</span>
+<span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Index"</span>,</span>
+<span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="fipezap-sale">FipeZap (sale)<a class="anchor" aria-label="anchor" href="#fipezap-sale"></a>
+</h3>
+<p>FipeZap is the broadest RPPI in terms of geographic coverage, with
+indices for more than 50 cities. It is based on median <strong>listing
+prices</strong> rather than transaction prices. Available from 2008 for
+both residential and commercial markets, with breakdowns by number of
+bedrooms. Prices are stratified by region and income level, using Census
+weights, and the final series is smoothed using a 3-month moving
+average.</p>
+<p>Key columns specific to FipeZap: <code>market</code>
+(residential/commercial), <code>rent_sale</code>, <code>rooms</code> (1,
+2, 3, 4+, total), <code>variable</code> (index, chg, acum12m, price_m2,
+yield).</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">subzap</span> <span class="op">&lt;-</span> <span class="va">fz</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">market</span> <span class="op">==</span> <span class="st">"residential"</span>,</span>
-<span>    <span class="co"># sale x rent market</span></span>
 <span>    <span class="va">rent_sale</span> <span class="op">==</span> <span class="st">"sale"</span>,</span>
-<span>    <span class="co"># all bedroom counts (1, 2, 3, 4+, total)</span></span>
 <span>    <span class="va">rooms</span> <span class="op">==</span> <span class="st">"total"</span>,</span>
-<span>    <span class="va">variable</span> <span class="op">==</span> <span class="st">"index"</span>,</span>
+<span>    <span class="va">variable</span> <span class="op">==</span> <span class="st">"acum12m"</span>,</span>
 <span>    <span class="va">name_muni</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"São Paulo"</span>, <span class="st">"Rio De Janeiro"</span>, <span class="st">"Belo Horizonte"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Plot</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">cities</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">value</span>, color <span class="op">=</span> <span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value</span>, color <span class="op">=</span> <span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
-<span>    title <span class="op">=</span> <span class="st">"FipeZap Sale Index - Major Cities"</span>,</span>
+<span>    title <span class="op">=</span> <span class="st">"FipeZap — Residential Sale Index"</span>,</span>
 <span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>    y <span class="op">=</span> <span class="st">"Index"</span>,</span>
-<span>    color <span class="op">=</span> <span class="st">"City"</span></span>
+<span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="comparing-national-sale-indices">Comparing National Sale Indices<a class="anchor" aria-label="anchor" href="#comparing-national-sale-indices"></a>
-</h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get stacked sale data</span></span>
-<span><span class="va">sales</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"sale"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Filter for national indices</span></span>
-<span><span class="va">national</span> <span class="op">&lt;-</span> <span class="va">sales</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">==</span> <span class="st">"Brazil"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Plot comparison</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">national</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">index</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">source</span><span class="op">)</span>, scales <span class="op">=</span> <span class="st">"free"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Brazil National RPPI - Sales"</span>,</span>
-<span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>       y <span class="op">=</span> <span class="st">"Index (base varies by source)"</span>,</span>
-<span>       color <span class="op">=</span> <span class="st">"Source"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>To actually make the indices comparable, we need to normalize them to
-a common base. The code below normalizes all indices to 100 at the start
-of 2018 and then compares their growth over time. The total variation
-from 2018 to 2024 is also annotated on the plot.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">comp_indexes</span> <span class="op">&lt;-</span> <span class="va">national</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2018-01-01"</span><span class="op">)</span>, <span class="va">date</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2024-12-31"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    index_2018 <span class="op">=</span> <span class="va">index</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">index</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>,</span>
-<span>    .by <span class="op">=</span> <span class="va">source</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="va">total_variation</span> <span class="op">&lt;-</span> <span class="va">comp_indexes</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
-<span>    total_variation <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">index_2018</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">index_2018</span><span class="op">)</span>,</span>
-<span>    date <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span>,</span>
-<span>    index_2018 <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">index_2018</span><span class="op">)</span>,</span>
-<span>    .by <span class="op">=</span> <span class="va">source</span></span>
-<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu">glue</span><span class="fu">::</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue</a></span><span class="op">(</span><span class="st">"{source}: {round(total_variation, 1)}%"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">comp_indexes</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">index_2018</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">100</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_label</a></span><span class="op">(</span></span>
-<span>    data <span class="op">=</span> <span class="va">total_variation</span>,</span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">index_2018</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>,</span>
-<span>    hjust <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>    nudge_x <span class="op">=</span> <span class="fl">30</span>,</span>
-<span>    show.legend <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2018-01-01"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2025-08-01"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>color <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html" class="external-link">guide_legend</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
-<span>    title <span class="op">=</span> <span class="st">"Brazil National RPPI - Sales"</span>,</span>
-<span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>    y <span class="op">=</span> <span class="st">"Index (base varies by source)"</span>,</span>
-<span>    color <span class="op">=</span> <span class="st">"Source"</span></span>
-<span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>Alternatively, we can compare the 12-month growth rates of each
-index, which are directly comparable across sources. Note, however, that
-overall trends may point to different conclusions depending on the index
-used. This reflects differences in methodology and coverage across
-indices.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">comp_indexes</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">acum12m</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2018-01-01"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2025-08-01"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/label_percent.html" class="external-link">label_percent</a></span><span class="op">(</span>scale <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>color <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html" class="external-link">guide_legend</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
-<span>    title <span class="op">=</span> <span class="st">"Brazil National RPPI - Sales"</span>,</span>
-<span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>    y <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>    color <span class="op">=</span> <span class="st">"Source"</span></span>
-<span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
+<div class="section level2">
+<h2 id="rent-indices">Rent Indices<a class="anchor" aria-label="anchor" href="#rent-indices"></a>
+</h2>
 <div class="section level3">
-<h3 id="ivar-the-repeat-rent-index">IVAR: the repeat-rent index<a class="anchor" aria-label="anchor" href="#ivar-the-repeat-rent-index"></a>
+<h3 id="ivar">IVAR<a class="anchor" aria-label="anchor" href="#ivar"></a>
 </h3>
-<p>IVAR is the rental index published by FGV, based on an unique
-“repeat-rent” methodology. It covers major Brazilian cities and is
-available from 2019 to the present. The index is based on actual rental
-contract prices, making it a reliable measure of rental market
-trends.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<p>The IVAR (Índice de Variação de Aluguéis Residenciais) is published
+by FGV and uses a repeat-rent methodology applied to actual rental
+contracts. It covers major Brazilian cities from 2019 and is available
+at both city and national level. Notably, the index has no smoothing,
+making it rather volatile.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ivar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"ivar"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">ivar_cities</span> <span class="op">&lt;-</span> <span class="va">ivar</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">!=</span> <span class="st">"Brazil"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Major cities comparison</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">ivar_cities</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">index</span>, color <span class="op">=</span> <span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"IVAR Rent Index by City"</span>,</span>
-<span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>       y <span class="op">=</span> <span class="st">"Index (base varies by source)"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>IVAR is a “raw” index, meaning it does not apply any smoothing
-techniques like moving averages or the HP filter. As a result, it may
-appear more volatile than other indices.</p>
-<p>Applying a filter can help visualize underlying trends. The code
-below applies a 6-month moving average to the national IVAR index.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># National IVAR index</span></span>
-<span><span class="va">ivar_national</span> <span class="op">&lt;-</span> <span class="va">ivar</span> <span class="op">|&gt;</span></span>
+<span><span class="co"># National index with 6-month moving average</span></span>
+<span><span class="va">ivar</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">==</span> <span class="st">"Brazil"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>ma_index <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/rollmean.html" class="external-link">rollmean</a></span><span class="op">(</span><span class="va">index</span>, <span class="fl">6</span>, fill <span class="op">=</span> <span class="cn">NA</span>, align <span class="op">=</span> <span class="st">"right"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">ivar_national</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">index</span><span class="op">)</span>, color <span class="op">=</span> <span class="st">"#A6511FFF"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span>, alpha <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">ma_index</span><span class="op">)</span>, color <span class="op">=</span> <span class="st">"#27708CFF"</span>, linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"IVAR National Rent Index (raw vs 6-month MA)"</span>,</span>
-<span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>       y <span class="op">=</span> <span class="st">"Index (base varies by source)"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="fipezap-the-broad-rental-index">FipeZap: the broad rental index<a class="anchor" aria-label="anchor" href="#fipezap-the-broad-rental-index"></a>
-</h3>
-<p>Once again, FipeZap offers the most comprehensive geographic
-coverage. However, it is based on median <strong>listing rent
-prices</strong> rather than actual contract prices.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get FipeZap data</span></span>
-<span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Filter for major cities - residential rent index</span></span>
-<span></span>
-<span><span class="va">start_date</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2021-01-01"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">#</span></span>
-<span><span class="va">cities_rent</span> <span class="op">&lt;-</span> <span class="va">fz</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">market</span> <span class="op">==</span> <span class="st">"residential"</span>,</span>
-<span>    <span class="va">rooms</span> <span class="op">==</span> <span class="st">"total"</span>,</span>
-<span>    <span class="va">variable</span> <span class="op">==</span> <span class="st">"acum12m"</span>,</span>
-<span>    <span class="va">rent_sale</span> <span class="op">==</span> <span class="st">"rent"</span>,</span>
-<span>    <span class="va">date</span> <span class="op">&gt;=</span> <span class="va">start_date</span>,</span>
-<span>    <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="co">#</span></span>
-<span><span class="va">cities</span> <span class="op">&lt;-</span> <span class="va">cities_rent</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">==</span> <span class="va">start_date</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">name_muni</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">cities_rent</span> <span class="op">&lt;-</span> <span class="va">cities_rent</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">cities</span><span class="op">)</span></span>
-<span></span>
-<span></span>
-<span><span class="co"># Plot all cities</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">cities_rent</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span>, color <span class="op">=</span> <span class="st">"#27708CFF"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>ma6 <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/rollmean.html" class="external-link">rollmean</a></span><span class="op">(</span><span class="va">index</span>, <span class="fl">6</span>, fill <span class="op">=</span> <span class="cn">NA</span>, align <span class="op">=</span> <span class="st">"right"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">index</span><span class="op">)</span>, color <span class="op">=</span> <span class="st">"#A6511F"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span>, alpha <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">ma6</span><span class="op">)</span>, color <span class="op">=</span> <span class="st">"#27708C"</span>, linewidth <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
-<span>    title <span class="op">=</span> <span class="st">"FipeZap Rent Index - Major Cities"</span>,</span>
+<span>    title <span class="op">=</span> <span class="st">"IVAR — National Rent Index"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Raw (orange) vs 6-month moving average (blue)"</span>,</span>
 <span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>    y <span class="op">=</span> <span class="st">"Index"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># City-level comparison</span></span>
+<span><span class="va">ivar</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">!=</span> <span class="st">"Brazil"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">index</span>, color <span class="op">=</span> <span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"IVAR — Rent Index by City"</span>,</span>
+<span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Index"</span>,</span>
+<span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="iqa-quintoandar-rent-prices">IQA: QuintoAndar Rent Prices<a class="anchor" aria-label="anchor" href="#iqa-quintoandar-rent-prices"></a>
+<h3 id="iqa-and-iqaiw">IQA and IQAIW<a class="anchor" aria-label="anchor" href="#iqa-and-iqaiw"></a>
 </h3>
-<p>QuintoAndar is an online brokerage platform that provides rental
-price data for major cities in Brazil. Initially, the IQA was a simple
-median price index based on rental contract prices. However, in
-mid-2023, QuintoAndar adopted a hedonic pricing model that incorporates
-both listing and contract prices. Together with this methodological
-change, the index rebranded to Índice QuintoAndar ImovelWeb (IQAIW).</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<p>QuintoAndar published two successive rental indices for São Paulo and
+Rio de Janeiro. The <strong>IQA</strong> (2019–mid-2023) was based on
+median contract prices. In mid-2023 it rebranded to
+<strong>IQAIW</strong> (Índice QuintoAndar ImovelWeb) and adopted a
+hedonic model incorporating both listing and contract prices. The two
+series are not directly comparable due to the methodology break.</p>
+<p>The original IQA compared median contract prices, stratified by
+region and income level (using Census weights, similar to FipeZap). The
+IQAIW uses a hedonic model (spatial GAM), double imputation, and a
+similar Census-based stratification.</p>
+<p>Notably, the IQA returns rent prices (R$/m²) rather than an index, so
+a base-100 normalisation is needed to build an index.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">iqa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"iqa"</span><span class="op">)</span></span>
+<span><span class="va">iqaiw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"iqaiw"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">iqa</span></span></code></pre></div>
+<span><span class="co"># Normalise IQA to base 100 at first observation</span></span>
+<span><span class="va">iqa_idx</span> <span class="op">&lt;-</span> <span class="va">iqa</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>index <span class="op">=</span> <span class="va">rent_price</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">rent_price</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, .by <span class="op">=</span> <span class="va">name_muni</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Stack and compare in São Paulo</span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">iqa_idx</span>, source <span class="op">=</span> <span class="st">"IQA"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">iqaiw</span>, source <span class="op">=</span> <span class="st">"IQAIW"</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">==</span> <span class="st">"São Paulo"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">index</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"QuintoAndar Rent Index — São Paulo"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"IQA (pre-2023) and IQAIW (post-2023) use different methodologies"</span>,</span>
+<span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Index"</span>,</span>
+<span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="fipezap-by-city">FipeZap by City<a class="anchor" aria-label="anchor" href="#fipezap-by-city"></a>
+<h3 id="fipezap-rent">FipeZap (rent)<a class="anchor" aria-label="anchor" href="#fipezap-rent"></a>
 </h3>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cities_count</span> <span class="op">&lt;-</span> <span class="va">fz</span> <span class="op">|&gt;</span></span>
+<p>FipeZap provides the broadest geographic coverage for rental indices,
+but is based on median listing prices rather than contracts. The example
+below shows the 12-month accumulated change across cities with complete
+data from 2021.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">start_date</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2021-01-01"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Keep only cities present at start_date to avoid gaps</span></span>
+<span><span class="va">cities_available</span> <span class="op">&lt;-</span> <span class="va">fz</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">market</span> <span class="op">==</span> <span class="st">"residential"</span>,</span>
-<span>    <span class="va">rooms</span> <span class="op">==</span> <span class="st">"total"</span>,</span>
-<span>    <span class="va">name_muni</span> <span class="op">!=</span> <span class="st">"Índice Fipezap"</span>,</span>
-<span>    <span class="va">variable</span> <span class="op">==</span> <span class="st">"index"</span>,</span>
+<span>    <span class="va">market</span>    <span class="op">==</span> <span class="st">"residential"</span>,</span>
+<span>    <span class="va">rooms</span>     <span class="op">==</span> <span class="st">"total"</span>,</span>
+<span>    <span class="va">variable</span>  <span class="op">==</span> <span class="st">"acum12m"</span>,</span>
+<span>    <span class="va">rent_sale</span> <span class="op">==</span> <span class="st">"rent"</span>,</span>
+<span>    <span class="va">date</span>      <span class="op">==</span> <span class="va">start_date</span>,</span>
 <span>    <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>year <span class="op">=</span> <span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html" class="external-link">year</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">year</span>, <span class="va">name_muni</span>, <span class="va">rent_sale</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">year</span>, <span class="va">rent_sale</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">name_muni</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">cities_count</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, y <span class="op">=</span> <span class="va">n</span>, fill <span class="op">=</span> <span class="va">rent_sale</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="va">n</span><span class="op">)</span>, vjust <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">rent_sale</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
-<span>    title <span class="op">=</span> <span class="st">"FipeZap Coverage Over Time"</span>,</span>
-<span>    x <span class="op">=</span> <span class="st">"Year"</span>,</span>
-<span>    y <span class="op">=</span> <span class="st">"Number of Cities"</span>,</span>
-<span>    fill <span class="op">=</span> <span class="st">"Market"</span></span>
-<span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get FipeZap data</span></span>
-<span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Filter for major cities - residential sale index</span></span>
-<span><span class="va">cities</span> <span class="op">&lt;-</span> <span class="va">fz</span> <span class="op">|&gt;</span></span>
+<span><span class="va">fz</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">market</span> <span class="op">==</span> <span class="st">"residential"</span>,</span>
-<span>    <span class="va">rooms</span> <span class="op">==</span> <span class="st">"total"</span>,</span>
-<span>    <span class="va">variable</span> <span class="op">==</span> <span class="st">"index"</span>,</span>
-<span>    <span class="va">rent_sale</span> <span class="op">==</span> <span class="st">"sale"</span>,</span>
-<span>    <span class="va">name_muni</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"São Paulo"</span>, <span class="st">"Rio De Janeiro"</span>, <span class="st">"Belo Horizonte"</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Plot</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">cities</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">value</span>, color <span class="op">=</span> <span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"FipeZap Sale Index - Major Cities"</span>,</span>
-<span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>       y <span class="op">=</span> <span class="st">"Index"</span>,</span>
-<span>       color <span class="op">=</span> <span class="st">"City"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="rent-vs-sale---são-paulo">Rent vs Sale - São Paulo<a class="anchor" aria-label="anchor" href="#rent-vs-sale---s%C3%A3o-paulo"></a>
-</h3>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Filter for São Paulo - both rent and sale</span></span>
-<span><span class="va">cities</span> <span class="op">&lt;-</span> <span class="va">fz</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">name_muni</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"São Paulo"</span>, <span class="st">"Rio De Janeiro"</span>, <span class="st">"Belo Horizonte"</span><span class="op">)</span>,</span>
-<span>    <span class="va">market</span> <span class="op">==</span> <span class="st">"residential"</span>,</span>
-<span>    <span class="va">rooms</span> <span class="op">==</span> <span class="st">"total"</span>,</span>
-<span>    <span class="va">variable</span> <span class="op">==</span> <span class="st">"index"</span>,</span>
-<span>    <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2019-01-01"</span><span class="op">)</span></span>
+<span>    <span class="va">market</span>    <span class="op">==</span> <span class="st">"residential"</span>,</span>
+<span>    <span class="va">rooms</span>     <span class="op">==</span> <span class="st">"total"</span>,</span>
+<span>    <span class="va">variable</span>  <span class="op">==</span> <span class="st">"acum12m"</span>,</span>
+<span>    <span class="va">rent_sale</span> <span class="op">==</span> <span class="st">"rent"</span>,</span>
+<span>    <span class="va">date</span>      <span class="op">&gt;=</span> <span class="va">start_date</span>,</span>
+<span>    <span class="va">name_muni</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">cities_available</span>,</span>
+<span>    <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">name_muni</span>, <span class="va">rent_sale</span>, <span class="va">value</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">base_index</span> <span class="op">&lt;-</span> <span class="va">cities</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/between.html" class="external-link">between</a></span><span class="op">(</span><span class="va">date</span>, <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2019-01-01"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2019-12-31"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>base_index <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span>, .by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">name_muni</span>, <span class="va">rent_sale</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">cities</span> <span class="op">&lt;-</span> <span class="va">cities</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">base_index</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/join_by.html" class="external-link">join_by</a></span><span class="op">(</span><span class="va">name_muni</span>, <span class="va">rent_sale</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>new_index <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">value</span> <span class="op">/</span> <span class="va">base_index</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">base_index</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Plot comparison</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">cities</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">new_index</span>, color <span class="op">=</span> <span class="va">rent_sale</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">100</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.7</span>, color <span class="op">=</span> <span class="st">"#27708C"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
-<span>    title <span class="op">=</span> <span class="st">"Post-pandemic Rent vs Sale Divide"</span>,</span>
-<span>    subtitle <span class="op">=</span> <span class="st">"FipeZap residential index"</span>,</span>
-<span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>    y <span class="op">=</span> <span class="st">"Index (100 = 2019 average)"</span>,</span>
-<span>    color <span class="op">=</span> <span class="st">"Market"</span></span>
+<span>    title <span class="op">=</span> <span class="st">"FipeZap — 12-month Rent Change by City"</span>,</span>
+<span>    x     <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y     <span class="op">=</span> <span class="st">"Accumulated 12-month change (%)"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="comparing-indices">Comparing Indices<a class="anchor" aria-label="anchor" href="#comparing-indices"></a>
+</h2>
+<div class="section level3">
+<h3 id="stacked-tables">Stacked tables<a class="anchor" aria-label="anchor" href="#stacked-tables"></a>
+</h3>
+<p>The <code>"sale"</code> and <code>"rent"</code> tables stack all
+available indices into a single data frame, making cross-source
+comparisons straightforward.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sale_indices</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"sale"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">sale_indices</span><span class="op">$</span><span class="va">source</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">rent_indices</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"rent"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">rent_indices</span><span class="op">$</span><span class="va">source</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="normalising-to-a-common-base">Normalising to a common base<a class="anchor" aria-label="anchor" href="#normalising-to-a-common-base"></a>
+</h3>
+<p>Each index has its own base period, so normalisation is required
+before comparing levels. The example below rebases all national sale
+indices to January 2018 = 100.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sales</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"sale"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">national</span> <span class="op">&lt;-</span> <span class="va">sales</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">==</span> <span class="st">"Brazil"</span>, <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2018-01-01"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">national_rebased</span> <span class="op">&lt;-</span> <span class="va">national</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    index_rebased <span class="op">=</span> <span class="va">index</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">index</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>,</span>
+<span>    .by <span class="op">=</span> <span class="va">source</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Annotate with total growth</span></span>
+<span><span class="va">total_growth</span> <span class="op">&lt;-</span> <span class="va">national_rebased</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>    growth    <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">index_rebased</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">index_rebased</span><span class="op">)</span>,</span>
+<span>    date      <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span>,</span>
+<span>    index_rebased <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">index_rebased</span><span class="op">)</span>,</span>
+<span>    .by <span class="op">=</span> <span class="va">source</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%s: +%.1f%%"</span>, <span class="va">source</span>, <span class="va">growth</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">national_rebased</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">index_rebased</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">100</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_label</a></span><span class="op">(</span></span>
+<span>    data   <span class="op">=</span> <span class="va">total_growth</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>,</span>
+<span>    hjust  <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    nudge_x <span class="op">=</span> <span class="fl">30</span>,</span>
+<span>    show.legend <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    size   <span class="op">=</span> <span class="fl">3</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2018-01-01"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2025-09-01"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Brazil National Sale Indices — Rebased to Jan 2018"</span>,</span>
+<span>    x     <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y     <span class="op">=</span> <span class="st">"Index (Jan 2018 = 100)"</span>,</span>
+<span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="international-comparison">International Comparison<a class="anchor" aria-label="anchor" href="#international-comparison"></a>
+<h3 id="month-growth-rates">12-month growth rates<a class="anchor" aria-label="anchor" href="#month-growth-rates"></a>
 </h3>
-<p>The package includes international RPPI data from the Bank for
-International Settlements (BIS):</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get BIS international RPPI</span></span>
-<span><span class="va">bis</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi_bis"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Filter for select countries</span></span>
-<span><span class="va">countries</span> <span class="op">&lt;-</span> <span class="va">bis</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">reference_area</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Brazil"</span>, <span class="st">"United States"</span>, <span class="st">"Japan"</span>, <span class="st">"Germany"</span><span class="op">)</span>,</span>
-<span>    <span class="va">is_nominal</span> <span class="op">==</span> <span class="cn">FALSE</span>,</span>
-<span>    <span class="va">unit</span> <span class="op">==</span> <span class="st">"Index, 2010 = 100"</span>,</span>
-<span>    <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2000-01-01"</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Plot comparison</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">countries</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">value</span>, color <span class="op">=</span> <span class="va">reference_area</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<p>Growth rates are directly comparable across indices and avoid the
+rebasing issue. Note that different methodologies may point to divergent
+trends.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">national_rebased</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">acum12m</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">100</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Residential Property Prices - International"</span>,</span>
-<span>       subtitle <span class="op">=</span> <span class="st">"Nominal indices, 2010 = 100"</span>,</span>
-<span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>       y <span class="op">=</span> <span class="st">"Index (2010 = 100)"</span>,</span>
-<span>       color <span class="op">=</span> <span class="st">"Country"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/label_percent.html" class="external-link">label_percent</a></span><span class="op">(</span>scale <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Brazil National Sale Indices — 12-month Change"</span>,</span>
+<span>    x     <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y     <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="key-differences-between-indices">Key Differences Between Indices<a class="anchor" aria-label="anchor" href="#key-differences-between-indices"></a>
+<h3 id="rent-vs-sale-divergence">Rent vs sale divergence<a class="anchor" aria-label="anchor" href="#rent-vs-sale-divergence"></a>
 </h3>
-<div class="section level4">
-<h4 id="coverage">Coverage<a class="anchor" aria-label="anchor" href="#coverage"></a>
-</h4>
-<ul>
-<li>
-<strong>FipeZap</strong>: 20 cities, most comprehensive geographic
-coverage</li>
-<li>
-<strong>IVGR</strong>: National</li>
-<li>
-<strong>IGMI</strong>: Major cities with hedonic adjustment</li>
-<li>
-<strong>IVAR</strong>: Major cities</li>
-<li>
-<strong>IQA</strong>: 2 cities (São Paulo, Rio de Janeiro)</li>
-</ul>
-</div>
-<div class="section level4">
-<h4 id="methodology">Methodology<a class="anchor" aria-label="anchor" href="#methodology"></a>
-</h4>
-<ul>
-<li>
-<strong>IVGR</strong>: Median prices from actual transactions.</li>
-<li>
-<strong>IGMI</strong>: Hedonic pricing model (controls for property
-characteristics).</li>
-<li>
-<strong>IVAR</strong>: Repeat-sales methodology.</li>
-<li>
-<strong>FipeZap</strong>: Median prices from listings.</li>
-<li>
-<strong>IQA</strong> (old): Median prices from rental contract
-prices.</li>
-<li>
-<strong>IQA</strong> (new): Hedonic pricing model from both listing
-and contract prices.</li>
-</ul>
-</div>
-<div class="section level4">
-<h4 id="frequency">Frequency<a class="anchor" aria-label="anchor" href="#frequency"></a>
-</h4>
-<p>All indices are monthly, but historical coverage varies: - IVGR:
-2001-present - IGMI: 2014-present - FipeZap: 2008-present - IVAR:
-2002-present - IQA: 2019-present - Secovi-SP: 2008-present</p>
-</div>
-</div>
-<div class="section level3">
-<h3 id="analysis-tips">Analysis Tips<a class="anchor" aria-label="anchor" href="#analysis-tips"></a>
-</h3>
-<div class="section level4">
-<h4 id="use-stacked-data-for-easy-comparisons">1. Use Stacked Data for Easy Comparisons<a class="anchor" aria-label="anchor" href="#use-stacked-data-for-easy-comparisons"></a>
-</h4>
-<p>Stacked data makes it easier to compare multiple indices:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get all sale indices in one table</span></span>
-<span><span class="va">all_sale</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"sale"</span><span class="op">)</span></span>
+<p>The post-pandemic divergence between rental and sale markets is one
+of the most discussed trends in Brazilian real estate. FipeZap, which
+covers both markets, makes this comparison straightforward.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Compare across sources</span></span>
-<span><span class="va">all_sale</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">==</span> <span class="st">"São Paulo"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">acum12m</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"São Paulo Sale Indices Comparison"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="normalize-indices-when-comparing-levels">2. Normalize Indices When Comparing Levels<a class="anchor" aria-label="anchor" href="#normalize-indices-when-comparing-levels"></a>
-</h4>
-<p>Since each index has a different base period, normalize them for
-direct comparison:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sales</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"sale"</span><span class="op">)</span></span>
+<span><span class="va">base_year</span> <span class="op">&lt;-</span> <span class="fl">2019</span></span>
 <span></span>
-<span><span class="va">sales_normalized</span> <span class="op">&lt;-</span> <span class="va">sales</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>index_normalized <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">index</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">index</span><span class="op">)</span>, .by <span class="op">=</span> <span class="va">source</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">base_avg</span> <span class="op">&lt;-</span> <span class="va">fz</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">name_muni</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"São Paulo"</span>, <span class="st">"Rio De Janeiro"</span>, <span class="st">"Belo Horizonte"</span><span class="op">)</span>,</span>
+<span>    <span class="va">market</span>   <span class="op">==</span> <span class="st">"residential"</span>,</span>
+<span>    <span class="va">rooms</span>    <span class="op">==</span> <span class="st">"total"</span>,</span>
+<span>    <span class="va">variable</span> <span class="op">==</span> <span class="st">"index"</span>,</span>
+<span>    <span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html" class="external-link">year</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span> <span class="op">==</span> <span class="va">base_year</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>base <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">value</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, .by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">name_muni</span>, <span class="va">rent_sale</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fz</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">name_muni</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"São Paulo"</span>, <span class="st">"Rio De Janeiro"</span>, <span class="st">"Belo Horizonte"</span><span class="op">)</span>,</span>
+<span>    <span class="va">market</span>   <span class="op">==</span> <span class="st">"residential"</span>,</span>
+<span>    <span class="va">rooms</span>    <span class="op">==</span> <span class="st">"total"</span>,</span>
+<span>    <span class="va">variable</span> <span class="op">==</span> <span class="st">"index"</span>,</span>
+<span>    <span class="va">date</span>     <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2019-01-01"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">base_avg</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"name_muni"</span>, <span class="st">"rent_sale"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>idx <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">value</span> <span class="op">/</span> <span class="va">base</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">idx</span>, color <span class="op">=</span> <span class="va">rent_sale</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">100</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title    <span class="op">=</span> <span class="st">"Post-pandemic Rent vs Sale Divergence"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"FipeZap residential index, 2019 average = 100"</span>,</span>
+<span>    x        <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y        <span class="op">=</span> <span class="st">"Index"</span>,</span>
+<span>    color    <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level4">
-<h4 id="compare-growth-rates-not-levels">3. Compare Growth Rates, Not Levels<a class="anchor" aria-label="anchor" href="#compare-growth-rates-not-levels"></a>
-</h4>
-<p>Growth rates are more meaningful than absolute index levels:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># 12-month growth comparison</span></span>
-<span><span class="va">sales</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">acum12m</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>y <span class="op">=</span> <span class="st">"12-month change (%)"</span><span class="op">)</span></span></code></pre></div>
 </div>
+<div class="section level2">
+<h2 id="international-bis">International: BIS<a class="anchor" aria-label="anchor" href="#international-bis"></a>
+</h2>
+<p>The BIS dataset provides quarterly residential property price indices
+for 60+ countries, enabling Brazil to be placed in international
+context.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bis</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi_bis"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">bis</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">reference_area</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Brazil"</span>, <span class="st">"United States"</span>, <span class="st">"Germany"</span>, <span class="st">"Japan"</span><span class="op">)</span>,</span>
+<span>    <span class="va">is_nominal</span> <span class="op">==</span> <span class="cn">FALSE</span>,</span>
+<span>    <span class="va">unit</span>       <span class="op">==</span> <span class="st">"Index, 2010 = 100"</span>,</span>
+<span>    <span class="va">date</span>       <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2000-01-01"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value</span>, color <span class="op">=</span> <span class="va">reference_area</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">100</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title    <span class="op">=</span> <span class="st">"Real Residential Property Prices"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"BIS, index 2010 = 100"</span>,</span>
+<span>    x        <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y        <span class="op">=</span> <span class="st">"Index"</span>,</span>
+<span>    color    <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="next-steps">Next Steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
-</h3>
-<ul>
-<li>See <code><a href="../articles/getting-started.html">vignette("getting-started")</a></code> for package basics</li>
-<li>See <code><a href="../reference/get_dataset.html">?get_dataset</a></code> for all available tables</li>
-<li>Explore city-level data with FipeZap</li>
-<li>Compare methodologies across indices</li>
-<li>Analyze rent vs sale dynamics</li>
-</ul>
-</div>
+<div class="section level2">
+<h2 id="index-reference">Index Reference<a class="anchor" aria-label="anchor" href="#index-reference"></a>
+</h2>
+<table class="table">
+<colgroup>
+<col width="15%">
+<col width="18%">
+<col width="22%">
+<col width="29%">
+<col width="13%">
+</colgroup>
+<thead><tr class="header">
+<th>Index</th>
+<th>Source</th>
+<th>Coverage</th>
+<th>Methodology</th>
+<th>From</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>IVG-R</td>
+<td>BCB</td>
+<td>National</td>
+<td>Median appraisal prices, HP-filtered</td>
+<td>2001</td>
+</tr>
+<tr class="even">
+<td>IGMI-R</td>
+<td>ABECIP/FGV</td>
+<td>Major cities</td>
+<td>Hedonic (transaction prices)</td>
+<td>2014</td>
+</tr>
+<tr class="odd">
+<td>FipeZap</td>
+<td>FIPE/ZAP</td>
+<td>50 cities</td>
+<td>Median listing prices</td>
+<td>2008</td>
+</tr>
+<tr class="even">
+<td>IVAR</td>
+<td>FGV</td>
+<td>Major cities + national</td>
+<td>Repeat-rent (contracts)</td>
+<td>2019</td>
+</tr>
+<tr class="odd">
+<td>IQA</td>
+<td>QuintoAndar</td>
+<td>São Paulo, Rio</td>
+<td>Median contract prices</td>
+<td>2019</td>
+</tr>
+<tr class="even">
+<td>IQAIW</td>
+<td>QuintoAndar</td>
+<td>São Paulo, Rio</td>
+<td>Hedonic (listing + contracts)</td>
+<td>2023</td>
+</tr>
+<tr class="odd">
+<td>Secovi-SP</td>
+<td>SECOVI-SP</td>
+<td>São Paulo</td>
+<td>Median prices (transactions)</td>
+<td>2008</td>
+</tr>
+</tbody>
+</table>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

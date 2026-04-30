@@ -1,18 +1,5 @@
 # Getting Started with realestatebr
 
-## Installation
-
-``` r
-
-# Install from GitHub
-remotes::install_github("viniciusoike/realestatebr")
-```
-
-## Quick Start
-
-The realestatebr package provides a unified interface for accessing
-Brazilian real estate data from multiple sources.
-
 ``` r
 
 library(realestatebr)
@@ -20,215 +7,160 @@ library(dplyr)
 library(ggplot2)
 ```
 
-## Basic Usage
+`realestatebr` provides a unified interface to Brazilian real estate
+data from multiple public sources. All datasets are returned as tidy
+`tibble` objects.
 
-### Discovering Datasets
+## Core Interface
 
-Use
-[`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
-to see all available data:
+Three functions cover most use cases.
+
+**[`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)**
+returns a catalogue of all available datasets and their tables.
 
 ``` r
 
-# List all available datasets
-datasets <- list_datasets()
-head(datasets)
-
-# Filter by source
-bcb_data <- list_datasets(source = "BCB")
+list_datasets()
 ```
 
-### Getting Data
-
-All data is accessed through
-[`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md):
+**[`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)**
+retrieves any dataset by name. Without a `table` argument it returns the
+default table; use `table` to select a specific sub-table.
 
 ``` r
 
-# Get dataset (returns default table)
+# Default table
 abecip <- get_dataset("abecip")
-head(abecip)
 
-# Get specific table
+# Specific table
 sbpe <- get_dataset("abecip", table = "sbpe")
+```
 
-# See available tables for a dataset
+**[`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)**
+shows available tables and metadata for a given dataset.
+
+``` r
+
 info <- get_dataset_info("abecip")
 names(info$categories)
+#> [1] "sbpe"  "units"  "cgi"
 ```
 
-### Data Sources
+## The `source` Argument
 
-Control where data comes from with the `source` parameter:
+The `source` argument controls where data comes from. The default
+(`"auto"`) checks the local cache first, then falls back to the GitHub
+release. Typically, the best option is to use the default or `"github"`.
 
 ``` r
 
-# Auto (default): Try GitHub cache first, fallback to fresh download
-data <- get_dataset("secovi", source = "auto")
-
-# GitHub cache only (faster, may be outdated)
-cached <- get_dataset("secovi", source = "github")
-
-# Fresh download (slower, always current)
-fresh <- get_dataset("secovi", source = "fresh")
+get_dataset("abecip", source = "cache")    # local cache (instant, works offline)
+get_dataset("abecip", source = "github")   # GitHub release
+get_dataset("abecip", source = "fresh")    # direct from the original source
 ```
 
-## Available Datasets
+Cache files are stored in the user data directory and can be inspected
+with
+[`list_cached_files()`](https://viniciusoike.github.io/realestatebr/reference/list_cached_files.md)
+or cleared with
+[`clear_user_cache()`](https://viniciusoike.github.io/realestatebr/reference/clear_user_cache.md).
 
-The package currently provides access to these datasets:
+## Example: Housing Credit Cycle
 
-**Credit & Finance:** - **abecip**: Housing credit data (SBPE flows,
-units, home equity) - **bcb_realestate**: Real estate credit and market
-data from BCB
-
-**Market Indicators:** - **abrainc**: Primary market indicators
-(launches, sales, business conditions) - **secovi**: São Paulo market
-data (condos, rentals, launches, sales)
-
-**Price Indices:** - **rppi**: Brazilian property price indices
-(FipeZap, IVGR, IGMI, IVAR, IQA, IQAIW, Secovi-SP) - **rppi_bis**:
-International property price indices from BIS (60+ countries)
-
-**Economic Data:** - **bcb_series**: Economic time series from BCB -
-**cbic**: Cement consumption and production data
-
-**Other:** - **fgv_ibre**: FGV economic indicators
-
-Use
-[`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
-to see the full list with details.
-
-## Example Workflows
-
-### Example 1: Housing Credit Analysis
+SBPE (Sistema Brasileiro de Poupança e Empréstimo) is the primary
+funding vehicle for residential mortgages in Brazil. The table tracks
+monthly inflows, outflows, and the resulting net credit flow.
 
 ``` r
 
-# Get SBPE housing credit data
 sbpe <- get_dataset("abecip", table = "sbpe")
 
-# Plot net flow over time
-ggplot(sbpe, aes(x = date, y = sbpe_netflow)) +
-  geom_line(color = "steelblue") +
-  labs(title = "SBPE Net Flow",
-       x = NULL,
-       y = "R$ (millions)") +
+# Annual net credit flow
+sbpe_annual <- sbpe |>
+  filter(date >= as.Date("2019-01-01")) |>
+  mutate(year = lubridate::year(date)) |>
+  summarise(net_flow = sum(sbpe_netflow, na.rm = TRUE) / 1e3, .by = year)
+
+ggplot(sbpe_annual, aes(year, net_flow)) +
+  geom_col(fill = "steelblue", alpha = 0.9) +
+  labs(
+    title = "SBPE: Annual Net Housing Credit",
+    x     = NULL,
+    y     = "R$ billions"
+  ) +
   theme_minimal()
 ```
 
-### Example 2: Real Estate Credit by State
+The companion table `"units"` contains monthly counts of financed units
+broken down by programme (SBPE, FGTS, CGI). Joining the two tables gives
+a credit-per-unit metric:
 
 ``` r
 
-# Get BCB real estate data
+units <- get_dataset("abecip", table = "units")
+
+# SBPE units financed per year
+units_annual <- units |>
+  filter(date >= as.Date("2019-01-01")) |>
+  mutate(year = lubridate::year(date)) |>
+  summarise(sbpe_units = sum(units_total, na.rm = TRUE), .by = year)
+
+# Implied credit per unit (R$ thousands)
+sbpe_annual |>
+  left_join(units_annual, by = "year") |>
+  mutate(credit_per_unit = net_flow * 1e6 / sbpe_units) |>
+  ggplot(aes(year, credit_per_unit)) +
+  geom_line(color = "steelblue", linewidth = 0.9) +
+  labs(
+    title = "SBPE: Average Credit per Financed Unit",
+    x     = NULL,
+    y     = "R$ thousands"
+  ) +
+  theme_minimal()
+```
+
+## Example 2: Real Estate Credit Portfolio
+
+The `bcb_realestate` dataset imports all real estate statistics from the
+Brazilian Central Bank. This is a relatively large dataset and exploring
+can be cumbersome. Each series is uniquely identified dy `date` and
+`series_info`. Helper functions `v1`, `v2`, …, `v5`, `abbrev_state`,
+`category`, and `type` are provided to simplify exploring the dataset.
+
+``` r
+
 bcb <- get_dataset("bcb_realestate")
 
-# Aggregate credit by date
-credit_data <- bcb |>
-  filter(category == "credito", type == "estoque") |>
-  summarise(total = sum(value, na.rm = TRUE), .by = date)
+# Get a specific series
+sfh_pf <- bcb |>
+  filter(series_info == "credito_estoque_carteira_credito_pf_sfh_br")
 
-# Plot
-ggplot(credit_data, aes(x = date, y = total)) +
-  geom_line(color = "steelblue") +
-  scale_y_continuous(labels = scales::comma) +
-  labs(title = "Total Real Estate Credit Stock",
-       x = NULL,
-       y = "R$ (billions)") +
-  theme_minimal()
+# Get all series for a specific category
+# All credit lines for brazilian households
+credit_stock <- bcb |>
+  filter(
+    category == "credito",
+    type == "estoque",
+    v1 == "carteira",
+    v2 == "credito",
+    v3 == "pf",
+    v5 == "br"
+  )
+
+ggplot(credit_stock, aes(date, value)) +
+  geom_area(aes(fill = v4), alpha = 0.9)
 ```
 
-### Example 3: São Paulo Market Data
-
-``` r
-
-# Get Secovi São Paulo data
-secovi <- get_dataset("secovi")
-
-# See available categories
-info <- get_dataset_info("secovi")
-names(info$categories)
-
-# Get specific categories
-condo_fees <- get_dataset("secovi", table = "condo")
-rental_data <- get_dataset("secovi", table = "rent")
-```
-
-## Working with Multi-Table Datasets
-
-Some datasets have multiple tables (categories). Use
-[`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
-to explore:
-
-``` r
-
-# Get dataset structure
-info <- get_dataset_info("cbic")
-
-# See available tables
-names(info$categories)
-
-# Access specific tables
-cement_monthly <- get_dataset("cbic", table = "cement_monthly_consumption")
-cement_prices <- get_dataset("cbic", table = "cement_cub_prices")
-```
-
-## Controlling Output
-
-### Verbosity
-
-``` r
-
-# Show progress messages (default)
-data <- get_dataset("abecip", quiet = FALSE)
-
-# Suppress messages
-data <- get_dataset("abecip", quiet = TRUE)
-```
-
-### Error Handling
-
-The package provides informative error messages:
-
-``` r
-
-# Invalid dataset name
-get_dataset("invalid_name")
-#> Error: Dataset 'invalid_name' not found
-#> ℹ Available datasets: abecip, abrainc, bcb_realestate, ...
-#> ℹ Use list_datasets() to see all available datasets
-
-# Invalid table
-get_dataset("abecip", table = "wrong_table")
-#> Error: Table 'wrong_table' not found for dataset 'abecip'
-#> ℹ Available tables: sbpe, units, cgi
-```
-
-## Migration from v0.3.x
-
-**Breaking Change in v0.4.0**: Individual `get_*()` functions have been
-removed.
-
-``` r
-
-# OLD (v0.3.x) - No longer works
-# abecip_old <- get_abecip_indicators(table = "sbpe")
-
-# NEW (v0.4.0) - Use get_dataset()
-abecip_new <- get_dataset("abecip", table = "sbpe")
-```
-
-See [NEWS.md](https://viniciusoike.github.io/realestatebr/NEWS.md) for
-complete migration details.
+As a final warning, note that the `bcb_realestate` dataset follows the
+`YYYY-MM-DD` format with the last day of the month (e.g. `2023-01-31`).
+This can cause issues when merging with other datasets, since the first
+day of the month is the more common date format. To avoid this, use
+`lubridate::floor_date(date, 'month')`. Future versions of
+`realestatebr` might provide this as a default behavior.
 
 ## Next Steps
 
-- See
-  [`vignette("working-with-rppi")`](https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.md)
-  for detailed property price index guide
-- Use
-  [`?get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-  for full documentation
-- Visit the [package
-  website](https://viniciusoike.github.io/realestatebr/) for more
-  examples
+- [`vignette("working-with-rppi")`](https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.md)
+  — property price indices in depth
+- [`?get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
+  — full parameter reference

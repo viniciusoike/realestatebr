@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,218 +60,148 @@
 
     
     
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Install from GitHub</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"viniciusoike/realestatebr"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
-</h2>
-<p>The realestatebr package provides a unified interface for accessing
-Brazilian real estate data from multiple sources.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/viniciusoike/realestatebr" class="external-link">realestatebr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
-</div>
+<p><code>realestatebr</code> provides a unified interface to Brazilian
+real estate data from multiple public sources. All datasets are returned
+as tidy <code>tibble</code> objects.</p>
 <div class="section level2">
-<h2 id="basic-usage">Basic Usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
+<h2 id="core-interface">Core Interface<a class="anchor" aria-label="anchor" href="#core-interface"></a>
 </h2>
-<div class="section level3">
-<h3 id="discovering-datasets">Discovering Datasets<a class="anchor" aria-label="anchor" href="#discovering-datasets"></a>
-</h3>
-<p>Use <code><a href="../reference/list_datasets.html">list_datasets()</a></code> to see all available data:</p>
+<p>Three functions cover most use cases.</p>
+<p><strong><code><a href="../reference/list_datasets.html">list_datasets()</a></code></strong> returns a catalogue of
+all available datasets and their tables.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/list_datasets.html">list_datasets</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><strong><code><a href="../reference/get_dataset.html">get_dataset()</a></code></strong> retrieves any dataset by
+name. Without a <code>table</code> argument it returns the default
+table; use <code>table</code> to select a specific sub-table.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># List all available datasets</span></span>
-<span><span class="va">datasets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_datasets.html">list_datasets</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">datasets</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Filter by source</span></span>
-<span><span class="va">bcb_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_datasets.html">list_datasets</a></span><span class="op">(</span>source <span class="op">=</span> <span class="st">"BCB"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="getting-data">Getting Data<a class="anchor" aria-label="anchor" href="#getting-data"></a>
-</h3>
-<p>All data is accessed through <code><a href="../reference/get_dataset.html">get_dataset()</a></code>:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get dataset (returns default table)</span></span>
+<code class="sourceCode R"><span><span class="co"># Default table</span></span>
 <span><span class="va">abecip</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">abecip</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Get specific table</span></span>
-<span><span class="va">sbpe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># See available tables for a dataset</span></span>
-<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset_info.html">get_dataset_info</a></span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">categories</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Specific table</span></span>
+<span><span class="va">sbpe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span></code></pre></div>
+<p><strong><code><a href="../reference/get_dataset_info.html">get_dataset_info()</a></code></strong> shows available
+tables and metadata for a given dataset.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset_info.html">get_dataset_info</a></span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">categories</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "sbpe"  "units"  "cgi"</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="data-sources">Data Sources<a class="anchor" aria-label="anchor" href="#data-sources"></a>
-</h3>
-<p>Control where data comes from with the <code>source</code>
-parameter:</p>
+<div class="section level2">
+<h2 id="the-source-argument">The <code>source</code> Argument<a class="anchor" aria-label="anchor" href="#the-source-argument"></a>
+</h2>
+<p>The <code>source</code> argument controls where data comes from. The
+default (<code>"auto"</code>) checks the local cache first, then falls
+back to the GitHub release. Typically, the best option is to use the
+default or <code>"github"</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Auto (default): Try GitHub cache first, fallback to fresh download</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span>, source <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># GitHub cache only (faster, may be outdated)</span></span>
-<span><span class="va">cached</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span>, source <span class="op">=</span> <span class="st">"github"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Fresh download (slower, always current)</span></span>
-<span><span class="va">fresh</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span>, source <span class="op">=</span> <span class="st">"fresh"</span><span class="op">)</span></span></code></pre></div>
-</div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"cache"</span><span class="op">)</span>    <span class="co"># local cache (instant, works offline)</span></span>
+<span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"github"</span><span class="op">)</span>   <span class="co"># GitHub release</span></span>
+<span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"fresh"</span><span class="op">)</span>    <span class="co"># direct from the original source</span></span></code></pre></div>
+<p>Cache files are stored in the user data directory and can be
+inspected with <code><a href="../reference/list_cached_files.html">list_cached_files()</a></code> or cleared with
+<code><a href="../reference/clear_user_cache.html">clear_user_cache()</a></code>.</p>
 </div>
 <div class="section level2">
-<h2 id="available-datasets">Available Datasets<a class="anchor" aria-label="anchor" href="#available-datasets"></a>
+<h2 id="example-housing-credit-cycle">Example: Housing Credit Cycle<a class="anchor" aria-label="anchor" href="#example-housing-credit-cycle"></a>
 </h2>
-<p>The package currently provides access to these datasets:</p>
-<p><strong>Credit &amp; Finance:</strong> - <strong>abecip</strong>:
-Housing credit data (SBPE flows, units, home equity) -
-<strong>bcb_realestate</strong>: Real estate credit and market data from
-BCB</p>
-<p><strong>Market Indicators:</strong> - <strong>abrainc</strong>:
-Primary market indicators (launches, sales, business conditions) -
-<strong>secovi</strong>: São Paulo market data (condos, rentals,
-launches, sales)</p>
-<p><strong>Price Indices:</strong> - <strong>rppi</strong>: Brazilian
-property price indices (FipeZap, IVGR, IGMI, IVAR, IQA, IQAIW,
-Secovi-SP) - <strong>rppi_bis</strong>: International property price
-indices from BIS (60+ countries)</p>
-<p><strong>Economic Data:</strong> - <strong>bcb_series</strong>:
-Economic time series from BCB - <strong>cbic</strong>: Cement
-consumption and production data</p>
-<p><strong>Other:</strong> - <strong>fgv_ibre</strong>: FGV economic
-indicators</p>
-<p>Use <code><a href="../reference/list_datasets.html">list_datasets()</a></code> to see the full list with
-details.</p>
-</div>
-<div class="section level2">
-<h2 id="example-workflows">Example Workflows<a class="anchor" aria-label="anchor" href="#example-workflows"></a>
-</h2>
-<div class="section level3">
-<h3 id="example-1-housing-credit-analysis">Example 1: Housing Credit Analysis<a class="anchor" aria-label="anchor" href="#example-1-housing-credit-analysis"></a>
-</h3>
+<p>SBPE (Sistema Brasileiro de Poupança e Empréstimo) is the primary
+funding vehicle for residential mortgages in Brazil. The table tracks
+monthly inflows, outflows, and the resulting net credit flow.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get SBPE housing credit data</span></span>
-<span><span class="va">sbpe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">sbpe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Plot net flow over time</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">sbpe</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">sbpe_netflow</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"steelblue"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"SBPE Net Flow"</span>,</span>
-<span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>       y <span class="op">=</span> <span class="st">"R$ (millions)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="co"># Annual net credit flow</span></span>
+<span><span class="va">sbpe_annual</span> <span class="op">&lt;-</span> <span class="va">sbpe</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2019-01-01"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>year <span class="op">=</span> <span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html" class="external-link">year</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>net_flow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">sbpe_netflow</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e3</span>, .by <span class="op">=</span> <span class="va">year</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">sbpe_annual</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">year</span>, <span class="va">net_flow</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"steelblue"</span>, alpha <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"SBPE: Annual Net Housing Credit"</span>,</span>
+<span>    x     <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y     <span class="op">=</span> <span class="st">"R$ billions"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="example-2-real-estate-credit-by-state">Example 2: Real Estate Credit by State<a class="anchor" aria-label="anchor" href="#example-2-real-estate-credit-by-state"></a>
-</h3>
+<p>The companion table <code>"units"</code> contains monthly counts of
+financed units broken down by programme (SBPE, FGTS, CGI). Joining the
+two tables gives a credit-per-unit metric:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get BCB real estate data</span></span>
-<span><span class="va">bcb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"bcb_realestate"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">units</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"units"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Aggregate credit by date</span></span>
-<span><span class="va">credit_data</span> <span class="op">&lt;-</span> <span class="va">bcb</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">category</span> <span class="op">==</span> <span class="st">"credito"</span>, <span class="va">type</span> <span class="op">==</span> <span class="st">"estoque"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">value</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, .by <span class="op">=</span> <span class="va">date</span><span class="op">)</span></span>
+<span><span class="co"># SBPE units financed per year</span></span>
+<span><span class="va">units_annual</span> <span class="op">&lt;-</span> <span class="va">units</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2019-01-01"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>year <span class="op">=</span> <span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html" class="external-link">year</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>sbpe_units <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">units_total</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, .by <span class="op">=</span> <span class="va">year</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Plot</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">credit_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">total</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"steelblue"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Total Real Estate Credit Stock"</span>,</span>
-<span>       x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>       y <span class="op">=</span> <span class="st">"R$ (billions)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="co"># Implied credit per unit (R$ thousands)</span></span>
+<span><span class="va">sbpe_annual</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">units_annual</span>, by <span class="op">=</span> <span class="st">"year"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>credit_per_unit <span class="op">=</span> <span class="va">net_flow</span> <span class="op">*</span> <span class="fl">1e6</span> <span class="op">/</span> <span class="va">sbpe_units</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">year</span>, <span class="va">credit_per_unit</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"steelblue"</span>, linewidth <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"SBPE: Average Credit per Financed Unit"</span>,</span>
+<span>    x     <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y     <span class="op">=</span> <span class="st">"R$ thousands"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="example-3-são-paulo-market-data">Example 3: São Paulo Market Data<a class="anchor" aria-label="anchor" href="#example-3-s%C3%A3o-paulo-market-data"></a>
-</h3>
+<div class="section level2">
+<h2 id="example-2-real-estate-credit-portfolio">Example 2: Real Estate Credit Portfolio<a class="anchor" aria-label="anchor" href="#example-2-real-estate-credit-portfolio"></a>
+</h2>
+<p>The <code>bcb_realestate</code> dataset imports all real estate
+statistics from the Brazilian Central Bank. This is a relatively large
+dataset and exploring can be cumbersome. Each series is uniquely
+identified dy <code>date</code> and <code>series_info</code>. Helper
+functions <code>v1</code>, <code>v2</code>, …, <code>v5</code>,
+<code>abbrev_state</code>, <code>category</code>, and <code>type</code>
+are provided to simplify exploring the dataset.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get Secovi São Paulo data</span></span>
-<span><span class="va">secovi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">bcb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"bcb_realestate"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># See available categories</span></span>
-<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset_info.html">get_dataset_info</a></span><span class="op">(</span><span class="st">"secovi"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">categories</span><span class="op">)</span></span>
+<span><span class="co"># Get a specific series</span></span>
+<span><span class="va">sfh_pf</span> <span class="op">&lt;-</span> <span class="va">bcb</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">series_info</span> <span class="op">==</span> <span class="st">"credito_estoque_carteira_credito_pf_sfh_br"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Get specific categories</span></span>
-<span><span class="va">condo_fees</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span>, table <span class="op">=</span> <span class="st">"condo"</span><span class="op">)</span></span>
-<span><span class="va">rental_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span>, table <span class="op">=</span> <span class="st">"rent"</span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="working-with-multi-table-datasets">Working with Multi-Table Datasets<a class="anchor" aria-label="anchor" href="#working-with-multi-table-datasets"></a>
-</h2>
-<p>Some datasets have multiple tables (categories). Use
-<code><a href="../reference/get_dataset_info.html">get_dataset_info()</a></code> to explore:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Get dataset structure</span></span>
-<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset_info.html">get_dataset_info</a></span><span class="op">(</span><span class="st">"cbic"</span><span class="op">)</span></span>
+<span><span class="co"># Get all series for a specific category</span></span>
+<span><span class="co"># All credit lines for brazilian households</span></span>
+<span><span class="va">credit_stock</span> <span class="op">&lt;-</span> <span class="va">bcb</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">category</span> <span class="op">==</span> <span class="st">"credito"</span>,</span>
+<span>    <span class="va">type</span> <span class="op">==</span> <span class="st">"estoque"</span>,</span>
+<span>    <span class="va">v1</span> <span class="op">==</span> <span class="st">"carteira"</span>,</span>
+<span>    <span class="va">v2</span> <span class="op">==</span> <span class="st">"credito"</span>,</span>
+<span>    <span class="va">v3</span> <span class="op">==</span> <span class="st">"pf"</span>,</span>
+<span>    <span class="va">v5</span> <span class="op">==</span> <span class="st">"br"</span></span>
+<span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="co"># See available tables</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">categories</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Access specific tables</span></span>
-<span><span class="va">cement_monthly</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"cbic"</span>, table <span class="op">=</span> <span class="st">"cement_monthly_consumption"</span><span class="op">)</span></span>
-<span><span class="va">cement_prices</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"cbic"</span>, table <span class="op">=</span> <span class="st">"cement_cub_prices"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="controlling-output">Controlling Output<a class="anchor" aria-label="anchor" href="#controlling-output"></a>
-</h2>
-<div class="section level3">
-<h3 id="verbosity">Verbosity<a class="anchor" aria-label="anchor" href="#verbosity"></a>
-</h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Show progress messages (default)</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Suppress messages</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="error-handling">Error Handling<a class="anchor" aria-label="anchor" href="#error-handling"></a>
-</h3>
-<p>The package provides informative error messages:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Invalid dataset name</span></span>
-<span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"invalid_name"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: Dataset 'invalid_name' not found</span></span>
-<span><span class="co">#&gt; ℹ Available datasets: abecip, abrainc, bcb_realestate, ...</span></span>
-<span><span class="co">#&gt; ℹ Use list_datasets() to see all available datasets</span></span>
-<span></span>
-<span><span class="co"># Invalid table</span></span>
-<span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"wrong_table"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: Table 'wrong_table' not found for dataset 'abecip'</span></span>
-<span><span class="co">#&gt; ℹ Available tables: sbpe, units, cgi</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="migration-from-v0-3-x">Migration from v0.3.x<a class="anchor" aria-label="anchor" href="#migration-from-v0-3-x"></a>
-</h2>
-<p><strong>Breaking Change in v0.4.0</strong>: Individual
-<code>get_*()</code> functions have been removed.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># OLD (v0.3.x) - No longer works</span></span>
-<span><span class="co"># abecip_old &lt;- get_abecip_indicators(table = "sbpe")</span></span>
-<span></span>
-<span><span class="co"># NEW (v0.4.0) - Use get_dataset()</span></span>
-<span><span class="va">abecip_new</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span></code></pre></div>
-<p>See <a href="../NEWS.html">NEWS.md</a> for complete migration
-details.</p>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">credit_stock</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_area</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">v4</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span></span></code></pre></div>
+<p>As a final warning, note that the <code>bcb_realestate</code> dataset
+follows the <code>YYYY-MM-DD</code> format with the last day of the
+month (e.g. <code>2023-01-31</code>). This can cause issues when merging
+with other datasets, since the first day of the month is the more common
+date format. To avoid this, use
+<code>lubridate::floor_date(date, 'month')</code>. Future versions of
+<code>realestatebr</code> might provide this as a default behavior.</p>
 </div>
 <div class="section level2">
 <h2 id="next-steps">Next Steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
 </h2>
 <ul>
-<li>See <code><a href="../articles/working-with-rppi.html">vignette("working-with-rppi")</a></code> for detailed property
-price index guide</li>
-<li>Use <code><a href="../reference/get_dataset.html">?get_dataset</a></code> for full documentation</li>
-<li>Visit the <a href="https://viniciusoike.github.io/realestatebr/">package website</a>
-for more examples</li>
+<li>
+<code><a href="../articles/working-with-rppi.html">vignette("working-with-rppi")</a></code> — property price indices
+in depth</li>
+<li>
+<code><a href="../reference/get_dataset.html">?get_dataset</a></code> — full parameter reference</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
