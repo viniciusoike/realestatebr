@@ -15,7 +15,7 @@ An object of class `tbl_df` (inherits from `tbl`, `data.frame`) with
 
 ## Source
 
-\<IBGE ...\>
+<https://www.ibge.gov.br/explica/codigos-dos-municipios.php>
 
 ## Details
 

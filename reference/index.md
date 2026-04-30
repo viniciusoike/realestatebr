@@ -16,20 +16,10 @@
   : Clear User Cache
 - [`dim_city`](https://viniciusoike.github.io/realestatebr/reference/dim_city.md)
   : Brazilian city identifier table
-- [`get_cbic_cement()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_cement.md)
-  : Get CBIC cement consumption data
-- [`get_cbic_dim_state()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_dim_state.md)
-  : Helper function to get state dimension data for CBIC
-- [`get_cbic_pim()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_pim.md)
-  : Get CBIC PIM industrial production data
-- [`get_cbic_steel()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_steel.md)
-  : Get CBIC steel data (prices and production)
 - [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
   : Get Dataset
 - [`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
   : Get Dataset Information
-- [`get_itbi()`](https://viniciusoike.github.io/realestatebr/reference/get_itbi.md)
-  : Get Property Tax Records
 - [`get_range()`](https://viniciusoike.github.io/realestatebr/reference/get_range.md)
   : Finds import range for each table
 - [`get_range_new()`](https://viniciusoike.github.io/realestatebr/reference/get_range_new.md)

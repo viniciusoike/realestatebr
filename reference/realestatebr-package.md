@@ -8,6 +8,8 @@ returned in tidy format.
 
 Useful links:
 
+- <https://github.com/viniciusoike/realestatebr>
+
 - Report bugs at <https://github.com/viniciusoike/realestatebr/issues>
 
 ## Author

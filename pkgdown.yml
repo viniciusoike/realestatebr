@@ -1,10 +1,10 @@
-pandoc: 3.1.11
+pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   getting-started: getting-started.html
   working-with-rppi: working-with-rppi.html
-last_built: 2026-04-28T20:40Z
+last_built: 2026-04-30T22:35Z
 urls:
   reference: https://viniciusoike.github.io/realestatebr/reference
   article: https://viniciusoike.github.io/realestatebr/articles

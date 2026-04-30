@@ -1,5 +1,21 @@
 # Changelog
 
+## realestatebr 1.0.0
+
+### Breaking changes
+
+- `nre_ire` has been removed. It required fully manual updates and had
+  no automated pipeline support; it will be reconsidered for a future
+  release.
+- `property_records` has been removed because the upstream data source
+  is no longer available.
+- `cbic` has been removed. The upstream CBIC portal migrated to a
+  restricted-access platform. The five cement tables will be rebuilt
+  from IBGE open data in a future release.
+- `itbi_summary` and the internal ITBI helpers (`get_itbi`,
+  `get_itbi_bhe`) have been removed. They were incomplete
+  (single-municipality coverage) and are deferred to a future version.
+
 ## realestatebr 0.6.1
 
 ### CRAN Submission Fixes
@@ -56,6 +72,7 @@ Custom threshold for staleness warnings (NULL for manual datasets)
 #### Examples
 
 ``` r
+
 # Check status of all cached datasets
 check_cache_status()
 
@@ -195,7 +212,7 @@ an acceptable breaking change.**
   - [`get_bcb_realestate()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_realestate.md)
   - [`get_bcb_series()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_series.md)
   - [`get_fgv_ibre()`](https://viniciusoike.github.io/realestatebr/reference/get_fgv_ibre.md)
-  - [`get_nre_ire()`](https://viniciusoike.github.io/realestatebr/reference/get_nre_ire.md)
+  - `get_nre_ire()`
   - [`get_rppi_bis()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi_bis.md)
   - [`get_secovi()`](https://viniciusoike.github.io/realestatebr/reference/get_secovi.md)
 - **Still callable internally**: Functions remain in the package for
@@ -220,6 +237,7 @@ now use
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md):
 
 ``` r
+
 # Old way (NO LONGER WORKS):
 data <- get_secovi()
 data <- get_bcb_series(table = "price")
@@ -264,10 +282,8 @@ data <- get_dataset("abecip", "sbpe")
   - `explore_cbic_structure()` - Only in examples
   - `get_cbic_files()` - Only in examples
   - `get_cbic_materials()` - Only in examples
-- **Removed**: Unnecessary metadata attributes from
-  [`get_cbic_steel()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_steel.md)
-  and
-  [`get_cbic_pim()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_pim.md):
+- **Removed**: Unnecessary metadata attributes from `get_cbic_steel()`
+  and `get_cbic_pim()`:
   - `attr(result, "source")`
   - `attr(result, "download_time")`
   - `attr(result, "download_info")`
@@ -317,7 +333,7 @@ breaking change.**
   - [`get_rppi_bis()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi_bis.md)
   - [`get_bcb_series()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_series.md)
   - [`get_fgv_ibre()`](https://viniciusoike.github.io/realestatebr/reference/get_fgv_ibre.md)
-  - [`get_nre_ire()`](https://viniciusoike.github.io/realestatebr/reference/get_nre_ire.md)
+  - `get_nre_ire()`
 - **Removed**: Verbose `@section` blocks (Progress Reporting, Error
   Handling)
 - **Simplified**: `@details` sections to 1-3 essential lines
@@ -340,6 +356,7 @@ These functions were deprecated in v0.4.0. Users should migrate to the
 modern API:
 
 ``` r
+
 # Old way (still works, but no longer documented with examples):
 data <- get_secovi()
 
@@ -396,6 +413,7 @@ only “condo”**
   - Categories: condo (1,939), launch (780), rent (2,779), sale (3,900)
 
 ``` r
+
 # Now returns all categories by default
 get_dataset("secovi")  # → 9,398 rows, 4 categories ✅
 
@@ -449,6 +467,7 @@ BREAKING CHANGE that affects how datasets are accessed.**
 #### New Cache Behavior
 
 ``` r
+
 # First use: downloads from GitHub releases to user cache
 data <- get_dataset("abecip")  # Downloads once
 
@@ -502,6 +521,7 @@ data <- get_dataset("abecip", source = "github")  # GitHub releases only
 ##### For Users
 
 ``` r
+
 # Install updated package
 install.packages("realestatebr")  # or devtools::install_github()
 
@@ -575,8 +595,7 @@ clear_user_cache()            # Clear all (with confirmation)
     updates
 - **Fixed**: Removed broken internal data object fallback in
   [`get_fgv_ibre()`](https://viniciusoike.github.io/realestatebr/reference/get_fgv_ibre.md)
-  and
-  [`get_nre_ire()`](https://viniciusoike.github.io/realestatebr/reference/get_nre_ire.md)
+  and `get_nre_ire()`
   - Previously tried to access non-existent `fgv_data` and `ire` objects
     from `R/sysdata.rda`
   - Now provides clear error messages when fresh downloads are attempted
@@ -795,6 +814,7 @@ Production, consumption, and export data - ✅
 industrial production indices
 
 ``` r
+
 # Works in v0.4.0
 get_dataset("cbic")  # Default: cement_monthly_consumption
 get_dataset("cbic", "cement_cub_prices")
@@ -819,6 +839,7 @@ get_dataset("cbic", "steel_prices")  # Deferred to v0.4.1
 **New unified interface:**
 
 ``` r
+
 # Get data from any dataset
 data <- get_dataset("abecip")               # Default table
 data <- get_dataset("abecip", table = "sbpe")  # Specific table
@@ -864,6 +885,7 @@ info <- get_dataset_info("rppi")
 #### For Existing Code (Breaking Changes)
 
 ``` r
+
 # OLD (0.3.x) - Will no longer work
 data <- get_abecip_indicators(table = "sbpe")
 data <- get_rppi(table = "fipezap")
@@ -877,25 +899,26 @@ data <- get_dataset("bcb_realestate", table = "all")
 
 #### Dataset Name Mapping
 
-| Old Function                                                                                                  | New get_dataset() Name |
-|---------------------------------------------------------------------------------------------------------------|------------------------|
-| [`get_abecip_indicators()`](https://viniciusoike.github.io/realestatebr/reference/get_abecip_indicators.md)   | `"abecip"`             |
-| [`get_abrainc_indicators()`](https://viniciusoike.github.io/realestatebr/reference/get_abrainc_indicators.md) | `"abrainc"`            |
-| [`get_rppi()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi.md)                             | `"rppi"`               |
-| [`get_bcb_realestate()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_realestate.md)         | `"bcb_realestate"`     |
-| [`get_bcb_series()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_series.md)                 | `"bcb_series"`         |
-| [`get_rppi_bis()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi_bis.md)                     | `"rppi_bis"`           |
-| [`get_secovi()`](https://viniciusoike.github.io/realestatebr/reference/get_secovi.md)                         | `"secovi"`             |
-| `get_fgv_indicators()`                                                                                        | `"fgv_indicators"`     |
-| `get_b3_stocks()`                                                                                             | `"b3_stocks"`          |
-| [`get_nre_ire()`](https://viniciusoike.github.io/realestatebr/reference/get_nre_ire.md)                       | `"nre_ire"`            |
-| `get_cbic_*()`                                                                                                | `"cbic"`               |
-| [`get_itbi()`](https://viniciusoike.github.io/realestatebr/reference/get_itbi.md)                             | `"itbi"`               |
-| [`get_property_records()`](https://viniciusoike.github.io/realestatebr/reference/get_property_records.md)     | `"registro"`           |
+| Old Function | New get_dataset() Name |
+|----|----|
+| [`get_abecip_indicators()`](https://viniciusoike.github.io/realestatebr/reference/get_abecip_indicators.md) | `"abecip"` |
+| [`get_abrainc_indicators()`](https://viniciusoike.github.io/realestatebr/reference/get_abrainc_indicators.md) | `"abrainc"` |
+| [`get_rppi()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi.md) | `"rppi"` |
+| [`get_bcb_realestate()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_realestate.md) | `"bcb_realestate"` |
+| [`get_bcb_series()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_series.md) | `"bcb_series"` |
+| [`get_rppi_bis()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi_bis.md) | `"rppi_bis"` |
+| [`get_secovi()`](https://viniciusoike.github.io/realestatebr/reference/get_secovi.md) | `"secovi"` |
+| `get_fgv_indicators()` | `"fgv_indicators"` |
+| `get_b3_stocks()` | `"b3_stocks"` |
+| `get_nre_ire()` | `"nre_ire"` |
+| `get_cbic_*()` | `"cbic"` |
+| `get_itbi()` | `"itbi"` |
+| `get_property_records()` | `"registro"` |
 
 #### RPPI Consolidation
 
 ``` r
+
 # OLD - Multiple functions
 fipezap <- get_rppi_fipezap()
 igmi <- get_rppi_igmi()
@@ -975,9 +998,8 @@ interface is significantly simpler and more powerful.*
 - **Function Fixes**: Fixed parameter bugs in
   [`get_abrainc_indicators()`](https://viniciusoike.github.io/realestatebr/reference/get_abrainc_indicators.md)
   (category → table)
-- **Data Access**: Improved
-  [`get_nre_ire()`](https://viniciusoike.github.io/realestatebr/reference/get_nre_ire.md)
-  to use internal package data directly
+- **Data Access**: Improved `get_nre_ire()` to use internal package data
+  directly
 - **Internal Data**: Updated `sysdata.rda` with latest processed
   datasets
 
@@ -1100,12 +1122,9 @@ dataset support.*
 #### 📈 New Data Sources
 
 - **CBIC construction materials data**:
-  - [`get_cbic_cement()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_cement.md) -
-    Cement consumption, production, and CUB prices
-  - [`get_cbic_steel()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_steel.md) -
-    Steel prices and production data
-  - [`get_cbic_pim()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_pim.md) -
-    Industrial production indices
+  - `get_cbic_cement()` - Cement consumption, production, and CUB prices
+  - `get_cbic_steel()` - Steel prices and production data
+  - `get_cbic_pim()` - Industrial production indices
 - **Enhanced RPPI suite** with improved coordination and error handling
 - **Updated B3 stock data** with standardized column names
 
@@ -1154,17 +1173,13 @@ dataset support.*
   BCB macroeconomic time series
 - [`get_rppi_bis()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi_bis.md) -
   Bank for International Settlements RPPI data
-- [`get_cbic_cement()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_cement.md) -
-  CBIC cement industry data (NEW)
-- [`get_cbic_steel()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_steel.md) -
-  CBIC steel industry data (NEW)
-- [`get_cbic_pim()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_pim.md) -
-  CBIC industrial production data (NEW)
+- `get_cbic_cement()` - CBIC cement industry data (NEW)
+- `get_cbic_steel()` - CBIC steel industry data (NEW)
+- `get_cbic_pim()` - CBIC industrial production data (NEW)
 - `get_fgv_indicators()` - FGV construction confidence indicators
-- [`get_nre_ire()`](https://viniciusoike.github.io/realestatebr/reference/get_nre_ire.md) -
-  Real Estate Index from NRE-Poli USP
-- [`get_property_records()`](https://viniciusoike.github.io/realestatebr/reference/get_property_records.md) -
-  Property registration data with robust Excel processing
+- `get_nre_ire()` - Real Estate Index from NRE-Poli USP
+- `get_property_records()` - Property registration data with robust
+  Excel processing
 - [`get_rppi()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi.md) -
   Comprehensive RPPI coordinator with all sources
 - [`get_secovi()`](https://viniciusoike.github.io/realestatebr/reference/get_secovi.md) -
@@ -1174,8 +1189,8 @@ dataset support.*
 
 - [`get_rppi_bis()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi_bis.md) -
   Main function with modernized backend and single tibble returns
-- [`get_itbi()`](https://viniciusoike.github.io/realestatebr/reference/get_itbi.md)
-  and `get_itbi_bhe()` - Planned for Phase 3 (DuckDB integration)
+- `get_itbi()` and `get_itbi_bhe()` - Planned for Phase 3 (DuckDB
+  integration)
 
 ### Infrastructure Improvements
 
@@ -1200,6 +1215,7 @@ dataset support.*
 #### For Existing Code
 
 ``` r
+
 # Old (deprecated but still works)
 data <- get_abecip_indicators(category = "all")
 
@@ -1210,6 +1226,7 @@ data <- get_abecip_indicators(table = "all")
 #### For New Code
 
 ``` r
+
 # Discover available datasets
 datasets <- list_datasets()
 

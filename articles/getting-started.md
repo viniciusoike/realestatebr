@@ -3,6 +3,7 @@
 ## Installation
 
 ``` r
+
 # Install from GitHub
 remotes::install_github("viniciusoike/realestatebr")
 ```
@@ -13,6 +14,7 @@ The realestatebr package provides a unified interface for accessing
 Brazilian real estate data from multiple sources.
 
 ``` r
+
 library(realestatebr)
 library(dplyr)
 library(ggplot2)
@@ -27,6 +29,7 @@ Use
 to see all available data:
 
 ``` r
+
 # List all available datasets
 datasets <- list_datasets()
 head(datasets)
@@ -41,6 +44,7 @@ All data is accessed through
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md):
 
 ``` r
+
 # Get dataset (returns default table)
 abecip <- get_dataset("abecip")
 head(abecip)
@@ -58,6 +62,7 @@ names(info$categories)
 Control where data comes from with the `source` parameter:
 
 ``` r
+
 # Auto (default): Try GitHub cache first, fallback to fresh download
 data <- get_dataset("secovi", source = "auto")
 
@@ -98,6 +103,7 @@ to see the full list with details.
 ### Example 1: Housing Credit Analysis
 
 ``` r
+
 # Get SBPE housing credit data
 sbpe <- get_dataset("abecip", table = "sbpe")
 
@@ -113,6 +119,7 @@ ggplot(sbpe, aes(x = date, y = sbpe_netflow)) +
 ### Example 2: Real Estate Credit by State
 
 ``` r
+
 # Get BCB real estate data
 bcb <- get_dataset("bcb_realestate")
 
@@ -134,6 +141,7 @@ ggplot(credit_data, aes(x = date, y = total)) +
 ### Example 3: São Paulo Market Data
 
 ``` r
+
 # Get Secovi São Paulo data
 secovi <- get_dataset("secovi")
 
@@ -153,6 +161,7 @@ Some datasets have multiple tables (categories). Use
 to explore:
 
 ``` r
+
 # Get dataset structure
 info <- get_dataset_info("cbic")
 
@@ -169,6 +178,7 @@ cement_prices <- get_dataset("cbic", table = "cement_cub_prices")
 ### Verbosity
 
 ``` r
+
 # Show progress messages (default)
 data <- get_dataset("abecip", quiet = FALSE)
 
@@ -181,6 +191,7 @@ data <- get_dataset("abecip", quiet = TRUE)
 The package provides informative error messages:
 
 ``` r
+
 # Invalid dataset name
 get_dataset("invalid_name")
 #> Error: Dataset 'invalid_name' not found
@@ -199,6 +210,7 @@ get_dataset("abecip", table = "wrong_table")
 removed.
 
 ``` r
+
 # OLD (v0.3.x) - No longer works
 # abecip_old <- get_abecip_indicators(table = "sbpe")
 

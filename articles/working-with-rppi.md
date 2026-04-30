@@ -8,6 +8,7 @@ vignette shows how to access and analyze these indices using the
 realestatebr package.
 
 ``` r
+
 library(realestatebr)
 library(dplyr)
 library(ggplot2)
@@ -33,6 +34,7 @@ Indexes from different sources can be accessed individually using the
 function.
 
 ``` r
+
 # FipeZap Index (most comprehensive - 20 cities)
 fipezap <- get_dataset("rppi", "fipezap")
 
@@ -59,6 +61,7 @@ stacked format. This is especially useful for comparing multiple indices
 across different cities or regions.
 
 ``` r
+
 # All sale indices in one table
 sale_indices <- get_dataset("rppi", "sale")
 unique(sale_indices$source)
@@ -93,6 +96,7 @@ code below shows how to create a base 100 index for each municipality,
 using the first available rent price as the base (i.e. 2019/06 = 100).
 
 ``` r
+
 iqa <- get_dataset("rppi", "iqa")
 
 iqa <- iqa |>
@@ -133,6 +137,7 @@ city-level coverage. Its primary limitation is the relatively short time
 series, covering only 2014 to the present.
 
 ``` r
+
 # Get IGMI data
 igmi <- get_dataset("rppi", "igmi")
 
@@ -163,6 +168,7 @@ MVG-R), the final index applies both a 3-month moving average and the HP
 filter to smooth volatility, making it less volatile than other indices.
 
 ``` r
+
 ivgr <- get_dataset("rppi", "ivgr")
 
 # Plot national IVG-R index
@@ -186,6 +192,7 @@ market segments. The example below compares the residential sales index
 across São Paulo, Rio de Janeiro, and Belo Horizonte.
 
 ``` r
+
 # Get FipeZap data
 fz <- get_dataset("rppi", "fipezap")
 
@@ -217,6 +224,7 @@ ggplot(cities, aes(x = date, y = value, color = name_muni)) +
 ### Comparing National Sale Indices
 
 ``` r
+
 # Get stacked sale data
 sales <- get_dataset("rppi", "sale")
 
@@ -241,6 +249,7 @@ of 2018 and then compares their growth over time. The total variation
 from 2018 to 2024 is also annotated on the plot.
 
 ``` r
+
 comp_indexes <- national |>
   filter(date >= as.Date("2018-01-01"), date <= as.Date("2024-12-31")) |>
   mutate(
@@ -285,6 +294,7 @@ used. This reflects differences in methodology and coverage across
 indices.
 
 ``` r
+
 ggplot(comp_indexes, aes(x = date, y = acum12m, color = source)) +
   geom_line(linewidth = 0.8) +
   geom_hline(yintercept = 0) +
@@ -308,6 +318,7 @@ available from 2019 to the present. The index is based on actual rental
 contract prices, making it a reliable measure of rental market trends.
 
 ``` r
+
 ivar <- get_dataset("rppi", "ivar")
 
 ivar_cities <- ivar |>
@@ -330,6 +341,7 @@ Applying a filter can help visualize underlying trends. The code below
 applies a 6-month moving average to the national IVAR index.
 
 ``` r
+
 # National IVAR index
 ivar_national <- ivar |>
   filter(name_muni == "Brazil") |>
@@ -351,6 +363,7 @@ However, it is based on median **listing rent prices** rather than
 actual contract prices.
 
 ``` r
+
 # Get FipeZap data
 fz <- get_dataset("rppi", "fipezap")
 
@@ -399,6 +412,7 @@ listing and contract prices. Together with this methodological change,
 the index rebranded to Índice QuintoAndar ImovelWeb (IQAIW).
 
 ``` r
+
 iqa <- get_dataset("rppi", "iqa")
 
 iqa
@@ -407,6 +421,7 @@ iqa
 ### FipeZap by City
 
 ``` r
+
 cities_count <- fz |>
   filter(
     market == "residential",
@@ -434,6 +449,7 @@ ggplot(cities_count, aes(x = year, y = n, fill = rent_sale)) +
 ```
 
 ``` r
+
 # Get FipeZap data
 fz <- get_dataset("rppi", "fipezap")
 
@@ -460,6 +476,7 @@ ggplot(cities, aes(x = date, y = value, color = name_muni)) +
 ### Rent vs Sale - São Paulo
 
 ``` r
+
 # Filter for São Paulo - both rent and sale
 cities <- fz |>
   filter(
@@ -501,6 +518,7 @@ The package includes international RPPI data from the Bank for
 International Settlements (BIS):
 
 ``` r
+
 # Get BIS international RPPI
 bis <- get_dataset("rppi_bis")
 
@@ -559,6 +577,7 @@ All indices are monthly, but historical coverage varies: - IVGR:
 Stacked data makes it easier to compare multiple indices:
 
 ``` r
+
 # Get all sale indices in one table
 all_sale <- get_dataset("rppi", table = "sale")
 
@@ -576,6 +595,7 @@ Since each index has a different base period, normalize them for direct
 comparison:
 
 ``` r
+
 sales <- get_dataset("rppi", table = "sale")
 
 sales_normalized <- sales |>
@@ -587,6 +607,7 @@ sales_normalized <- sales |>
 Growth rates are more meaningful than absolute index levels:
 
 ``` r
+
 # 12-month growth comparison
 sales |>
   ggplot(aes(x = date, y = acum12m, color = source)) +

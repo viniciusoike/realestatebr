@@ -58,6 +58,7 @@ This function is deprecated since v0.4.0. Use
 [`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("secovi")
 instead:
 
+
       # Old way:
       data <- get_secovi()
 

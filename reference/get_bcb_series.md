@@ -80,6 +80,7 @@ This function is deprecated since v0.4.0. Use
 [`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("bcb_series")
 instead:
 
+
       # Old way:
       data <- get_bcb_series()
 

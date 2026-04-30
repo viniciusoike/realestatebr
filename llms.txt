@@ -28,6 +28,7 @@ with different formats, update schedules, and access methods.
 All datasets accessible through a single, consistent API:
 
 ``` r
+
 library(realestatebr)
 
 # Discover what's available
@@ -42,19 +43,20 @@ rppi <- get_dataset("rppi", table = "fipezap")
 
 Access data from Brazil’s most authoritative sources:
 
-| Category              | Datasets                                                     |
-|-----------------------|--------------------------------------------------------------|
-| **Credit & Finance**  | ABECIP housing credit, BCB real estate credit                |
-| **Price Indices**     | FipeZap, IVGR, IGMI, IVAR, IQA, Secovi-SP, BIS international |
-| **Market Indicators** | ABRAINC primary market, Secovi-SP São Paulo market           |
-| **Construction**      | CBIC cement consumption and production                       |
-| **Economic Data**     | BCB economic time series                                     |
+| Category | Datasets |
+|----|----|
+| **Credit & Finance** | ABECIP housing credit, BCB real estate credit |
+| **Price Indices** | FipeZap, IVGR, IGMI, IVAR, IQA, Secovi-SP, BIS international |
+| **Market Indicators** | ABRAINC primary market, Secovi-SP São Paulo market |
+| **Construction** | CBIC cement consumption and production |
+| **Economic Data** | BCB economic time series |
 
 ### 🚀 Smart Data Access
 
 Multiple data sources with automatic fallback:
 
 ``` r
+
 # Auto: Try cache first, fallback to fresh download
 data <- get_dataset("bcb_realestate", source = "auto")
 
@@ -70,6 +72,7 @@ data <- get_dataset("bcb_realestate", source = "fresh")
 Built-in tools to explore available data:
 
 ``` r
+
 # See all datasets
 list_datasets()
 
@@ -86,6 +89,7 @@ names(info$categories)  # See available tables
 Install the development version from GitHub:
 
 ``` r
+
 # install.packages("remotes")
 remotes::install_github("viniciusoike/realestatebr")
 ```
@@ -95,6 +99,7 @@ remotes::install_github("viniciusoike/realestatebr")
 ### Getting Housing Credit Data
 
 ``` r
+
 library(realestatebr)
 library(dplyr)
 library(ggplot2)
@@ -117,6 +122,7 @@ ggplot(sbpe, aes(x = date, y = netflow)) +
 ### Analyzing Property Prices
 
 ``` r
+
 # Get FipeZap property price index
 fipezap <- get_dataset("rppi", table = "fipezap")
 
@@ -148,6 +154,7 @@ ggplot(sp_data, aes(x = date, y = value, color = rent_sale)) +
 ### International Comparison
 
 ``` r
+
 # Get BIS international property price indices
 bis <- get_dataset("rppi_bis")
 
@@ -267,6 +274,7 @@ both the package and the original data sources.
 To cite the package:
 
 ``` r
+
 citation("realestatebr")
 ```
 
@@ -330,20 +338,10 @@ details.
   : Clear User Cache
 - [`dim_city`](https://viniciusoike.github.io/realestatebr/reference/dim_city.md)
   : Brazilian city identifier table
-- [`get_cbic_cement()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_cement.md)
-  : Get CBIC cement consumption data
-- [`get_cbic_dim_state()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_dim_state.md)
-  : Helper function to get state dimension data for CBIC
-- [`get_cbic_pim()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_pim.md)
-  : Get CBIC PIM industrial production data
-- [`get_cbic_steel()`](https://viniciusoike.github.io/realestatebr/reference/get_cbic_steel.md)
-  : Get CBIC steel data (prices and production)
 - [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
   : Get Dataset
 - [`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
   : Get Dataset Information
-- [`get_itbi()`](https://viniciusoike.github.io/realestatebr/reference/get_itbi.md)
-  : Get Property Tax Records
 - [`get_range()`](https://viniciusoike.github.io/realestatebr/reference/get_range.md)
   : Finds import range for each table
 - [`get_range_new()`](https://viniciusoike.github.io/realestatebr/reference/get_range_new.md)

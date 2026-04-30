@@ -69,6 +69,7 @@ This function is deprecated since v0.4.0. Use
 [`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("abrainc")
 instead:
 
+
       # Old way:
       data <- get_abrainc_indicators()
 

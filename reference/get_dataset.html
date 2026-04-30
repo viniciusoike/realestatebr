@@ -32,7 +32,7 @@ fallback between different data sources (cache, GitHub, fresh download)."></head
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Get Dataset</h1>
-      <small class="dont-index">Source: <a href="https://github.com/viniciusoike/realestatebr/blob/cbic-archive/R/get-dataset.R" class="external-link"><code>R/get-dataset.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/viniciusoike/realestatebr/blob/main/R/get-dataset.R" class="external-link"><code>R/get-dataset.R</code></a></small>
       <div class="d-none name"><code>get_dataset.Rd</code></div>
     </div>
 
@@ -127,7 +127,7 @@ file-by-file progress, data type detection, web scraping steps, and more.</p>
 </dl><p><strong>Debug mode examples:</strong></p><div class="sourceCode"><pre><code><span></span>
 <span><span class="co"># Enable debug mode via environment variable</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>REALESTATEBR_DEBUG <span class="op">=</span> <span class="st">"TRUE"</span><span class="op">)</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"cbic"</span><span class="op">)</span>  <span class="co"># Shows detailed processing messages</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"bcb_series"</span><span class="op">)</span>  <span class="co"># Shows detailed processing messages</span></span>
 <span></span>
 <span><span class="co"># Enable debug mode via package option</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>realestatebr.debug <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>

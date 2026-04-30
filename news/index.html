@@ -30,9 +30,23 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/viniciusoike/realestatebr/blob/cbic-archive/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/viniciusoike/realestatebr/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="realestatebr-100">realestatebr 1.0.0<a class="anchor" aria-label="anchor" href="#realestatebr-100"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-1-0-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-0-0"></a></h3>
+<ul><li>
+<code>nre_ire</code> has been removed. It required fully manual updates and had no automated pipeline support; it will be reconsidered for a future release.</li>
+<li>
+<code>property_records</code> has been removed because the upstream data source is no longer available.</li>
+<li>
+<code>cbic</code> has been removed. The upstream CBIC portal migrated to a restricted-access platform. The five cement tables will be rebuilt from IBGE open data in a future release.</li>
+<li>
+<code>itbi_summary</code> and the internal ITBI helpers (<code>get_itbi</code>, <code>get_itbi_bhe</code>) have been removed. They were incomplete (single-municipality coverage) and are deferred to a future version.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.1" id="realestatebr-061">realestatebr 0.6.1<a class="anchor" aria-label="anchor" href="#realestatebr-061"></a></h2>
 <div class="section level3">
@@ -124,37 +138,37 @@
 </ul></div>
 <div class="section level5">
 <h5 id="file-by-file-results-0-6-0">File-by-File Results<a class="anchor" aria-label="anchor" href="#file-by-file-results-0-6-0"></a></h5>
-<table class="table"><thead><tr class="header"><th>File</th>
+<table class="table"><thead><tr><th>File</th>
 <th>Before</th>
 <th>After</th>
 <th>Lines Saved</th>
 <th>% Reduction</th>
-</tr></thead><tbody><tr class="odd"><td>get_abecip_indicators.R</td>
+</tr></thead><tbody><tr><td>get_abecip_indicators.R</td>
 <td>551</td>
 <td>431</td>
 <td>120</td>
 <td>21.8%</td>
-</tr><tr class="even"><td>get_abrainc_indicators.R</td>
+</tr><tr><td>get_abrainc_indicators.R</td>
 <td>544</td>
 <td>445</td>
 <td>99</td>
 <td>18.2%</td>
-</tr><tr class="odd"><td>get_secovi.R</td>
+</tr><tr><td>get_secovi.R</td>
 <td>438</td>
 <td>356</td>
 <td>82</td>
 <td>18.7%</td>
-</tr><tr class="even"><td>get_bcb_series.R</td>
+</tr><tr><td>get_bcb_series.R</td>
 <td>334</td>
 <td>278</td>
 <td>56</td>
 <td>16.8%</td>
-</tr><tr class="odd"><td>get-dataset.R</td>
+</tr><tr><td>get-dataset.R</td>
 <td>833</td>
 <td>773</td>
 <td>60</td>
 <td>7.2%</td>
-</tr><tr class="even"><td><strong>TOTAL</strong></td>
+</tr><tr><td><strong>TOTAL</strong></td>
 <td><strong>2,700</strong></td>
 <td><strong>2,283</strong></td>
 <td><strong>417</strong></td>
@@ -254,7 +268,7 @@
 <li><code><a href="../reference/get_bcb_realestate.html">get_bcb_realestate()</a></code></li>
 <li><code><a href="../reference/get_bcb_series.html">get_bcb_series()</a></code></li>
 <li><code><a href="../reference/get_fgv_ibre.html">get_fgv_ibre()</a></code></li>
-<li><code><a href="../reference/get_nre_ire.html">get_nre_ire()</a></code></li>
+<li><code>get_nre_ire()</code></li>
 <li><code><a href="../reference/get_rppi_bis.html">get_rppi_bis()</a></code></li>
 <li><code><a href="../reference/get_secovi.html">get_secovi()</a></code></li>
 </ul></li>
@@ -331,7 +345,7 @@
 <code>get_cbic_materials()</code> - Only in examples</li>
 </ul></li>
 <li>
-<strong>Removed</strong>: Unnecessary metadata attributes from <code><a href="../reference/get_cbic_steel.html">get_cbic_steel()</a></code> and <code><a href="../reference/get_cbic_pim.html">get_cbic_pim()</a></code>:
+<strong>Removed</strong>: Unnecessary metadata attributes from <code>get_cbic_steel()</code> and <code>get_cbic_pim()</code>:
 <ul><li><code>attr(result, "source")</code></li>
 <li><code>attr(result, "download_time")</code></li>
 <li><code>attr(result, "download_info")</code></li>
@@ -381,7 +395,7 @@
 <li><code><a href="../reference/get_rppi_bis.html">get_rppi_bis()</a></code></li>
 <li><code><a href="../reference/get_bcb_series.html">get_bcb_series()</a></code></li>
 <li><code><a href="../reference/get_fgv_ibre.html">get_fgv_ibre()</a></code></li>
-<li><code><a href="../reference/get_nre_ire.html">get_nre_ire()</a></code></li>
+<li><code>get_nre_ire()</code></li>
 </ul></li>
 <li>
 <strong>Removed</strong>: Verbose <code>@section</code> blocks (Progress Reporting, Error Handling)</li>
@@ -617,7 +631,7 @@
 <li>These datasets have no API/download capability and require manual updates</li>
 </ul></li>
 <li>
-<strong>Fixed</strong>: Removed broken internal data object fallback in <code><a href="../reference/get_fgv_ibre.html">get_fgv_ibre()</a></code> and <code><a href="../reference/get_nre_ire.html">get_nre_ire()</a></code>
+<strong>Fixed</strong>: Removed broken internal data object fallback in <code><a href="../reference/get_fgv_ibre.html">get_fgv_ibre()</a></code> and <code>get_nre_ire()</code>
 <ul><li>Previously tried to access non-existent <code>fgv_data</code> and <code>ire</code> objects from <code>R/sysdata.rda</code>
 </li>
 <li>Now provides clear error messages when fresh downloads are attempted with <code>cached=FALSE</code>
@@ -793,17 +807,17 @@
 <div class="section level3">
 <h3 id="major-breaking-changes---api-consolidation-0-4-0">Major Breaking Changes - API Consolidation<a class="anchor" aria-label="anchor" href="#major-breaking-changes---api-consolidation-0-4-0"></a></h3>
 <div class="section level4">
-<h4 id="id_-unified-data-interface-0-4-0">🎯 Unified Data Interface<a class="anchor" aria-label="anchor" href="#id_-unified-data-interface-0-4-0"></a></h4>
+<h4 id="dart-unified-data-interface-0-4-0">🎯 Unified Data Interface<a class="anchor" aria-label="anchor" href="#dart-unified-data-interface-0-4-0"></a></h4>
 <p>This release implements a <strong>major breaking change</strong> that consolidates 15+ individual <code>get_*()</code> functions into a single, unified <code><a href="../reference/get_dataset.html">get_dataset()</a></code> interface. This dramatically simplifies the package API while maintaining full functionality.</p>
 <p><strong>BREAKING CHANGE</strong>: All individual <code>get_*()</code> functions have been removed: - <code><a href="../reference/get_abecip_indicators.html">get_abecip_indicators()</a></code>, <code><a href="../reference/get_abrainc_indicators.html">get_abrainc_indicators()</a></code>, <code><a href="../reference/get_rppi.html">get_rppi()</a></code>, <code><a href="../reference/get_bcb_realestate.html">get_bcb_realestate()</a></code>, etc. - <strong>Migration</strong>: Use <code>get_dataset("dataset_name")</code> instead</p>
 </div>
 <div class="section level4">
-<h4 id="id_-rppi-code-simplification-internal-0-4-0">🔧 RPPI Code Simplification (Internal)<a class="anchor" aria-label="anchor" href="#id_-rppi-code-simplification-internal-0-4-0"></a></h4>
+<h4 id="wrench-rppi-code-simplification-internal-0-4-0">🔧 RPPI Code Simplification (Internal)<a class="anchor" aria-label="anchor" href="#wrench-rppi-code-simplification-internal-0-4-0"></a></h4>
 <p><strong>Major refactoring</strong> of RPPI functions for better maintainability: - <strong>67% code reduction</strong>: 1579 lines → 519 lines (1060 lines removed) - <strong>Bug fix</strong>: FipeZap national index now correctly standardized to <code>name_muni == "Brazil"</code> - <strong>Shared helpers</strong>: Created <code>rppi-helpers.R</code> with common functions to eliminate duplication - <strong>Removed overhead</strong>: Eliminated unused <code>stack</code> parameter, cli_debug calls, and metadata attributes - <strong>Simplified documentation</strong>: Removed verbose sections (Progress Reporting, Error Handling, Examples) from internal functions - <strong>All functions now <code>@keywords internal</code></strong>: Only <code><a href="../reference/get_dataset.html">get_dataset()</a></code> is user-facing</p>
 <p><strong>Benefits</strong>: - Easier to maintain and debug - Faster execution (less overhead) - Consistent error handling across all indices - Bug fixes apply to all functions automatically</p>
 </div>
 <div class="section level4">
-<h4 id="id_-cbic-dataset---partial-release-cement-only-0-4-0">📊 CBIC Dataset - Partial Release (Cement Only)<a class="anchor" aria-label="anchor" href="#id_-cbic-dataset---partial-release-cement-only-0-4-0"></a></h4>
+<h4 id="bar_chart-cbic-dataset---partial-release-cement-only-0-4-0">📊 CBIC Dataset - Partial Release (Cement Only)<a class="anchor" aria-label="anchor" href="#bar_chart-cbic-dataset---partial-release-cement-only-0-4-0"></a></h4>
 <p><strong>Note</strong>: In v0.4.0, the CBIC dataset is limited to <strong>cement tables only</strong> (validated data). Steel and PIM tables will be added in v0.4.1.</p>
 <p><strong>Available in v0.4.0</strong>: - ✅ <code>cement_monthly_consumption</code> - Monthly cement consumption by state - ✅ <code>cement_annual_consumption</code> - Annual cement consumption by region - ✅ <code>cement_production_exports</code> - Production, consumption, and export data - ✅ <code>cement_monthly_production</code> - Monthly cement production by state - ✅ <code>cement_cub_prices</code> - CUB cement prices by state</p>
 <p><strong>Coming in v0.4.1</strong>: - ⏳ Steel prices and production data - ⏳ PIM industrial production indices</p>
@@ -816,7 +830,7 @@
 <span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"cbic"</span>, <span class="st">"steel_prices"</span><span class="op">)</span>  <span class="co"># Deferred to v0.4.1</span></span></code></pre></div>
 </div>
 <div class="section level4">
-<h4 id="id_️-new-internal-architecture-0-4-0">🏗️ New Internal Architecture<a class="anchor" aria-label="anchor" href="#id_%EF%B8%8F-new-internal-architecture-0-4-0"></a></h4>
+<h4 id="building_construction-new-internal-architecture-0-4-0">🏗️ New Internal Architecture<a class="anchor" aria-label="anchor" href="#building_construction-new-internal-architecture-0-4-0"></a></h4>
 <ul><li>
 <strong>Internal fetch functions</strong>: Created 12 new <code>fetch_*()</code> functions with <code>@keywords internal</code>
 </li>
@@ -830,7 +844,7 @@
 </li>
 </ul></div>
 <div class="section level4">
-<h4 id="id_-simplified-public-api-0-4-0">📋 Simplified Public API<a class="anchor" aria-label="anchor" href="#id_-simplified-public-api-0-4-0"></a></h4>
+<h4 id="clipboard-simplified-public-api-0-4-0">📋 Simplified Public API<a class="anchor" aria-label="anchor" href="#clipboard-simplified-public-api-0-4-0"></a></h4>
 <p><strong>New unified interface:</strong></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get data from any dataset</span></span>
@@ -844,7 +858,7 @@
 <p><strong>Removed functions (now internal):</strong> - <code><a href="../reference/get_abecip_indicators.html">get_abecip_indicators()</a></code> → <code>get_dataset("abecip")</code> - <code><a href="../reference/get_abrainc_indicators.html">get_abrainc_indicators()</a></code> → <code>get_dataset("abrainc")</code> - <code><a href="../reference/get_rppi.html">get_rppi()</a></code> → <code>get_dataset("rppi")</code> - <code><a href="../reference/get_bcb_realestate.html">get_bcb_realestate()</a></code> → <code>get_dataset("bcb_realestate")</code> - <code><a href="../reference/get_bcb_series.html">get_bcb_series()</a></code> → <code>get_dataset("bcb_series")</code> - Plus 10 more functions</p>
 </div>
 <div class="section level4">
-<h4 id="id_-enhanced-data-access-0-4-0">🔧 Enhanced Data Access<a class="anchor" aria-label="anchor" href="#id_-enhanced-data-access-0-4-0"></a></h4>
+<h4 id="wrench-enhanced-data-access-0-4-0">🔧 Enhanced Data Access<a class="anchor" aria-label="anchor" href="#wrench-enhanced-data-access-0-4-0"></a></h4>
 <ul><li>
 <strong>Smart fallback</strong>: Auto fallback from GitHub cache → fresh download</li>
 <li>
@@ -855,7 +869,7 @@
 <strong>Metadata preservation</strong>: All data includes source tracking and download info</li>
 </ul></div>
 <div class="section level4">
-<h4 id="id_-comprehensive-testing-0-4-0">🧪 Comprehensive Testing<a class="anchor" aria-label="anchor" href="#id_-comprehensive-testing-0-4-0"></a></h4>
+<h4 id="test_tube-comprehensive-testing-0-4-0">🧪 Comprehensive Testing<a class="anchor" aria-label="anchor" href="#test_tube-comprehensive-testing-0-4-0"></a></h4>
 <ul><li>
 <strong>New test suite</strong>: <code>test-internal-functions-0.4.0.R</code> with 100 tests</li>
 <li>
@@ -883,33 +897,33 @@
 </div>
 <div class="section level4">
 <h4 id="dataset-name-mapping-0-4-0">Dataset Name Mapping<a class="anchor" aria-label="anchor" href="#dataset-name-mapping-0-4-0"></a></h4>
-<table class="table"><thead><tr class="header"><th>Old Function</th>
+<table class="table"><thead><tr><th>Old Function</th>
 <th>New get_dataset() Name</th>
-</tr></thead><tbody><tr class="odd"><td><code><a href="../reference/get_abecip_indicators.html">get_abecip_indicators()</a></code></td>
+</tr></thead><tbody><tr><td><code><a href="../reference/get_abecip_indicators.html">get_abecip_indicators()</a></code></td>
 <td><code>"abecip"</code></td>
-</tr><tr class="even"><td><code><a href="../reference/get_abrainc_indicators.html">get_abrainc_indicators()</a></code></td>
+</tr><tr><td><code><a href="../reference/get_abrainc_indicators.html">get_abrainc_indicators()</a></code></td>
 <td><code>"abrainc"</code></td>
-</tr><tr class="odd"><td><code><a href="../reference/get_rppi.html">get_rppi()</a></code></td>
+</tr><tr><td><code><a href="../reference/get_rppi.html">get_rppi()</a></code></td>
 <td><code>"rppi"</code></td>
-</tr><tr class="even"><td><code><a href="../reference/get_bcb_realestate.html">get_bcb_realestate()</a></code></td>
+</tr><tr><td><code><a href="../reference/get_bcb_realestate.html">get_bcb_realestate()</a></code></td>
 <td><code>"bcb_realestate"</code></td>
-</tr><tr class="odd"><td><code><a href="../reference/get_bcb_series.html">get_bcb_series()</a></code></td>
+</tr><tr><td><code><a href="../reference/get_bcb_series.html">get_bcb_series()</a></code></td>
 <td><code>"bcb_series"</code></td>
-</tr><tr class="even"><td><code><a href="../reference/get_rppi_bis.html">get_rppi_bis()</a></code></td>
+</tr><tr><td><code><a href="../reference/get_rppi_bis.html">get_rppi_bis()</a></code></td>
 <td><code>"rppi_bis"</code></td>
-</tr><tr class="odd"><td><code><a href="../reference/get_secovi.html">get_secovi()</a></code></td>
+</tr><tr><td><code><a href="../reference/get_secovi.html">get_secovi()</a></code></td>
 <td><code>"secovi"</code></td>
-</tr><tr class="even"><td><code>get_fgv_indicators()</code></td>
+</tr><tr><td><code>get_fgv_indicators()</code></td>
 <td><code>"fgv_indicators"</code></td>
-</tr><tr class="odd"><td><code>get_b3_stocks()</code></td>
+</tr><tr><td><code>get_b3_stocks()</code></td>
 <td><code>"b3_stocks"</code></td>
-</tr><tr class="even"><td><code><a href="../reference/get_nre_ire.html">get_nre_ire()</a></code></td>
+</tr><tr><td><code>get_nre_ire()</code></td>
 <td><code>"nre_ire"</code></td>
-</tr><tr class="odd"><td><code>get_cbic_*()</code></td>
+</tr><tr><td><code>get_cbic_*()</code></td>
 <td><code>"cbic"</code></td>
-</tr><tr class="even"><td><code><a href="../reference/get_itbi.html">get_itbi()</a></code></td>
+</tr><tr><td><code>get_itbi()</code></td>
 <td><code>"itbi"</code></td>
-</tr><tr class="odd"><td><code><a href="../reference/get_property_records.html">get_property_records()</a></code></td>
+</tr><tr><td><code>get_property_records()</code></td>
 <td><code>"registro"</code></td>
 </tr></tbody></table></div>
 <div class="section level4">
@@ -959,7 +973,7 @@
 <div class="section level3">
 <h3 id="major-features-and-improvements-0-3-0">Major Features and Improvements<a class="anchor" aria-label="anchor" href="#major-features-and-improvements-0-3-0"></a></h3>
 <div class="section level4">
-<h4 id="id_-phase-data-pipeline-implementation-complete-0-3-0">🎯 Phase 2: Data Pipeline Implementation Complete<a class="anchor" aria-label="anchor" href="#id_-phase-data-pipeline-implementation-complete-0-3-0"></a></h4>
+<h4 id="dart-phase-data-pipeline-implementation-complete-0-3-0">🎯 Phase 2: Data Pipeline Implementation Complete<a class="anchor" aria-label="anchor" href="#dart-phase-data-pipeline-implementation-complete-0-3-0"></a></h4>
 <ul><li>
 <strong>{targets} Pipeline Framework</strong>: Implemented comprehensive targets workflow for automated data processing and validation</li>
 <li>
@@ -970,7 +984,7 @@
 <strong>Pipeline Performance Monitoring</strong>: Added automated report generation and validation status tracking</li>
 </ul></div>
 <div class="section level4">
-<h4 id="id_-enhanced-data-processing-0-3-0">📊 Enhanced Data Processing<a class="anchor" aria-label="anchor" href="#id_-enhanced-data-processing-0-3-0"></a></h4>
+<h4 id="bar_chart-enhanced-data-processing-0-3-0">📊 Enhanced Data Processing<a class="anchor" aria-label="anchor" href="#bar_chart-enhanced-data-processing-0-3-0"></a></h4>
 <ul><li>
 <strong>Targets Pipeline</strong>: <code>_targets.R</code> workflow with automated dependency management and parallel processing</li>
 <li>
@@ -981,18 +995,18 @@
 <strong>Report Generation</strong>: Automated pipeline status reports and data quality summaries</li>
 </ul></div>
 <div class="section level4">
-<h4 id="id_-improved-function-reliability-0-3-0">🔧 Improved Function Reliability<a class="anchor" aria-label="anchor" href="#id_-improved-function-reliability-0-3-0"></a></h4>
+<h4 id="wrench-improved-function-reliability-0-3-0">🔧 Improved Function Reliability<a class="anchor" aria-label="anchor" href="#wrench-improved-function-reliability-0-3-0"></a></h4>
 <ul><li>
 <strong>Error Handling</strong>: Enhanced error handling in <code>cache.R</code> with better fallback mechanisms</li>
 <li>
 <strong>Function Fixes</strong>: Fixed parameter bugs in <code><a href="../reference/get_abrainc_indicators.html">get_abrainc_indicators()</a></code> (category → table)</li>
 <li>
-<strong>Data Access</strong>: Improved <code><a href="../reference/get_nre_ire.html">get_nre_ire()</a></code> to use internal package data directly</li>
+<strong>Data Access</strong>: Improved <code>get_nre_ire()</code> to use internal package data directly</li>
 <li>
 <strong>Internal Data</strong>: Updated <code>sysdata.rda</code> with latest processed datasets</li>
 </ul></div>
 <div class="section level4">
-<h4 id="id_-infrastructure-improvements-0-3-0">🚀 Infrastructure Improvements<a class="anchor" aria-label="anchor" href="#id_-infrastructure-improvements-0-3-0"></a></h4>
+<h4 id="rocket-infrastructure-improvements-0-3-0">🚀 Infrastructure Improvements<a class="anchor" aria-label="anchor" href="#rocket-infrastructure-improvements-0-3-0"></a></h4>
 <ul><li>
 <strong>Workflow Automation</strong>: Replaced single update workflow with focused daily/weekly pipelines</li>
 <li>
@@ -1003,7 +1017,7 @@
 <strong>Dependency Updates</strong>: Added <code>targets</code> and <code>tarchetypes</code> to package dependencies</li>
 </ul></div>
 <div class="section level4">
-<h4 id="id_-new-data-sources-0-3-0">📈 New Data Sources<a class="anchor" aria-label="anchor" href="#id_-new-data-sources-0-3-0"></a></h4>
+<h4 id="chart_with_upwards_trend-new-data-sources-0-3-0">📈 New Data Sources<a class="anchor" aria-label="anchor" href="#chart_with_upwards_trend-new-data-sources-0-3-0"></a></h4>
 <ul><li>
 <strong>B3 Stocks</strong>: Added enhanced B3 stock data processing with standardized formatting</li>
 <li>
@@ -1075,7 +1089,7 @@
 <div class="section level3">
 <h3 id="major-features-and-improvements-0-2-0">Major Features and Improvements<a class="anchor" aria-label="anchor" href="#major-features-and-improvements-0-2-0"></a></h3>
 <div class="section level4">
-<h4 id="id_-phase-modernization-complete-0-2-0">🎯 Phase 1 Modernization Complete<a class="anchor" aria-label="anchor" href="#id_-phase-modernization-complete-0-2-0"></a></h4>
+<h4 id="dart-phase-modernization-complete-0-2-0">🎯 Phase 1 Modernization Complete<a class="anchor" aria-label="anchor" href="#dart-phase-modernization-complete-0-2-0"></a></h4>
 <ul><li>
 <strong>Modernized 13 core <code>get_*</code> functions</strong> with consistent APIs, CLI-based error handling, and progress reporting</li>
 <li>
@@ -1086,7 +1100,7 @@
 <strong>Enhanced documentation</strong> with comprehensive examples and <a href="https://github.com/section" class="external-link">@section</a> blocks</li>
 </ul></div>
 <div class="section level4">
-<h4 id="id_-new-unified-data-architecture-0-2-0">📊 New Unified Data Architecture<a class="anchor" aria-label="anchor" href="#id_-new-unified-data-architecture-0-2-0"></a></h4>
+<h4 id="bar_chart-new-unified-data-architecture-0-2-0">📊 New Unified Data Architecture<a class="anchor" aria-label="anchor" href="#bar_chart-new-unified-data-architecture-0-2-0"></a></h4>
 <ul><li>
 <strong><code><a href="../reference/list_datasets.html">list_datasets()</a></code></strong> - Discover available datasets with filtering capabilities</li>
 <li>
@@ -1097,7 +1111,7 @@
 <strong>Improved caching</strong> with standardized cache location and validation</li>
 </ul></div>
 <div class="section level4">
-<h4 id="id_-api-standardization-0-2-0">🔧 API Standardization<a class="anchor" aria-label="anchor" href="#id_-api-standardization-0-2-0"></a></h4>
+<h4 id="wrench-api-standardization-0-2-0">🔧 API Standardization<a class="anchor" aria-label="anchor" href="#wrench-api-standardization-0-2-0"></a></h4>
 <ul><li>
 <strong>Introduced <code>table</code> parameter</strong> replacing <code>category</code> across all functions</li>
 <li>
@@ -1109,15 +1123,15 @@
 <strong>Metadata attributes</strong> on all returned data with source tracking and download info</li>
 </ul></div>
 <div class="section level4">
-<h4 id="id_-new-data-sources-0-2-0">📈 New Data Sources<a class="anchor" aria-label="anchor" href="#id_-new-data-sources-0-2-0"></a></h4>
+<h4 id="chart_with_upwards_trend-new-data-sources-0-2-0">📈 New Data Sources<a class="anchor" aria-label="anchor" href="#chart_with_upwards_trend-new-data-sources-0-2-0"></a></h4>
 <ul><li>
 <strong>CBIC construction materials data</strong>:
 <ul><li>
-<code><a href="../reference/get_cbic_cement.html">get_cbic_cement()</a></code> - Cement consumption, production, and CUB prices</li>
+<code>get_cbic_cement()</code> - Cement consumption, production, and CUB prices</li>
 <li>
-<code><a href="../reference/get_cbic_steel.html">get_cbic_steel()</a></code> - Steel prices and production data</li>
+<code>get_cbic_steel()</code> - Steel prices and production data</li>
 <li>
-<code><a href="../reference/get_cbic_pim.html">get_cbic_pim()</a></code> - Industrial production indices</li>
+<code>get_cbic_pim()</code> - Industrial production indices</li>
 </ul></li>
 <li>
 <strong>Enhanced RPPI suite</strong> with improved coordination and error handling</li>
@@ -1125,7 +1139,7 @@
 <strong>Updated B3 stock data</strong> with standardized column names</li>
 </ul></div>
 <div class="section level4">
-<h4 id="id_-performance-and-reliability-0-2-0">🚀 Performance and Reliability<a class="anchor" aria-label="anchor" href="#id_-performance-and-reliability-0-2-0"></a></h4>
+<h4 id="rocket-performance-and-reliability-0-2-0">🚀 Performance and Reliability<a class="anchor" aria-label="anchor" href="#rocket-performance-and-reliability-0-2-0"></a></h4>
 <ul><li>
 <strong>Progress reporting</strong> with <code>cli</code> package integration for long-running operations</li>
 <li>
@@ -1136,7 +1150,7 @@
 <strong>Comprehensive input validation</strong> with helpful error messages</li>
 </ul></div>
 <div class="section level4">
-<h4 id="id_-bilingual-support-0-2-0">🌐 Bilingual Support<a class="anchor" aria-label="anchor" href="#id_-bilingual-support-0-2-0"></a></h4>
+<h4 id="globe_with_meridians-bilingual-support-0-2-0">🌐 Bilingual Support<a class="anchor" aria-label="anchor" href="#globe_with_meridians-bilingual-support-0-2-0"></a></h4>
 <ul><li>
 <strong>Translation system</strong> for Portuguese/English column names and values</li>
 <li>
@@ -1181,17 +1195,17 @@
 <li>
 <code><a href="../reference/get_rppi_bis.html">get_rppi_bis()</a></code> - Bank for International Settlements RPPI data</li>
 <li>
-<code><a href="../reference/get_cbic_cement.html">get_cbic_cement()</a></code> - CBIC cement industry data (NEW)</li>
+<code>get_cbic_cement()</code> - CBIC cement industry data (NEW)</li>
 <li>
-<code><a href="../reference/get_cbic_steel.html">get_cbic_steel()</a></code> - CBIC steel industry data (NEW)</li>
+<code>get_cbic_steel()</code> - CBIC steel industry data (NEW)</li>
 <li>
-<code><a href="../reference/get_cbic_pim.html">get_cbic_pim()</a></code> - CBIC industrial production data (NEW)</li>
+<code>get_cbic_pim()</code> - CBIC industrial production data (NEW)</li>
 <li>
 <code>get_fgv_indicators()</code> - FGV construction confidence indicators</li>
 <li>
-<code><a href="../reference/get_nre_ire.html">get_nre_ire()</a></code> - Real Estate Index from NRE-Poli USP</li>
+<code>get_nre_ire()</code> - Real Estate Index from NRE-Poli USP</li>
 <li>
-<code><a href="../reference/get_property_records.html">get_property_records()</a></code> - Property registration data with robust Excel processing</li>
+<code>get_property_records()</code> - Property registration data with robust Excel processing</li>
 <li>
 <code><a href="../reference/get_rppi.html">get_rppi()</a></code> - Comprehensive RPPI coordinator with all sources</li>
 <li>
@@ -1202,7 +1216,7 @@
 <ul><li>
 <code><a href="../reference/get_rppi_bis.html">get_rppi_bis()</a></code> - Main function with modernized backend and single tibble returns</li>
 <li>
-<code><a href="../reference/get_itbi.html">get_itbi()</a></code> and <code>get_itbi_bhe()</code> - Planned for Phase 3 (DuckDB integration)</li>
+<code>get_itbi()</code> and <code>get_itbi_bhe()</code> - Planned for Phase 3 (DuckDB integration)</li>
 </ul></div>
 </div>
 <div class="section level3">

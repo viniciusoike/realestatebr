@@ -1,6 +1,6 @@
 # Real Estate Players listed on B3
 
-List of mian Brazilian real estate players listed on B3.
+List of main Brazilian real estate players listed on B3.
 
 ## Usage
 

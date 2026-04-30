@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/viniciusoike/realestatebr/blob/cbic-archive/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/viniciusoike/realestatebr/blob/main/DESCRIPTION)
 
 Reginatto V (2026). *realestatebr: Import Brazilian Real Estate Data
 into R*. R package version 0.6.1,
