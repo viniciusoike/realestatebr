@@ -29,7 +29,10 @@ datasets:
     internal_function: "fetch_abecip"
     dataset_function: "get_abecip_indicators"
     data_type: "list"
-    cached_file: "abecip.rds"
+    cached_file:
+      sbpe: "abecip_sbpe.rds"
+      units: "abecip_units.rds"
+      cgi: "abecip_cgi.rds"
     translation_notes: "Column names translated from Portuguese to English following standard patterns"
 
   abrainc:
@@ -56,7 +59,10 @@ datasets:
     internal_function: "fetch_abrainc"
     dataset_function: "get_abrainc_indicators"
     data_type: "list"
-    cached_file: "abrainc.rds"
+    cached_file:
+      indicator: "abrainc_indicator.rds"
+      radar: "abrainc_radar.rds"
+      leading: "abrainc_leading.rds"
     translation_notes: "Social Housing (MCMV) refers to Minha Casa Minha Vida and Casa Verde Amarela programs"
 
   bcb_realestate:

@@ -150,40 +150,87 @@ list(
 
   # ---- ABECIP - Housing Credit Indicators ----
   tar_target(
-    name = abecip_data,
-    command = fetch_dataset("abecip"),
+    name = abecip_sbpe_data,
+    command = fetch_dataset("abecip", table = "sbpe"),
     cue = tar_cue_age(
-      name = abecip_data,
+      name = abecip_sbpe_data,
       age = as.difftime(7, units = "days")
     )
   ),
   tar_target(
-    name = abecip_cache,
-    command = save_to_cache(abecip_data, "abecip"),
+    name = abecip_sbpe_cache,
+    command = save_to_cache(abecip_sbpe_data, "abecip_sbpe"),
     format = "file"
   ),
   tar_target(
+    name = abecip_units_data,
+    command = fetch_dataset("abecip", table = "units"),
+    cue = tar_cue_age(
+      name = abecip_units_data,
+      age = as.difftime(7, units = "days")
+    )
+  ),
+  tar_target(
+    name = abecip_units_cache,
+    command = save_to_cache(abecip_units_data, "abecip_units"),
+    format = "file"
+  ),
+  tar_target(
+    name = abecip_cache,
+    command = c(abecip_sbpe_cache, abecip_units_cache)
+  ),
+  tar_target(
     name = abecip_validation,
-    command = validate_dataset(abecip_data, "abecip")
+    command = validate_dataset(abecip_sbpe_data, "abecip")
   ),
 
   # ---- ABRAINC - Primary Market Indicators ----
   tar_target(
-    name = abrainc_data,
-    command = fetch_dataset("abrainc"),
+    name = abrainc_indicator_data,
+    command = fetch_dataset("abrainc", table = "indicator"),
     cue = tar_cue_age(
-      name = abrainc_data,
+      name = abrainc_indicator_data,
       age = as.difftime(7, units = "days")
     )
   ),
   tar_target(
-    name = abrainc_cache,
-    command = save_to_cache(abrainc_data, "abrainc"),
+    name = abrainc_indicator_cache,
+    command = save_to_cache(abrainc_indicator_data, "abrainc_indicator"),
     format = "file"
   ),
   tar_target(
+    name = abrainc_radar_data,
+    command = fetch_dataset("abrainc", table = "radar"),
+    cue = tar_cue_age(
+      name = abrainc_radar_data,
+      age = as.difftime(7, units = "days")
+    )
+  ),
+  tar_target(
+    name = abrainc_radar_cache,
+    command = save_to_cache(abrainc_radar_data, "abrainc_radar"),
+    format = "file"
+  ),
+  tar_target(
+    name = abrainc_leading_data,
+    command = fetch_dataset("abrainc", table = "leading"),
+    cue = tar_cue_age(
+      name = abrainc_leading_data,
+      age = as.difftime(7, units = "days")
+    )
+  ),
+  tar_target(
+    name = abrainc_leading_cache,
+    command = save_to_cache(abrainc_leading_data, "abrainc_leading"),
+    format = "file"
+  ),
+  tar_target(
+    name = abrainc_cache,
+    command = c(abrainc_indicator_cache, abrainc_radar_cache, abrainc_leading_cache)
+  ),
+  tar_target(
     name = abrainc_validation,
-    command = validate_dataset(abrainc_data, "abrainc")
+    command = validate_dataset(abrainc_indicator_data, "abrainc")
   ),
 
   # ---- SECOVI-SP - São Paulo Market Data ----

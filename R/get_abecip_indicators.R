@@ -90,37 +90,27 @@ get_abecip_indicators <- function(
   }
 
   if (table == "cgi") {
-    if (!cached) {
-      if (!quiet) {
-        cli::cli_inform(c(
-          "i" = "CGI data is a static historical dataset (January 2017-present)",
-          "i" = "Loading from package cache instead of fresh download"
-        ))
-      }
+    if (!quiet) {
+      cli::cli_inform(c(
+        "i" = "CGI data is a static historical dataset (January 2017-present)",
+        "i" = "Loading from bundled package file"
+      ))
     }
 
-    # Load CGI data from user cache
-    tryCatch({
-      cached_data <- load_from_user_cache("abecip", quiet = quiet)
-      if (is.null(cached_data)) {
-        cli::cli_abort("CGI data not found in user cache. Try running with cached=FALSE first.")
-      }
-      if ("cgi" %in% names(cached_data)) {
-        abecip <- cached_data[["cgi"]]
-      } else {
-        cli::cli_abort("CGI data not found in cached dataset")
-      }
+    cgi_path <- system.file("extdata", "abecip_cgi.xlsx", package = "realestatebr")
+    if (cgi_path == "") {
+      cli::cli_abort("CGI data file not found in package installation")
+    }
 
-      if (!quiet) {
-        cli::cli_inform("Successfully loaded CGI data from user cache")
+    abecip <- tryCatch(
+      load_abecip_cgi(cgi_path),
+      error = function(e) {
+        cli::cli_abort(c(
+          "Failed to load CGI data",
+          "x" = "Error: {e$message}"
+        ))
       }
-    }, error = function(e) {
-      cli::cli_abort(c(
-        "Failed to load CGI data from cache",
-        "x" = "Error: {e$message}",
-        "i" = "CGI data should be available in package cache"
-      ))
-    })
+    )
   }
 
   # Add metadata
@@ -137,7 +127,7 @@ get_abecip_indicators <- function(
 
   if (!quiet) {
     if (table == "cgi") {
-      cli::cli_inform("Successfully loaded Abecip CGI data from cache")
+      cli::cli_inform("Successfully loaded Abecip CGI data from bundled file")
     } else {
       cli::cli_inform("Successfully downloaded Abecip data")
     }
@@ -428,4 +418,89 @@ validate_abecip_data <- function(data, type) {
     # Generic validation for other types
     validate_dataset(data, dataset_name = paste0("abecip_", type))
   }
+}
+
+#' Load and Process CGI Data from Bundled Excel File
+#'
+#' @param path Path to abecip_cgi.xlsx
+#' @return A tibble with processed CGI data
+#' @keywords internal
+load_abecip_cgi <- function(path) {
+  raw <- readxl::read_excel(path, col_types = "text")
+  raw <- janitor::clean_names(raw)
+  raw <- dplyr::rename(
+    raw,
+    year = ano,
+    month_label = mes,
+    loan = valor_emprestimo,
+    new_contracts = no_contratos,
+    average_term = prazo_medio,
+    default_rate = inadimplencia,
+    stock_contracts = quantidade_contratos,
+    outstanding_balance = saldo_remanescente
+  )
+
+  raw <- dplyr::mutate(
+    raw,
+    date = readr::parse_date(
+      paste(year, month_label),
+      format = "%Y %B",
+      locale = readr::locale("pt")
+    ),
+    year = as.numeric(year),
+    loan = parse_cgi_number(loan, decimal = TRUE),
+    average_term = as.numeric(stringr::str_replace(average_term, " ", ".")),
+    default_rate = as.numeric(stringr::str_remove(default_rate, "%")),
+    new_contracts = parse_cgi_contract(new_contracts),
+    stock_contracts = parse_cgi_stock(stock_contracts),
+    outstanding_balance = parse_cgi_balance(outstanding_balance)
+  )
+
+  dplyr::select(
+    raw,
+    year, date, new_contracts, stock_contracts,
+    loan, outstanding_balance, average_term, default_rate
+  )
+}
+
+parse_cgi_number <- function(x, decimal = TRUE) {
+  y <- stringr::str_extract_all(x, "\\d+")
+  if (decimal) {
+    y <- sapply(y, \(z) paste0(paste(z[1:3], collapse = ""), ".", z[4]))
+  } else {
+    y <- sapply(y, paste, collapse = "")
+  }
+  as.numeric(y)
+}
+
+parse_cgi_contract <- function(x, width = 4) {
+  y <- stringr::str_remove(x, "\\.")
+  y <- stringr::str_sub(y, 1, 4)
+  y <- ifelse(
+    stringr::str_detect(y, "(^1)|(^2)|(^3)") & stringr::str_length(y) == 3,
+    stringr::str_pad(y, width = 4, side = "right", pad = "0"),
+    y
+  )
+  as.numeric(y)
+}
+
+parse_cgi_balance <- function(x) {
+  y <- stringr::str_extract_all(x, "\\d+")
+  y <- sapply(y, paste, collapse = "")
+  y <- ifelse(stringr::str_detect(y, "^9"), stringr::str_sub(y, 1, 10), stringr::str_sub(y, 1, 11))
+  y <- ifelse(
+    stringr::str_detect(y, "^1") & stringr::str_length(y) == 10,
+    stringr::str_pad(y, width = 11, side = "right", pad = "0"),
+    y
+  )
+  as.numeric(y)
+}
+
+parse_cgi_stock <- function(x) {
+  y <- stringr::str_remove(x, "\\.")
+  y <- dplyr::case_when(
+    stringr::str_detect(y, "^1") ~ stringr::str_pad(stringr::str_sub(y, 1, 6), width = 6, side = "right", pad = "0"),
+    stringr::str_detect(y, "^9") ~ stringr::str_pad(stringr::str_sub(y, 1, 5), width = 5, side = "right", pad = "0")
+  )
+  as.numeric(y)
 }

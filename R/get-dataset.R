@@ -591,8 +591,11 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
         selected_file <- cached_file[[table]]
         return(gsub("\\.(rds|csv\\.gz)$", "", basename(selected_file)))
       }
-      # For multiple files, use the first one as default
-      # (specific table selection handled separately)
+      # "all" and unrecognized tables have no dedicated cache file
+      if (!is.null(table) && (table == "all" || !table %in% names(cached_file))) {
+        return(NULL)
+      }
+      # Default: use first file when table is NULL
       first_file <- cached_file[[1]]
       return(gsub("\\.(rds|csv\\.gz)$", "", basename(first_file)))
     }
