@@ -4,7 +4,7 @@ library(dplyr)
 # main_cities dataset removed in v0.4.0 - use dim_city instead
 
 # Import city shapefile with official IBGE identifiers
-dim_city <- geobr::read_municipality(year = 2020)
+dim_city <- geobr::read_municipality(year = 2020, cache = FALSE)
 # Drop geometry
 dim_city <- sf::st_drop_geometry(dim_city)
 dim_city <- tibble::as_tibble(dim_city)
