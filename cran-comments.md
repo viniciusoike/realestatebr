@@ -29,5 +29,18 @@ All tests requiring network access use `testthat::skip_on_cran()` or
 
 ## Test Platforms
 
-- macOS (local): 0 errors, 0 warnings
-- [Add rhub::check_for_cran() results before submission]
+- macOS (local): 0 errors, 0 warnings, 0 notes
+- Windows R-devel (win-builder, 2026-04-30): 0 errors, 0 warnings, 2 notes
+
+### Notes on win-builder results
+
+**NOTE: New submission** — Expected for first CRAN submission.
+
+**NOTE: Possibly mis-spelled words** — ABECIP, ABRAINC, BCB, FGV, and SECOVI
+are official acronyms for Brazilian real estate and financial institutions.
+They are spelled correctly.
+
+**NOTE: no visible binding for global variable** — These variables are dplyr
+column names resolved at runtime via non-standard evaluation, and one
+conditionally-called internal function (`translate_dataset`). All have been
+declared via `utils::globalVariables()` in `R/utils-globals.R`.

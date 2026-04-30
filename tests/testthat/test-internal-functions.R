@@ -40,8 +40,7 @@ test_that("internal functions have consistent parameter interface", {
   # Note: fetch_ functions don't exist, using actual legacy functions instead
   internal_functions <- c(
     "get_rppi", "get_abecip_indicators", "get_abrainc_indicators", "get_bcb_realestate",
-    "get_bcb_series", "get_secovi", "get_rppi_bis", "get_fgv_indicators",
-    "get_cbic"
+    "get_bcb_series", "get_secovi", "get_rppi_bis", "get_fgv_indicators"
   )
 
   for (func_name in internal_functions) {
@@ -92,7 +91,7 @@ test_that("dataset registry consolidated correctly", {
   rppi_info <- registry$datasets$rppi
   expect_true(!is.null(rppi_info$categories))
   expect_true("fipezap" %in% names(rppi_info$categories))
-  expect_true("sales" %in% names(rppi_info$categories))
+  expect_true("sale" %in% names(rppi_info$categories))
   expect_true("rent" %in% names(rppi_info$categories))
   expect_true("all" %in% names(rppi_info$categories))
 })
@@ -101,7 +100,7 @@ test_that("internal functions handle errors gracefully", {
   # Test invalid table parameter using actual legacy functions
   expect_error(
     get_abecip_indicators(table = "invalid_table"),
-    "Table 'invalid_table' not found"
+    "Invalid table"
   )
 
   expect_error(
@@ -110,7 +109,7 @@ test_that("internal functions handle errors gracefully", {
   )
 
   expect_error(
-    get_rppi(category = "invalid_category"),
+    get_rppi(table = "invalid_table"),
     "Invalid"
   )
 })

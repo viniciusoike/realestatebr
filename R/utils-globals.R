@@ -31,5 +31,18 @@ utils::globalVariables(c(
 
   # Other data processing variables
   "city_name", "month", "month_label", "weighted_median_contract_rent_per_sqm",
-  "var_percent_12_meses", "name", "zone", "label", "title"
+  "var_percent_12_meses", "name", "zone", "label", "title",
+
+  # tidyxl column names (R/utils.R)
+  "address", "data_type",
+
+  # FGV IBRE variables (R/get_fgv_ibre.R)
+  "code_series", "name_series",
+
+  # BIS RPPI variables (R/get_rppi_bis.R)
+  "freq_name", "obs_value_observation_value",
+  "time_period_time_period_or_range", "time", "unit_code", "unit_value_code",
+
+  # Conditionally-called function (R/get-dataset.R)
+  "translate_dataset"
 ))

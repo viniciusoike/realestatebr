@@ -241,11 +241,11 @@ import_bcb_realestate <- function() {
       return(df)
     },
     error = function(e) {
-      message(sprintf("Error in import_bcb_realestate: %s", e$message))
+      cli::cli_warn("Error in import_bcb_realestate: {e$message}")
       return(NULL)
     },
     warning = function(w) {
-      message(sprintf("Warning in import_bcb_realestate: %s", w$message))
+      cli::cli_inform("Warning in import_bcb_realestate: {w$message}")
       return(NULL)
     },
     finally = {
