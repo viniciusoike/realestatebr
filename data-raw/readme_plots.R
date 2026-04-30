@@ -29,9 +29,8 @@ p1 <- ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
   theme_minimal() +
   theme(
     legend.position = "bottom",
-    palette.colour.discrete = c("#2C6BB3", "#1abc9c", "#f39c12")
+    palette.colour.discrete = c("#1E3A5F", "#4A90C2", "#2C7A7B")
   )
-
 # Get BIS international data
 bis <- get_dataset("rppi_bis", source = "fresh")
 
@@ -56,7 +55,7 @@ p2 <- ggplot(bis_compare, aes(x = date, y = value, color = ref_area_name)) +
   theme_minimal() +
   theme(
     legend.position = "bottom",
-    palette.colour.discrete = c("#2C6BB3", "#1abc9c", "#f39c12")
+    palette.colour.discrete = c("#1E3A5F", "#4A90C2", "#2C7A7B")
   )
 
 ggsave(
@@ -73,15 +72,13 @@ ggsave(
   height = 6.5 / 1.618
 )
 
+# abecip <- get_dataset("abecip", source = "fresh")
 
-abecip <- get_dataset("abecip", source = "fresh")
+# subabecip <- abecip |>
+#   filter(
+#     date >= as.Date("2019-01-01")
+#   ) |>
+#   mutate(sumflow = RcppRoll::roll_sumr(sbpe_netflow, n = 12, align = "right"))
 
-subabecip <- abecip |>
-  filter(
-    date >= as.Date("2019-01-01")
-  ) |>
-  mutate(sumflow = RcppRoll::roll_sumr(sbpe_netflow, n = 12, align = "right"))
-
-
-ggplot(subabecip, aes(date, sumflow)) +
-  geom_line()
+# ggplot(subabecip, aes(date, sumflow)) +
+#   geom_line()

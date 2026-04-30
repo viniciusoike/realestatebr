@@ -42,21 +42,20 @@ fipezap <- get_dataset("rppi", "fipezap")
 
 ## Available Datasets
 
-Some of the available datasets are listed below.
+The package acts as a convinient wrapper around public data sources. All
+data is provided in a tidy format in a `tibble` object. Datasets are
+updated weekly or monthly, depending on the source.
 
-| Dataset | Producer | Description |
-|----|----|----|
-| `abecip` | ABECIP | Housing credit flows, financed units, home equity |
-| `abrainc` | ABRAINC/FIPE | Primary market indicators (launches, sales) |
-| `bcb_realestate` | BCB | Real estate credit and market data |
-| `bcb_series` | BCB | Real estate and economic time series |
-| `rppi` | Multiple | Property price indices (sale/rent, 50+ cities) |
-| `rppi_bis` | BIS | International property price indices (60+ countries) |
-| `bcb_series` | BCB | Economic time series |
-| `cbic` | CBIC | Cement consumption and production |
-| `property_records` | Registro de Imóveis | Real estate records |
-| `secovi` | SECOVI-SP | São Paulo market indicators |
-| `fgv_ibre` | FGV-Ibre | Real estate indicators from FGV |
+| Dataset | Source | Tables | Status |
+|----|----|----|----|
+| `abecip` | ABECIP | `sbpe`, `units`, `cgi` | Active |
+| `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` | Active |
+| `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` | Active |
+| `bcb_series` | Banco Central do Brasil | `price`, `credit`, `production`, `interest-rate`, `exchange`, `government`, `real-estate` | Active |
+| `fgv_ibre` | FGV IBRE | — | Active |
+| `rppi` | FIPE/ZAP, IVGR, IGMI, IQA, IVAR, SECOVI-SP | `sale`, `rent`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` | Active |
+| `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly` | Active |
+| `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` | Active |
 
 ## Caching
 
@@ -145,7 +144,7 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
   theme_minimal() +
   theme(
     legend.position = "bottom",
-    palette.colour.discrete = c("#2C6BB3", "#1abc9c", "#f39c12")
+    palette.colour.discrete = c("#1E3A5F", "#4A90C2", "#2C7A7B")
   )
 ```
 
@@ -176,11 +175,12 @@ ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
     title = "Real Property Prices - International",
     x = NULL,
     y = "Index (2010 = 100)",
-    color = "") +
+    color = ""
+  ) +
   theme_minimal() +
   theme(
     legend.position = "bottom",
-    palette.colour.discrete = c("#2C6BB3", "#1abc9c", "#f39c12")
+    palette.colour.discrete = c("#1E3A5F", "#4A90C2", "#2C7A7B")
   )
 ```
 
