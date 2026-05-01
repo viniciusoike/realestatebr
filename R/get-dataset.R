@@ -621,7 +621,7 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
         "iqa" = "rppi_iqa",
         "iqaiw" = "rppi_iqaiw",
         "ivar" = "rppi_ivar",
-        "secovi_sp" = "secovi_sp"
+        "secovi_sp" = "rppi_secovi_sp"
       )
     } else {
       # Default to FipeZap for backwards compatibility and stacked tables

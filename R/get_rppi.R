@@ -91,10 +91,10 @@ standardize_rppi_structure <- function(dat, source_name) {
 #' @details
 #' Stacks multiple Brazilian residential property price indices into a single tibble
 #' with consistent columns for easy comparison. Handles different RPPI sources (IGMI-R,
-#' IVG-R, FipeZap, IVAR, IQA, Secovi-SP) and standardizes their formats.
+#' IVG-R, FipeZap, IVAR, IQAIW) and standardizes their formats.
 #'
-#' Note: IQA provides raw prices, not index numbers. Use get_dataset("rppi", table)
-#' for individual indices.
+#' Sale stack: IGMI-R, IVG-R, FipeZap. Rent stack: IVAR, IQAIW, FipeZap.
+#' Use get_dataset("rppi", table) for individual indices (IQA, IQAIW, Secovi-SP, etc.).
 #'
 #' @param table Character. "sale", "rent", or "all"
 #' @param cached Logical. If TRUE, loads from GitHub cache
@@ -113,8 +113,16 @@ get_rppi <- function(
 ) {
   # Validate table
   valid_tables <- c(
-    "sale", "rent", "all",  # Stacked tables
-    "fipezap", "ivgr", "igmi", "iqa", "iqaiw", "ivar", "secovi_sp"  # Individual tables
+    "sale",
+    "rent",
+    "all", # Stacked tables
+    "fipezap",
+    "ivgr",
+    "igmi",
+    "iqa",
+    "iqaiw",
+    "ivar",
+    "secovi_sp" # Individual tables
   )
   if (!table %in% valid_tables) {
     cli::cli_abort(
@@ -123,15 +131,46 @@ get_rppi <- function(
   }
 
   # Route individual tables to their respective functions
-  if (table %in% c("fipezap", "ivgr", "igmi", "iqa", "iqaiw", "ivar", "secovi_sp")) {
-    return(switch(table,
-      "fipezap" = get_rppi_fipezap(cached = cached, quiet = quiet, max_retries = max_retries),
-      "ivgr" = get_rppi_ivgr(cached = cached, quiet = quiet, max_retries = max_retries),
-      "igmi" = get_rppi_igmi(cached = cached, quiet = quiet, max_retries = max_retries),
-      "iqa" = get_rppi_iqa(cached = cached, quiet = quiet, max_retries = max_retries),
-      "iqaiw" = get_rppi_iqaiw(cached = cached, quiet = quiet, max_retries = max_retries),
-      "ivar" = get_rppi_ivar(cached = cached, quiet = quiet, max_retries = max_retries),
-      "secovi_sp" = get_rppi_secovi_sp(cached = cached, quiet = quiet, max_retries = max_retries)
+  if (
+    table %in% c("fipezap", "ivgr", "igmi", "iqa", "iqaiw", "ivar", "secovi_sp")
+  ) {
+    return(switch(
+      table,
+      "fipezap" = get_rppi_fipezap(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      ),
+      "ivgr" = get_rppi_ivgr(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      ),
+      "igmi" = get_rppi_igmi(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      ),
+      "iqa" = get_rppi_iqa(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      ),
+      "iqaiw" = get_rppi_iqaiw(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      ),
+      "ivar" = get_rppi_ivar(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      ),
+      "secovi_sp" = get_rppi_secovi_sp(
+        cached = cached,
+        quiet = quiet,
+        max_retries = max_retries
+      )
     ))
   }
 
@@ -154,8 +193,7 @@ get_rppi <- function(
   } else if (table == "rent") {
     # Stack rent indices
     ivar <- get_rppi_ivar(cached, quiet, max_retries)
-    iqa <- get_rppi_iqa(cached, quiet, max_retries)
-    secovi <- get_rppi_secovi_sp(cached, quiet, max_retries)
+    iqaiw <- get_rppi_iqaiw(cached, quiet, max_retries)
     fipezap <- get_rppi_fipezap(
       cached = cached,
       quiet = quiet,
@@ -164,8 +202,7 @@ get_rppi <- function(
 
     stacked_data <- dplyr::bind_rows(
       standardize_rppi_structure(ivar, "IVAR"),
-      standardize_rppi_structure(iqa, "IQA"),
-      standardize_rppi_structure(secovi, "Secovi-SP"),
+      standardize_rppi_structure(dplyr::filter(iqaiw, rooms == "total"), "IQAIW"),
       harmonize_fipezap_for_stacking(fipezap, "rent") |>
         dplyr::mutate(source = "FipeZap")
     )
@@ -358,7 +395,10 @@ get_rppi_igmi <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
 get_rppi_iqa <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
   # Try cached first
   if (cached) {
-    data <- try_rppi_cached("rent", "IQA")
+    data <- tryCatch(
+      load_from_user_cache("rppi_iqa", quiet = quiet),
+      error = function(e) NULL
+    )
     if (!is.null(data)) return(data)
   }
 
@@ -516,7 +556,10 @@ get_rppi_secovi_sp <- function(
 ) {
   # Try cached first
   if (cached) {
-    data <- try_rppi_cached("rent", "Secovi-SP")
+    data <- tryCatch(
+      load_from_user_cache("rppi_secovi_sp", quiet = quiet),
+      error = function(e) NULL
+    )
     if (!is.null(data)) return(data)
   }
 
@@ -527,7 +570,7 @@ get_rppi_secovi_sp <- function(
     quiet = quiet,
     max_retries = max_retries
   ) |>
-    dplyr::filter(category == "rent", variable == "rent_price") |>
+    dplyr::filter(name == "indice_de_locacao_residencial") |>
     dplyr::rename(index = value) |>
     dplyr::mutate(name_muni = "S\u00e3o Paulo") |>
     dplyr::select(date, name_muni, index) |>
@@ -770,7 +813,11 @@ get_rppi_iqaiw <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
   clean_dat <- dat |>
     dplyr::rename(dplyr::all_of(expected_names)) |>
     dplyr::filter(!is.na(.data$price_m2)) |>
-    dplyr::mutate(name_muni = convert_city_names(.data$name_muni)) |>
+    dplyr::mutate(
+      name_muni = convert_city_names(.data$name_muni),
+      # Standardize with FipeZap
+      rooms = if_else(rooms == "city", "total", as.character(rooms))
+    ) |>
     dplyr::mutate(
       index = .data$price_m2 / dplyr::first(.data$price_m2) * 100,
       .by = "name_muni"
@@ -778,6 +825,7 @@ get_rppi_iqaiw <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     dplyr::select(
       date,
       name_muni,
+      rooms,
       index,
       chg,
       acum12m,

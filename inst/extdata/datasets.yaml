@@ -177,7 +177,7 @@ datasets:
     name: "Brazilian Residential Property Price Indices"
     name_pt: "Índices de Preços Residenciais Brasileiros"
     description: "Comprehensive collection of all Brazilian residential property price indices"
-    source: "Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IVAR, SECOVI-SP)"
+    source: "Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP)"
     url: "varies by index"
     geography: "Brazil"
     frequency: "monthly"
@@ -238,7 +238,7 @@ datasets:
       rent:
         name: "Stacked Rent Indices"
         description: "Harmonized combination of all rent-related indices with source column"
-        includes: ["iqa", "ivar", "secovi_sp", "fipezap_rent_only"]
+        includes: ["ivar", "iqaiw", "fipezap_rent_only"]
         data_structure: "Standardized columns with source identification"
         note: "FipeZap filtered to residential/total/rent for consistent stacking"
       all:
@@ -256,7 +256,7 @@ datasets:
       iqa: "rppi_iqa.csv.gz"
       iqaiw: "rppi_iqaiw.csv.gz"
       ivar: "rppi_ivar.csv.gz"
-      secovi_sp: "secovi_sp.csv.gz"
+      secovi_sp: "rppi_secovi_sp.csv.gz"
     translation_notes: "Index methodologies vary by source; base periods normalized where possible"
 
   bcb_series:
