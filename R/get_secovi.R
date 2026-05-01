@@ -122,8 +122,7 @@ get_secovi <- function(
     }
     names(clean_tables) <- names(scrape)
   } else {
-    # Parallel processing when quiet
-    clean_tables <- parallel::mclapply(scrape, clean_secovi)
+    clean_tables <- lapply(scrape, clean_secovi)
     names(clean_tables) <- names(scrape)
   }
 

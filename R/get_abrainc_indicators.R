@@ -257,8 +257,8 @@ clean_abrainc <- function(ls, category) {
       ) |>
       # Compute trends for variables
       dplyr::mutate(
-        ma3 = zoo::rollmeanr(value, k = 3, fill = NA),
-        ma6 = zoo::rollmeanr(value, k = 3, fill = NA),
+        ma3 = as.numeric(stats::filter(value, rep(1/3, 3), sides = 1)),
+        ma6 = as.numeric(stats::filter(value, rep(1/6, 6), sides = 1)),
         .by = variable
       ) |>
       # Join with variable labels

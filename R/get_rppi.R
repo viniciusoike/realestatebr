@@ -655,7 +655,7 @@ get_rppi_fipezap <- function(
   }
 
   # Process all sheets
-  fipezap <- parallel::mclapply(sheet_names, import_sheet)
+  fipezap <- lapply(sheet_names, import_sheet)
   names(fipezap) <- city_names
 
   # Stack and clean

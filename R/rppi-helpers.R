@@ -50,7 +50,7 @@ calculate_rppi_changes <- function(
   data <- data |>
     dplyr::mutate(
       chg = .data[[index_col]] / dplyr::lag(.data[[index_col]]) - 1,
-      acum12m = zoo::rollapplyr(1 + chg, width = 12, FUN = prod, fill = NA) - 1,
+      acum12m = exp(as.numeric(stats::filter(log(1 + chg), rep(1, 12), sides = 1))) - 1,
       # Default is NULL (i.e. ungrouped), so this does nothing if group_col is NULL
       .by = dplyr::all_of(group_col)
     )

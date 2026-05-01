@@ -26,7 +26,6 @@ Imports:
     janitor,
     lifecycle,
     lubridate,
-    parallel,
     purrr,
     rappdirs,
     rbcb,
