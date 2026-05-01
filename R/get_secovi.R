@@ -295,31 +295,24 @@ clean_basic <- function(df) {
 #' @noRd
 clean_date_label <- function(df) {
 
-  dim_date <- tidyr::tibble(
-    month_label = lubridate::month(1:12, label = TRUE, locale = "pt_BR"),
+  dim_date <- tibble::tibble(
+    mes = c("JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
+            "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"),
     month = 1:12
   )
 
-  # Fix date column: Creates a key column and joins with dim_date
-  df <- df |>
-    dplyr::mutate(month_label = stringr::str_to_title(mes)) |>
-    dplyr::left_join(dim_date, by = "month_label") |>
+  df |>
+    dplyr::left_join(dim_date, by = "mes") |>
     dplyr::mutate(
       year = as.numeric(year),
       date = lubridate::make_date(year, month)
-      )
-  # Convert value to percent if needed
-  df <- df |>
+    ) |>
     dplyr::mutate(
       value = dplyr::if_else(
         stringr::str_detect(name, "percent"), value / 100, value
-        )
-    )
-  # Select columns
-  df <- df |>
+      )
+    ) |>
     dplyr::select(date, name, value)
-
-  return(df)
 }
 
 clean_secovi <- function(x) {
