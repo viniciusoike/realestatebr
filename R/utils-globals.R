@@ -44,5 +44,11 @@ utils::globalVariables(c(
   "time_period_time_period_or_range", "time", "unit_code", "unit_value_code",
 
   # Conditionally-called function (R/get-dataset.R)
-  "translate_dataset"
+  "translate_dataset",
+
+  # ABECIP CGI column names (R/get_abecip_indicators.R)
+  "ano", "valor_emprestimo", "no_contratos", "prazo_medio",
+  "inadimplencia", "quantidade_contratos", "saldo_remanescente",
+  "loan", "average_term", "default_rate", "new_contracts",
+  "stock_contracts", "outstanding_balance"
 ))

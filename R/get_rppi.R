@@ -816,7 +816,7 @@ get_rppi_iqaiw <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     dplyr::mutate(
       name_muni = convert_city_names(.data$name_muni),
       # Standardize with FipeZap
-      rooms = if_else(rooms == "city", "total", as.character(rooms))
+      rooms = dplyr::if_else(rooms == "city", "total", as.character(rooms))
     ) |>
     dplyr::mutate(
       index = .data$price_m2 / dplyr::first(.data$price_m2) * 100,

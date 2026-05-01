@@ -26,6 +26,7 @@ Imports:
     janitor,
     lifecycle,
     lubridate,
+    parallel,
     purrr,
     rappdirs,
     rbcb,
@@ -38,11 +39,13 @@ Imports:
     tidyr,
     tidyxl,
     xml2,
-    yaml
+    yaml,
+    zoo
 Roxygen: list(markdown = TRUE)
 Suggests:
     geobr,
     ggplot2,
+    kableExtra,
     knitr,
     piggyback,
     pkgdown,
@@ -54,5 +57,5 @@ Suggests:
     targets,
     tarchetypes,
     testthat,
-    zoo
+    trendseries
 VignetteBuilder: knitr
