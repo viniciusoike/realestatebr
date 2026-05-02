@@ -62,13 +62,7 @@ get_cache_release_tag <- function() {
 #'
 #' @param quiet Logical. Suppress messages
 #' @return Character vector of available asset names, or NULL if unavailable
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' assets <- list_github_assets()
-#' print(assets)
-#' }
+#' @keywords internal
 list_github_assets <- function(quiet = FALSE) {
   if (!has_piggyback()) {
     if (!quiet) {
@@ -116,7 +110,6 @@ list_github_assets <- function(quiet = FALSE) {
 #' @param quiet Logical. Suppress messages
 #' @return Dataset or NULL if download fails
 #' @keywords internal
-#' @export
 download_from_github_release <- function(dataset_name, overwrite = FALSE, quiet = FALSE) {
   # Check prerequisites
   if (!has_piggyback()) {
@@ -203,20 +196,6 @@ download_from_github_release <- function(dataset_name, overwrite = FALSE, quiet 
   return(NULL)
 }
 
-#' Download and Cache Dataset
-#'
-#' Unified function to download from GitHub and cache locally.
-#' This is a convenience wrapper around download_from_github_release().
-#'
-#' @param dataset_name Character. Name of dataset
-#' @param overwrite Logical. Overwrite existing cache
-#' @param quiet Logical. Suppress messages
-#' @return Dataset or NULL
-#' @keywords internal
-download_and_cache <- function(dataset_name, overwrite = FALSE, quiet = FALSE) {
-  download_from_github_release(dataset_name, overwrite, quiet)
-}
-
 #' Check if GitHub Cache is Up to Date
 #'
 #' Compares local cache timestamp with GitHub release timestamp.
@@ -224,7 +203,6 @@ download_and_cache <- function(dataset_name, overwrite = FALSE, quiet = FALSE) {
 #' @param dataset_name Character. Name of dataset
 #' @return Logical. TRUE if local cache is up to date, FALSE if GitHub is newer, NA if can't determine
 #' @keywords internal
-#' @export
 is_cache_up_to_date <- function(dataset_name) {
   if (!is_cached(dataset_name)) {
     return(FALSE)

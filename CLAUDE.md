@@ -20,35 +20,11 @@ Multiple data sources with automatic fallback.
 `
 - Avoid emojis (e.g 🎯, 📊, etc.)
 
-
 ## Current Status
 
-- All core functions verified working (100% pass rate)
-- v0.6.0 Phase 3 completed (2025-10-15): Logic consolidation achieved 15.4% codebase reduction
-- Ready for v0.6.0 release - final documentation and quality checks pending
-
-## Goals for v0.6.x
-
-- Simplify codebase by removing (1) obsolete/outdated/unnecessary functions, (2) obsolete/outdated/unnecessary documentation, (3) repetitive import/download logic, (4) unnecessary complexity.
-
-The codebase of this package is very large and overly complex for its purpose.
-
-1. Almost all of the functions are now internal, but still feature extensive documentation. We can supress/simplify this by removing examples and other unnecessary details. We shoudld, however, keep the 'core' of the documentation (title, description, param, source, references, etc.) since this is useful for developers.
-
-2. There are still several functions with the sole purpose of printing deprecation warnings. These should be removed entirely.
-
-3. Several functions have questionable metadata like 'download_time', 'download_info', etc. These should be kept only if they serve a clear purpose. Otherwise, they should be removed.
-
-3. The import/download logic is repeated in several places. This should be consolidated into generic helper functions that can be reused across datasets.
-
-4. There is currently some ambiguity with the word 'legacy' in this package. Due to architcture transition in v0.4.0, all functions except `list_datasets()` and `get_dataset()` are considered 'legacy'. However, these functions are the backbone of the package. The only change is that they are now internal. Despite this, several functions "treat" them as if they were legacy. The core `get_from_legacy_function` for instance implies that it calls legacy functions, when in fact it calls the main internal functions. This is confusing and should be fixed.
-
-## Goals for v0.5.x
-
-- Have all core functions working perfectly. This means `get_dataset()` should work flawlessly for all datasets with both `source = 'cache'` and `source = 'fresh'`.
-- Make sure that ALL datasets can be imported via 'cache'. This ensures that the user can always get the data quickly and conviniently.
-- Make sure the targets pipeline is fully functional and can update all datasets automatically on a weekly basis.
-- Make codebase simpler by abandoning legacy functions, deprecation warnings, etc. In other words, make breaking changes if (1) it makes the codebase simpler; (2) makes the codebase significantly more efficient; (3) makes the codebaes less error-prone; and (4) makes the end-user experience better.
+- v1.0.0 released — all core functions verified, CRAN submission prepared
+- Breaking changes in v1.0.0: cbic, nre_ire, property_records, itbi removed
+- Active datasets: abecip, abrainc, bcb_series, bcb_realestate, fgv_ibre, secovi, rppi_sale, rppi_rent, bis_rppi
 
 ## Architecture Transition Status
 
@@ -83,7 +59,8 @@ The codebase of this package is very large and overly complex for its purpose.
 See `.claude/phase3_completion_summary.md` for full details.
 
 ### Phase 4: Scale Up ⏳ FUTURE
-- ⏳ DuckDB integration for large datasets (ITBI, IPTU)
+- ⏳ DuckDB integration for large datasets (IPTU)
+- ⏳ Rebuild CBIC from IBGE open data
 - ⏳ Lazy query support
 - ⏳ Large dataset handling
 
@@ -105,11 +82,12 @@ library(usethis)        # Package setup utilities
 library(testthat)       # Testing framework
 library(pkgdown)        # Documentation website
 
-# Data pipeline (Phase 2)
+# Data pipeline
 library(targets)        # Workflow management
 library(tarchetypes)    # Additional target types
+# Note: parallel and zoo removed in v1.0.0
 
-# Large data support (Phase 3)
+# Large data support (Phase 4, future)
 library(duckdb)         # In-process database
 library(DBI)            # Database interface
 ```
@@ -200,10 +178,7 @@ After processing, GitHub Actions uploads files from `data-raw/cache_output/` to 
 - rppi_sale, rppi_rent
 
 **Monthly Datasets** (30-day update cycle):
-- bis_rppi, cbic, property_records
-
-**Manual Only**:
-- nre_ire (never auto-updates)
+- bis_rppi
 
 ### Code Quality
 - Look into claude/coding_guidelines.md for detailed coding standards
@@ -220,7 +195,7 @@ After processing, GitHub Actions uploads files from `data-raw/cache_output/` to 
 - Commit to GitHub with descriptive messages
 
 ### Code Style
-- Follow tidyverse style guide.
+- Follow tidyverse style guide (sole exception: use `return` at the end of functions).
 - Use explicit package calls (`dplyr::filter()`) in functions.
 - Document all exported functions with roxygen2.
 - Prefer readability over brevity.
@@ -306,7 +281,12 @@ The `data-raw/cache_output/` directory is a git-ignored staging location where t
 4. **Document**: Create `R/data-[dataset-name].R` with roxygen2 docs
 5. **Test**: Add tests in `tests/testthat/test-[dataset-name].R`
 
-## Important Notes
+## MCP Tools Available
+
+- **r-btw**: R session integration — `btw_tool_pkg_load_all`, `btw_tool_pkg_test`, `btw_tool_pkg_check`, `btw_tool_pkg_document`, `btw_tool_pkg_coverage`, `btw_tool_docs_help_page`, `btw_tool_cran_search`
+- Use ToolSearch to load schemas before calling, e.g. `ToolSearch("select:mcp__r-btw__btw_tool_pkg_test")`
+
+## Goals
 
 - **Data Quality**: Always validate data before saving to package
 - **User Experience**: Keep interface simple - complexity should be hidden
@@ -314,3 +294,129 @@ The `data-raw/cache_output/` directory is a git-ignored staging location where t
 - **Documentation**: Every dataset needs proper documentation and examples
 - **Attribution**: Always provide proper citations for data sources
 - **Web Scraping**: Use appropriate user agents and rate limiting
+
+## Important notes
+
+1. Always use relevant Posit skills
+2. Always follow coding convetions when coding (both listed here and @claude/coding_guidelines.md)
+
+### Coding conventions
+
+#### Functions
+
+- Use `return` at the end of functions to make the return explicit. Only exception are anonymous functions and very short functions.
+
+```r
+# OK to not use returm
+\(x) is.na(sum(x, na.rm = TRUE))
+
+as_numeric_comma <- function(x) {
+	as.numeric(gsub(",", ".", x))
+}
+
+# Use return
+str_simplify <- function(x) {
+	y <- stringr::str_to_lower(x)
+	y <- stringr::str_replace_all(y, " ", "_")
+	y <- stringr::str_squish(y)
+
+	return(y)
+}
+
+```
+- Follow tidyverse style guide with the sole exception of the `return` rule above.
+
+#### Pipes
+
+- Avoid using `%>%` and `|>` in favor of `|>`
+- Make sure pipe chains are short (not more than 5)
+- Never use single pipes (e.g. x |> mean())
+- Never pipe a `read` function into data cleaning
+- Code should be logically organized and easy to understand: reading data, cleaning, joining, transforming, etc.
+
+```r
+# Correct
+dat <- readr::read_csv(...)
+
+clean_dat <- dat |>
+  basic_clean() |>
+  parse_dates() |>
+  add_dimensions()
+
+# Never
+dat <- readr::read_csv() |>
+  basic_clean() |>
+  parse_dates() |>
+  add_dimensions()
+
+# Avoid mixing joins into data cleaning
+
+# Bad
+left_join(x, y, by = "key") |>
+  basic_clean()
+
+# Good
+new_data <- left_join(x, y, by = "key")
+clean_data <- basic_clean(new_data)
+
+# The same applies to bind_rows
+
+# Bad
+bind_rows(list_of_data) |>
+  basic_clean()
+
+# When using bind_rows, use the .id argument instead of creating identifiers
+# for each data.frame
+
+# Good
+series <- list(
+  "igmi" = igmi,
+  "ivar" = ivar,
+  "fipezap" = fipezap
+)
+
+stacked <- bind_rows(series, .id = "source")
+
+# Bad
+
+bind_rows(
+  mutate(igmi, source = "igmi"),
+  mutate(ivar, source = "ivar"),
+  mutate(fipezap, source = "fipezap")
+)
+
+# Try to order functions logically and efficiently
+
+# Bad - filters after creating new columns
+dat |>
+  mutate(
+    y = log(x),
+    z = RcppRoll::roll_sumr(y, n = 12, align = "right")
+  ) |>
+  filter(group == "a") |>
+  rename(price = y)
+
+# Good - renames first, filters, then calculates
+dat |>
+  rename(price = y) |>
+  filter(group == "a") |>
+  mutate(
+    z = RcppRoll::roll_sumr(log(price), n = 12, align = "right")
+  )
+```
+
+- Prefer using dplyr::rename and dplyr::select with character vectors
+- This improves standardization across tables
+
+```r
+
+cols_select <- c("a", "b", "c")
+cols_rename <- c("new_a" = "a")
+
+
+dat <- dat |>
+  dplyr::select(dplyr::all_of(cols_select)) |>
+  dplyr::rename(dplyr::any_of(cols_rename))
+
+```
+- Use modern tidyverse functions whenever possible.

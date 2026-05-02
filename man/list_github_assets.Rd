@@ -15,9 +15,4 @@ Character vector of available asset names, or NULL if unavailable
 \description{
 Lists all cached datasets available on GitHub releases.
 }
-\examples{
-\dontrun{
-assets <- list_github_assets()
-print(assets)
-}
-}
+\keyword{internal}

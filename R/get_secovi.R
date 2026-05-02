@@ -35,7 +35,6 @@
 #'
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter select bind_rows left_join
-#' @importFrom parallel mclapply
 #' @keywords internal
 get_secovi <- function(
   table = "all",

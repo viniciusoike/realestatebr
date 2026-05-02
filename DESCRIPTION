@@ -15,6 +15,7 @@ License: MIT + file LICENSE
 URL: https://github.com/viniciusoike/realestatebr
 BugReports: https://github.com/viniciusoike/realestatebr/issues
 Encoding: UTF-8
+Language: en-US
 LazyData: true
 Depends:
     R (>= 4.1.0)

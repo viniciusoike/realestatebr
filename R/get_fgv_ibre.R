@@ -54,41 +54,6 @@ get_fgv_ibre <- function(
   ))
 }
 
-#' Read and process FGV IBRE data from a local CSV file
-#'
-#' @param path Path to the `xgdvConsulta.csv` file downloaded from the FGV portal.
-#'
-#' @return Tibble with FGV IBRE indicators in long format.
-#'
-#' @keywords internal
-fetch_fgv_local <- function(path = "data-raw/xgdvConsulta.csv") {
-  fgv_data <- readr::read_delim(
-    path,
-    delim = ";",
-    locale = readr::locale(decimal_mark = ",", encoding = "ISO-8859-1"),
-    na = " - ",
-    col_types = "cddddddddddddddd"
-  )
-
-  fgv_data <- fgv_data |>
-    dplyr::rename(date = Data) |>
-    dplyr::mutate(date = readr::parse_date(date, format = "%m/%Y")) |>
-    tidyr::pivot_longer(-date, names_to = "name_series")
-
-  fgv_data <- fgv_data |>
-    dplyr::mutate(
-      code_series = stringr::str_extract(name_series, "(?<=\\()\\d{7}(?=\\))"),
-      code_series = as.numeric(code_series)
-    ) |>
-    dplyr::select(-name_series)
-
-  fgv_data |>
-    dplyr::left_join(fgv_dict, by = "code_series") |>
-    dplyr::left_join(fgv_key, by = "code_series") |>
-    dplyr::select(date, name_simplified, value, name_series, code_series, unit, source) |>
-    dplyr::filter(!is.na(value))
-}
-
 # fmt: skip
 fgv_key <- tibble::tribble(
   ~code_series,      ~name_simplified,

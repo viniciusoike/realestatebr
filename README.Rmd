@@ -45,7 +45,7 @@ fipezap <- get_dataset("rppi", "fipezap")
 
 ## Available Datasets
 
-The package acts as a convinient wrapper around public data sources. All data is provided in a tidy format in a `tibble` object. Datasets are updated weekly or monthly, depending on the source.
+The package acts as a convenient wrapper around public data sources. All data is provided in a tidy format in a `tibble` object. Datasets are updated weekly or monthly, depending on the source.
 
 | Dataset | Source | Tables | Status |
 |---------|--------|--------|--------|

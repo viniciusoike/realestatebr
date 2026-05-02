@@ -19,3 +19,4 @@ Determine if a cached dataset is older than its update schedule.
 Uses relaxed thresholds by default (2x update frequency) to avoid
 annoying users with unnecessary warnings.
 }
+\keyword{internal}

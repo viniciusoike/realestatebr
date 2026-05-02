@@ -12,13 +12,7 @@ NULL
 #' This directory is used to store downloaded datasets for faster subsequent access.
 #'
 #' @return Character. Path to user cache directory
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' cache_dir <- get_user_cache_dir()
-#' print(cache_dir)
-#' }
+#' @keywords internal
 get_user_cache_dir <- function() {
   cache_dir <- rappdirs::user_cache_dir("realestatebr")
   return(cache_dir)
@@ -78,7 +72,7 @@ get_cached_file_path <- function(dataset_name, extension = NULL) {
 #' @param dataset_name Character. Name of the cached dataset
 #' @param quiet Logical. Suppress informational messages (default: FALSE)
 #' @return Dataset as tibble or list, or NULL if not found
-#' @export
+#' @keywords internal
 load_from_user_cache <- function(dataset_name, quiet = FALSE) {
   # Ensure cache directory exists
   cache_dir <- ensure_cache_dir()
@@ -194,13 +188,7 @@ save_to_user_cache <- function(data, dataset_name, format = "rds", quiet = FALSE
 #' Lists all datasets currently in the user cache.
 #'
 #' @return Tibble with file information
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' cached_files <- list_cached_files()
-#' print(cached_files)
-#' }
+#' @keywords internal
 list_cached_files <- function() {
   cache_dir <- get_user_cache_dir()
 
@@ -403,7 +391,7 @@ save_cache_metadata <- function(dataset_name, format, source = NULL) {
 #'
 #' @param dataset_name Character. Name of dataset
 #' @return Logical. TRUE if cached
-#' @export
+#' @keywords internal
 is_cached <- function(dataset_name) {
   file_path <- get_cached_file_path(dataset_name)
   return(!is.null(file_path))
@@ -433,7 +421,7 @@ get_cache_age <- function(dataset_name) {
 #' @param dataset_name Character. Name of dataset
 #' @param warn_after_days Numeric. Override default warning threshold
 #' @return Logical. TRUE if stale, FALSE if fresh, NA if can't determine
-#' @export
+#' @keywords internal
 is_cache_stale <- function(dataset_name, warn_after_days = NULL) {
   age <- get_cache_age(dataset_name)
   if (is.na(age)) return(NA)

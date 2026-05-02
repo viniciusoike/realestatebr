@@ -25,9 +25,9 @@ Get Stacked RPPI Data
 \details{
 Stacks multiple Brazilian residential property price indices into a single tibble
 with consistent columns for easy comparison. Handles different RPPI sources (IGMI-R,
-IVG-R, FipeZap, IVAR, IQA, Secovi-SP) and standardizes their formats.
+IVG-R, FipeZap, IVAR, IQAIW) and standardizes their formats.
 
-Note: IQA provides raw prices, not index numbers. Use get_dataset("rppi", table)
-for individual indices.
+Sale stack: IGMI-R, IVG-R, FipeZap. Rent stack: IVAR, IQAIW, FipeZap.
+Use get_dataset("rppi", table) for individual indices (IQA, IQAIW, Secovi-SP, etc.).
 }
 \keyword{internal}

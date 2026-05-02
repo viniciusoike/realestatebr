@@ -194,7 +194,7 @@ ggplot(units_recent, aes(date, units_total)) +
 
 ## Example: Real Estate Credit Portfolio
 
-The `bcb_realestate` dataset imports all real estate statistics from the [Brazilian Central Bank](https://www.bcb.gov.br/estatisticas/mercadoimobiliario). This is a relatively large dataset and exploring can be cumbersome. Each series is uniquely identified dy `date` and `series_info`. Helper functions `v1`, `v2`, ..., `v5`, `abbrev_state`, `category`, and `type` are provided to simplify the use of the dataset.
+The `bcb_realestate` dataset imports all real estate statistics from the [Brazilian Central Bank](https://www.bcb.gov.br/estatisticas/mercadoimobiliario). This is a relatively large dataset and exploring can be cumbersome. Each series is uniquely identified by `date` and `series_info`. Helper functions `v1`, `v2`, ..., `v5`, `abbrev_state`, `category`, and `type` are provided to simplify the use of the dataset.
 
 The code below shows how to access a specific series and also how to fetch a group of related series.
 

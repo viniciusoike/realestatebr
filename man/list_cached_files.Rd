@@ -12,9 +12,4 @@ Tibble with file information
 \description{
 Lists all datasets currently in the user cache.
 }
-\examples{
-\dontrun{
-cached_files <- list_cached_files()
-print(cached_files)
-}
-}
+\keyword{internal}

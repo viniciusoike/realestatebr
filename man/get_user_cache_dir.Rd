@@ -13,9 +13,4 @@ Character. Path to user cache directory
 Returns the path to the user-level cache directory for realestatebr package.
 This directory is used to store downloaded datasets for faster subsequent access.
 }
-\examples{
-\dontrun{
-cache_dir <- get_user_cache_dir()
-print(cache_dir)
-}
-}
+\keyword{internal}

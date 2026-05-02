@@ -17,3 +17,4 @@ Dataset as tibble or list, or NULL if not found
 \description{
 Loads a dataset from the user-level cache directory.
 }
+\keyword{internal}

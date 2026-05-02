@@ -48,43 +48,50 @@
 #' @seealso \code{\link{get_dataset}} for retrieving the actual data
 #'
 #' @export
-list_datasets <- function(category = NULL, source = NULL, geography = NULL, include_hidden = FALSE) {
-  
+list_datasets <- function(
+  category = NULL,
+  source = NULL,
+  geography = NULL,
+  include_hidden = FALSE
+) {
   # Load the dataset registry
   registry <- load_dataset_registry()
-  
+
   # Convert registry to tibble format
   datasets_df <- registry_to_tibble(registry)
-
-  # Filter out hidden datasets unless requested
-  if (!include_hidden) {
-    datasets_df <- datasets_df[is.na(datasets_df$status) | datasets_df$status != "hidden", ]
-  }
 
   # Apply filters if provided
   if (!is.null(category)) {
     # Simple pattern matching for category filter
-    datasets_df <- datasets_df[grepl(category, datasets_df$description, ignore.case = TRUE), ]
+    datasets_df <- datasets_df[
+      grepl(category, datasets_df$description, ignore.case = TRUE),
+    ]
   }
-  
+
   if (!is.null(source)) {
-    datasets_df <- datasets_df[grepl(source, datasets_df$source, ignore.case = TRUE), ]
+    datasets_df <- datasets_df[
+      grepl(source, datasets_df$source, ignore.case = TRUE),
+    ]
   }
-  
+
   if (!is.null(geography)) {
-    datasets_df <- datasets_df[grepl(geography, datasets_df$geography, ignore.case = TRUE), ]
+    datasets_df <- datasets_df[
+      grepl(geography, datasets_df$geography, ignore.case = TRUE),
+    ]
   }
-  
+
   # Sort by name for consistent output
   datasets_df <- datasets_df[order(datasets_df$name), ]
-  
+
   # Add helpful message about usage
   if (nrow(datasets_df) > 0) {
-    cli::cli_inform("Found {nrow(datasets_df)} dataset{?s}. Use get_dataset(name) to retrieve data.")
+    cli::cli_inform(
+      "Found {nrow(datasets_df)} dataset{?s}. Use get_dataset(name) to retrieve data."
+    )
   } else {
     cli::cli_warn("No datasets found matching the specified criteria.")
   }
-  
+
   return(datasets_df)
 }
 
@@ -95,22 +102,30 @@ list_datasets <- function(category = NULL, source = NULL, geography = NULL, incl
 #' @return A list containing the parsed YAML registry
 #' @keywords internal
 load_dataset_registry <- function() {
-  
   # Find the datasets.yaml file
-  registry_path <- system.file("extdata", "datasets.yaml", package = "realestatebr")
-  
+  registry_path <- system.file(
+    "extdata",
+    "datasets.yaml",
+    package = "realestatebr"
+  )
+
   # Check if file exists
   if (!file.exists(registry_path) || registry_path == "") {
-    cli::cli_abort("Dataset registry not found. Package may not be properly installed.")
+    cli::cli_abort(
+      "Dataset registry not found. Package may not be properly installed."
+    )
   }
-  
+
   # Load and parse YAML
-  tryCatch({
-    registry <- yaml::read_yaml(registry_path)
-    return(registry)
-  }, error = function(e) {
-    cli::cli_abort("Failed to load dataset registry: {e$message}")
-  })
+  tryCatch(
+    {
+      registry <- yaml::read_yaml(registry_path)
+      return(registry)
+    },
+    error = function(e) {
+      cli::cli_abort("Failed to load dataset registry: {e$message}")
+    }
+  )
 }
 
 #' Convert Registry to Tibble
@@ -122,13 +137,12 @@ load_dataset_registry <- function() {
 #' @return A tibble with dataset information
 #' @keywords internal
 registry_to_tibble <- function(registry) {
-  
   datasets <- registry$datasets
-  
+
   # Extract information for each dataset
   dataset_info <- purrr::map_dfr(names(datasets), function(name) {
     dataset <- datasets[[name]]
-    
+
     # Count categories and extract table names
     if (!is.null(dataset$categories)) {
       n_categories <- length(dataset$categories)
@@ -142,21 +156,17 @@ registry_to_tibble <- function(registry) {
     tibble::tibble(
       name = name,
       title = dataset$name %||% name,
-      title_pt = dataset$name_pt %||% "",
-      description = dataset$description %||% "",
-      source = dataset$source %||% "",
-      geography = dataset$geography %||% "",
-      frequency = dataset$frequency %||% "",
-      coverage = dataset$coverage %||% "",
-      categories = n_categories,
       available_tables = available_tables,
-      data_type = dataset$data_type %||% "unknown",
-      legacy_function = dataset$dataset_function %||% "",
-      url = dataset$url %||% "",
-      status = dataset$status %||% "available"
+      description = dataset$description %||% "",
+      geography = dataset$geography %||% "",
+      coverage = dataset$coverage %||% "",
+      frequency = dataset$frequency %||% "",
+      title_pt = dataset$name_pt %||% "",
+      source = dataset$source %||% "",
+      url = dataset$url %||% ""
     )
   })
-  
+
   return(dataset_info)
 }
 
@@ -183,18 +193,19 @@ registry_to_tibble <- function(registry) {
 #'
 #' @export
 get_dataset_info <- function(name) {
-  
   # Load registry
   registry <- load_dataset_registry()
-  
+
   # Check if dataset exists
   if (!name %in% names(registry$datasets)) {
     available <- paste(names(registry$datasets), collapse = ", ")
-    cli::cli_abort("Dataset '{name}' not found. Available datasets: {available}")
+    cli::cli_abort(
+      "Dataset '{name}' not found. Available datasets: {available}"
+    )
   }
-  
+
   dataset <- registry$datasets[[name]]
-  
+
   # Structure the information
   info <- list(
     metadata = list(
@@ -204,9 +215,7 @@ get_dataset_info <- function(name) {
       description = dataset$description,
       geography = dataset$geography,
       frequency = dataset$frequency,
-      coverage = dataset$coverage,
-      data_type = dataset$data_type,
-      legacy_function = dataset$dataset_function
+      coverage = dataset$coverage
     ),
     categories = dataset$categories,
     source_info = list(
@@ -219,7 +228,7 @@ get_dataset_info <- function(name) {
       translation_notes = dataset$translation_notes
     )
   )
-  
+
   return(info)
 }
 

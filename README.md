@@ -1,31 +1,30 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+
 
 # realestatebr <img src="man/figures/hexlogo.png" align="right" height="139" />
 
 <!-- badges: start -->
-
 <!-- badges: end -->
 
-**realestatebr** aims to provide an unified interface to Brazilian real
-estate information, delivering data from different sources in a tidy
-format. The package is organized by source, with each source having
-multiple associated tables (datasets).
+**realestatebr** aims to provide an unified interface to Brazilian real estate information, delivering data from different sources in a tidy format. The package is organized by source, with each source having multiple associated tables (datasets).
+
 
 ## Installation
 
-``` r
+```r
 # install.packages("remotes")
 remotes::install_github("viniciusoike/realestatebr")
 ```
 
 ## Quick Start
 
-There are two key functions in **realestatebr**: `get_dataset()` and
-`list_datasets()`. The former retrieves data, while the latter lists all
-available datasets. `get_dataset()` expects a `name` and a (optional)
-`table` argument. If no `table` is specified, the function returns the
-first available table.
+There are two key functions in **realestatebr**: `get_dataset()` and `list_datasets()`. The former retrieves data, while the latter lists all available datasets. `get_dataset()` expects a `name` and a (optional) `table` argument. If no `table` is specified, the function returns the first available table.
+
 
 ``` r
 library(realestatebr)
@@ -42,12 +41,10 @@ fipezap <- get_dataset("rppi", "fipezap")
 
 ## Available Datasets
 
-The package acts as a convinient wrapper around public data sources. All
-data is provided in a tidy format in a `tibble` object. Datasets are
-updated weekly or monthly, depending on the source.
+The package acts as a convenient wrapper around public data sources. All data is provided in a tidy format in a `tibble` object. Datasets are updated weekly or monthly, depending on the source.
 
 | Dataset | Source | Tables | Status |
-|----|----|----|----|
+|---------|--------|--------|--------|
 | `abecip` | ABECIP | `sbpe`, `units`, `cgi` | Active |
 | `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` | Active |
 | `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` | Active |
@@ -61,11 +58,9 @@ updated weekly or monthly, depending on the source.
 
 ### How Caching Works
 
-On first use, datasets are automatically downloaded from GitHub releases
-and cached in your user directory. Subsequent uses load data instantly
-from cache, even offline.
+On first use, datasets are automatically downloaded from GitHub releases and cached in your user directory. Subsequent uses load data instantly from cache, even offline.
 
-``` r
+```r
 # First use: downloads and caches (~3-5 seconds)
 data1 <- get_dataset("abecip")
 
@@ -75,7 +70,7 @@ data2 <- get_dataset("abecip")
 
 ### Managing Cache
 
-``` r
+```r
 # Check cache location
 get_user_cache_dir()
 
@@ -96,7 +91,7 @@ update_cache_from_github("abecip")
 
 The `source` parameter controls where data comes from.
 
-``` r
+```r
 # Auto (default): cache → GitHub → fresh
 data <- get_dataset("abecip")
 
@@ -111,6 +106,7 @@ data <- get_dataset("abecip", source = "fresh")
 ```
 
 ## Example: Property Price Indices
+
 
 ``` r
 library(ggplot2)
@@ -149,11 +145,11 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
 ```
 
 <p align="center">
-
-<img src="man/figures/README-rppi-example-1.png" width="80%"/>
+  <img src="man/figures/README-rppi-example-1.png" width="80%"/>
 </p>
 
 ## International Comparison
+
 
 ``` r
 # Get BIS international data
@@ -185,8 +181,7 @@ ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
 ```
 
 <p align="center">
-
-<img src="man/figures/README-bis-example-1.png" width="80%"/>
+  <img src="man/figures/README-bis-example-1.png" width="80%"/>
 </p>
 
 ## Learn More
