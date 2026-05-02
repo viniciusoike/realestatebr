@@ -10,10 +10,6 @@
 Any flagged words (e.g., ABECIP, ABRAINC, SECOVI, FGV, IBGE) are proper names
 and acronyms for Brazilian real estate institutions and are spelled correctly.
 
-### URLs using HTTP
-The CBIC data source (www.cbicdados.com.br) does not support HTTPS. This is a
-third-party limitation outside our control. All other URLs use HTTPS.
-
 ## Vignettes
 
 Both vignettes use `eval = FALSE` globally. All examples require active
@@ -30,7 +26,7 @@ All tests requiring network access use `testthat::skip_on_cran()` or
 ## Test Platforms
 
 - macOS (local): 0 errors, 0 warnings, 0 notes
-- Windows R-devel (win-builder, 2026-04-30): 0 errors, 0 warnings, 2 notes
+- Windows R-devel (win-builder, 2026-05-02): 0 errors, 0 warnings, 1 note
 
 ### Notes on win-builder results
 
@@ -39,8 +35,3 @@ All tests requiring network access use `testthat::skip_on_cran()` or
 **NOTE: Possibly mis-spelled words** — ABECIP, ABRAINC, BCB, FGV, and SECOVI
 are official acronyms for Brazilian real estate and financial institutions.
 They are spelled correctly.
-
-**NOTE: no visible binding for global variable** — These variables are dplyr
-column names resolved at runtime via non-standard evaluation, and one
-conditionally-called internal function (`translate_dataset`). All have been
-declared via `utils::globalVariables()` in `R/utils-globals.R`.
