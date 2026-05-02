@@ -1,22 +1,21 @@
 # Suppress R CMD check NOTEs for NSE in dplyr
 utils::globalVariables(c("price_m2"))
 
+.rppi_cols <- c("date", "name_muni", "index", "chg", "acum12m")
+
 #' Standardize City Names Across RPPI Sources
 #'
-#' @param names Character vector of city names
+#' @param x Character vector of city names
 #' @return Standardized city names
 #' @keywords internal
 #' @noRd
-standardize_city_names <- function(names) {
-  standardized_names <- names |>
-    # Standardize Brazil variations
-    stringr::str_replace("Brasil", "Brazil") |>
-    # Fix: Case-insensitive match for "\u00cdndice FipeZap" with optional "+"
-    stringr::str_replace("(?i)\u00cdndice\\s+FipeZap\\+?", "Brazil") |>
-    # Other standardizations can be added here
-    trimws()
+standardize_city_names <- function(x) {
+  y <- stringr::str_replace(x, "Brasil", "Brazil")
+  y <- stringr::str_replace(y, "(?i)\u00cdndice\\s+FipeZap\\+?", "Brazil")
+  y <- stringr::str_to_title(y)
+  y <- stringr::str_squish(y)
 
-  return(standardized_names)
+  return(y)
 }
 
 #' Harmonize FipeZap Data for Stacking
@@ -26,19 +25,18 @@ standardize_city_names <- function(names) {
 #' @return Harmonized tibble with standard RPPI columns
 #' @keywords internal
 harmonize_fipezap_for_stacking <- function(dat, transaction_type = NULL) {
+  if (!any(c("sale", "rent") %in% transaction_type)) {
+    cli::cli_abort("Invalid transaction type: {.val {transaction_type}}")
+  }
+
   filtered_data <- dat |>
     # Filter to residential data with total rooms only
     dplyr::filter(
       market == "residential",
       rooms == "total",
-      variable %in% c("index", "chg", "acum12m")
+      variable %in% c("index", "chg", "acum12m"),
+      rent_sale == !!transaction_type
     )
-
-  # Filter by transaction type if specified
-  if (!is.null(transaction_type)) {
-    filtered_data <- filtered_data |>
-      dplyr::filter(rent_sale == transaction_type)
-  }
 
   # Convert to wide format with standard columns
   harmonized_data <- filtered_data |>
@@ -47,10 +45,8 @@ harmonize_fipezap_for_stacking <- function(dat, transaction_type = NULL) {
       names_from = "variable",
       values_from = "value"
     ) |>
-    dplyr::mutate(
-      name_muni = standardize_city_names(name_muni)
-    ) |>
-    dplyr::select(date, name_muni, index, chg, acum12m)
+    dplyr::mutate(name_muni = standardize_city_names(name_muni)) |>
+    dplyr::select(dplyr::all_of(.rppi_cols))
 
   return(harmonized_data)
 }
@@ -65,22 +61,25 @@ standardize_rppi_structure <- function(dat, source_name) {
   # Handle IQA special case (has rent_price instead of index)
   if ("rent_price" %in% names(dat) && !"index" %in% names(dat)) {
     dat <- dat |>
-      dplyr::rename(index = rent_price)
+      dplyr::mutate(
+        index = rent_price / dplyr::first(rent_price) * 100,
+        .by = name_muni
+      )
   }
+  # Handle different column name variations
+  dat <- dat |>
+    dplyr::rename(dplyr::any_of(c("name_muni" = "name_geo")))
 
   # Handle different column name variations
-  if ("name_geo" %in% names(dat) && !"name_muni" %in% names(dat)) {
-    dat <- dat |>
-      dplyr::rename(name_muni = name_geo)
-  }
+  # if ("name_geo" %in% names(dat) && !"name_muni" %in% names(dat)) {
+  #   dat <- dat |>
+  #     dplyr::rename(name_muni = name_geo)
+  # }
 
   # Ensure standard columns exist and are in correct order
   standardized_data <- dat |>
-    dplyr::mutate(
-      name_muni = standardize_city_names(name_muni)
-    ) |>
-    dplyr::select(date, name_muni, index, chg, acum12m) |>
-    dplyr::mutate(source = source_name)
+    dplyr::mutate(name_muni = standardize_city_names(name_muni)) |>
+    dplyr::select(dplyr::all_of(.rppi_cols))
 
   return(standardized_data)
 }
@@ -115,14 +114,14 @@ get_rppi <- function(
   valid_tables <- c(
     "sale",
     "rent",
-    "all", # Stacked tables
+    "all",
     "fipezap",
     "ivgr",
     "igmi",
     "iqa",
     "iqaiw",
     "ivar",
-    "secovi_sp" # Individual tables
+    "secovi_sp"
   )
   if (!table %in% valid_tables) {
     cli::cli_abort(
@@ -131,46 +130,21 @@ get_rppi <- function(
   }
 
   # Route individual tables to their respective functions
-  if (
-    table %in% c("fipezap", "ivgr", "igmi", "iqa", "iqaiw", "ivar", "secovi_sp")
-  ) {
-    return(switch(
-      table,
-      "fipezap" = get_rppi_fipezap(
-        cached = cached,
-        quiet = quiet,
-        max_retries = max_retries
-      ),
-      "ivgr" = get_rppi_ivgr(
-        cached = cached,
-        quiet = quiet,
-        max_retries = max_retries
-      ),
-      "igmi" = get_rppi_igmi(
-        cached = cached,
-        quiet = quiet,
-        max_retries = max_retries
-      ),
-      "iqa" = get_rppi_iqa(
-        cached = cached,
-        quiet = quiet,
-        max_retries = max_retries
-      ),
-      "iqaiw" = get_rppi_iqaiw(
-        cached = cached,
-        quiet = quiet,
-        max_retries = max_retries
-      ),
-      "ivar" = get_rppi_ivar(
-        cached = cached,
-        quiet = quiet,
-        max_retries = max_retries
-      ),
-      "secovi_sp" = get_rppi_secovi_sp(
-        cached = cached,
-        quiet = quiet,
-        max_retries = max_retries
-      )
+  rppi_fns <- list(
+    fipezap = get_rppi_fipezap,
+    ivgr = get_rppi_ivgr,
+    igmi = get_rppi_igmi,
+    iqa = get_rppi_iqa,
+    iqaiw = get_rppi_iqaiw,
+    ivar = get_rppi_ivar,
+    secovi_sp = get_rppi_secovi_sp
+  )
+
+  if (table %in% names(rppi_fns)) {
+    return(rppi_fns[[table]](
+      cached = cached,
+      quiet = quiet,
+      max_retries = max_retries
     ))
   }
 
@@ -184,11 +158,10 @@ get_rppi <- function(
       max_retries = max_retries
     )
 
-    stacked_data <- dplyr::bind_rows(
-      standardize_rppi_structure(igmi, "IGMI-R"),
-      standardize_rppi_structure(ivgr, "IVG-R"),
-      harmonize_fipezap_for_stacking(fipezap, "sale") |>
-        dplyr::mutate(source = "FipeZap")
+    series <- list(
+      "IGMI-R" = standardize_rppi_structure(igmi),
+      "IVG-R" = standardize_rppi_structure(ivgr),
+      "FipeZap" = harmonize_fipezap_for_stacking(fipezap, "sale")
     )
   } else if (table == "rent") {
     # Stack rent indices
@@ -200,22 +173,23 @@ get_rppi <- function(
       max_retries = max_retries
     )
 
-    stacked_data <- dplyr::bind_rows(
-      standardize_rppi_structure(ivar, "IVAR"),
-      standardize_rppi_structure(dplyr::filter(iqaiw, rooms == "total"), "IQAIW"),
-      harmonize_fipezap_for_stacking(fipezap, "rent") |>
-        dplyr::mutate(source = "FipeZap")
+    series <- list(
+      "IQAIW" = standardize_rppi_structure(dplyr::filter(
+        iqaiw,
+        rooms == "total"
+      )),
+      "IVAR" = standardize_rppi_structure(ivar),
+      "FipeZap" = harmonize_fipezap_for_stacking(fipezap, "rent")
     )
   } else {
-    # Stack all (both sale and rent)
-    rent_data <- get_rppi("rent", cached, quiet, max_retries)
-    sale_data <- get_rppi("sale", cached, quiet, max_retries)
-
-    stacked_data <- dplyr::bind_rows(
-      dplyr::mutate(rent_data, transaction_type = "rent"),
-      dplyr::mutate(sale_data, transaction_type = "sale")
+    # Stack all (both sale and rent) using the same sources
+    series <- list(
+      "rent" = get_rppi("rent", cached, quiet, max_retries),
+      "sale" = get_rppi("sale", cached, quiet, max_retries)
     )
   }
+
+  stacked_data <- dplyr::bind_rows(series, .id = "source")
 
   if (!quiet) {
     cli::cli_inform(
@@ -223,7 +197,7 @@ get_rppi <- function(
     )
   }
 
-  stacked_data
+  return(stacked_data)
 }
 
 #' Get the IVGR Sales Index
@@ -265,10 +239,12 @@ get_rppi_ivgr <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
   )
 
   # Clean and calculate changes
-  ivgr |>
+  ivgr <- ivgr |>
     dplyr::mutate(name_geo = "Brazil") |>
     dplyr::select(date, name_geo, index) |>
     calculate_rppi_changes(index_col = "index")
+
+  return(ivgr)
 }
 
 #' Get the IGMI Sales Index
@@ -352,18 +328,28 @@ get_rppi_igmi <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     )
   )
 
-  # Process Excel
-  readxl::read_excel(
+  igmi <- readxl::read_excel(
     temp_path,
     skip = 4,
     .name_repair = janitor::make_clean_names
-  ) |>
-    dplyr::rename(date = mes) |>
-    dplyr::mutate(
-      date = suppressWarnings(readr::parse_date(date, format = "%Y %m"))
-    ) |>
-    dplyr::filter(!is.na(date)) |>
-    dplyr::select(-var_percent_12_meses) |>
+  )
+
+  cols_rename <- c("date" = "mes")
+  cols_drop <- c("var_percent_12_meses")
+
+  igmi_parse_dates <- function(dat) {
+    dat |>
+      dplyr::mutate(date = readr::parse_date(date, format = "%Y %m")) |>
+      dplyr::filter(!is.na(date))
+  }
+
+  igmi <- igmi |>
+    dplyr::rename(dplyr::any_of(cols_rename)) |>
+    dplyr::select(-dplyr::any_of(cols_drop))
+
+  igmi <- suppressWarnings(igmi_parse_dates(igmi))
+
+  igmi <- igmi |>
     tidyr::pivot_longer(
       cols = -date,
       names_to = "name_simplified",
@@ -372,9 +358,13 @@ get_rppi_igmi <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     calculate_rppi_changes(
       index_col = "index",
       group_col = "name_simplified"
-    ) |>
+    )
+
+  igmi <- igmi |>
     dplyr::left_join(dim_geo, by = "name_simplified") |>
-    dplyr::select(date, name_muni, index, chg, acum12m)
+    dplyr::select(dplyr::all_of(.rppi_cols))
+
+  return(igmi)
 }
 
 #' Get QuintoAndar Rental Index (IQA)
@@ -395,10 +385,7 @@ get_rppi_igmi <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
 get_rppi_iqa <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
   # Try cached first
   if (cached) {
-    data <- tryCatch(
-      load_from_user_cache("rppi_iqa", quiet = quiet),
-      error = function(e) NULL
-    )
+    data <- try_rppi_user_cache("rppi_iqa", quiet = quiet)
     if (!is.null(data)) return(data)
   }
 
@@ -411,22 +398,26 @@ get_rppi_iqa <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     desc = "IQA CSV from QuintoAndar"
   )
 
-  # Clean and calculate changes
-  iqa |>
-    dplyr::select(
-      date = month,
-      name_muni = city_name,
-      rent_price = weighted_median_contract_rent_per_sqm
-    ) |>
+  cols_rename <- c(
+    "date" = "month",
+    "name_muni" = "city_name",
+    "rent_price" = "weighted_median_contract_rent_per_sqm"
+  )
+
+  iqa <- iqa |>
+    dplyr::rename(dplyr::any_of(cols_rename)) |>
     dplyr::mutate(
-      name_muni = stringr::str_to_title(name_muni, locale = "pt_BR"),
-      rent_price = as.numeric(rent_price)
-    ) |>
-    dplyr::mutate(
-      chg = rent_price / dplyr::lag(rent_price) - 1,
-      acum12m = rent_price / dplyr::lag(rent_price, n = 12) - 1,
-      .by = name_muni
+      rent_price = as.numeric(rent_price),
+      name_muni = standardize_city_names(name_muni),
+      index = rent_price / dplyr::first(rent_price) * 100,
+      .by = "name_muni"
     )
+
+  iqa <- iqa |>
+    calculate_rppi_changes(index_col = "index", group_col = "name_muni") |>
+    dplyr::select(dplyr::all_of(.rppi_cols))
+
+  return(iqa)
 }
 
 #' Get IVAR Rent Index
@@ -508,32 +499,29 @@ get_rppi_ivar <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     dplyr::filter(code_muni %in% c(3550308, 4314902, 3304557, 3106200)) |>
     dplyr::select(name_simplified, name_muni, abbrev_state)
 
+  cols_rename <- c("index" = "value")
+
   # Extract and process IVAR data
-  fgv_data |>
-    dplyr::filter(stringr::str_detect(name_simplified, "^ivar")) |>
-    dplyr::select(date, name_simplified, index = value) |>
-    dplyr::filter(!is.na(index)) |>
+  ivar <- fgv_data |>
+    dplyr::rename(dplyr::all_of(cols_rename)) |>
+    dplyr::filter(
+      stringr::str_detect(name_simplified, "^ivar"),
+      !is.na(index)
+    ) |>
     calculate_rppi_changes(
       index_col = "index",
       group_col = "name_simplified"
-    ) |>
+    )
+
+  ivar <- ivar |>
     dplyr::mutate(
       name_simplified = stringr::str_remove(name_simplified, "ivar_")
     ) |>
     dplyr::left_join(ivar_cities, by = "name_simplified") |>
-    dplyr::mutate(
-      name_muni = ifelse(name_simplified == "brazil", "Brazil", name_muni),
-      abbrev_state = ifelse(name_simplified == "brazil", "BR", abbrev_state)
-    ) |>
-    dplyr::select(
-      date,
-      name_muni,
-      index,
-      chg,
-      acum12m,
-      name_simplified,
-      abbrev_state
-    )
+    dplyr::mutate(name_muni = standardize_city_names(name_muni)) |>
+    dplyr::select(dplyr::all_of(.rppi_cols))
+
+  return(ivar)
 }
 
 #' Get Secovi-SP Rent Index
@@ -556,25 +544,26 @@ get_rppi_secovi_sp <- function(
 ) {
   # Try cached first
   if (cached) {
-    data <- tryCatch(
-      load_from_user_cache("rppi_secovi_sp", quiet = quiet),
-      error = function(e) NULL
-    )
+    data <- try_rppi_user_cache("rppi_secovi_sp", quiet = quiet)
     if (!is.null(data)) return(data)
   }
 
-  # Get fresh data via get_secovi
-  get_secovi(
+  dat <- get_secovi(
     table = "rent",
     cached = FALSE,
     quiet = quiet,
     max_retries = max_retries
-  ) |>
+  )
+
+  # Get fresh data via get_secovi
+  secovi <- dat |>
     dplyr::filter(name == "indice_de_locacao_residencial") |>
     dplyr::rename(index = value) |>
     dplyr::mutate(name_muni = "S\u00e3o Paulo") |>
     dplyr::select(date, name_muni, index) |>
     calculate_rppi_changes(index_col = "index")
+
+  return(secovi)
 }
 
 #' Get FipeZap RPPI
@@ -621,8 +610,13 @@ get_rppi_fipezap <- function(
   temp_path <- download_excel_with_retry(url, max_retries, quiet)
 
   # Get city sheet names (exclude summary sheets)
-  sheet_names <- readxl::excel_sheets(temp_path) |>
-    stringr::str_subset("(Resumo)|(Aux)", negate = TRUE)
+  sheet_names <- readxl::excel_sheets(temp_path)
+  sheet_names <- stringr::str_subset(
+    sheet_names,
+    "(Resumo)|(Aux)",
+    negate = TRUE
+  )
+
   city_names <- stringr::str_to_title(sheet_names)
 
   # Import function for each sheet
@@ -644,14 +638,18 @@ get_rppi_fipezap <- function(
       )
     }
 
-    readxl::read_excel(
+    col_types_vec <- c("date", rep("numeric", length(fipezap_col_names()) - 1))
+
+    dat <- readxl::read_excel(
       temp_path,
       sheet,
       skip = 4,
       col_names = fipezap_col_names(),
+      col_types = col_types_vec,
       range = range
-    ) |>
-      dplyr::mutate(dplyr::across(dplyr::where(is.character), as.numeric))
+    )
+
+    return(dat)
   }
 
   # Process all sheets
@@ -659,9 +657,11 @@ get_rppi_fipezap <- function(
   names(fipezap) <- city_names
 
   # Stack and clean
-  result <- dplyr::bind_rows(fipezap, .id = "name_muni") |>
+  series <- dplyr::bind_rows(fipezap, .id = "name_muni")
+
+  fipe <- series |>
     tidyr::pivot_longer(
-      cols = dplyr::where(is.numeric),
+      dplyr::where(is.numeric),
       names_to = "info",
       values_to = "value"
     ) |>
@@ -669,19 +669,31 @@ get_rppi_fipezap <- function(
       info,
       delim = "-",
       names = c("market", "rent_sale", "variable", "rooms")
-    ) |>
+    )
+
+  cols_fipe <- c(
+    "date",
+    "name_muni",
+    "market",
+    "rent_sale",
+    "variable",
+    "rooms",
+    "value"
+  )
+
+  fipe <- fipe |>
     dplyr::mutate(
       date = lubridate::ymd(date),
       name_muni = standardize_city_names(name_muni)
     ) |>
-    dplyr::select(date, name_muni, market, rent_sale, variable, rooms, value)
+    dplyr::select(dplyr::all_of(cols_fipe))
 
   # Filter by city if specified
-  if (city != "all" && city %in% unique(result$name_muni)) {
-    result <- dplyr::filter(result, name_muni == city)
+  if (city != "all" && city %in% unique(fipe$name_muni)) {
+    fipe <- subset(fipe, name_muni == !!city)
   }
 
-  result
+  return(fipe)
 }
 
 #' Creates column names for the FipeZap spreadsheet
@@ -751,12 +763,7 @@ fipezap_col_names <- function() {
 get_rppi_iqaiw <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
   # Try cached first
   if (cached) {
-    data <- tryCatch(
-      {
-        load_from_user_cache("rppi_iqaiw", quiet = quiet)
-      },
-      error = function(e) NULL
-    )
+    data <- try_rppi_user_cache("rppi_iqaiw", quiet = quiet)
     if (!is.null(data)) return(data)
   }
 
@@ -810,27 +817,23 @@ get_rppi_iqaiw <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
   # Clean and transform
   names(expected_names) <- new_names
 
-  clean_dat <- dat |>
+  iqaiw <- dat |>
     dplyr::rename(dplyr::all_of(expected_names)) |>
-    dplyr::filter(!is.na(.data$price_m2)) |>
+    dplyr::filter(!is.na(price_m2))
+
+  .rppi_cols_iqaiw <- c("date", "name_muni", "rooms", "index", "chg", "acum12m")
+
+  iqaiw <- iqaiw |>
     dplyr::mutate(
-      name_muni = convert_city_names(.data$name_muni),
+      name_muni = convert_city_names(name_muni),
       # Standardize with FipeZap
       rooms = dplyr::if_else(rooms == "city", "total", as.character(rooms))
     ) |>
     dplyr::mutate(
-      index = .data$price_m2 / dplyr::first(.data$price_m2) * 100,
+      index = price_m2 / dplyr::first(price_m2) * 100,
       .by = "name_muni"
     ) |>
-    dplyr::select(
-      date,
-      name_muni,
-      rooms,
-      index,
-      chg,
-      acum12m,
-      price_m2
-    )
+    dplyr::select(dplyr::all_of(.rppi_cols_iqaiw))
 
-  return(clean_dat)
+  return(iqaiw)
 }

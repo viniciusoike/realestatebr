@@ -29,6 +29,22 @@ try_rppi_cached <- function(table, source_filter = NULL) {
   )
 }
 
+#' Try Loading RPPI Data from User Cache
+#'
+#' Silently attempts to load an RPPI dataset from the user's local cache.
+#'
+#' @param dataset_name Cache key (e.g., "rppi_iqa", "rppi_iqaiw")
+#' @param quiet Logical. If TRUE, suppresses messages
+#' @return Data if successful, NULL if cache unavailable
+#' @keywords internal
+#' @noRd
+try_rppi_user_cache <- function(dataset_name, quiet = FALSE) {
+  tryCatch(
+    load_from_user_cache(dataset_name, quiet = quiet),
+    error = function(e) NULL
+  )
+}
+
 # NOTE: download_with_retry() has been moved to R/helpers-download.R
 # It is now a shared helper function used across all dataset functions.
 
@@ -51,26 +67,10 @@ calculate_rppi_changes <- function(
     dplyr::mutate(
       chg = .data[[index_col]] / dplyr::lag(.data[[index_col]]) - 1,
       acum12m = exp(as.numeric(stats::filter(log(1 + chg), rep(1, 12), sides = 1))) - 1,
-      # Default is NULL (i.e. ungrouped), so this does nothing if group_col is NULL
       .by = dplyr::all_of(group_col)
     )
 
-  # if (!is.null(group_col)) {
-  #   data <- data |>
-  #     dplyr::group_by(dplyr::across(dplyr::all_of(group_col)))
-  # }
-
-  # data <- data |>
-  #   dplyr::mutate(
-  #     chg = .data[[index_col]] / dplyr::lag(.data[[index_col]]) - 1,
-  #     acum12m = zoo::rollapplyr(1 + chg, width = 12, FUN = prod, fill = NA) - 1
-  #   )
-
-  # if (!is.null(group_col)) {
-  #   data <- data |> dplyr::ungroup()
-  # }
-
-  data
+  return(data)
 }
 
 #' Download Excel File with Retry
