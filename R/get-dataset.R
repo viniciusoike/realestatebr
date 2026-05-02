@@ -376,18 +376,6 @@ get_from_local_cache <- function(name, dataset_info, table) {
 #'
 #' @keywords internal
 get_from_github_cache <- function(name, dataset_info, table) {
-  # Special handling for RPPI stacked tables - these need fresh processing
-  if (
-    name == "rppi" && !is.null(table) && table %in% c("sale", "rent", "all")
-  ) {
-    cli::cli_warn(
-      "RPPI stacked tables (sale/rent/all) require fresh processing"
-    )
-    cli::cli_inform("Falling back to fresh download...")
-    # Force fresh download for stacked RPPI tables
-    stop("GitHub cache incompatible with RPPI stacked tables")
-  }
-
   # Map dataset name to cache file name
   cached_name <- get_cached_name(name, dataset_info, table)
 

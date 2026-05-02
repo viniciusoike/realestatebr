@@ -250,6 +250,8 @@ datasets:
     dataset_function: "get_rppi"
     data_type: "mixed"
     cached_file:
+      sale: "rppi_sale.rds"
+      rent: "rppi_rent.rds"
       fipezap: "rppi_fipe.csv.gz"
       ivgr: "rppi_ivgr.csv.gz"
       igmi: "rppi_igmi.csv.gz"
