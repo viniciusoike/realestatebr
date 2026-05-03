@@ -5,6 +5,7 @@
 #' offering pre-processed data that's updated weekly via CI/CD.
 #'
 #' @name cache-github
+#' @noRd
 NULL
 
 #' Check if piggyback is Available
@@ -24,12 +25,15 @@ has_piggyback <- function() {
 #' @return Logical. TRUE if GitHub is accessible
 #' @keywords internal
 check_github_available <- function() {
-  tryCatch({
-    response <- httr::HEAD("https://api.github.com", httr::timeout(5))
-    return(httr::status_code(response) < 400)
-  }, error = function(e) {
-    return(FALSE)
-  })
+  tryCatch(
+    {
+      response <- httr::HEAD("https://api.github.com", httr::timeout(5))
+      return(httr::status_code(response) < 400)
+    },
+    error = function(e) {
+      return(FALSE)
+    }
+  )
 }
 
 #' Get GitHub Repository Information
@@ -84,21 +88,25 @@ list_github_assets <- function(quiet = FALSE) {
   repo <- get_github_repo()
   tag <- get_cache_release_tag()
 
-  tryCatch({
-    assets <- piggyback::pb_list(repo = repo, tag = tag)
+  tryCatch(
+    {
+      assets <- piggyback::pb_list(repo = repo, tag = tag)
 
-    if (!quiet) {
-      cli::cli_inform("Found {nrow(assets)} asset{?s} on GitHub release '{tag}'")
+      if (!quiet) {
+        cli::cli_inform(
+          "Found {nrow(assets)} asset{?s} on GitHub release '{tag}'"
+        )
+      }
+
+      return(assets$file_name)
+    },
+    error = function(e) {
+      if (!quiet) {
+        cli::cli_warn("Failed to list GitHub assets: {e$message}")
+      }
+      return(NULL)
     }
-
-    return(assets$file_name)
-
-  }, error = function(e) {
-    if (!quiet) {
-      cli::cli_warn("Failed to list GitHub assets: {e$message}")
-    }
-    return(NULL)
-  })
+  )
 }
 
 #' Download Dataset from GitHub Release
@@ -110,7 +118,11 @@ list_github_assets <- function(quiet = FALSE) {
 #' @param quiet Logical. Suppress messages
 #' @return Dataset or NULL if download fails
 #' @keywords internal
-download_from_github_release <- function(dataset_name, overwrite = FALSE, quiet = FALSE) {
+download_from_github_release <- function(
+  dataset_name,
+  overwrite = FALSE,
+  quiet = FALSE
+) {
   # Check prerequisites
   if (!has_piggyback()) {
     cli::cli_abort(c(
@@ -131,7 +143,9 @@ download_from_github_release <- function(dataset_name, overwrite = FALSE, quiet 
   # Check if already cached and not overwriting
   if (is_cached(dataset_name) && !overwrite) {
     if (!quiet) {
-      cli::cli_inform("Dataset '{dataset_name}' already cached. Loading from cache...")
+      cli::cli_inform(
+        "Dataset '{dataset_name}' already cached. Loading from cache..."
+      )
     }
     return(load_from_user_cache(dataset_name, quiet = quiet))
   }
@@ -153,36 +167,38 @@ download_from_github_release <- function(dataset_name, overwrite = FALSE, quiet 
       cli::cli_inform("Attempting to download {file_name} from GitHub...")
     }
 
-    tryCatch({
-      piggyback::pb_download(
-        file = file_name,
-        repo = repo,
-        tag = tag,
-        dest = cache_dir,
-        overwrite = overwrite
-      )
+    tryCatch(
+      {
+        piggyback::pb_download(
+          file = file_name,
+          repo = repo,
+          tag = tag,
+          dest = cache_dir,
+          overwrite = overwrite
+        )
 
-      if (file.exists(dest_path)) {
-        downloaded <- TRUE
-        if (!quiet) {
-          file_size <- file.info(dest_path)$size / 1024^2
-          cli::cli_inform("Downloaded {file_name} ({round(file_size, 2)} MB)")
+        if (file.exists(dest_path)) {
+          downloaded <- TRUE
+          if (!quiet) {
+            file_size <- file.info(dest_path)$size / 1024^2
+            cli::cli_inform("Downloaded {file_name} ({round(file_size, 2)} MB)")
+          }
+
+          # Save metadata
+          save_cache_metadata(dataset_name, ext, source = "github")
+
+          # Load and return
+          return(load_from_user_cache(dataset_name, quiet = quiet))
         }
-
-        # Save metadata
-        save_cache_metadata(dataset_name, ext, source = "github")
-
-        # Load and return
-        return(load_from_user_cache(dataset_name, quiet = quiet))
+      },
+      error = function(e) {
+        # File doesn't exist in this format, try next
+        if (!quiet && ext == extensions[length(extensions)]) {
+          # Only warn on last attempt
+          cli::cli_warn("Failed to download {file_name}: {e$message}")
+        }
       }
-
-    }, error = function(e) {
-      # File doesn't exist in this format, try next
-      if (!quiet && ext == extensions[length(extensions)]) {
-        # Only warn on last attempt
-        cli::cli_warn("Failed to download {file_name}: {e$message}")
-      }
-    })
+    )
   }
 
   if (!downloaded) {
@@ -215,42 +231,44 @@ is_cache_up_to_date <- function(dataset_name) {
   repo <- get_github_repo()
   tag <- get_cache_release_tag()
 
-  tryCatch({
-    # Get GitHub asset info
-    assets <- piggyback::pb_list(repo = repo, tag = tag)
+  tryCatch(
+    {
+      # Get GitHub asset info
+      assets <- piggyback::pb_list(repo = repo, tag = tag)
 
-    # Find matching file (try all extensions)
-    extensions <- c("rds", "csv.gz")
-    github_time <- NULL
+      # Find matching file (try all extensions)
+      extensions <- c("rds", "csv.gz")
+      github_time <- NULL
 
-    for (ext in extensions) {
-      file_name <- paste0(dataset_name, ".", ext)
-      asset_row <- assets[assets$file_name == file_name, ]
+      for (ext in extensions) {
+        file_name <- paste0(dataset_name, ".", ext)
+        asset_row <- assets[assets$file_name == file_name, ]
 
-      if (nrow(asset_row) > 0) {
-        github_time <- asset_row$timestamp[1]
-        break
+        if (nrow(asset_row) > 0) {
+          github_time <- asset_row$timestamp[1]
+          break
+        }
       }
-    }
 
-    if (is.null(github_time)) {
+      if (is.null(github_time)) {
+        return(NA)
+      }
+
+      # Get local cache time
+      local_metadata <- get_cache_metadata(dataset_name)
+      if (is.null(local_metadata) || is.null(local_metadata$cached_at)) {
+        return(FALSE)
+      }
+
+      local_time <- local_metadata$cached_at
+
+      # Compare timestamps
+      return(local_time >= github_time)
+    },
+    error = function(e) {
       return(NA)
     }
-
-    # Get local cache time
-    local_metadata <- get_cache_metadata(dataset_name)
-    if (is.null(local_metadata) || is.null(local_metadata$cached_at)) {
-      return(FALSE)
-    }
-
-    local_time <- local_metadata$cached_at
-
-    # Compare timestamps
-    return(local_time >= github_time)
-
-  }, error = function(e) {
-    return(NA)
-  })
+  )
 }
 
 #' Update Cache from GitHub
@@ -308,7 +326,11 @@ update_cache_from_github <- function(dataset_names = NULL, quiet = FALSE) {
       if (!quiet) {
         cli::cli_inform("Updating {dataset} from GitHub...")
       }
-      data <- download_from_github_release(dataset, overwrite = TRUE, quiet = quiet)
+      data <- download_from_github_release(
+        dataset,
+        overwrite = TRUE,
+        quiet = quiet
+      )
       results[dataset] <- !is.null(data)
     }
   }

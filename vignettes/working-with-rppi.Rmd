@@ -49,6 +49,7 @@ theme_series <- function() {
     base_size = 10
     ) +
     theme(
+      plot.title = element_text(size = 16),
       panel.grid.minor = element_blank(),
       panel.grid.major.x = element_blank(),
       axis.line.x = element_line(color = "gray10", linewidth = 0.5),

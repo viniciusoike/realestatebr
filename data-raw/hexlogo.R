@@ -109,20 +109,21 @@ inner <- ggplot(cells_transformed) +
     y = 1.5,
     label = "realestatebr",
     family = "Futura",
-    size = 14,
+    size = 12,
     color = "black",
     angle = 90 - 4
   ) +
   scale_x_continuous(limits = c(-1, 1)) +
   scale_fill_identity() +
+  # coord_equal(xlim = c(-3, 3), ylim = c(-3, 5)) +
   coord_equal() +
   theme_void() +
-  theme(plot.background = element_rect(fill = "#f5f0e8", color = NA)) # warm canvas
+  theme(plot.background = element_rect(fill = "#f5f0e8", color = NA))
 
 ggsave(
   "man/figures/inner_temp.png",
   plot = inner,
-  width = 6,
+  width = 5,
   height = 6,
   dpi = 600,
   bg = "transparent"
@@ -135,15 +136,14 @@ library(hexSticker)
 # Palette
 col_bg <- "#f5f0e8" # hex background
 col_border <- "#000000" # hex border
-col_line <- "#F5A623" # inner plot line / accent
 col_text <- "#000000" # package name
 
 # Pass the path instead of the object
 sticker(
   subplot = "man/figures/inner_temp.png",
   s_x = 0.9,
-  s_y = 0.825,
-  s_width = 1.18,
+  s_y = 0.8,
+  s_width = 1,
   s_height = 1,
   package = "",
   h_fill = col_bg,

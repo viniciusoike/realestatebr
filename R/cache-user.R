@@ -4,6 +4,7 @@
 #' following R package best practices for data caching.
 #'
 #' @name cache-user
+#' @noRd
 NULL
 
 #' Get User Cache Directory
@@ -94,51 +95,56 @@ load_from_user_cache <- function(dataset_name, quiet = FALSE) {
     extension <- "csv.gz"
   }
 
-  tryCatch({
-    data <- switch(extension,
-      "rds" = readRDS(file_path),
-      "csv.gz" = readr::read_delim(file_path, show_col_types = FALSE),
-      "csv" = readr::read_delim(file_path, show_col_types = FALSE)
-    )
+  tryCatch(
+    {
+      data <- switch(
+        extension,
+        "rds" = readRDS(file_path),
+        "csv.gz" = readr::read_delim(file_path, show_col_types = FALSE),
+        "csv" = readr::read_delim(file_path, show_col_types = FALSE)
+      )
 
-    # Check cache age and warn ONLY if significantly stale (relaxed thresholds)
-    if (!quiet) {
-      age <- get_cache_age(dataset_name)
-      if (!is.na(age)) {
-        stale <- is_cache_stale(dataset_name)
+      # Check cache age and warn ONLY if significantly stale (relaxed thresholds)
+      if (!quiet) {
+        age <- get_cache_age(dataset_name)
+        if (!is.na(age)) {
+          stale <- is_cache_stale(dataset_name)
 
-        if (isTRUE(stale)) {
-          # Only warn if 2x update frequency exceeded (relaxed)
-          is_manual <- isTRUE(tryCatch(
-            load_dataset_registry()$datasets[[dataset_name]][["manual_update"]],
-            error = function(e) FALSE
-          ))
-          if (is_manual) {
-            cli::cli_warn(c(
-              "Cached data for '{dataset_name}' is {round(age, 1)} days old",
-              "i" = "Get latest: {.code get_dataset('{dataset_name}', source='github')}"
+          if (isTRUE(stale)) {
+            # Only warn if 2x update frequency exceeded (relaxed)
+            is_manual <- isTRUE(tryCatch(
+              load_dataset_registry()$datasets[[dataset_name]][[
+                "manual_update"
+              ]],
+              error = function(e) FALSE
             ))
-          } else {
-            cli::cli_warn(c(
-              "Cached data for '{dataset_name}' is {round(age, 1)} days old",
-              "i" = "Consider updating: update_cache_from_github('{dataset_name}')",
-              "i" = "Or force fresh data: get_dataset('{dataset_name}', source='fresh')"
-            ))
+            if (is_manual) {
+              cli::cli_warn(c(
+                "Cached data for '{dataset_name}' is {round(age, 1)} days old",
+                "i" = "Get latest: {.code get_dataset('{dataset_name}', source='github')}"
+              ))
+            } else {
+              cli::cli_warn(c(
+                "Cached data for '{dataset_name}' is {round(age, 1)} days old",
+                "i" = "Consider updating: update_cache_from_github('{dataset_name}')",
+                "i" = "Or force fresh data: get_dataset('{dataset_name}', source='fresh')"
+              ))
+            }
           }
+          # NO MESSAGE for fresh cache - keep it quiet
+        } else {
+          # Only basic message if no metadata
+          cli::cli_inform("Loaded '{dataset_name}' from user cache")
         }
-        # NO MESSAGE for fresh cache - keep it quiet
-      } else {
-        # Only basic message if no metadata
-        cli::cli_inform("Loaded '{dataset_name}' from user cache")
       }
+
+      return(data)
+    },
+    error = function(e) {
+      cli::cli_warn("Failed to load '{dataset_name}' from cache: {e$message}")
+      return(NULL)
     }
-
-    return(data)
-
-  }, error = function(e) {
-    cli::cli_warn("Failed to load '{dataset_name}' from cache: {e$message}")
-    return(NULL)
-  })
+  )
 }
 
 #' Save Dataset to User Cache
@@ -151,36 +157,45 @@ load_from_user_cache <- function(dataset_name, quiet = FALSE) {
 #' @param quiet Logical. Suppress messages
 #' @return Logical. TRUE if successful
 #' @keywords internal
-save_to_user_cache <- function(data, dataset_name, format = "rds", quiet = FALSE) {
+save_to_user_cache <- function(
+  data,
+  dataset_name,
+  format = "rds",
+  quiet = FALSE
+) {
   # Ensure cache directory exists
   cache_dir <- ensure_cache_dir()
 
   # Build file path
   file_path <- file.path(cache_dir, paste0(dataset_name, ".", format))
 
-  tryCatch({
-    if (format == "rds") {
-      saveRDS(data, file_path, compress = TRUE)
-    } else if (format == "csv.gz") {
-      readr::write_delim(data, file_path)
-    } else {
-      cli::cli_abort("Unsupported format: {format}")
+  tryCatch(
+    {
+      if (format == "rds") {
+        saveRDS(data, file_path, compress = TRUE)
+      } else if (format == "csv.gz") {
+        readr::write_delim(data, file_path)
+      } else {
+        cli::cli_abort("Unsupported format: {format}")
+      }
+
+      if (!quiet) {
+        file_size <- file.info(file_path)$size / 1024^2
+        cli::cli_inform(
+          "Saved '{dataset_name}' to cache ({round(file_size, 2)} MB)"
+        )
+      }
+
+      # Save metadata
+      save_cache_metadata(dataset_name, format)
+
+      return(TRUE)
+    },
+    error = function(e) {
+      cli::cli_warn("Failed to save '{dataset_name}' to cache: {e$message}")
+      return(FALSE)
     }
-
-    if (!quiet) {
-      file_size <- file.info(file_path)$size / 1024^2
-      cli::cli_inform("Saved '{dataset_name}' to cache ({round(file_size, 2)} MB)")
-    }
-
-    # Save metadata
-    save_cache_metadata(dataset_name, format)
-
-    return(TRUE)
-
-  }, error = function(e) {
-    cli::cli_warn("Failed to save '{dataset_name}' to cache: {e$message}")
-    return(FALSE)
-  })
+  )
 }
 
 #' List Cached Files
@@ -287,10 +302,17 @@ clear_user_cache <- function(dataset_names = NULL, confirm = TRUE) {
     for (name in dataset_names) {
       # Match all formats
       pattern <- paste0("^", name, "\\.(rds|csv|csv\\.gz)$")
-      matching_files <- list.files(cache_dir, pattern = pattern, full.names = TRUE)
+      matching_files <- list.files(
+        cache_dir,
+        pattern = pattern,
+        full.names = TRUE
+      )
       files_to_remove <- c(files_to_remove, matching_files)
     }
-    target_desc <- paste("cached files for:", paste(dataset_names, collapse = ", "))
+    target_desc <- paste(
+      "cached files for:",
+      paste(dataset_names, collapse = ", ")
+    )
   }
 
   if (length(files_to_remove) == 0) {
@@ -301,7 +323,13 @@ clear_user_cache <- function(dataset_names = NULL, confirm = TRUE) {
   # Confirm removal
   if (confirm && interactive()) {
     response <- readline(
-      paste0("Remove ", target_desc, " (", length(files_to_remove), " files)? [y/N]: ")
+      paste0(
+        "Remove ",
+        target_desc,
+        " (",
+        length(files_to_remove),
+        " files)? [y/N]: "
+      )
     )
     if (!tolower(response) %in% c("y", "yes")) {
       cli::cli_inform("Cache clear cancelled")
@@ -376,13 +404,16 @@ save_cache_metadata <- function(dataset_name, format, source = NULL) {
   )
 
   # Save metadata
-  tryCatch({
-    saveRDS(metadata, metadata_file)
-    return(TRUE)
-  }, error = function(e) {
-    cli::cli_warn("Failed to save cache metadata: {e$message}")
-    return(FALSE)
-  })
+  tryCatch(
+    {
+      saveRDS(metadata, metadata_file)
+      return(TRUE)
+    },
+    error = function(e) {
+      cli::cli_warn("Failed to save cache metadata: {e$message}")
+      return(FALSE)
+    }
+  )
 }
 
 #' Check if Dataset is Cached
@@ -424,7 +455,9 @@ get_cache_age <- function(dataset_name) {
 #' @keywords internal
 is_cache_stale <- function(dataset_name, warn_after_days = NULL) {
   age <- get_cache_age(dataset_name)
-  if (is.na(age)) return(NA)
+  if (is.na(age)) {
+    return(NA)
+  }
 
   if (is.null(warn_after_days)) {
     # Get default from registry (relaxed thresholds)
@@ -438,14 +471,15 @@ is_cache_stale <- function(dataset_name, warn_after_days = NULL) {
       if (is.null(warn_after_days)) {
         # Fallback defaults: 2x the update frequency
         schedule <- dataset_info$update_schedule %||% "weekly"
-        warn_after_days <- switch(schedule,
-          "weekly" = 14,   # 2 weeks
-          "monthly" = 60,  # 2 months
-          "manual" = 999999  # Never warn for manual datasets
+        warn_after_days <- switch(
+          schedule,
+          "weekly" = 14, # 2 weeks
+          "monthly" = 60, # 2 months
+          "manual" = 999999 # Never warn for manual datasets
         )
       }
     } else {
-      warn_after_days <- 14  # Default to 2 weeks
+      warn_after_days <- 14 # Default to 2 weeks
     }
   }
 
@@ -506,7 +540,8 @@ check_cache_status <- function(verbose = TRUE) {
 
       # Show warning threshold
       schedule <- ds_info$update_schedule %||% "weekly"
-      status$warn_threshold[i] <- switch(schedule,
+      status$warn_threshold[i] <- switch(
+        schedule,
         "weekly" = 14,
         "monthly" = 60,
         "manual" = NA_real_
@@ -515,7 +550,9 @@ check_cache_status <- function(verbose = TRUE) {
   }
 
   # Sort by staleness, then age
-  status <- status[order(status$stale, status$age_days, decreasing = TRUE, na.last = TRUE), ]
+  status <- status[
+    order(status$stale, status$age_days, decreasing = TRUE, na.last = TRUE),
+  ]
 
   if (verbose) {
     cli::cli_h1("Cache Status")
@@ -523,11 +560,15 @@ check_cache_status <- function(verbose = TRUE) {
     stale_count <- sum(status$stale, na.rm = TRUE)
     fresh_count <- sum(!status$stale, na.rm = TRUE)
 
-    cli::cli_alert_info("Using relaxed thresholds: weekly=14 days, monthly=60 days")
+    cli::cli_alert_info(
+      "Using relaxed thresholds: weekly=14 days, monthly=60 days"
+    )
     cli::cli_text("")
 
     if (stale_count > 0) {
-      cli::cli_alert_warning("{stale_count} dataset{?s} could benefit from updating")
+      cli::cli_alert_warning(
+        "{stale_count} dataset{?s} could benefit from updating"
+      )
     }
     if (fresh_count > 0) {
       cli::cli_alert_success("{fresh_count} dataset{?s} are reasonably fresh")
@@ -543,13 +584,16 @@ check_cache_status <- function(verbose = TRUE) {
         )
       }
       cli::cli_text("")
-      cli::cli_code("update_cache_from_github(c('{paste(stale_datasets$dataset, collapse=\"', '\")}'))")
+      cli::cli_code(
+        "update_cache_from_github(c('{paste(stale_datasets$dataset, collapse=\"', '\")}'))"
+      )
     }
 
     cli::cli_h2("Recently Updated")
     fresh_datasets <- status[!isTRUE(status$stale) & !is.na(status$stale), ]
     if (nrow(fresh_datasets) > 0) {
-      for (i in seq_len(min(5, nrow(fresh_datasets)))) {  # Show max 5
+      for (i in seq_len(min(5, nrow(fresh_datasets)))) {
+        # Show max 5
         ds <- fresh_datasets[i, ]
         cli::cli_li(
           "{ds$dataset}: {round(ds$age_days, 1)} days old"

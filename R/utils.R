@@ -3,8 +3,8 @@
 #' @param path Path to excel file
 #' @param sheet Name or number of sheet to be analyzed
 #' @param skip_row Additional argument passed to `readxl::read_excel()`
-#'
 #' @details Based on the date column, finds the range to be imported.
+#' @noRd
 get_range <- function(path = NULL, sheet, skip_row = 4) {
   # Import all data from sheet
   cells <- tidyxl::xlsx_cells(path, sheets = sheet)
@@ -58,6 +58,7 @@ get_range <- function(path = NULL, sheet, skip_row = 4) {
 #'   Defaults to 4.
 #'
 #' @return Character string representing an Excel range (e.g., "B5:BD162").
+#' @noRd
 #'
 #' @details
 #' The function works by:
@@ -170,7 +171,9 @@ add_geo_dimensions <- function(df, key = c("name_simplified", "abbrev_state")) {
 is_debug_mode <- function() {
   # Check environment variable first (takes precedence)
   debug_env <- Sys.getenv("REALESTATEBR_DEBUG", "")
-  if (debug_env %in% c("TRUE", "1", "true")) return(TRUE)
+  if (debug_env %in% c("TRUE", "1", "true")) {
+    return(TRUE)
+  }
 
   # Check package option
   debug_opt <- getOption("realestatebr.debug", FALSE)
