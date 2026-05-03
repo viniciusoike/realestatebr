@@ -1,9 +1,14 @@
 url: https://viniciusoike.github.io/realestatebr/
 template:
   bootstrap: 5
+  bslib:
+    bootswatch: yeti
+    primary: "#0D1B2A"
+    heading_font: {google: "Lora"}
+    code_font: {google: "JetBrains Mono"}
+    "code-font-size": 0.82em
 
-articles:
-- title: Getting Started
-  contents:
-  - getting-started
-  - working-with-rppi
+navbar:
+  logo:
+    image: man/figures/hexlogo.png
+    href: https://viniciusoike.github.io/realestatebr/

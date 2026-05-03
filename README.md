@@ -9,7 +9,7 @@ output: github_document
 # realestatebr
 
 <!-- badges: start -->
-<img src="man/figures/hexlogo.png" align="right" height="200" />
+<img src="man/figures/hexlogo.png" align="right" height="200" class="pkgdown-hide" />
 <!-- badges: end -->
 
 **realestatebr** aims to provide an unified interface to Brazilian real estate information, delivering data from different sources in a tidy format. The package is organized by source, with each source having multiple associated tables (datasets).
