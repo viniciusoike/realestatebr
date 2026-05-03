@@ -17,6 +17,10 @@ output: github_document
 ## Installation
 
 ```r
+# Install from CRAN
+install.packages("realestatebr")
+
+# Or install the development version from GitHub
 # install.packages("remotes")
 remotes::install_github("viniciusoike/realestatebr")
 ```
@@ -71,11 +75,8 @@ data2 <- get_dataset("abecip")
 ### Managing Cache
 
 ```r
-# Check cache location
-get_user_cache_dir()
-
-# List cached datasets
-list_cached_files()
+# Check status of cached datasets
+check_cache_status()
 
 # Clear specific dataset
 clear_user_cache("abecip")
