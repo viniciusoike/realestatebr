@@ -136,24 +136,65 @@ for dataset details
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 # Get all ABECIP indicators (default table)
 abecip_data <- get_dataset("abecip")
+#> Checking user cache for abecip...
+#> Created cache directory: ~/.cache/realestatebr
+#> Dataset 'abecip_sbpe' not found in user cache
+#> User cache not available: Dataset 'abecip' not found in cache
+#> Attempting to download abecip from GitHub releases...
+#> Attempting to download abecip_sbpe.rds from GitHub...
+#> Downloaded abecip_sbpe.rds (0.03 MB)
+#> Successfully downloaded from GitHub releases
+#> Retrieved 'sbpe' from 'abecip' (default table). Available tables: 'sbpe',
+#> 'units', 'cgi'
 
 # Get only SBPE data from ABECIP
 sbpe_data <- get_dataset("abecip", "sbpe")
+#> Checking user cache for abecip...
+#> Successfully loaded from user cache
+#> Retrieved 'sbpe' from 'abecip'. Available tables: 'sbpe', 'units', 'cgi'
 
 # Force fresh download
 fresh_data <- get_dataset("bcb_realestate", source = "fresh")
+#> Downloading real estate data from BCB API
+#> Downloading real estate data from the Brazilian Central Bank.
+#> Retrieved 'all' from 'bcb_realestate' (default table). Available tables:
+#> 'accounting', 'application', 'indices', 'sources', 'units'
 
 # Get BCB data for specific time period
 bcb_recent <- get_dataset("bcb_series",
                          date_start = as.Date("2020-01-01"))
+#> Checking user cache for bcb_series...
+#> Dataset 'bcb_series' not found in user cache
+#> User cache not available: Dataset 'bcb_series' not found in cache
+#> Attempting to download bcb_series from GitHub releases...
+#> Attempting to download bcb_series.rds from GitHub...
+#> Downloaded bcb_series.rds (0.11 MB)
+#> Successfully downloaded from GitHub releases
+#> Retrieved 'all' from 'bcb_series' (default table). Available tables: 'price',
+#> 'credit', 'production', 'interest-rate', 'exchange', 'government',
+#> 'real-estate'
 
 # Advanced: Force very fresh data (< 1 day old)
 very_fresh <- get_dataset("bcb_series", max_age = 1)
+#> Checking user cache for bcb_series...
+#> Successfully loaded from user cache
+#> Retrieved 'all' from 'bcb_series' (default table). Available tables: 'price',
+#> 'credit', 'production', 'interest-rate', 'exchange', 'government',
+#> 'real-estate'
 
 # Advanced: Only use cache if less than 3 days old
 recent_data <- get_dataset("rppi", table = "sale", max_age = 3)
-} # }
+#> Checking user cache for rppi...
+#> Dataset 'rppi_sale' not found in user cache
+#> User cache not available: Dataset 'rppi' not found in cache
+#> Attempting to download rppi from GitHub releases...
+#> Attempting to download rppi_sale.rds from GitHub...
+#> Downloaded rppi_sale.rds (0.19 MB)
+#> Successfully downloaded from GitHub releases
+#> Retrieved 'sale' from 'rppi'. Available tables: 'fipezap', 'ivgr', 'igmi',
+#> 'iqa', 'iqaiw', 'ivar', 'secovi_sp', 'sale', 'rent', 'all'
+# }
 ```

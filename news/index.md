@@ -823,7 +823,7 @@ get_dataset("cbic", "cement_cub_prices")
 get_dataset("cbic", "steel_prices")  # Deferred to v0.4.1
 ```
 
-#### 🏗️ New Internal Architecture
+#### New Internal Architecture
 
 - **Internal fetch functions**: Created 12 new `fetch_*()` functions
   with `@keywords internal`

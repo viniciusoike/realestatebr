@@ -13,12 +13,3 @@ get_user_cache_dir()
 ## Value
 
 Character. Path to user cache directory
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-cache_dir <- get_user_cache_dir()
-print(cache_dir)
-} # }
-```

@@ -31,7 +31,7 @@ Tibble with columns: date, name_muni, index, chg, acum12m, price_m2
 The IQAIW (Índice QuintoAndar ImovelWeb) is a rental index for major
 Brazilian cities. The index is based on both new rental contracts
 (managed by QuintoAndar) and online listings from QuintoAndar's listings
-(including ImovelWeb). The IQAIW was develoepd in 2023 and replaced the
+(including ImovelWeb). The IQAIW was developed in 2023 and replaced the
 former IQA index. Given the change in methodology and data sources, the
 IQAIW is not directly comparable to the IQA index. Formally, the index
 is a hedonic double imputed index, controlling for quality changes using

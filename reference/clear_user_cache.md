@@ -25,11 +25,15 @@ Logical. TRUE if successful
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 # Clear specific dataset
 clear_user_cache("abecip")
+#> Cache directory does not exist
+#> [1] TRUE
 
 # Clear all cache (with confirmation)
 clear_user_cache()
-} # }
+#> Cache directory does not exist
+#> [1] TRUE
+# }
 ```

@@ -17,12 +17,3 @@ list_github_assets(quiet = FALSE)
 ## Value
 
 Character vector of available asset names, or NULL if unavailable
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-assets <- list_github_assets()
-print(assets)
-} # }
-```

@@ -37,6 +37,7 @@ theme_series <- function() {
     base_size = 10
     ) +
     theme(
+      plot.title = element_text(size = 16),
       panel.grid.minor = element_blank(),
       panel.grid.major.x = element_blank(),
       axis.line.x = element_line(color = "gray10", linewidth = 0.5),
@@ -226,6 +227,11 @@ ggplot(units_recent, aes(date, units_total)) +
     se = FALSE,
     method = stats::loess,
     method.args = list(span = 0.4)) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  labs(
+    title = "Monthly Financed Units",
+    y = "Units"
+  ) +
   theme_series()
 ```
 
@@ -237,7 +243,7 @@ The `bcb_realestate` dataset imports all real estate statistics from the
 [Brazilian Central
 Bank](https://www.bcb.gov.br/estatisticas/mercadoimobiliario). This is a
 relatively large dataset and exploring can be cumbersome. Each series is
-uniquely identified dy `date` and `series_info`. Helper functions `v1`,
+uniquely identified by `date` and `series_info`. Helper functions `v1`,
 `v2`, …, `v5`, `abbrev_state`, `category`, and `type` are provided to
 simplify the use of the dataset.
 

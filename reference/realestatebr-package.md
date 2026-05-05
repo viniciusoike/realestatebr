@@ -1,8 +1,14 @@
 # realestatebr: Import Brazilian Real Estate Data into R
 
 Provides functions to import Brazilian real estate data from various
-sources including BCB, FGV, ABECIP, ABRAINC, SECOVI, and BIS. Data is
-returned in tidy format.
+sources including the Central Bank of Brazil (BCB)
+<https://www.bcb.gov.br>, Fundacao Getulio Vargas (FGV)
+<https://portalibre.fgv.br>, the Brazilian Association of Real Estate
+Credit and Savings Entities (ABECIP) <https://www.abecip.org.br>, the
+Brazilian Association of Real Estate Developers (ABRAINC)
+<https://www.abrainc.org.br>, SECOVI-SP <https://www.secovi.com.br>, and
+the Bank for International Settlements (BIS)
+<https://data.bis.org/topics/RPP>. Data is returned in tidy format.
 
 ## See also
 

@@ -96,20 +96,15 @@ for retrieving the actual data
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
 # List all available datasets
 datasets <- list_datasets()
+#> Found 8 datasets. Use get_dataset(name) to retrieve data.
 
 # Filter by data source
 bcb_data <- list_datasets(source = "BCB")
+#> Warning: No datasets found matching the specified criteria.
 
 # Filter by geography
 sao_paulo_data <- list_datasets(geography = "São Paulo")
-
-# View available tables for multi-table datasets
-View(list_datasets()$available_tables)
-
-# Get specific table from multi-table dataset
-abecip_sbpe <- get_dataset("abecip", table = "sbpe")
-} # }
+#> Found 1 dataset. Use get_dataset(name) to retrieve data.
 ```

@@ -23,12 +23,16 @@ Tibble with cache status information (invisibly)
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 # Check which datasets might benefit from updating
 check_cache_status()
+#> Cache directory does not exist yet
+#> No cached datasets found
 
 # Get status table for programmatic use
 status <- check_cache_status(verbose = FALSE)
+#> Cache directory does not exist yet
 old_datasets <- status[status$age_days > 30, ]
-} # }
+#> Warning: Unknown or uninitialised column: `age_days`.
+# }
 ```
