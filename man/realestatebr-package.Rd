@@ -6,7 +6,7 @@
 \alias{realestatebr-package}
 \title{realestatebr: Import Brazilian Real Estate Data into R}
 \description{
-Provides functions to import Brazilian real estate data from various sources including BCB, FGV, ABECIP, ABRAINC, SECOVI, and BIS. Data is returned in tidy format.
+Provides functions to import Brazilian real estate data from various sources including the Central Bank of Brazil (BCB) \url{https://www.bcb.gov.br}, Fundacao Getulio Vargas (FGV) \url{https://portalibre.fgv.br}, the Brazilian Association of Real Estate Credit and Savings Entities (ABECIP) \url{https://www.abecip.org.br}, the Brazilian Association of Real Estate Developers (ABRAINC) \url{https://www.abrainc.org.br}, SECOVI-SP \url{https://www.secovi.com.br}, and the Bank for International Settlements (BIS) \url{https://data.bis.org/topics/RPP}. Data is returned in tidy format.
 }
 \seealso{
 Useful links:

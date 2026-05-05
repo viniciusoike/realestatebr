@@ -28,7 +28,6 @@
 #'   }
 #'
 #' @examples
-#' \dontrun{
 #' # List all available datasets
 #' datasets <- list_datasets()
 #'
@@ -37,13 +36,6 @@
 #'
 #' # Filter by geography
 #' sao_paulo_data <- list_datasets(geography = "São Paulo")
-#'
-#' # View available tables for multi-table datasets
-#' View(list_datasets()$available_tables)
-#'
-#' # Get specific table from multi-table dataset
-#' abecip_sbpe <- get_dataset("abecip", table = "sbpe")
-#' }
 #'
 #' @seealso \code{\link{get_dataset}} for retrieving the actual data
 #'
@@ -185,11 +177,9 @@ registry_to_tibble <- function(registry) {
 #'   }
 #'
 #' @examples
-#' \dontrun{
 #' # Get detailed info for ABECIP indicators
 #' info <- get_dataset_info("abecip")
 #' str(info)
-#' }
 #'
 #' @export
 get_dataset_info <- function(name) {

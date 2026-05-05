@@ -274,7 +274,7 @@ list_cached_files <- function() {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Clear specific dataset
 #' clear_user_cache("abecip")
 #'
@@ -497,7 +497,7 @@ is_cache_stale <- function(dataset_name, warn_after_days = NULL) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Check which datasets might benefit from updating
 #' check_cache_status()
 #'

@@ -45,7 +45,6 @@ This provides a unified interface to discover all data sources and their
 characteristics.
 }
 \examples{
-\dontrun{
 # List all available datasets
 datasets <- list_datasets()
 
@@ -54,13 +53,6 @@ bcb_data <- list_datasets(source = "BCB")
 
 # Filter by geography
 sao_paulo_data <- list_datasets(geography = "São Paulo")
-
-# View available tables for multi-table datasets
-View(list_datasets()$available_tables)
-
-# Get specific table from multi-table dataset
-abecip_sbpe <- get_dataset("abecip", table = "sbpe")
-}
 
 }
 \seealso{

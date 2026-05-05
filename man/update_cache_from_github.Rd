@@ -18,7 +18,7 @@ Named logical vector indicating success/failure for each dataset
 Updates local cache for specific datasets if GitHub has newer versions.
 }
 \examples{
-\dontrun{
+\donttest{
 # Update specific datasets
 update_cache_from_github(c("abecip", "bcb_series"))
 

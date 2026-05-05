@@ -69,13 +69,6 @@ get_range <- function(path = NULL, sheet, skip_row = 4) {
 #' 5. Converting column numbers to Excel-style letters
 #' 6. Constructing the range string
 #'
-#' @examples
-#' \dontrun{
-#' # Get range from a specific sheet
-#' range <- get_range("path/to/file.xlsx", sheet = "Sheet1", skip_row = 4)
-#' print(range) # Returns something like "B5:BD162"
-#' }
-#'
 #' @importFrom readxl read_excel excel_sheets
 get_range_new <- function(path = NULL, sheet, skip_row = 4) {
   # Input validation

@@ -92,7 +92,7 @@ understanding complex dataset processing, or developing new functionality.
 }
 
 \examples{
-\dontrun{
+\donttest{
 # Get all ABECIP indicators (default table)
 abecip_data <- get_dataset("abecip")
 

@@ -18,7 +18,7 @@ Logical. TRUE if successful
 Removes cached datasets from user directory.
 }
 \examples{
-\dontrun{
+\donttest{
 # Clear specific dataset
 clear_user_cache("abecip")
 

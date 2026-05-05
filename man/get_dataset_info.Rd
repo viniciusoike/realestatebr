@@ -22,10 +22,8 @@ Get detailed metadata for a specific dataset including available categories
 and column descriptions.
 }
 \examples{
-\dontrun{
 # Get detailed info for ABECIP indicators
 info <- get_dataset_info("abecip")
 str(info)
-}
 
 }

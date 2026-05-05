@@ -18,7 +18,7 @@ thresholds (2x update frequency) to identify datasets that may benefit
 from updating.
 }
 \examples{
-\dontrun{
+\donttest{
 # Check which datasets might benefit from updating
 check_cache_status()
 

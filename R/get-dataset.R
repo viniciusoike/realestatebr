@@ -31,7 +31,7 @@
 #'   Use get_dataset_info(name) to see the expected structure.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Get all ABECIP indicators (default table)
 #' abecip_data <- get_dataset("abecip")
 #'
