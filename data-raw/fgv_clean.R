@@ -1,6 +1,9 @@
 # FGV Data is currently not acessible via API
 # The temporary solution is to download the data from
 # https://extra-ibre.fgv.br/IBRE/sitefgvdados/consulta.aspx
+#
+# FGV IBRE index methodology reference (indiceie-novametodologia6.pdf):
+# https://extra-ibre.fgv.br/IBRE/sitefgvdados/
 
 # Roteiro para update manual:
 

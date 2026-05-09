@@ -7,3 +7,9 @@ template:
     heading_font: {google: "Lora"}
     code_font: {google: "JetBrains Mono"}
     "code-font-size": 0.82em
+
+articles:
+  - title: "Get started"
+    contents:
+      - getting-started
+      - working-with-rppi
