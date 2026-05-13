@@ -136,30 +136,6 @@ get_dataset("rppi", table = "sale", max_age = 3)
    - Supports property_records, SECOVI, BCB Real Estate, BCB Series
    - Eliminates 156 lines of duplication between cache functions
 
-#### Impact
-
-**Code Quality**:
-- DRY principle applied - eliminated 890 lines of code duplication
-- Single source of truth for common operations
-- Changes to validation logic now require 1 edit instead of 7
-
-**Maintainability**:
-- Helper functions well-documented with roxygen2
-- 52 comprehensive tests ensure quality
-- Clear separation of concerns
-
-**Consistency**:
-- Uniform error messages across all datasets
-- Standardized parameter validation
-- Consistent metadata structure
-
-**Testing**:
-- Helper function tests: 52 tests (100% passing)
-- Integration tests: 100 tests, 99 passing (1 pre-existing failure)
-- Full test suite: 253 tests, 248 passing (98.0%)
-  - 3 failures: expected error message format changes
-  - 2 failures: incomplete datasets under development
-
 #### Files Changed
 - **New**: R/helpers-dataset.R (430 lines, 6 helpers, 52 tests)
 - **Updated**: R/get_abecip_indicators.R (21.8% reduction)
@@ -181,10 +157,10 @@ See `.claude/phase3_completion_summary.md` for complete details.
 ## BREAKING CHANGES: API Simplification (Phase 2)
 
 ### Removed Deprecated Function Exports
-**Version 0.6.0 removes 8 deprecated functions from the public API. These functions are now internal-only. Since we are pre-1.0.0, this is an acceptable breaking change.**
+**Version 0.6.0 removes 8 deprecated functions from the public API. These functions are now internal-only.**
 
 #### What Changed
-- **Removed from NAMESPACE**: 8 deprecated functions no longer exported:
+**Removed from NAMESPACE**: 8 deprecated functions no longer exported:
   - `get_abecip_indicators()`
   - `get_abrainc_indicators()`
   - `get_bcb_realestate()`
@@ -193,9 +169,6 @@ See `.claude/phase3_completion_summary.md` for complete details.
   - `get_nre_ire()`
   - `get_rppi_bis()`
   - `get_secovi()`
-
-- **Still callable internally**: Functions remain in the package for `get_dataset()` to use
-- **NAMESPACE reduction**: Exports reduced from 23 to 15 functions
 
 #### Impact
 - **Users must migrate**: These functions can no longer be called directly
@@ -219,9 +192,7 @@ data <- get_dataset("abecip", "sbpe")
 
 #### Rationale
 - **Simpler API**: One function (`get_dataset()`) instead of 15+
-- **Reduced maintenance**: Fewer exported functions to document and test
 - **Pre-1.0.0 flexibility**: Breaking changes acceptable before stable release
-- **18-month deprecation period**: Functions were deprecated since v0.4.0
 
 ### Code Clarity Improvements
 
