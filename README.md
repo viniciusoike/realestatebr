@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# realestatebr: Brazilian Real Estate Data in R <img src="man/figures/hexlogo.png" align="right" />
+# realestatebr: Brazilian Real Estate Data in R <img src="man/figures/hexlogo.png" align="right" height="220px"/>
 
 <!-- badges: start -->
 
