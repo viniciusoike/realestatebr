@@ -282,11 +282,6 @@ As a final warning, note that the `bcb_realestate` dataset follows the `YYYY-MM-
 
 To avoid this, use `lubridate::floor_date(date, 'month')`. Future versions of `realestatebr` might provide this as a default behavior.
 
-## Next Steps
-
-- `vignette("working-with-rppi")` — property price indices in depth
-- `?get_dataset` — full parameter reference
-
 ## Reference (all datasets)
 
 The available datasets are listed below.
