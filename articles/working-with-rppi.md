@@ -610,7 +610,7 @@ January 2018 = 100.
 sales <- get_dataset("rppi", "sale")
 
 national <- sales |>
-  filter(name_muni == "Brazil", date >= as.Date("2018-01-01"))
+  filter(name_muni == "Brazil", date >= as.Date("2018-01-01"), date <= as.Date("2023-12-01"))
 
 national_rebased <- national |>
   mutate(
@@ -657,59 +657,6 @@ ggplot(national_rebased, aes(date, index_rebased, color = source)) +
 ```
 
 ![](working-with-rppi_files/figure-html/sale-rebased-plot-1.png)
-
-### Rent vs sale divergence
-
-The post-pandemic divergence between rental and sale markets is one of
-the most discussed trends in Brazilian real estate. FipeZap, which
-covers both markets, makes this comparison straightforward.
-
-``` r
-
-fz <- get_dataset("rppi", "fipezap")
-
-cities <- c("São Paulo", "Rio De Janeiro", "Belo Horizonte")
-base_year <- 2019
-
-base_avg <- fz |>
-  filter(
-    name_muni %in% cities,
-    market   == "residential",
-    rooms    == "total",
-    variable == "index",
-    lubridate::year(date) == base_year
-  ) |>
-  summarise(base = mean(value, na.rm = TRUE), .by = c(name_muni, rent_sale))
-
-fz_divergence <- fz |>
-  filter(
-    name_muni %in% cities,
-    market   == "residential",
-    rooms    == "total",
-    variable == "index",
-    date     >= as.Date("2019-01-01")
-  ) |>
-  left_join(base_avg, by = c("name_muni", "rent_sale")) |>
-  mutate(idx = 100 * value / base)
-```
-
-``` r
-
-ggplot(fz_divergence, aes(date, idx, color = rent_sale)) +
-  geom_line(linewidth = 0.8) +
-  geom_hline(yintercept = 100, linetype = "dashed", alpha = 0.4) +
-  facet_wrap(vars(name_muni)) +
-  labs(
-    title    = "Post-pandemic Rent vs Sale Divergence",
-    subtitle = "FipeZap residential index, 2019 average = 100",
-    x        = NULL,
-    y        = "Index",
-    color    = NULL
-  ) +
-  theme_series()
-```
-
-![](working-with-rppi_files/figure-html/rent-vs-sale-fipezap-1.png)
 
 ## International: BIS
 

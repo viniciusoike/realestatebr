@@ -16,11 +16,15 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with realestatebr</a></li>
+    <li><a class="dropdown-item" href="../articles/working-with-rppi.html">Working with Property Price Indices</a></li>
+  </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/viniciusoike/realestatebr/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/viniciusoike/realestatebr" aria-label="GitHub"><span class="fa fab fa-github"></span></a></li>
       </ul></div>
 
 
@@ -219,13 +223,6 @@
 </ul></li>
 </ol></div>
 <div class="section level5">
-<h5 id="impact-0-6-0">Impact<a class="anchor" aria-label="anchor" href="#impact-0-6-0"></a></h5>
-<p><strong>Code Quality</strong>: - DRY principle applied - eliminated 890 lines of code duplication - Single source of truth for common operations - Changes to validation logic now require 1 edit instead of 7</p>
-<p><strong>Maintainability</strong>: - Helper functions well-documented with roxygen2 - 52 comprehensive tests ensure quality - Clear separation of concerns</p>
-<p><strong>Consistency</strong>: - Uniform error messages across all datasets - Standardized parameter validation - Consistent metadata structure</p>
-<p><strong>Testing</strong>: - Helper function tests: 52 tests (100% passing) - Integration tests: 100 tests, 99 passing (1 pre-existing failure) - Full test suite: 253 tests, 248 passing (98.0%) - 3 failures: expected error message format changes - 2 failures: incomplete datasets under development</p>
-</div>
-<div class="section level5">
 <h5 id="files-changed-0-6-0">Files Changed<a class="anchor" aria-label="anchor" href="#files-changed-0-6-0"></a></h5>
 <ul><li>
 <strong>New</strong>: R/helpers-dataset.R (430 lines, 6 helpers, 52 tests)</li>
@@ -258,27 +255,13 @@
 <h3 id="breaking-changes-api-simplification-phase-0-6-0">BREAKING CHANGES: API Simplification (Phase 2)<a class="anchor" aria-label="anchor" href="#breaking-changes-api-simplification-phase-0-6-0"></a></h3>
 <div class="section level4">
 <h4 id="removed-deprecated-function-exports-0-6-0">Removed Deprecated Function Exports<a class="anchor" aria-label="anchor" href="#removed-deprecated-function-exports-0-6-0"></a></h4>
-<p><strong>Version 0.6.0 removes 8 deprecated functions from the public API. These functions are now internal-only. Since we are pre-1.0.0, this is an acceptable breaking change.</strong></p>
+<p><strong>Version 0.6.0 removes 8 deprecated functions from the public API. These functions are now internal-only.</strong></p>
 <div class="section level5">
 <h5 id="what-changed-0-6-0-1">What Changed<a class="anchor" aria-label="anchor" href="#what-changed-0-6-0-1"></a></h5>
-<ul><li>
-<strong>Removed from NAMESPACE</strong>: 8 deprecated functions no longer exported:
-<ul><li><code><a href="../reference/get_abecip_indicators.html">get_abecip_indicators()</a></code></li>
-<li><code><a href="../reference/get_abrainc_indicators.html">get_abrainc_indicators()</a></code></li>
-<li><code><a href="../reference/get_bcb_realestate.html">get_bcb_realestate()</a></code></li>
-<li><code><a href="../reference/get_bcb_series.html">get_bcb_series()</a></code></li>
-<li><code><a href="../reference/get_fgv_ibre.html">get_fgv_ibre()</a></code></li>
-<li><code>get_nre_ire()</code></li>
-<li><code><a href="../reference/get_rppi_bis.html">get_rppi_bis()</a></code></li>
-<li><code><a href="../reference/get_secovi.html">get_secovi()</a></code></li>
-</ul></li>
-<li>
-<strong>Still callable internally</strong>: Functions remain in the package for <code><a href="../reference/get_dataset.html">get_dataset()</a></code> to use</li>
-<li>
-<strong>NAMESPACE reduction</strong>: Exports reduced from 23 to 15 functions</li>
-</ul></div>
+<p><strong>Removed from NAMESPACE</strong>: 8 deprecated functions no longer exported: - <code><a href="../reference/get_abecip_indicators.html">get_abecip_indicators()</a></code> - <code><a href="../reference/get_abrainc_indicators.html">get_abrainc_indicators()</a></code> - <code><a href="../reference/get_bcb_realestate.html">get_bcb_realestate()</a></code> - <code><a href="../reference/get_bcb_series.html">get_bcb_series()</a></code> - <code><a href="../reference/get_fgv_ibre.html">get_fgv_ibre()</a></code> - <code>get_nre_ire()</code> - <code><a href="../reference/get_rppi_bis.html">get_rppi_bis()</a></code> - <code><a href="../reference/get_secovi.html">get_secovi()</a></code></p>
+</div>
 <div class="section level5">
-<h5 id="impact-0-6-0-1">Impact<a class="anchor" aria-label="anchor" href="#impact-0-6-0-1"></a></h5>
+<h5 id="impact-0-6-0">Impact<a class="anchor" aria-label="anchor" href="#impact-0-6-0"></a></h5>
 <ul><li>
 <strong>Users must migrate</strong>: These functions can no longer be called directly</li>
 <li>
@@ -306,11 +289,7 @@
 <ul><li>
 <strong>Simpler API</strong>: One function (<code><a href="../reference/get_dataset.html">get_dataset()</a></code>) instead of 15+</li>
 <li>
-<strong>Reduced maintenance</strong>: Fewer exported functions to document and test</li>
-<li>
 <strong>Pre-1.0.0 flexibility</strong>: Breaking changes acceptable before stable release</li>
-<li>
-<strong>18-month deprecation period</strong>: Functions were deprecated since v0.4.0</li>
 </ul></div>
 </div>
 <div class="section level4">
@@ -405,7 +384,7 @@
 <strong>Enhanced</strong>: <code>@section Deprecation</code> blocks with code migration examples</li>
 </ul></div>
 <div class="section level5">
-<h5 id="impact-0-6-0-2">Impact<a class="anchor" aria-label="anchor" href="#impact-0-6-0-2"></a></h5>
+<h5 id="impact-0-6-0-1">Impact<a class="anchor" aria-label="anchor" href="#impact-0-6-0-1"></a></h5>
 <ul><li>~260-290 lines of documentation removed</li>
 <li>Documentation now focuses on <strong>migration guidance</strong> rather than usage examples</li>
 <li>All functions still exported and callable (no functionality changes)</li>

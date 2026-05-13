@@ -1,4 +1,4 @@
-# realestatebr ![](reference/figures/hexlogo.png)
+# realestatebr: Brazilian Real Estate Data in R ![](reference/figures/hexlogo.png)
 
 **realestatebr** aims to provide an unified interface to Brazilian real
 estate information, delivering data from different sources in a tidy

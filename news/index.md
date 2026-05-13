@@ -157,24 +157,6 @@ get_dataset("rppi", table = "sale", max_age = 3)
     - Supports property_records, SECOVI, BCB Real Estate, BCB Series
     - Eliminates 156 lines of duplication between cache functions
 
-##### Impact
-
-**Code Quality**: - DRY principle applied - eliminated 890 lines of code
-duplication - Single source of truth for common operations - Changes to
-validation logic now require 1 edit instead of 7
-
-**Maintainability**: - Helper functions well-documented with roxygen2 -
-52 comprehensive tests ensure quality - Clear separation of concerns
-
-**Consistency**: - Uniform error messages across all datasets -
-Standardized parameter validation - Consistent metadata structure
-
-**Testing**: - Helper function tests: 52 tests (100% passing) -
-Integration tests: 100 tests, 99 passing (1 pre-existing failure) - Full
-test suite: 253 tests, 248 passing (98.0%) - 3 failures: expected error
-message format changes - 2 failures: incomplete datasets under
-development
-
 ##### Files Changed
 
 - **New**: R/helpers-dataset.R (430 lines, 6 helpers, 52 tests)
@@ -201,24 +183,19 @@ See `.claude/phase3_completion_summary.md` for complete details.
 #### Removed Deprecated Function Exports
 
 **Version 0.6.0 removes 8 deprecated functions from the public API.
-These functions are now internal-only. Since we are pre-1.0.0, this is
-an acceptable breaking change.**
+These functions are now internal-only.**
 
 ##### What Changed
 
-- **Removed from NAMESPACE**: 8 deprecated functions no longer exported:
-  - [`get_abecip_indicators()`](https://viniciusoike.github.io/realestatebr/reference/get_abecip_indicators.md)
-  - [`get_abrainc_indicators()`](https://viniciusoike.github.io/realestatebr/reference/get_abrainc_indicators.md)
-  - [`get_bcb_realestate()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_realestate.md)
-  - [`get_bcb_series()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_series.md)
-  - [`get_fgv_ibre()`](https://viniciusoike.github.io/realestatebr/reference/get_fgv_ibre.md)
-  - `get_nre_ire()`
-  - [`get_rppi_bis()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi_bis.md)
-  - [`get_secovi()`](https://viniciusoike.github.io/realestatebr/reference/get_secovi.md)
-- **Still callable internally**: Functions remain in the package for
-  [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-  to use
-- **NAMESPACE reduction**: Exports reduced from 23 to 15 functions
+**Removed from NAMESPACE**: 8 deprecated functions no longer exported: -
+[`get_abecip_indicators()`](https://viniciusoike.github.io/realestatebr/reference/get_abecip_indicators.md) -
+[`get_abrainc_indicators()`](https://viniciusoike.github.io/realestatebr/reference/get_abrainc_indicators.md) -
+[`get_bcb_realestate()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_realestate.md) -
+[`get_bcb_series()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_series.md) -
+[`get_fgv_ibre()`](https://viniciusoike.github.io/realestatebr/reference/get_fgv_ibre.md) -
+`get_nre_ire()` -
+[`get_rppi_bis()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi_bis.md) -
+[`get_secovi()`](https://viniciusoike.github.io/realestatebr/reference/get_secovi.md)
 
 ##### Impact
 
@@ -254,11 +231,8 @@ data <- get_dataset("abecip", "sbpe")
 - **Simpler API**: One function
   ([`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md))
   instead of 15+
-- **Reduced maintenance**: Fewer exported functions to document and test
 - **Pre-1.0.0 flexibility**: Breaking changes acceptable before stable
   release
-- **18-month deprecation period**: Functions were deprecated since
-  v0.4.0
 
 #### Code Clarity Improvements
 

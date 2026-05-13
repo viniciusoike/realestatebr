@@ -339,13 +339,6 @@ format (e.g. `2023-01-01`).
 To avoid this, use `lubridate::floor_date(date, 'month')`. Future
 versions of `realestatebr` might provide this as a default behavior.
 
-## Next Steps
-
-- [`vignette("working-with-rppi")`](https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.md)
-  — property price indices in depth
-- [`?get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-  — full parameter reference
-
 ## Reference (all datasets)
 
 The available datasets are listed below.
