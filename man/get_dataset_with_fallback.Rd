@@ -34,6 +34,6 @@ Dataset or NULL if all methods fail
 }
 \description{
 Internal function implementing the auto fallback strategy:
-cache → GitHub → fresh download
+cache -> GitHub -> fresh download
 }
 \keyword{internal}

@@ -1,30 +1,26 @@
 #' List Available Datasets
 #'
-#' Returns information about all available datasets in the realestatebr package.
-#' This provides a unified interface to discover all data sources and their
-#' characteristics.
+#' Returns a tibble describing all datasets available in the realestatebr package.
+#' Optionally filter by category, source organisation, or geographic coverage.
 #'
-#' @param category Optional. Filter datasets by category. Common categories include:
-#'   "indicators", "prices", "credit", "stocks". Leave NULL to see all datasets.
-#' @param source Optional. Filter by data source (e.g., "BCB", "FIPE", "ABRAINC").
-#' @param geography Optional. Filter by geographic coverage (e.g., "Brazil", "São Paulo").
-#' @param include_hidden Logical. If TRUE, includes datasets with status="hidden".
-#'   Default is FALSE to show only available datasets.
+#' @param category Optional character. Keyword matched against the dataset description
+#'   (e.g., \code{"indicators"}, \code{"prices"}, \code{"credit"}).
+#' @param source Optional character. Filter by data source organisation
+#'   (e.g., \code{"BCB"}, \code{"FIPE"}, \code{"ABRAINC"}).
+#' @param geography Optional character. Filter by geographic coverage
+#'   (e.g., \code{"Brazil"}, \code{"São Paulo"}).
 #'
-#' @return A tibble with columns:
+#' @return A tibble with one row per dataset and the following columns:
 #'   \describe{
-#'     \item{name}{Dataset identifier for use with get_dataset()}
-#'     \item{title}{Human-readable name in English}
-#'     \item{title_pt}{Human-readable name in Portuguese}
-#'     \item{description}{Brief description of the dataset}
-#'     \item{source}{Data source organization}
-#'     \item{geography}{Geographic coverage}
-#'     \item{frequency}{Update frequency}
-#'     \item{coverage}{Time period coverage}
-#'     \item{categories}{Number of categories/subtables}
-#'     \item{available_tables}{Names of available tables (for multi-table datasets)}
-#'     \item{data_type}{Type of data structure (tibble/list)}
-#'     \item{legacy_function}{Internal function name (for reference only)}
+#'     \item{name}{Dataset identifier used with \code{\link{get_dataset}}.}
+#'     \item{title}{English dataset name.}
+#'     \item{title_pt}{Portuguese dataset name.}
+#'     \item{description}{Brief description.}
+#'     \item{source}{Data source organisation.}
+#'     \item{geography}{Geographic coverage.}
+#'     \item{frequency}{Update frequency.}
+#'     \item{coverage}{Time period covered.}
+#'     \item{available_tables}{Comma-separated table names for multi-table datasets.}
 #'   }
 #'
 #' @examples
@@ -32,19 +28,19 @@
 #' datasets <- list_datasets()
 #'
 #' # Filter by data source
-#' bcb_data <- list_datasets(source = "BCB")
+#' bcb_data <- list_datasets(source = "abecip")
 #'
 #' # Filter by geography
 #' sao_paulo_data <- list_datasets(geography = "São Paulo")
 #'
-#' @seealso \code{\link{get_dataset}} for retrieving the actual data
+#' @seealso \code{\link{get_dataset}} for retrieving data,
+#'   \code{\link{get_dataset_info}} for detailed metadata on a single dataset.
 #'
 #' @export
 list_datasets <- function(
   category = NULL,
   source = NULL,
-  geography = NULL,
-  include_hidden = FALSE
+  geography = NULL
 ) {
   # Load the dataset registry
   registry <- load_dataset_registry()
@@ -164,20 +160,20 @@ registry_to_tibble <- function(registry) {
 
 #' Get Dataset Information
 #'
-#' Get detailed metadata for a specific dataset including available categories
-#' and column descriptions.
+#' Returns detailed metadata for a single dataset, including available tables
+#' and source information.
 #'
-#' @param name Character. Name of the dataset (use list_datasets() to see available names)
+#' @param name Character. Dataset identifier (see \code{\link{list_datasets}} for options).
 #'
-#' @return A list with detailed dataset information including:
+#' @return A named list with the following elements:
 #'   \describe{
-#'     \item{metadata}{Basic dataset information}
-#'     \item{categories}{Available categories/subtables}
-#'     \item{source_info}{Data source details}
+#'     \item{metadata}{Title, description, geography, frequency, and coverage.}
+#'     \item{categories}{Available tables/subtables and their descriptions.}
+#'     \item{source_info}{Source organisation and URL.}
+#'     \item{technical_info}{Cached file names and translation notes.}
 #'   }
 #'
 #' @examples
-#' # Get detailed info for ABECIP indicators
 #' info <- get_dataset_info("abecip")
 #' str(info)
 #'

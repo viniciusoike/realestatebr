@@ -47,11 +47,23 @@ get_abrainc_indicators <- function(
 ) {
   # Input validation ----
   valid_tables <- c("all", "indicator", "radar", "leading")
-  validate_dataset_params(table, valid_tables, cached, quiet, max_retries, allow_all = TRUE)
+  validate_dataset_params(
+    table,
+    valid_tables,
+    cached,
+    quiet,
+    max_retries,
+    allow_all = TRUE
+  )
 
   # Handle cached data ----
   if (cached) {
-    data <- handle_dataset_cache("abrainc", table = table, quiet = quiet, on_miss = "download")
+    data <- handle_dataset_cache(
+      "abrainc",
+      table = table,
+      quiet = quiet,
+      on_miss = "download"
+    )
 
     if (!is.null(data)) {
       data <- attach_dataset_metadata(data, source = "cache", category = table)
@@ -167,7 +179,7 @@ download_abrainc_excel <- function(max_retries, quiet) {
         url = url,
         expected_sheets = expected_sheets,
         min_size = 1000,
-        ssl_verify = FALSE,  # FIPE has SSL certificate issues
+        ssl_verify = FALSE, # FIPE has SSL certificate issues
         max_retries = max_retries,
         quiet = quiet
       )
@@ -257,8 +269,8 @@ clean_abrainc <- function(ls, category) {
       ) |>
       # Compute trends for variables
       dplyr::mutate(
-        ma3 = as.numeric(stats::filter(value, rep(1/3, 3), sides = 1)),
-        ma6 = as.numeric(stats::filter(value, rep(1/6, 6), sides = 1)),
+        ma3 = as.numeric(stats::filter(value, rep(1 / 3, 3), sides = 1)),
+        ma6 = as.numeric(stats::filter(value, rep(1 / 6, 6), sides = 1)),
         .by = variable
       ) |>
       # Join with variable labels
@@ -309,25 +321,25 @@ abrainc_fipe_col_names <- function() {
   )
 
   ind_labels <- dplyr::tribble(
-    ~variable,
-    ~variable_label,
-    "total",
-    "Total",
-    "market_rate",
-    "Market-rate Development",
-    "social_housing",
-    "Social Housing (MCMV)",
-    "other",
-    "Others",
-    "missing_info",
-    "Missing Info.",
-    "new_units",
-    "New Units",
-    "sale",
-    "Sales",
-    "new_units_cpi",
-    "New Units (CPI adjusted)",
-    "sale_cpi",
+    ~variable                  ,
+    ~variable_label            ,
+    "total"                    ,
+    "Total"                    ,
+    "market_rate"              ,
+    "Market-rate Development"  ,
+    "social_housing"           ,
+    "Social Housing (MCMV)"    ,
+    "other"                    ,
+    "Others"                   ,
+    "missing_info"             ,
+    "Missing Info."            ,
+    "new_units"                ,
+    "New Units"                ,
+    "sale"                     ,
+    "Sales"                    ,
+    "new_units_cpi"            ,
+    "New Units (CPI adjusted)" ,
+    "sale_cpi"                 ,
     "Sales(CPI) adjusted"
   )
 
@@ -348,31 +360,31 @@ abrainc_fipe_col_names <- function() {
   )
 
   radar_labels <- dplyr::tribble(
-    ~variable,
-    ~variable_label,
-    "confidence",
-    "Confidence Index",
-    "activity",
-    "Activity Index",
-    "interest",
-    "Interest Rate",
-    "finance_condition",
-    "Financing Conditions",
-    "real_concession",
-    "Real Concessions",
-    "atractivity",
-    "Atractivity",
-    "employment",
-    "Jobs",
-    "wage",
-    "Wages",
-    "real_estate_investing",
-    "Investment in Real Estate",
-    "input_costs",
-    "Input Costs",
-    "new_units",
-    "New Launches",
-    "real_estate_prices",
+    ~variable                   ,
+    ~variable_label             ,
+    "confidence"                ,
+    "Confidence Index"          ,
+    "activity"                  ,
+    "Activity Index"            ,
+    "interest"                  ,
+    "Interest Rate"             ,
+    "finance_condition"         ,
+    "Financing Conditions"      ,
+    "real_concession"           ,
+    "Real Concessions"          ,
+    "atractivity"               ,
+    "Atractivity"               ,
+    "employment"                ,
+    "Jobs"                      ,
+    "wage"                      ,
+    "Wages"                     ,
+    "real_estate_investing"     ,
+    "Investment in Real Estate" ,
+    "input_costs"               ,
+    "Input Costs"               ,
+    "new_units"                 ,
+    "New Launches"              ,
+    "real_estate_prices"        ,
     "Real Estate Prices"
   )
 
@@ -396,19 +408,19 @@ abrainc_fipe_col_names <- function() {
   lead_col_names <- c("date", paste(rep(xx, each = length(yy)), yy, sep = "-"))
 
   lead_labels <- dplyr::tribble(
-    ~variable,
-    ~variable_label,
-    "leading_index",
-    "Real Estate Leading Indicator (100 = dec/2000)",
-    "leading_index_12m",
-    "Real Estate Leading Indicator (% 12-month cumulative) (%)",
-    "alvaras_total",
-    "Number of Building Permits (per month)",
-    "alvaras_prop",
-    "Distribution of Building Permits in S\u00e3o Paulo (Total)",
-    "alvaras_total_12m",
-    "Building Permits (12-month cumulative)",
-    "alvaras_prop_12m",
+    ~variable                                                    ,
+    ~variable_label                                              ,
+    "leading_index"                                              ,
+    "Real Estate Leading Indicator (100 = dec/2000)"             ,
+    "leading_index_12m"                                          ,
+    "Real Estate Leading Indicator (% 12-month cumulative) (%)"  ,
+    "alvaras_total"                                              ,
+    "Number of Building Permits (per month)"                     ,
+    "alvaras_prop"                                               ,
+    "Distribution of Building Permits in S\u00e3o Paulo (Total)" ,
+    "alvaras_total_12m"                                          ,
+    "Building Permits (12-month cumulative)"                     ,
+    "alvaras_prop_12m"                                           ,
     "Distribution of Building Permits in S\u00e3o Paulo (%)"
   )
 

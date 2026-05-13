@@ -282,7 +282,7 @@ is_cache_up_to_date <- function(dataset_name) {
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # Update specific datasets
 #' update_cache_from_github(c("abecip", "bcb_series"))
 #'

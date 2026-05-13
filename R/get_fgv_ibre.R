@@ -40,7 +40,11 @@ get_fgv_ibre <- function(
     )
 
     if (!is.null(fgv_data)) {
-      fgv_data <- attach_dataset_metadata(fgv_data, source = "cache", category = table)
+      fgv_data <- attach_dataset_metadata(
+        fgv_data,
+        source = "cache",
+        category = table
+      )
       return(fgv_data)
     }
   }
@@ -73,7 +77,7 @@ fgv_key <- tibble::tribble(
        1000366,    "incc_2o_decendio",
        1000370,                "incc"
 )
-
+# fmt: skip
 fgv_dict <- data.frame(
   id_series = 1:15,
   code_series = c(

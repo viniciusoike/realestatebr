@@ -11,8 +11,8 @@ An object of class \code{list} of length 13.
 .ENCODING_MAP
 }
 \description{
-This list contains Unicode escape sequences for Portuguese characters
-commonly used in Brazilian data sources. Using Unicode escapes ensures
-CRAN compliance while maintaining correct character representation.
+Maps ASCII-key identifiers to their UTF-8 Portuguese equivalents.
+Keys are kept as plain ASCII for easy programmatic lookup; values
+are UTF-8 strings as supported by \code{Encoding: UTF-8} in DESCRIPTION.
 }
 \keyword{internal}

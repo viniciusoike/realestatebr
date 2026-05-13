@@ -7,22 +7,22 @@
 get_dataset_info(name)
 }
 \arguments{
-\item{name}{Character. Name of the dataset (use list_datasets() to see available names)}
+\item{name}{Character. Dataset identifier (see \code{\link{list_datasets}} for options).}
 }
 \value{
-A list with detailed dataset information including:
+A named list with the following elements:
 \describe{
-\item{metadata}{Basic dataset information}
-\item{categories}{Available categories/subtables}
-\item{source_info}{Data source details}
+\item{metadata}{Title, description, geography, frequency, and coverage.}
+\item{categories}{Available tables/subtables and their descriptions.}
+\item{source_info}{Source organisation and URL.}
+\item{technical_info}{Cached file names and translation notes.}
 }
 }
 \description{
-Get detailed metadata for a specific dataset including available categories
-and column descriptions.
+Returns detailed metadata for a single dataset, including available tables
+and source information.
 }
 \examples{
-# Get detailed info for ABECIP indicators
 info <- get_dataset_info("abecip")
 str(info)
 

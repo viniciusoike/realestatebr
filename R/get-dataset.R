@@ -1,34 +1,30 @@
 #' Get Dataset
 #'
-#' Unified interface for accessing all realestatebr package datasets with automatic
-#' fallback between different data sources (cache, GitHub, fresh download).
+#' Unified interface for accessing all realestatebr datasets with automatic
+#' fallback between data sources: user cache, GitHub releases, and fresh download.
 #'
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom yaml read_yaml
 #' @importFrom tibble tibble
 #'
-#' @param name Character. Dataset name (see list_datasets() for available options)
-#' @param table Character. Specific table within dataset (optional).
-#'   Use get_dataset_info(name) to see available tables.
+#' @param name Character. Dataset name (see \code{\link{list_datasets}} for options).
+#' @param table Character. Specific table within a multi-table dataset. See
+#'   \code{\link{get_dataset_info}} for available tables per dataset.
 #' @param source Character. Data source preference:
 #'   \describe{
-#'     \item{"auto"}{Automatic fallback: user cache → GitHub releases → fresh (default)}
-#'     \item{"cache"}{User cache only (stored in ~/.local/share/realestatebr/)}
-#'     \item{"github"}{Download from GitHub releases (requires piggyback package)}
-#'     \item{"fresh"}{Fresh download from original source (saves to user cache)}
+#'     \item{"auto"}{Automatic fallback: user cache, then GitHub releases, then fresh download (default).}
+#'     \item{"cache"}{User cache only (\file{~/.local/share/realestatebr/}).}
+#'     \item{"github"}{GitHub releases (requires the \pkg{piggyback} package).}
+#'     \item{"fresh"}{Fresh download from the original source; result is saved to user cache.}
 #'   }
-#' @param date_start Date. Start date for time series data (where applicable)
-#' @param date_end Date. End date for time series data (where applicable)
-#' @param max_age Numeric. Optional. Maximum acceptable cache age in days.
-#'   If specified, cached data older than this will be skipped and fresh data
-#'   will be downloaded. This is an **advanced parameter** for users who need
-#'   very recent data. Most users don't need to set this - the package uses
-#'   relaxed thresholds by default (weekly datasets: 14 days, monthly: 60 days)
-#'   and only warns when cache is significantly stale.
-#' @param ... Additional arguments passed to internal functions
+#' @param date_start Date. Start date for time series filtering (where applicable).
+#' @param date_end Date. End date for time series filtering (where applicable).
+#' @param max_age Numeric. Maximum acceptable cache age in days. Cached data
+#'   older than this threshold is skipped and fresh data is downloaded instead.
+#' @param ... Additional arguments passed to internal dataset functions.
 #'
-#' @return Dataset as tibble or list, depending on the dataset structure.
-#'   Use get_dataset_info(name) to see the expected structure.
+#' @return A tibble or named list, depending on the dataset. Use
+#'   \code{\link{get_dataset_info}} to inspect the expected structure.
 #'
 #' @examples
 #' \donttest{
@@ -41,59 +37,12 @@
 #' # Force fresh download
 #' fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 #'
-#' # Get BCB data for specific time period
-#' bcb_recent <- get_dataset("bcb_series",
-#'                          date_start = as.Date("2020-01-01"))
-#'
-#' # Advanced: Force very fresh data (< 1 day old)
-#' very_fresh <- get_dataset("bcb_series", max_age = 1)
-#'
-#' # Advanced: Only use cache if less than 3 days old
-#' recent_data <- get_dataset("rppi", table = "sale", max_age = 3)
+#' # Get BCB data from a specific start date
+#' bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
 #' }
-#'
-#' @section Debug Mode:
-#' The realestatebr package includes a comprehensive debug mode for development
-#' and troubleshooting. Debug mode shows detailed processing messages including
-#' file-by-file progress, data type detection, web scraping steps, and more.
-#'
-#' \strong{Enable debug mode:}
-#' \describe{
-#'   \item{Environment variable}{Set \code{REALESTATEBR_DEBUG=TRUE} in your environment}
-#'   \item{Package option}{Use \code{options(realestatebr.debug = TRUE)}}
-#' }
-#'
-#' \strong{Debug mode examples:}
-#' \preformatted{
-#' # Enable debug mode via environment variable
-#' Sys.setenv(REALESTATEBR_DEBUG = "TRUE")
-#' data <- get_dataset("bcb_series")  # Shows detailed processing messages
-#'
-#' # Enable debug mode via package option
-#' options(realestatebr.debug = TRUE)
-#' data <- get_dataset("rppi")  # Shows detailed processing messages
-#'
-#' # Disable debug mode
-#' options(realestatebr.debug = FALSE)
-#' # or
-#' Sys.unsetenv("REALESTATEBR_DEBUG")
-#' }
-#'
-#' \strong{What debug mode shows:}
-#' \itemize{
-#'   \item File download progress and retry attempts
-#'   \item Excel sheet processing steps
-#'   \item Data type detection and validation
-#'   \item Web scraping details and error handling
-#'   \item Cache access and fallback operations
-#'   \item Data cleaning and transformation steps
-#' }
-#'
-#' Debug mode is particularly useful when troubleshooting data access issues,
-#' understanding complex dataset processing, or developing new functionality.
 #'
 #' @seealso \code{\link{list_datasets}} for available datasets,
-#'   \code{\link{get_dataset_info}} for dataset details
+#'   \code{\link{get_dataset_info}} for dataset details.
 #'
 #' @export
 get_dataset <- function(
@@ -169,7 +118,7 @@ get_dataset <- function(
 #' Get Dataset with Fallback Strategy
 #'
 #' Internal function implementing the auto fallback strategy:
-#' cache → GitHub → fresh download
+#' cache -> GitHub -> fresh download
 #'
 #' @param name Dataset name
 #' @param dataset_info Dataset metadata from registry
@@ -385,7 +334,11 @@ get_from_github_cache <- function(name, dataset_info, table) {
 
   # Download from GitHub releases to user cache
   # Always overwrite: source="github" means the user explicitly wants fresh data from GitHub
-  data <- download_from_github_release(cached_name, overwrite = TRUE, quiet = FALSE)
+  data <- download_from_github_release(
+    cached_name,
+    overwrite = TRUE,
+    quiet = FALSE
+  )
 
   # Apply table filtering if needed
   # Note: For datasets with table-specific cached files (like BIS),
@@ -538,8 +491,13 @@ apply_table_filtering <- function(data, name, table) {
   # Special handling for BCB Series table filtering
   if (name == "bcb_series" && "bcb_category" %in% names(data)) {
     valid_tables <- c(
-      "price", "credit", "production", "interest-rate",
-      "exchange", "government", "real-estate"
+      "price",
+      "credit",
+      "production",
+      "interest-rate",
+      "exchange",
+      "government",
+      "real-estate"
     )
 
     if (table %in% valid_tables) {
@@ -580,7 +538,9 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
         return(gsub("\\.(rds|csv\\.gz)$", "", basename(selected_file)))
       }
       # "all" and unrecognized tables have no dedicated cache file
-      if (!is.null(table) && (table == "all" || !table %in% names(cached_file))) {
+      if (
+        !is.null(table) && (table == "all" || !table %in% names(cached_file))
+      ) {
         return(NULL)
       }
       # Default: use first file when table is NULL
@@ -598,7 +558,8 @@ get_cached_name <- function(name, dataset_info, table = NULL) {
     "rppi_bis" = "bis_selected", # Updated to use rppi_bis dataset name
     "rppi" = if (
       !is.null(table) &&
-        table %in% c("fipezap", "igmi", "ivgr", "iqa", "iqaiw", "ivar", "secovi_sp")
+        table %in%
+          c("fipezap", "igmi", "ivgr", "iqa", "iqaiw", "ivar", "secovi_sp")
     ) {
       # Map individual RPPI tables to their cached files
       switch(

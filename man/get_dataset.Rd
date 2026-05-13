@@ -15,82 +15,36 @@ get_dataset(
 )
 }
 \arguments{
-\item{name}{Character. Dataset name (see list_datasets() for available options)}
+\item{name}{Character. Dataset name (see \code{\link{list_datasets}} for options).}
 
-\item{table}{Character. Specific table within dataset (optional).
-Use get_dataset_info(name) to see available tables.}
+\item{table}{Character. Specific table within a multi-table dataset. See
+\code{\link{get_dataset_info}} for available tables per dataset.}
 
 \item{source}{Character. Data source preference:
 \describe{
-\item{"auto"}{Automatic fallback: user cache → GitHub releases → fresh (default)}
-\item{"cache"}{User cache only (stored in ~/.local/share/realestatebr/)}
-\item{"github"}{Download from GitHub releases (requires piggyback package)}
-\item{"fresh"}{Fresh download from original source (saves to user cache)}
+\item{"auto"}{Automatic fallback: user cache, then GitHub releases, then fresh download (default).}
+\item{"cache"}{User cache only (\file{~/.local/share/realestatebr/}).}
+\item{"github"}{GitHub releases (requires the \pkg{piggyback} package).}
+\item{"fresh"}{Fresh download from the original source; result is saved to user cache.}
 }}
 
-\item{date_start}{Date. Start date for time series data (where applicable)}
+\item{date_start}{Date. Start date for time series filtering (where applicable).}
 
-\item{date_end}{Date. End date for time series data (where applicable)}
+\item{date_end}{Date. End date for time series filtering (where applicable).}
 
-\item{max_age}{Numeric. Optional. Maximum acceptable cache age in days.
-If specified, cached data older than this will be skipped and fresh data
-will be downloaded. This is an \strong{advanced parameter} for users who need
-very recent data. Most users don't need to set this - the package uses
-relaxed thresholds by default (weekly datasets: 14 days, monthly: 60 days)
-and only warns when cache is significantly stale.}
+\item{max_age}{Numeric. Maximum acceptable cache age in days. Cached data
+older than this threshold is skipped and fresh data is downloaded instead.}
 
-\item{...}{Additional arguments passed to internal functions}
+\item{...}{Additional arguments passed to internal dataset functions.}
 }
 \value{
-Dataset as tibble or list, depending on the dataset structure.
-Use get_dataset_info(name) to see the expected structure.
+A tibble or named list, depending on the dataset. Use
+\code{\link{get_dataset_info}} to inspect the expected structure.
 }
 \description{
-Unified interface for accessing all realestatebr package datasets with automatic
-fallback between different data sources (cache, GitHub, fresh download).
+Unified interface for accessing all realestatebr datasets with automatic
+fallback between data sources: user cache, GitHub releases, and fresh download.
 }
-\section{Debug Mode}{
-
-The realestatebr package includes a comprehensive debug mode for development
-and troubleshooting. Debug mode shows detailed processing messages including
-file-by-file progress, data type detection, web scraping steps, and more.
-
-\strong{Enable debug mode:}
-\describe{
-\item{Environment variable}{Set \code{REALESTATEBR_DEBUG=TRUE} in your environment}
-\item{Package option}{Use \code{options(realestatebr.debug = TRUE)}}
-}
-
-\strong{Debug mode examples:}
-\preformatted{
-# Enable debug mode via environment variable
-Sys.setenv(REALESTATEBR_DEBUG = "TRUE")
-data <- get_dataset("bcb_series")  # Shows detailed processing messages
-
-# Enable debug mode via package option
-options(realestatebr.debug = TRUE)
-data <- get_dataset("rppi")  # Shows detailed processing messages
-
-# Disable debug mode
-options(realestatebr.debug = FALSE)
-# or
-Sys.unsetenv("REALESTATEBR_DEBUG")
-}
-
-\strong{What debug mode shows:}
-\itemize{
-\item File download progress and retry attempts
-\item Excel sheet processing steps
-\item Data type detection and validation
-\item Web scraping details and error handling
-\item Cache access and fallback operations
-\item Data cleaning and transformation steps
-}
-
-Debug mode is particularly useful when troubleshooting data access issues,
-understanding complex dataset processing, or developing new functionality.
-}
-
 \examples{
 \donttest{
 # Get all ABECIP indicators (default table)
@@ -102,19 +56,12 @@ sbpe_data <- get_dataset("abecip", "sbpe")
 # Force fresh download
 fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 
-# Get BCB data for specific time period
-bcb_recent <- get_dataset("bcb_series",
-                         date_start = as.Date("2020-01-01"))
-
-# Advanced: Force very fresh data (< 1 day old)
-very_fresh <- get_dataset("bcb_series", max_age = 1)
-
-# Advanced: Only use cache if less than 3 days old
-recent_data <- get_dataset("rppi", table = "sale", max_age = 3)
+# Get BCB data from a specific start date
+bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
 }
 
 }
 \seealso{
 \code{\link{list_datasets}} for available datasets,
-\code{\link{get_dataset_info}} for dataset details
+\code{\link{get_dataset_info}} for dataset details.
 }

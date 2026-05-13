@@ -2,11 +2,11 @@
 % Please edit documentation in R/utils-encoding.R
 \name{test_encoding_patterns}
 \alias{test_encoding_patterns}
-\title{Test function to verify Unicode escapes work correctly}
+\title{Test function to verify encoding patterns work correctly}
 \usage{
 test_encoding_patterns()
 }
 \description{
-Test function to verify Unicode escapes work correctly
+Test function to verify encoding patterns work correctly
 }
 \keyword{internal}

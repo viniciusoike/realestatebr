@@ -1,7 +1,7 @@
 #' Character Encoding Utilities
 #'
-#' Internal utilities for consistent handling of Portuguese characters
-#' using Unicode escapes to maintain CRAN compliance.
+#' Internal utilities for consistent handling of Portuguese characters.
+#' The package uses UTF-8 encoding (declared in DESCRIPTION) throughout.
 #'
 #' @keywords internal
 #' @name encoding-utils
@@ -9,13 +9,13 @@ NULL
 
 #' Character mappings for consistent encoding
 #'
-#' This list contains Unicode escape sequences for Portuguese characters
-#' commonly used in Brazilian data sources. Using Unicode escapes ensures
-#' CRAN compliance while maintaining correct character representation.
+#' Maps ASCII-key identifiers to their UTF-8 Portuguese equivalents.
+#' Keys are kept as plain ASCII for easy programmatic lookup; values
+#' are UTF-8 strings as supported by \code{Encoding: UTF-8} in DESCRIPTION.
 #'
 #' @keywords internal
 .ENCODING_MAP <- list(
-  # Portuguese characters with diacritics (using ASCII keys for CRAN compliance)
+  # ASCII keys \u2192 UTF-8 values
   "producao" = "produ\u00e7\u00e3o",
   "exportacao" = "exporta\u00e7\u00e3o",
   "aco" = "a\u00e7o",
@@ -31,7 +31,7 @@ NULL
   "seminario" = "Semin\u00e1rio"
 )
 
-#' Test function to verify Unicode escapes work correctly
+#' Test function to verify encoding patterns work correctly
 #'
 #' @keywords internal
 test_encoding_patterns <- function() {
@@ -41,7 +41,7 @@ test_encoding_patterns <- function() {
 
   # Test city matching
   city_1 <- "S\u00e3o Paulo"
-  city_2 <- "S\u00e3o Paulo"  # Both should be Unicode escaped
+  city_2 <- "S\u00e3o Paulo"
 
   # Test region pattern
   region_test <- "REGI\u00c3O NORDESTE"

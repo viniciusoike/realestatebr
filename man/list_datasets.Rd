@@ -4,57 +4,48 @@
 \alias{list_datasets}
 \title{List Available Datasets}
 \usage{
-list_datasets(
-  category = NULL,
-  source = NULL,
-  geography = NULL,
-  include_hidden = FALSE
-)
+list_datasets(category = NULL, source = NULL, geography = NULL)
 }
 \arguments{
-\item{category}{Optional. Filter datasets by category. Common categories include:
-"indicators", "prices", "credit", "stocks". Leave NULL to see all datasets.}
+\item{category}{Optional character. Keyword matched against the dataset description
+(e.g., \code{"indicators"}, \code{"prices"}, \code{"credit"}).}
 
-\item{source}{Optional. Filter by data source (e.g., "BCB", "FIPE", "ABRAINC").}
+\item{source}{Optional character. Filter by data source organisation
+(e.g., \code{"BCB"}, \code{"FIPE"}, \code{"ABRAINC"}).}
 
-\item{geography}{Optional. Filter by geographic coverage (e.g., "Brazil", "São Paulo").}
-
-\item{include_hidden}{Logical. If TRUE, includes datasets with status="hidden".
-Default is FALSE to show only available datasets.}
+\item{geography}{Optional character. Filter by geographic coverage
+(e.g., \code{"Brazil"}, \code{"São Paulo"}).}
 }
 \value{
-A tibble with columns:
+A tibble with one row per dataset and the following columns:
 \describe{
-\item{name}{Dataset identifier for use with get_dataset()}
-\item{title}{Human-readable name in English}
-\item{title_pt}{Human-readable name in Portuguese}
-\item{description}{Brief description of the dataset}
-\item{source}{Data source organization}
-\item{geography}{Geographic coverage}
-\item{frequency}{Update frequency}
-\item{coverage}{Time period coverage}
-\item{categories}{Number of categories/subtables}
-\item{available_tables}{Names of available tables (for multi-table datasets)}
-\item{data_type}{Type of data structure (tibble/list)}
-\item{legacy_function}{Internal function name (for reference only)}
+\item{name}{Dataset identifier used with \code{\link{get_dataset}}.}
+\item{title}{English dataset name.}
+\item{title_pt}{Portuguese dataset name.}
+\item{description}{Brief description.}
+\item{source}{Data source organisation.}
+\item{geography}{Geographic coverage.}
+\item{frequency}{Update frequency.}
+\item{coverage}{Time period covered.}
+\item{available_tables}{Comma-separated table names for multi-table datasets.}
 }
 }
 \description{
-Returns information about all available datasets in the realestatebr package.
-This provides a unified interface to discover all data sources and their
-characteristics.
+Returns a tibble describing all datasets available in the realestatebr package.
+Optionally filter by category, source organisation, or geographic coverage.
 }
 \examples{
 # List all available datasets
 datasets <- list_datasets()
 
 # Filter by data source
-bcb_data <- list_datasets(source = "BCB")
+bcb_data <- list_datasets(source = "abecip")
 
 # Filter by geography
 sao_paulo_data <- list_datasets(geography = "São Paulo")
 
 }
 \seealso{
-\code{\link{get_dataset}} for retrieving the actual data
+\code{\link{get_dataset}} for retrieving data,
+\code{\link{get_dataset_info}} for detailed metadata on a single dataset.
 }
