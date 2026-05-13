@@ -124,7 +124,9 @@ handle_dataset_cache <- function(
       if (is.null(cached_data)) {
         if (!quiet) {
           if (on_miss == "download") {
-            cli::cli_warn("Data not found in user cache, falling back to fresh download")
+            cli::cli_warn(
+              "Data not found in user cache, falling back to fresh download"
+            )
           } else if (on_miss == "return_null") {
             cli::cli_inform("Data not found in user cache")
           }

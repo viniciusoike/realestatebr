@@ -48,11 +48,23 @@ get_abecip_indicators <- function(
 ) {
   # Input validation ----
   valid_tables <- c("sbpe", "cgi", "units")
-  validate_dataset_params(table, valid_tables, cached, quiet, max_retries, allow_all = FALSE)
+  validate_dataset_params(
+    table,
+    valid_tables,
+    cached,
+    quiet,
+    max_retries,
+    allow_all = FALSE
+  )
 
   # Handle cached data ----
   if (cached) {
-    data <- handle_dataset_cache("abecip", table = table, quiet = quiet, on_miss = "download")
+    data <- handle_dataset_cache(
+      "abecip",
+      table = table,
+      quiet = quiet,
+      on_miss = "download"
+    )
 
     if (!is.null(data)) {
       data <- attach_dataset_metadata(data, source = "cache", category = table)
@@ -97,7 +109,11 @@ get_abecip_indicators <- function(
       ))
     }
 
-    cgi_path <- system.file("extdata", "abecip_cgi.xlsx", package = "realestatebr")
+    cgi_path <- system.file(
+      "extdata",
+      "abecip_cgi.xlsx",
+      package = "realestatebr"
+    )
     if (cgi_path == "") {
       cli::cli_abort("CGI data file not found in package installation")
     }
@@ -122,7 +138,12 @@ get_abecip_indicators <- function(
       extra_info = list(note = "CGI is a static historical dataset")
     )
   } else {
-    abecip <- attach_dataset_metadata(abecip, source = "web", category = table, extra_info = download_info)
+    abecip <- attach_dataset_metadata(
+      abecip,
+      source = "web",
+      category = table,
+      extra_info = download_info
+    )
   }
 
   if (!quiet) {
@@ -458,8 +479,14 @@ load_abecip_cgi <- function(path) {
 
   dplyr::select(
     raw,
-    year, date, new_contracts, stock_contracts,
-    loan, outstanding_balance, average_term, default_rate
+    year,
+    date,
+    new_contracts,
+    stock_contracts,
+    loan,
+    outstanding_balance,
+    average_term,
+    default_rate
   )
 }
 
@@ -487,7 +514,11 @@ parse_cgi_contract <- function(x, width = 4) {
 parse_cgi_balance <- function(x) {
   y <- stringr::str_extract_all(x, "\\d+")
   y <- sapply(y, paste, collapse = "")
-  y <- ifelse(stringr::str_detect(y, "^9"), stringr::str_sub(y, 1, 10), stringr::str_sub(y, 1, 11))
+  y <- ifelse(
+    stringr::str_detect(y, "^9"),
+    stringr::str_sub(y, 1, 10),
+    stringr::str_sub(y, 1, 11)
+  )
   y <- ifelse(
     stringr::str_detect(y, "^1") & stringr::str_length(y) == 10,
     stringr::str_pad(y, width = 11, side = "right", pad = "0"),
@@ -499,8 +530,18 @@ parse_cgi_balance <- function(x) {
 parse_cgi_stock <- function(x) {
   y <- stringr::str_remove(x, "\\.")
   y <- dplyr::case_when(
-    stringr::str_detect(y, "^1") ~ stringr::str_pad(stringr::str_sub(y, 1, 6), width = 6, side = "right", pad = "0"),
-    stringr::str_detect(y, "^9") ~ stringr::str_pad(stringr::str_sub(y, 1, 5), width = 5, side = "right", pad = "0")
+    stringr::str_detect(y, "^1") ~ stringr::str_pad(
+      stringr::str_sub(y, 1, 6),
+      width = 6,
+      side = "right",
+      pad = "0"
+    ),
+    stringr::str_detect(y, "^9") ~ stringr::str_pad(
+      stringr::str_sub(y, 1, 5),
+      width = 5,
+      side = "right",
+      pad = "0"
+    )
   )
   as.numeric(y)
 }

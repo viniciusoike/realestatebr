@@ -60,7 +60,14 @@ get_bcb_series <- function(
   }
 
   valid_tables <- c(unique(bcb_metadata$bcb_category), "all")
-  validate_dataset_params(table, valid_tables, cached, quiet, max_retries, allow_all = TRUE)
+  validate_dataset_params(
+    table,
+    valid_tables,
+    cached,
+    quiet,
+    max_retries,
+    allow_all = TRUE
+  )
 
   # Validate and process date_start
   if (!inherits(date_start, "Date")) {
@@ -106,7 +113,12 @@ get_bcb_series <- function(
 
   # Handle cached data ----
   if (cached) {
-    data <- handle_dataset_cache("bcb_series", table = NULL, quiet = quiet, on_miss = "download")
+    data <- handle_dataset_cache(
+      "bcb_series",
+      table = NULL,
+      quiet = quiet,
+      on_miss = "download"
+    )
 
     if (!is.null(data)) {
       # Filter by codes and date
@@ -120,7 +132,10 @@ get_bcb_series <- function(
         data,
         source = "cache",
         category = table,
-        extra_info = list(series_count = length(codes_bcb), date_start = date_start)
+        extra_info = list(
+          series_count = length(codes_bcb),
+          date_start = date_start
+        )
       )
       return(data)
     }

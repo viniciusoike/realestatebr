@@ -66,7 +66,12 @@ calculate_rppi_changes <- function(
   data <- data |>
     dplyr::mutate(
       chg = .data[[index_col]] / dplyr::lag(.data[[index_col]]) - 1,
-      acum12m = exp(as.numeric(stats::filter(log(1 + chg), rep(1, 12), sides = 1))) - 1,
+      acum12m = exp(as.numeric(stats::filter(
+        log(1 + chg),
+        rep(1, 12),
+        sides = 1
+      ))) -
+        1,
       .by = dplyr::all_of(group_col)
     )
 
@@ -89,7 +94,7 @@ download_excel_with_retry <- function(url, max_retries = 3, quiet = FALSE) {
   # Use the generic download_excel() from helpers-download.R
   download_excel(
     url = url,
-    expected_sheets = NULL,  # No sheet validation for generic RPPI downloads
+    expected_sheets = NULL, # No sheet validation for generic RPPI downloads
     min_size = 1000,
     ssl_verify = TRUE,
     max_retries = max_retries,

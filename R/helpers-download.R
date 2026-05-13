@@ -20,10 +20,11 @@
 #'
 #' @keywords internal
 download_with_retry <- function(
-    fn,
-    max_retries = 3,
-    quiet = FALSE,
-    desc = "Download") {
+  fn,
+  max_retries = 3,
+  quiet = FALSE,
+  desc = "Download"
+) {
   for (i in seq_len(max_retries + 1)) {
     result <- tryCatch(fn(), error = function(e) {
       if (i <= max_retries && !quiet) {
@@ -67,12 +68,13 @@ download_with_retry <- function(
 #'
 #' @keywords internal
 download_file <- function(
-    url,
-    file_ext = ".xlsx",
-    ssl_verify = TRUE,
-    max_retries = 3,
-    quiet = FALSE,
-    desc = "file") {
+  url,
+  file_ext = ".xlsx",
+  ssl_verify = TRUE,
+  max_retries = 3,
+  quiet = FALSE,
+  desc = "file"
+) {
   download_with_retry(
     fn = function() {
       # Configure SSL if needed
@@ -127,12 +129,13 @@ download_file <- function(
 #'
 #' @keywords internal
 download_excel <- function(
-    url,
-    expected_sheets = NULL,
-    min_size = 1000,
-    ssl_verify = TRUE,
-    max_retries = 3,
-    quiet = FALSE) {
+  url,
+  expected_sheets = NULL,
+  min_size = 1000,
+  ssl_verify = TRUE,
+  max_retries = 3,
+  quiet = FALSE
+) {
   download_with_retry(
     fn = function() {
       # Configure SSL if needed
@@ -158,7 +161,8 @@ download_excel <- function(
       if (is.na(file_size) || file_size < min_size) {
         stop(sprintf(
           "Downloaded file too small: %s bytes (minimum: %s)",
-          file_size, min_size
+          file_size,
+          min_size
         ))
       }
 
@@ -207,11 +211,12 @@ download_excel <- function(
 #'
 #' @keywords internal
 download_csv <- function(
-    url,
-    min_size = 100,
-    ssl_verify = TRUE,
-    max_retries = 3,
-    quiet = FALSE) {
+  url,
+  min_size = 100,
+  ssl_verify = TRUE,
+  max_retries = 3,
+  quiet = FALSE
+) {
   download_with_retry(
     fn = function() {
       # Configure SSL if needed
@@ -246,7 +251,8 @@ download_csv <- function(
       if (is.na(file_size) || file_size < min_size) {
         stop(sprintf(
           "Downloaded file too small: %s bytes (minimum: %s)",
-          file_size, min_size
+          file_size,
+          min_size
         ))
       }
 
@@ -279,12 +285,13 @@ download_csv <- function(
 #'
 #' @keywords internal
 download_zip <- function(
-    url,
-    file_pattern = "\\.csv$",
-    min_size = 1000,
-    ssl_verify = TRUE,
-    max_retries = 3,
-    quiet = FALSE) {
+  url,
+  file_pattern = "\\.csv$",
+  min_size = 1000,
+  ssl_verify = TRUE,
+  max_retries = 3,
+  quiet = FALSE
+) {
   download_with_retry(
     fn = function() {
       # Configure SSL if needed
@@ -320,12 +327,19 @@ download_zip <- function(
       utils::unzip(temp_zip, exdir = extract_dir)
 
       # Find target file
-      all_files <- list.files(extract_dir, pattern = file_pattern,
-                              recursive = TRUE, full.names = TRUE)
+      all_files <- list.files(
+        extract_dir,
+        pattern = file_pattern,
+        recursive = TRUE,
+        full.names = TRUE
+      )
 
       if (length(all_files) == 0) {
-        stop("No file matching pattern '", file_pattern,
-             "' found in ZIP archive")
+        stop(
+          "No file matching pattern '",
+          file_pattern,
+          "' found in ZIP archive"
+        )
       }
 
       # Disambiguate using basename of URL if multiple matches
@@ -338,8 +352,10 @@ download_zip <- function(
         if (length(matched) == 1) {
           all_files <- matched
         } else {
-          stop("Multiple files match pattern and cannot disambiguate: ",
-               paste(basename(all_files), collapse = ", "))
+          stop(
+            "Multiple files match pattern and cannot disambiguate: ",
+            paste(basename(all_files), collapse = ", ")
+          )
         }
       }
 
@@ -350,7 +366,8 @@ download_zip <- function(
       if (is.na(file_size) || file_size < min_size) {
         stop(sprintf(
           "Extracted file too small: %s bytes (minimum: %s)",
-          file_size, min_size
+          file_size,
+          min_size
         ))
       }
 
@@ -389,15 +406,16 @@ download_zip <- function(
 #'
 #' @keywords internal
 scrape_download_url <- function(
-    page_url,
-    xpath = NULL,
-    css = NULL,
-    base_url = NULL,
-    max_retries = 3,
-    quiet = FALSE) {
+  page_url,
+  xpath = NULL,
+  css = NULL,
+  base_url = NULL,
+  max_retries = 3,
+  quiet = FALSE
+) {
   # Validate inputs
 
-if (is.null(xpath) && is.null(css)) {
+  if (is.null(xpath) && is.null(css)) {
     cli::cli_abort("Either {.arg xpath} or {.arg css} must be provided")
   }
 
@@ -469,12 +487,13 @@ if (is.null(xpath) && is.null(css)) {
 #'
 #' @keywords internal
 download_multiple_files <- function(
-    urls,
-    file_ext = ".xlsx",
-    delay = 1,
-    ssl_verify = TRUE,
-    max_retries = 3,
-    quiet = FALSE) {
+  urls,
+  file_ext = ".xlsx",
+  delay = 1,
+  ssl_verify = TRUE,
+  max_retries = 3,
+  quiet = FALSE
+) {
   paths <- character(length(urls))
   failed <- character()
 
@@ -490,7 +509,7 @@ download_multiple_files <- function(
           file_ext = file_ext,
           ssl_verify = ssl_verify,
           max_retries = max_retries,
-          quiet = TRUE  # Suppress individual file messages
+          quiet = TRUE # Suppress individual file messages
         )
         paths[i] <- path
         NULL
