@@ -8,8 +8,23 @@ template:
     code_font: {google: "JetBrains Mono"}
     "code-font-size": 0.82em
 
+logo:
+  src: man/figures/hexlogo.png
+  alt: "trendseries hexsticker"
+
 articles:
   - title: "Get started"
+    navbar: ~
     contents:
       - getting-started
       - working-with-rppi
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    github:
+      icon: fab fa-github
+      href: https://github.com/viniciusoike/realestatebr
+      aria-label: GitHub
