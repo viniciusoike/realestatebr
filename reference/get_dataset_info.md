@@ -1,7 +1,7 @@
 # Get Dataset Information
 
-Get detailed metadata for a specific dataset including available
-categories and column descriptions.
+Returns detailed metadata for a single dataset, including available
+tables and source information.
 
 ## Usage
 
@@ -13,29 +13,33 @@ get_dataset_info(name)
 
 - name:
 
-  Character. Name of the dataset (use list_datasets() to see available
-  names)
+  Character. Dataset identifier (see
+  [`list_datasets`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
+  for options).
 
 ## Value
 
-A list with detailed dataset information including:
+A named list with the following elements:
 
 - metadata:
 
-  Basic dataset information
+  Title, description, geography, frequency, and coverage.
 
 - categories:
 
-  Available categories/subtables
+  Available tables/subtables and their descriptions.
 
 - source_info:
 
-  Data source details
+  Source organisation and URL.
+
+- technical_info:
+
+  Cached file names and translation notes.
 
 ## Examples
 
 ``` r
-# Get detailed info for ABECIP indicators
 info <- get_dataset_info("abecip")
 str(info)
 #> List of 4

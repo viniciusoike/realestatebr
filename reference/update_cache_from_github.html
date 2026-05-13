@@ -16,11 +16,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with realestatebr</a></li>
-    <li><a class="dropdown-item" href="../articles/working-with-rppi.html">Working with Property Price Indices</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -66,34 +62,13 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Update specific datasets</span></span></span>
 <span class="r-in"><span><span class="fu">update_cache_from_github</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"abecip"</span>, <span class="st">"bcb_series"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Updating abecip from GitHub...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Attempting to download abecip.rds from GitHub...</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>file(s) <span style="color: #0000BB;">abecip.rds</span> not found in repo <span style="color: #0000BB;">"viniciusoike/realestatebr"</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> All local files already up-to-date!</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Attempting to download abecip.csv.gz from GitHub...</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>file(s) <span style="color: #0000BB;">abecip.csv.gz</span> not found in repo <span style="color: #0000BB;">"viniciusoike/realestatebr"</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> All local files already up-to-date!</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in download_from_github_release(dataset, overwrite = TRUE, quiet = quiet):</span> Dataset 'abecip' not found on GitHub releases</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Available datasets: abecip_sbpe.rds, abecip_units.rds, abrainc_indicator.rds,</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span>   abrainc_leading.rds, abrainc_radar.rds, bcb_realestate.rds, bcb_series.rds,</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span>   bis_selected.rds, fgv_ibre.rds, rppi_rent.rds, rppi_sale.rds, secovi_sp.rds</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Or use source='fresh' to download from original source</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Update all cached datasets</span></span></span>
 <span class="r-in"><span><span class="fu">update_cache_from_github</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Found 5 cached files</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Skipping cache_metadata: cannot determine if update needed</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Skipping rppi_sale: already up to date</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Skipping bcb_series: already up to date</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Skipping bcb_realestate: already up to date</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Skipping abecip_sbpe: already up to date</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Updated 4 datasets</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> cache_metadata      rppi_sale     bcb_series bcb_realestate    abecip_sbpe </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             NA           TRUE           TRUE           TRUE           TRUE </span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

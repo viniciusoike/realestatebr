@@ -1,6 +1,6 @@
-# Test function to verify Unicode escapes work correctly
+# Test function to verify encoding patterns work correctly
 
-Test function to verify Unicode escapes work correctly
+Test function to verify encoding patterns work correctly
 
 ## Usage
 

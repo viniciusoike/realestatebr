@@ -1,97 +1,79 @@
 # List Available Datasets
 
-Returns information about all available datasets in the realestatebr
-package. This provides a unified interface to discover all data sources
-and their characteristics.
+Returns a tibble describing all datasets available in the realestatebr
+package. Optionally filter by category, source organisation, or
+geographic coverage.
 
 ## Usage
 
 ``` r
-list_datasets(
-  category = NULL,
-  source = NULL,
-  geography = NULL,
-  include_hidden = FALSE
-)
+list_datasets(category = NULL, source = NULL, geography = NULL)
 ```
 
 ## Arguments
 
 - category:
 
-  Optional. Filter datasets by category. Common categories include:
-  "indicators", "prices", "credit", "stocks". Leave NULL to see all
-  datasets.
+  Optional character. Keyword matched against the dataset description
+  (e.g., `"indicators"`, `"prices"`, `"credit"`).
 
 - source:
 
-  Optional. Filter by data source (e.g., "BCB", "FIPE", "ABRAINC").
+  Optional character. Filter by data source organisation (e.g., `"BCB"`,
+  `"FIPE"`, `"ABRAINC"`).
 
 - geography:
 
-  Optional. Filter by geographic coverage (e.g., "Brazil", "São Paulo").
-
-- include_hidden:
-
-  Logical. If TRUE, includes datasets with status="hidden". Default is
-  FALSE to show only available datasets.
+  Optional character. Filter by geographic coverage (e.g., `"Brazil"`,
+  `"São Paulo"`).
 
 ## Value
 
-A tibble with columns:
+A tibble with one row per dataset and the following columns:
 
 - name:
 
-  Dataset identifier for use with get_dataset()
+  Dataset identifier used with
+  [`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md).
 
 - title:
 
-  Human-readable name in English
+  English dataset name.
 
 - title_pt:
 
-  Human-readable name in Portuguese
+  Portuguese dataset name.
 
 - description:
 
-  Brief description of the dataset
+  Brief description.
 
 - source:
 
-  Data source organization
+  Data source organisation.
 
 - geography:
 
-  Geographic coverage
+  Geographic coverage.
 
 - frequency:
 
-  Update frequency
+  Update frequency.
 
 - coverage:
 
-  Time period coverage
-
-- categories:
-
-  Number of categories/subtables
+  Time period covered.
 
 - available_tables:
 
-  Names of available tables (for multi-table datasets)
-
-- data_type:
-
-  Type of data structure (tibble/list)
-
-- legacy_function:
-
-  Internal function name (for reference only)
+  Comma-separated table names for multi-table datasets.
 
 ## See also
 
 [`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-for retrieving the actual data
+for retrieving data,
+[`get_dataset_info`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
+for detailed metadata on a single dataset.
 
 ## Examples
 
@@ -101,8 +83,8 @@ datasets <- list_datasets()
 #> Found 8 datasets. Use get_dataset(name) to retrieve data.
 
 # Filter by data source
-bcb_data <- list_datasets(source = "BCB")
-#> Warning: No datasets found matching the specified criteria.
+bcb_data <- list_datasets(source = "abecip")
+#> Found 1 dataset. Use get_dataset(name) to retrieve data.
 
 # Filter by geography
 sao_paulo_data <- list_datasets(geography = "São Paulo")

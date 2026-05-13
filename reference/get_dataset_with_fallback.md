@@ -1,7 +1,7 @@
 # Get Dataset with Fallback Strategy
 
-Internal function implementing the auto fallback strategy: cache →
-GitHub → fresh download
+Internal function implementing the auto fallback strategy: cache -\>
+GitHub -\> fresh download
 
 ## Usage
 

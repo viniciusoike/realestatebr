@@ -1,6 +1,6 @@
 # Articles
 
-### All vignettes
+### Get started
 
 - [Getting Started with
   realestatebr](https://viniciusoike.github.io/realestatebr/articles/getting-started.md):
