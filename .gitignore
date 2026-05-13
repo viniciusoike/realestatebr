@@ -70,6 +70,7 @@ backup/
 # Cache directories (data cached locally or on GitHub releases, not in repo)
 inst/cached_data/
 data-raw/cache_output/
+data-raw/backlog/
 
 /.quarto/
 README.html
