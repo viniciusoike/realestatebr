@@ -4,12 +4,6 @@ name: Integration Tests
 on:
   schedule:
     - cron: '0 10 * * 1'  # Every Monday at 10 AM UTC
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
