@@ -22,13 +22,7 @@ get_bcb_realestate <- function(
   max_retries = 3L
 ) {
   # Input validation ----
-  valid_tables <- c(
-    "accounting",
-    "application",
-    "indices",
-    "sources",
-    "units"
-  )
+  valid_tables <- c("accounting", "application", "indices", "sources", "units")
 
   validate_dataset_params(
     table,
@@ -39,36 +33,59 @@ get_bcb_realestate <- function(
     allow_all = TRUE
   )
 
-  # Handle cached data ----
+  # Resolve data: cache or fresh download ----
+  clean_bcb <- NULL
+
   if (cached) {
-    clean_bcb <- handle_dataset_cache(
+    cached_data <- handle_dataset_cache(
       "bcb_realestate",
       table = NULL,
       quiet = quiet,
       on_miss = "download"
     )
-
-    if (!is.null(clean_bcb)) {
+    if (!is.null(cached_data)) {
       clean_bcb <- attach_dataset_metadata(
-        clean_bcb,
+        cached_data,
         source = "cache",
         category = table
       )
-    } else {
-      # Fallback to fresh download
-      clean_bcb <- download_and_process_bcb_data(quiet, max_retries)
     }
-  } else {
-    # Download fresh data from BCB API
-    clean_bcb <- download_and_process_bcb_data(quiet, max_retries)
   }
 
-  # Return full cleaned table
+  if (is.null(clean_bcb)) {
+    cli_user("Downloading real estate data from BCB API", quiet = quiet)
+
+    bcb <- rlang::try_fetch(
+      download_bcb_realestate(quiet = quiet, max_retries = max_retries),
+      error = function(cnd) {
+        if (!quiet) cli::cli_warn("BCB API download failed: {cnd$message}")
+        NULL
+      }
+    )
+
+    if (is.null(bcb)) {
+      data <- fallback_to_github_cache("bcb_realestate", quiet = quiet)
+      if (!is.null(data)) {
+        clean_bcb <- attach_dataset_metadata(data, source = "github_cache")
+      } else {
+        cli::cli_abort(c(
+          "BCB API failed after {max_retries} attempts",
+          "x" = "GitHub cache is also unavailable",
+          "i" = "The BCB API may be temporarily down"
+        ))
+      }
+    } else {
+      clean_bcb <- clean_bcb_realestate(bcb)
+      clean_bcb <- attach_dataset_metadata(clean_bcb, source = "web")
+    }
+  }
+
+  # Return full cleaned table ----
   if (table == "all") {
     return(clean_bcb)
   }
 
-  # Auxiliary function to pivot_wider thematic tables
+  # Pivot to wide format for specific tables ----
   tbl_bcb_wider <- function(cat, id_cols, names_from) {
     clean_bcb |>
       dplyr::filter(category == cat, !stringr::str_detect(type, "[0-9]")) |>
@@ -82,23 +99,10 @@ get_bcb_realestate <- function(
       dplyr::rename_with(~ stringr::str_remove(.x, "(_br)|(br$)"))
   }
 
-  # Tibble with parameters to feed the tbl_bcb_wider function
   params <- dplyr::tibble(
-    category_label = c(
-      "units",
-      "accounting",
-      "indices",
-      "sources",
-      "application"
-    ),
+    category_label = c("units", "accounting", "indices", "sources", "application"),
     cat = c("imoveis", "contabil", "indices", "fontes", "direcionamento"),
-    id_cols = c(
-      list(c("date", "abbrev_state")),
-      "date",
-      "date",
-      "date",
-      "date"
-    ),
+    id_cols = list(c("date", "abbrev_state"), "date", "date", "date", "date"),
     names_from = list(
       c("type", "v1"),
       c("type", "v1"),
@@ -107,141 +111,46 @@ get_bcb_realestate <- function(
       c("type", "v1", "v2")
     )
   )
-  # Use purrr::pmap to apply function
-  params <- params |>
-    dplyr::mutate(
-      tab = purrr::pmap(list(cat, id_cols, names_from), tbl_bcb_wider)
-    )
-  # Subset for specific category
-  tbl_bcb <- params |>
+
+  tbl_bcb <- dplyr::mutate(
+    params,
+    tab = purrr::pmap(list(cat, id_cols, names_from), tbl_bcb_wider)
+  ) |>
     dplyr::filter(category_label == table) |>
     tidyr::unnest(cols = tab) |>
-    dplyr::select(-cat, -id_cols, -names_from)
+    dplyr::select(-category_label, -cat, -id_cols, -names_from)
 
-  # Preserve metadata from clean_bcb
   source_val <- attr(clean_bcb, "source", exact = TRUE)
-  if (is.null(source_val)) {
-    source_val <- "web"
-  }
+  if (is.null(source_val)) source_val <- "web"
 
-  tbl_bcb <- attach_dataset_metadata(
-    tbl_bcb,
-    source = source_val,
-    category = table
-  )
+  tbl_bcb <- attach_dataset_metadata(tbl_bcb, source = source_val, category = table)
 
-  # Compute nrow before cli message to avoid serialization issues
   n_records <- nrow(tbl_bcb)
   cli_user(
-    "\u2713 BCB real estate data retrieved: {n_records} records",
+    "✓ BCB real estate data retrieved: {n_records} records",
     quiet = quiet
   )
 
   return(tbl_bcb)
 }
 
-#' Download and Process BCB Real Estate Data
+#' Download raw BCB real estate data from the API
 #'
 #' @param quiet Logical controlling messages
 #' @param max_retries Maximum number of retry attempts
-#' @return Processed BCB real estate data tibble
+#' @return Raw tibble from BCB API endpoint
 #' @keywords internal
-download_and_process_bcb_data <- function(quiet, max_retries) {
-  cli_user("Downloading real estate data from BCB API", quiet = quiet)
+download_bcb_realestate <- function(quiet = FALSE, max_retries = 3L) {
+  url <- "https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor"
 
-  # Download and import most recent data available with retry logic
-  bcb <- tryCatch(
-    {
-      download_with_retry(
-        fn = import_bcb_realestate,
-        max_retries = max_retries,
-        quiet = quiet,
-        desc = "BCB API"
-      )
-    },
-    error = function(e) {
-      if (!quiet) {
-        cli::cli_warn("BCB API download failed: {e$message}")
-      }
-      NULL
-    }
-  )
+  temp_path <- download_csv(url, max_retries = max_retries, quiet = quiet)
+  raw <- readr::read_csv(temp_path, col_types = "Dcc")
 
-  if (is.null(bcb)) {
-    data <- fallback_to_github_cache("bcb_realestate", quiet = quiet)
-    if (!is.null(data)) {
-      return(attach_dataset_metadata(data, source = "github_cache"))
-    }
-    cli::cli_abort(c(
-      "BCB API failed after {max_retries} attempts",
-      "x" = "GitHub cache is also unavailable",
-      "i" = "The BCB API may be temporarily down"
-    ))
-  }
-
-  cli_debug("Processing and cleaning BCB data...")
-
-  # Clean data
-  clean_bcb <- clean_bcb_realestate(bcb)
-
-  # Add metadata
-  clean_bcb <- attach_dataset_metadata(clean_bcb, source = "web")
-
-  return(clean_bcb)
-}
-
-import_bcb_realestate <- function() {
-  tryCatch(
-    {
-      url <- "https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor"
-
-      # Create a temporary file name
-      temp_file <- tempfile(fileext = ".csv")
-
-      message("Downloading real estate data from the Brazilian Central Bank.")
-
-      # Download csv file with error checking
-      download_result <- utils::download.file(
-        url,
-        destfile = temp_file,
-        mode = "wb",
-        quiet = TRUE
-      )
-
-      # Check if download was successful
-      if (download_result != 0) {
-        stop("Failed to download file from BCB")
-      }
-
-      # Read the data
-      df <- readr::read_csv(temp_file, col_types = "Dcc")
-
-      # Check if data is empty
-      if (nrow(df) == 0) {
-        stop("Downloaded file contains no data")
-      }
-
-      return(df)
-    },
-    error = function(e) {
-      cli::cli_warn("Error in import_bcb_realestate: {e$message}")
-      return(NULL)
-    },
-    warning = function(w) {
-      cli::cli_inform("Warning in import_bcb_realestate: {w$message}")
-      return(NULL)
-    },
-    finally = {
-      # Clean up temporary file if it exists
-      if (exists("temp_file") && file.exists(temp_file)) {
-        unlink(temp_file)
-      }
-    }
-  )
+  return(raw)
 }
 
 clean_bcb_realestate <- function(df) {
-  # Named vector to help split series_info into smaller categories v1-v8 (for filtering)
+  # Named vector to swap hyphenated tokens before splitting on underscore
   new_names <- c(
     "home_equity" = "home-equity",
     "risco_operacao" = "risco-operacao",
@@ -250,61 +159,39 @@ clean_bcb_realestate <- function(df) {
     "mvg_r" = "mvg-r"
   )
 
-  # Basic clean: renames columns and convert types
   df <- df |>
     dplyr::rename(date = Data, series_info = Info, value = Valor) |>
     dplyr::mutate(
-      # Convert to numeric
       value = stringr::str_replace(value, ",", "."),
       value = suppressWarnings(as.numeric(value)),
-      # Swap some elements to help split the series_info column
       series_info = stringr::str_replace_all(series_info, new_names),
-      # Define year and month columns
       year = lubridate::year(date),
       month = lubridate::month(date),
     )
 
-  # Split the info column into several columns
-  df <- df |>
-    tidyr::separate_wider_delim(
-      series_info,
-      delim = "_",
-      names = c(
-        "category",
-        "type",
-        "v1",
-        "v2",
-        "v3",
-        "v4",
-        "v5",
-        "v6",
-        "v7",
-        "v8"
-      ),
-      too_few = "align_start",
-      cols_remove = FALSE
-    )
+  df <- tidyr::separate_wider_delim(
+    df,
+    series_info,
+    delim = "_",
+    names = c("category", "type", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"),
+    too_few = "align_start",
+    cols_remove = FALSE
+  )
 
-  # Finds region
   uf_abb <- "br|ro|ac|am|rr|pa|ap|to|ma|pi|ce|rn|pb|pe|al|se|ba|mg|es|rj|sp|pr|sc|rs|ms|mt|go|df"
-  # Creates the abbrev_state column
+
   df <- df |>
     dplyr::mutate(
-      # State abbreviation (if exists) is always in the last two elements of the string
       abbrev_state = stringr::str_extract(
         stringr::str_sub(series_info, -2, -1),
         uf_abb
       ),
-      # Convert to upper case
       abbrev_state = stringr::str_to_upper(abbrev_state),
-      # If no element was found, default to BR (Brazil)
       abbrev_state = ifelse(is.na(abbrev_state), "BR", abbrev_state)
     )
 
-  # Remove columns that are full NA
   df <- dplyr::select(df, dplyr::where(~ !all(is.na(.x))))
 
-  # Rearrange columns
   df <- df |>
     dplyr::arrange(series_info) |>
     dplyr::arrange(date)
