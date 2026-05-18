@@ -43,79 +43,12 @@ download_with_retry <- function(
 }
 
 # ==============================================================================
-# HELPER 2: CORE FILE DOWNLOAD
-# ==============================================================================
-
-#' Download File to Temporary Location
-#'
-#' Downloads a file from a URL to a temporary location with retry logic.
-#' This is the core download function used by format-specific helpers.
-#'
-#' @param url Character. URL to download from.
-#' @param file_ext Character. File extension (e.g., ".xlsx", ".csv").
-#' @param ssl_verify Logical. Whether to verify SSL certificates.
-#'   Set to FALSE for sites with problematic certificates.
-#' @param max_retries Integer. Number of retry attempts.
-#' @param quiet Logical. Suppress progress messages.
-#' @param desc Character. Description for error messages.
-#'
-#' @return Character. Path to downloaded temp file.
-#'
-#' @details
-#' The function downloads to a temporary file created with `tempfile()`.
-#' The temp file will be cleaned up by R's session cleanup, but callers
-#' can explicitly `unlink()` if needed.
-#'
-#' @keywords internal
-download_file <- function(
-  url,
-  file_ext = ".xlsx",
-  ssl_verify = TRUE,
-  max_retries = 3,
-  quiet = FALSE,
-  desc = "file"
-) {
-  download_with_retry(
-    fn = function() {
-      # Configure SSL if needed
-      if (!ssl_verify) {
-        httr::set_config(httr::config(ssl_verifypeer = 0L))
-        on.exit(httr::reset_config(), add = TRUE)
-      }
-
-      # Create temp file
-      temp_path <- tempfile(fileext = file_ext)
-
-      # Download
-      response <- httr::GET(
-        url = url,
-        httr::write_disk(path = temp_path, overwrite = TRUE)
-      )
-
-      # Check HTTP status
-      httr::stop_for_status(response)
-
-      # Verify file exists and has content
-      if (!file.exists(temp_path) || file.size(temp_path) == 0) {
-        stop("Downloaded file is empty or missing")
-      }
-
-      return(temp_path)
-    },
-    max_retries = max_retries,
-    quiet = quiet,
-    desc = paste("Download", desc)
-  )
-}
-
-# ==============================================================================
-# HELPER 3: EXCEL DOWNLOAD
+# HELPER 2: EXCEL DOWNLOAD
 # ==============================================================================
 
 #' Download and Validate Excel File
 #'
 #' Downloads an Excel file with validation of expected sheets and file size.
-#' Combines download_file() with validate_excel_file() from helpers-dataset.R.
 #'
 #' @param url Character. URL of the Excel file.
 #' @param expected_sheets Character vector. Sheet names that must be present.
@@ -380,169 +313,34 @@ download_zip <- function(
 }
 
 # ==============================================================================
-# HELPER 5: URL EXTRACTION FROM WEB PAGE
+# HELPER 5: GITHUB CACHE FALLBACK
 # ==============================================================================
 
-#' Extract Download URL from Web Page
+#' Fallback to GitHub Cache on Download Failure
 #'
-#' Scrapes a web page to find a download link using XPath or CSS selector.
-#' Useful for datasets where the download URL is embedded in a web page.
+#' Attempts to load a dataset from the GitHub release cache when a primary
+#' web download has failed. Returns NULL on miss so callers can decide
+#' whether to abort or degrade gracefully.
 #'
-#' @param page_url Character. URL of the page containing the download link.
-#' @param xpath Character. XPath selector for the download link element.
-#'   Should select an element with an `href` attribute.
-#' @param css Character. CSS selector (alternative to xpath).
-#'   Use either xpath or css, not both.
-#' @param base_url Character. Base URL to prepend if link is relative.
-#'   If NULL, attempts to extract from page_url.
-#' @param max_retries Integer. Number of retry attempts.
-#' @param quiet Logical. Suppress progress messages.
+#' @param dataset_name Character. Cache key used in GitHub releases (e.g.,
+#'   "bcb_realestate", "secovi_sp").
+#' @param quiet Logical. If TRUE, suppresses messages.
 #'
-#' @return Character. Full download URL.
-#'
-#' @details
-#' This function only extracts the URL - it does not download the file.
-#' Use download_excel() or download_file() to download the extracted URL.
-#'
+#' @return A tibble if the GitHub cache is available, otherwise NULL.
 #' @keywords internal
-scrape_download_url <- function(
-  page_url,
-  xpath = NULL,
-  css = NULL,
-  base_url = NULL,
-  max_retries = 3,
-  quiet = FALSE
-) {
-  # Validate inputs
-
-  if (is.null(xpath) && is.null(css)) {
-    cli::cli_abort("Either {.arg xpath} or {.arg css} must be provided")
-  }
-
-  download_with_retry(
-    fn = function() {
-      # Read the page
-      page <- xml2::read_html(page_url)
-
-      # Extract link using xpath or css
-      if (!is.null(xpath)) {
-        link_elem <- rvest::html_elements(page, xpath = xpath)
-      } else {
-        link_elem <- rvest::html_elements(page, css = css)
-      }
-
-      if (length(link_elem) == 0) {
-        stop("Download link not found on page")
-      }
-
-      # Get href attribute
-      url <- rvest::html_attr(link_elem[1], "href")
-
-      if (is.na(url) || url == "") {
-        stop("Download link element has no href attribute")
-      }
-
-      # Handle relative URLs
-      if (!grepl("^https?://", url)) {
-        if (is.null(base_url)) {
-          # Extract base URL from page URL
-          parsed <- httr::parse_url(page_url)
-          base_url <- paste0(parsed$scheme, "://", parsed$hostname)
-        }
-
-        # Ensure proper joining
-        if (!grepl("^/", url)) {
-          url <- paste0("/", url)
-        }
-        url <- paste0(base_url, url)
-      }
-
-      return(url)
-    },
-    max_retries = max_retries,
-    quiet = quiet,
-    desc = "Extract download URL"
-  )
-}
-
-# ==============================================================================
-# HELPER 6: DOWNLOAD MULTIPLE FILES
-# ==============================================================================
-
-#' Download Multiple Files with Progress
-#'
-#' Downloads multiple files from a list of URLs with progress reporting.
-#' Useful for datasets with multiple source files (e.g., CBIC materials).
-#'
-#' @param urls Character vector. URLs to download.
-#' @param file_ext Character. File extension for all files.
-#' @param delay Numeric. Seconds to wait between downloads (rate limiting).
-#' @param ssl_verify Logical. Whether to verify SSL certificates.
-#' @param max_retries Integer. Number of retry attempts per file.
-#' @param quiet Logical. Suppress progress messages.
-#'
-#' @return List with two elements:
-#'   - paths: Character vector of successful download paths
-#'   - failed: Character vector of URLs that failed to download
-#'
-#' @keywords internal
-download_multiple_files <- function(
-  urls,
-  file_ext = ".xlsx",
-  delay = 1,
-  ssl_verify = TRUE,
-  max_retries = 3,
-  quiet = FALSE
-) {
-  paths <- character(length(urls))
-  failed <- character()
-
-  for (i in seq_along(urls)) {
-    if (!quiet && length(urls) > 1) {
-      cli::cli_inform("Downloading file {i}/{length(urls)}...")
-    }
-
-    result <- tryCatch(
-      {
-        path <- download_file(
-          url = urls[i],
-          file_ext = file_ext,
-          ssl_verify = ssl_verify,
-          max_retries = max_retries,
-          quiet = TRUE # Suppress individual file messages
-        )
-        paths[i] <- path
-        NULL
-      },
-      error = function(e) {
-        if (!quiet) {
-          cli::cli_warn("Failed to download: {urls[i]}")
-        }
-        urls[i]
-      }
-    )
-
-    if (!is.null(result)) {
-      failed <- c(failed, result)
-    }
-
-    # Rate limiting between downloads
-    if (i < length(urls) && delay > 0) {
-      Sys.sleep(delay)
-    }
-  }
-
-  # Remove empty paths from failed downloads
-  paths <- paths[paths != ""]
-
+fallback_to_github_cache <- function(dataset_name, quiet = FALSE) {
   if (!quiet) {
-    cli::cli_inform(
-      "Downloaded {length(paths)}/{length(urls)} files successfully"
-    )
-    if (length(failed) > 0) {
-      cli::cli_warn("{length(failed)} file{?s} failed to download")
-    }
+    cli::cli_inform(c("i" = "Trying GitHub cache for {.val {dataset_name}}..."))
   }
 
-  list(paths = paths, failed = failed)
+  data <- tryCatch(
+    download_from_github_release(dataset_name, quiet = quiet),
+    error = function(e) NULL
+  )
+
+  if (!is.null(data) && is.data.frame(data) && nrow(data) > 0) {
+    return(data)
+  }
+
+  return(NULL)
 }

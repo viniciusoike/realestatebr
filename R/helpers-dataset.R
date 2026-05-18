@@ -184,12 +184,11 @@ handle_dataset_cache <- function(
 
 # NOTE: download_with_retry() and other download helpers are in R/helpers-download.R
 # See that file for:
-#   - download_with_retry(fn, max_retries, quiet, desc) - Core retry logic
-#   - download_file(url, file_ext, ssl_verify, ...) - Generic file download
+#   - download_with_retry(fn, max_retries, quiet, desc) - Core retry loop
 #   - download_excel(url, expected_sheets, ...) - Excel download with validation
-#   - download_csv(url, ...) - CSV download
-#   - scrape_download_url(page_url, xpath, ...) - URL extraction from web pages
-#   - download_multiple_files(urls, ...) - Batch downloads
+#   - download_csv(url, ...) - CSV download to temp path
+#   - download_zip(url, file_pattern, ...) - ZIP download and extraction
+#   - fallback_to_github_cache(dataset_name, quiet) - GitHub cache fallback
 
 # ==============================================================================
 # HELPER 4: METADATA ATTACHMENT
@@ -210,7 +209,7 @@ handle_dataset_cache <- function(
 #' @keywords internal
 attach_dataset_metadata <- function(
   data,
-  source = c("web", "cache", "github"),
+  source = c("web", "cache", "github", "github_cache"),
   category = NULL,
   extra_info = list()
 ) {
@@ -331,64 +330,6 @@ validate_dataset <- function(
         "i" = "This may indicate a data quality issue"
       ))
     }
-  }
-
-  invisible(TRUE)
-}
-
-# ==============================================================================
-# BONUS HELPER: EXCEL FILE VALIDATION
-# ==============================================================================
-
-#' Validate Excel File Download
-#'
-#' Validates that a downloaded Excel file is valid and contains expected sheets.
-#' Useful for datasets downloaded from Excel sources (e.g., Abrainc, Abecip).
-#'
-#' @param path Character. Path to the Excel file.
-#' @param expected_sheets Character vector. Sheet names that must be present.
-#' @param min_size Numeric. Minimum file size in bytes. Default 1000.
-#'
-#' @return Invisible TRUE if all validations pass. Errors otherwise.
-#'
-#' @keywords internal
-validate_excel_file <- function(
-  path,
-  expected_sheets,
-  min_size = 1000
-) {
-  # Check file exists and has content
-  if (!file.exists(path)) {
-    cli::cli_abort("Excel file not found at {.path {path}}")
-  }
-
-  file_size <- file.size(path)
-  if (is.na(file_size) || file_size < min_size) {
-    cli::cli_abort(c(
-      "Downloaded Excel file is too small or empty",
-      "i" = "File size: {file_size} bytes (minimum: {min_size})"
-    ))
-  }
-
-  # Try to read Excel sheets
-  sheets <- tryCatch(
-    readxl::excel_sheets(path),
-    error = function(e) {
-      cli::cli_abort(c(
-        "Downloaded file is not a valid Excel file",
-        "x" = "Error: {e$message}"
-      ))
-    }
-  )
-
-  # Check for expected sheets
-  missing_sheets <- setdiff(expected_sheets, sheets)
-  if (length(missing_sheets) > 0) {
-    cli::cli_abort(c(
-      "Downloaded Excel file is missing expected sheets",
-      "x" = "Missing: {.val {missing_sheets}}",
-      "i" = "Available: {.val {sheets}}"
-    ))
   }
 
   invisible(TRUE)

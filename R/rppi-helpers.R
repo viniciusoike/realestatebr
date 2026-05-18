@@ -78,26 +78,3 @@ calculate_rppi_changes <- function(
   return(data)
 }
 
-#' Download Excel File with Retry
-#'
-#' Downloads an Excel file to a temporary location with retry logic.
-#' This is a thin wrapper around download_excel() from helpers-download.R
-#' for backwards compatibility with existing RPPI code.
-#'
-#' @param url URL of the Excel file
-#' @param max_retries Maximum retry attempts
-#' @param quiet Suppress warnings
-#' @return Path to downloaded temporary file
-#' @keywords internal
-#' @noRd
-download_excel_with_retry <- function(url, max_retries = 3, quiet = FALSE) {
-  # Use the generic download_excel() from helpers-download.R
-  download_excel(
-    url = url,
-    expected_sheets = NULL, # No sheet validation for generic RPPI downloads
-    min_size = 1000,
-    ssl_verify = TRUE,
-    max_retries = max_retries,
-    quiet = quiet
-  )
-}
