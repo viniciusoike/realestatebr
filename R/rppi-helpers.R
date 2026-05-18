@@ -17,7 +17,7 @@ NULL
 #' @keywords internal
 #' @noRd
 try_rppi_cached <- function(table, source_filter = NULL) {
-  tryCatch(
+  rlang::try_fetch(
     {
       data <- get_dataset("rppi", table, source = "github")
       if (!is.null(source_filter)) {
@@ -25,7 +25,7 @@ try_rppi_cached <- function(table, source_filter = NULL) {
       }
       data
     },
-    error = function(e) NULL
+    error = function(cnd) NULL
   )
 }
 
@@ -39,9 +39,9 @@ try_rppi_cached <- function(table, source_filter = NULL) {
 #' @keywords internal
 #' @noRd
 try_rppi_user_cache <- function(dataset_name, quiet = FALSE) {
-  tryCatch(
+  rlang::try_fetch(
     load_from_user_cache(dataset_name, quiet = quiet),
-    error = function(e) NULL
+    error = function(cnd) NULL
   )
 }
 
