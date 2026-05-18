@@ -69,12 +69,10 @@ New and existing dataset functions must use these helpers to avoid code duplicat
 | Function | Purpose |
 |---|---|
 | `download_with_retry(fn, max_retries, quiet, desc)` | Core retry loop with exponential backoff; wrap any download call in it |
-| `download_file(url, file_ext, ...)` | Generic file download to a temp path |
 | `download_excel(url, expected_sheets, min_size, ...)` | Excel download with sheet and size validation |
 | `download_csv(url, min_size, ...)` | CSV download to temp path |
 | `download_zip(url, file_pattern, ...)` | Download a ZIP and extract the matching file |
-| `scrape_download_url(page_url, xpath, css, ...)` | Scrape a page for a download link, returns URL |
-| `download_multiple_files(urls, file_ext, delay, ...)` | Batch download with progress and rate limiting |
+| `fallback_to_github_cache(dataset_name, quiet)` | Try GitHub release cache when primary download fails; returns NULL on miss |
 
 #### `R/helpers-dataset.R` — Dataset lifecycle
 | Function | Purpose |
@@ -189,6 +187,7 @@ After processing, GitHub Actions uploads files from `data-raw/cache_output/` to 
 - Document all exported functions with roxygen2.
 - Prefer readability over brevity.
 - Use meaningful variable names.
+- Use RStudio-style section headers for code organization: `# Section ----`, `## Subsection ----`, `### Subsubsection ----` with trailing dashes to fill to ~76 characters. Never use box-style comments with `====` borders above and below. Keep comments concise.
 
 ### Error Handling Pattern
 ```r
