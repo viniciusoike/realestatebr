@@ -29,7 +29,9 @@
 #'   \code{\link{bcb_metadata}}.
 #'
 #' @importFrom cli cli_inform cli_warn cli_abort
-#' @importFrom dplyr rename select left_join filter pull
+#' @importFrom dplyr rename select left_join filter pull bind_rows join_by
+#' @importFrom purrr map possibly compact map_lgl
+#' @importFrom rlang try_fetch
 #' @keywords internal
 get_bcb_series <- function(
   table = "core",
@@ -58,14 +60,17 @@ get_bcb_series <- function(
   )
 
   if (!inherits(date_start, "Date")) {
-    date_start <- tryCatch(
+    date_start <- rlang::try_fetch(
       lubridate::ymd(date_start),
-      error = function(e) {
-        cli::cli_abort(c(
-          "Invalid {.arg date_start} parameter",
-          "x" = "{.arg date_start} must be a valid Date or string in YYYY-MM-DD format",
-          "i" = "Example: {.val {'2010-01-01'}}"
-        ))
+      error = function(cnd) {
+        cli::cli_abort(
+          c(
+            "Invalid {.arg date_start} parameter",
+            "x" = "{.arg date_start} must be a valid Date or string in YYYY-MM-DD format",
+            "i" = "Example: {.val {'2010-01-01'}}"
+          ),
+          parent = cnd
+        )
       }
     )
   }
@@ -104,7 +109,7 @@ get_bcb_series <- function(
     cli::cli_inform("Downloading BCB series from API...")
   }
 
-  bcb_series <- import_bcb_series_robust(
+  bcb_series <- download_bcb_series(
     codes_bcb = codes_bcb,
     date_start = date_start,
     quiet = quiet,
@@ -114,7 +119,7 @@ get_bcb_series <- function(
 
   cols_select <- c("date", "code_bcb", "name_simplified", "value")
 
-  bcb_series <- dplyr::left_join(bcb_series, bcb_metadata, by = "code_bcb")
+  bcb_series <- dplyr::left_join(bcb_series, bcb_metadata, by = dplyr::join_by(code_bcb))
   bcb_series <- dplyr::select(bcb_series, dplyr::all_of(cols_select))
 
   bcb_series <- attach_dataset_metadata(
@@ -132,6 +137,8 @@ get_bcb_series <- function(
 
   return(bcb_series)
 }
+
+# Resolve BCB Hierarchy -------------------------------------------------------
 
 #' Resolve BCB Hierarchy Level to Series Codes
 #'
@@ -162,69 +169,67 @@ resolve_bcb_hierarchy <- function(table) {
   return(codes_bcb)
 }
 
-#' Import BCB Series Data with Robust Error Handling
+# Download BCB Series ---------------------------------------------------------
+
+#' Download BCB Series Data with Robust Error Handling
 #'
-#' Internal function to download BCB series data with retry logic.
+#' Downloads BCB series data with per-series retry logic. Uses
+#' `purrr::possibly()` to collect failures without aborting, then reports
+#' any failed series after the full map completes.
 #'
-#' @param codes_bcb Vector of BCB series codes
-#' @param date_start Start date for series
-#' @param quiet Logical controlling messages
-#' @param max_retries Maximum number of retry attempts
-#' @param ... Additional arguments passed to rbcb::get_series
+#' @param codes_bcb Vector of BCB series codes.
+#' @param date_start Start date for series.
+#' @param quiet Logical controlling messages.
+#' @param max_retries Maximum number of retry attempts per series.
+#' @param ... Additional arguments passed to `rbcb::get_series`.
 #'
-#' @return Downloaded BCB API data
+#' @return A long-format tibble with columns `date`, `value`, and `code_bcb`.
 #' @keywords internal
-import_bcb_series_robust <- function(
+download_bcb_series <- function(
   codes_bcb,
   date_start,
   quiet,
   max_retries,
   ...
 ) {
-  results <- list()
-  failed_series <- c()
-
-  for (i in seq_along(codes_bcb)) {
-    code <- codes_bcb[i]
-    cli_debug("Downloading series {code} ({i}/{length(codes_bcb)})...")
-
-    result <- NULL
-
-    for (attempt in 1:(max_retries + 1)) {
-      result <- tryCatch(
-        suppressMessages(rbcb::get_series(code = code, start_date = date_start, ...)),
-        error = function(e) NULL
+  safe_get <- purrr::possibly(
+    function(code) {
+      download_with_retry(
+        fn = function() {
+          result <- suppressMessages(
+            rbcb::get_series(code = code, start_date = date_start, ...)
+          )
+          if (!is.data.frame(result)) stop("result is not a data frame")
+          dplyr::rename(result, value = 2)
+        },
+        max_retries = max_retries,
+        quiet = TRUE,
+        desc = paste0("BCB series ", code)
       )
+    },
+    otherwise = NULL
+  )
 
-      if (!is.null(result)) {
-        break
-      }
+  results <- purrr::map(codes_bcb, function(code) {
+    cli_debug("Downloading series {code}...")
+    res <- safe_get(code)
+    if (!is.null(res)) res$code_bcb <- code
+    res
+  })
 
-      if (attempt <= max_retries) {
-        cli_debug("Series {code} failed (attempt {attempt}), retrying...")
-        Sys.sleep(min(attempt * 0.5, 3))
-      }
-    }
+  failed_codes <- codes_bcb[purrr::map_lgl(results, is.null)]
 
-    if (!is.null(result) && is.data.frame(result)) {
-      result <- dplyr::rename(result, value = 2)
-      result$code_bcb <- code
-      results[[length(results) + 1]] <- result
-    } else {
-      failed_series <- c(failed_series, code)
-      cli_debug("Series {code} failed after {max_retries + 1} attempts")
-    }
-  }
-
-  if (length(failed_series) > 0) {
+  if (length(failed_codes) > 0) {
     cli::cli_warn(c(
-      "Failed to download {length(failed_series)} series after {max_retries + 1} attempts",
-      "x" = "Failed series codes: {paste(failed_series, collapse=', ')}",
-      "i" = "Returning {length(results)}/{length(codes_bcb)} successful series"
+      "Failed to download {length(failed_codes)} series after {max_retries + 1} attempts",
+      "x" = "Failed series codes: {paste(failed_codes, collapse = ', ')}",
+      "i" = "Returning {length(codes_bcb) - length(failed_codes)}/{length(codes_bcb)} successful series"
     ))
   }
 
-  if (length(results) == 0) {
+  successful <- purrr::compact(results)
+
+  if (length(successful) == 0) {
     cli::cli_abort(c(
       "Failed to download ANY BCB series data",
       "x" = "All {length(codes_bcb)} series failed",
@@ -232,11 +237,11 @@ import_bcb_series_robust <- function(
     ))
   }
 
-  combined <- dplyr::bind_rows(results)
+  combined <- dplyr::bind_rows(successful)
 
   if (!quiet) {
     cli::cli_inform(
-      "Successfully downloaded {length(results)}/{length(codes_bcb)} series"
+      "Successfully downloaded {length(successful)}/{length(codes_bcb)} series"
     )
   }
 
