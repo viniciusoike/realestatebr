@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_fgv_ibre.R
 \name{get_fgv_ibre}
 \alias{get_fgv_ibre}
-\title{Get FGV IBRE Confidence Indicators (DEPRECATED)}
+\title{Get FGV IBRE Confidence Indicators}
 \usage{
 get_fgv_ibre(table = "indicators", cached = TRUE, quiet = FALSE)
 }
@@ -18,7 +18,6 @@ Tibble with FGV IBRE indicators. Includes metadata attributes:
 source, download_time.
 }
 \description{
-Deprecated since v0.4.0. Use \code{\link{get_dataset}}("fgv_ibre") instead.
 Loads construction confidence indicators from FGV IBRE including confidence
 indices, expectation indicators, and INCC price indices.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_abecip_indicators.R
 \name{get_abecip_indicators}
 \alias{get_abecip_indicators}
-\title{Get Credit Indicators from Abecip (DEPRECATED)}
+\title{Get Credit Indicators from Abecip}
 \source{
 \url{https://www.abecip.org.br}
 }
@@ -36,24 +36,10 @@ Either a named \code{list} (when table is \code{'all'}) or a \code{tibble}
 }
 }
 \description{
-Get Credit Indicators from Abecip (DEPRECATED)
+Get Credit Indicators from Abecip
 }
 \details{
 Downloads housing credit data from Abecip including SBPE monetary flows, financed
 units, and home-equity loan data.
 }
-\section{Deprecation}{
-
-This function is deprecated since v0.4.0.
-Use \code{\link{get_dataset}}("abecip") instead:
-
-\preformatted{
-  # Old way:
-  data <- get_abecip_indicators()
-
-  # New way:
-  data <- get_dataset("abecip")
-}
-}
-
 \keyword{internal}

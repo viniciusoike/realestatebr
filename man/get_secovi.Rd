@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_secovi.R
 \name{get_secovi}
 \alias{get_secovi}
-\title{Import data from Secovi-SP (DEPRECATED)}
+\title{Import data from Secovi-SP}
 \usage{
 get_secovi(table = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
 }
@@ -29,24 +29,10 @@ metadata attributes:
 }
 }
 \description{
-Import data from Secovi-SP (DEPRECATED)
+Import data from Secovi-SP
 }
 \details{
 Scrapes real estate data from SECOVI-SP including condominium fees, rental
 market data, launches, and sales information.
 }
-\section{Deprecation}{
-
-This function is deprecated since v0.4.0.
-Use \code{\link{get_dataset}}("secovi") instead:
-
-\preformatted{
-  # Old way:
-  data <- get_secovi()
-
-  # New way:
-  data <- get_dataset("secovi")
-}
-}
-
 \keyword{internal}

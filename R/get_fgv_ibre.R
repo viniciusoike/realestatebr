@@ -1,7 +1,6 @@
-#' Get FGV IBRE Confidence Indicators (DEPRECATED)
+#' Get FGV IBRE Confidence Indicators
 #'
 #' @description
-#' Deprecated since v0.4.0. Use \code{\link{get_dataset}}("fgv_ibre") instead.
 #' Loads construction confidence indicators from FGV IBRE including confidence
 #' indices, expectation indicators, and INCC price indices.
 #'

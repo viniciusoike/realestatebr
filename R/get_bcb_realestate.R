@@ -1,7 +1,6 @@
-#' Import Real Estate data from the Brazilian Central Bank (DEPRECATED)
+#' Import Real Estate data from the Brazilian Central Bank
 #'
 #' @description
-#' Deprecated since v0.4.0. Use \code{\link{get_dataset}}("bcb_realestate") instead.
 #' Imports real estate data from BCB including credit sources, applications,
 #' financed units, and real estate indices.
 #'

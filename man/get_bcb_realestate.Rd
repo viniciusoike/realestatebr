@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_bcb_realestate.R
 \name{get_bcb_realestate}
 \alias{get_bcb_realestate}
-\title{Import Real Estate data from the Brazilian Central Bank (DEPRECATED)}
+\title{Import Real Estate data from the Brazilian Central Bank}
 \source{
 \url{https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario}
 }
@@ -29,7 +29,6 @@ Tibble with BCB real estate data. Includes metadata attributes:
 source, download_time.
 }
 \description{
-Deprecated since v0.4.0. Use \code{\link{get_dataset}}("bcb_realestate") instead.
 Imports real estate data from BCB including credit sources, applications,
 financed units, and real estate indices.
 }

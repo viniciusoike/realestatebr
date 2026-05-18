@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_abrainc_indicators.R
 \name{get_abrainc_indicators}
 \alias{get_abrainc_indicators}
-\title{Import Indicators from the Abrainc-Fipe Report (DEPRECATED)}
+\title{Import Indicators from the Abrainc-Fipe Report}
 \source{
 Abrainc-Fipe available at \url{https://www.fipe.org.br/pt-br/indices/abrainc}
 }
@@ -36,24 +36,10 @@ Either a named \code{list} (when table is \code{'all'}) or a \code{tibble}
 }
 }
 \description{
-Import Indicators from the Abrainc-Fipe Report (DEPRECATED)
+Import Indicators from the Abrainc-Fipe Report
 }
 \details{
 Downloads data from the Abrainc-Fipe Indicators report including information on
 new launches, sales, delivered units, and market indicators.
 }
-\section{Deprecation}{
-
-This function is deprecated since v0.4.0.
-Use \code{\link{get_dataset}}("abrainc") instead:
-
-\preformatted{
-  # Old way:
-  data <- get_abrainc_indicators()
-
-  # New way:
-  data <- get_dataset("abrainc")
-}
-}
-
 \keyword{internal}

@@ -1,16 +1,4 @@
-#' Import data from Secovi-SP (DEPRECATED)
-#'
-#' @section Deprecation:
-#' This function is deprecated since v0.4.0.
-#' Use \code{\link{get_dataset}}("secovi") instead:
-#'
-#' \preformatted{
-#'   # Old way:
-#'   data <- get_secovi()
-#'
-#'   # New way:
-#'   data <- get_dataset("secovi")
-#' }
+#' Import data from Secovi-SP
 #'
 #' @details
 #' Scrapes real estate data from SECOVI-SP including condominium fees, rental

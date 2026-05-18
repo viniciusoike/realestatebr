@@ -1,16 +1,4 @@
-#' Import Indicators from the Abrainc-Fipe Report (DEPRECATED)
-#'
-#' @section Deprecation:
-#' This function is deprecated since v0.4.0.
-#' Use \code{\link{get_dataset}}("abrainc") instead:
-#'
-#' \preformatted{
-#'   # Old way:
-#'   data <- get_abrainc_indicators()
-#'
-#'   # New way:
-#'   data <- get_dataset("abrainc")
-#' }
+#' Import Indicators from the Abrainc-Fipe Report
 #'
 #' @details
 #' Downloads data from the Abrainc-Fipe Indicators report including information on

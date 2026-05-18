@@ -1,16 +1,4 @@
-#' Get Credit Indicators from Abecip (DEPRECATED)
-#'
-#' @section Deprecation:
-#' This function is deprecated since v0.4.0.
-#' Use \code{\link{get_dataset}}("abecip") instead:
-#'
-#' \preformatted{
-#'   # Old way:
-#'   data <- get_abecip_indicators()
-#'
-#'   # New way:
-#'   data <- get_dataset("abecip")
-#' }
+#' Get Credit Indicators from Abecip
 #'
 #' @details
 #' Downloads housing credit data from Abecip including SBPE monetary flows, financed
