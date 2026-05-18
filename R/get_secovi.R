@@ -22,7 +22,7 @@
 #'   }
 #'
 #' @importFrom cli cli_inform cli_warn cli_abort
-#' @importFrom dplyr filter select bind_rows left_join
+#' @importFrom dplyr filter select bind_rows left_join join_by
 #' @keywords internal
 get_secovi <- function(
   table = "all",
@@ -30,65 +30,38 @@ get_secovi <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Input validation ----
   valid_tables <- c("all", "condo", "launch", "rent", "sale")
   validate_dataset_params(table, valid_tables, cached, quiet, max_retries, allow_all = TRUE)
 
-  # Handle cached data ----
   if (cached) {
     data <- handle_dataset_cache("secovi", table = NULL, quiet = quiet, on_miss = "download")
 
     if (!is.null(data)) {
-      # Filter category if needed
       if (table != "all") {
         data <- dplyr::filter(data, category == !!table)
       }
-
       data <- attach_dataset_metadata(data, source = "cache", category = table)
       return(data)
     }
   }
 
-  # Download and process data ----
   cli_user("Downloading SECOVI-SP data from website", quiet = quiet)
 
-  # Import data from SECOVI with retry logic
-  scrape <- tryCatch(
-    {
-      import_secovi_robust(table = table, quiet = quiet, max_retries = max_retries)
-    },
-    error = function(e) {
-      if (!quiet) {
-        cli::cli_warn("Web scraping failed: {e$message}")
-      }
+  scrape <- rlang::try_fetch(
+    download_secovi(table = table, quiet = quiet, max_retries = max_retries),
+    error = function(cnd) {
+      if (!quiet) cli::cli_warn("Web scraping failed: {cnd$message}")
       NULL
     }
   )
 
-  # Fallback to GitHub cache if scraping fails or returns empty
   if (is.null(scrape) || length(scrape) == 0) {
-    if (!quiet) {
-      cli::cli_inform(c(
-        "i" = "Fresh download failed or returned empty, trying GitHub cache..."
-      ))
-    }
-    data <- tryCatch(
-      {
-        download_from_github_release("secovi_sp", quiet = quiet)
-      },
-      error = function(e) {
-        NULL
-      }
-    )
-
-    if (!is.null(data) && nrow(data) > 0) {
-      if (table != "all") {
-        data <- dplyr::filter(data, category == !!table)
-      }
+    data <- fallback_to_github_cache("secovi_sp", quiet = quiet)
+    if (!is.null(data)) {
+      if (table != "all") data <- dplyr::filter(data, category == !!table)
       data <- attach_dataset_metadata(data, source = "github_cache", category = table)
       return(data)
     }
-
     cli::cli_abort(c(
       "Failed to retrieve SECOVI-SP data",
       "x" = "Web scraping returned empty and GitHub cache is unavailable",
@@ -98,39 +71,22 @@ get_secovi <- function(
 
   cli_debug("Processing {length(scrape)} data table{?s}...")
 
-  # Clean data with progress reporting for parallel operations
-  if (!quiet) {
-    # Sequential processing with progress when not quiet
-    clean_tables <- list()
-    for (i in seq_along(scrape)) {
-      table_name <- names(scrape)[i]
-      cli_debug("Processing table: {table_name}")
-      clean_tables[[i]] <- clean_secovi(scrape[[i]])
-    }
-    names(clean_tables) <- names(scrape)
+  clean_tables <- purrr::map(scrape, clean_secovi)
+
+  secovi_meta <- if (table != "all") {
+    dplyr::filter(secovi_metadata, cat == table)
   } else {
-    clean_tables <- lapply(scrape, clean_secovi)
-    names(clean_tables) <- names(scrape)
+    secovi_metadata
   }
 
   tbl_secovi <- dplyr::bind_rows(clean_tables, .id = "variable")
-  # Filter metadata table if needed
-  if (table != "all") {
-    secovi <- subset(secovi_metadata, cat == table)
-  } else {
-    secovi <- secovi_metadata
-  }
-  # Join table with the metadata (dictionary)
   tbl_secovi <- dplyr::left_join(
     tbl_secovi,
-    secovi,
+    secovi_meta,
     by = dplyr::join_by(variable == label)
   )
-  # Rearrange column order
-  tbl_secovi <- tbl_secovi |>
-    dplyr::select(date, category = cat, variable, name, value)
+  tbl_secovi <- dplyr::select(tbl_secovi, date, category = cat, variable, name, value)
 
-  # Add metadata attributes
   tbl_secovi <- attach_dataset_metadata(
     tbl_secovi,
     source = "web",
@@ -138,238 +94,215 @@ get_secovi <- function(
     extra_info = list(tables_processed = length(scrape))
   )
 
-  record_count <- nrow(tbl_secovi)
   if (!quiet) {
-    cli::cli_inform("\u2713 SECOVI-SP data retrieved: {record_count} records")
+    cli::cli_inform("✓ SECOVI-SP data retrieved: {nrow(tbl_secovi)} records")
   }
 
   return(tbl_secovi)
 }
 
-#' Import SECOVI Data with Robust Error Handling
-#'
-#' Modern version of import_secovi with retry logic and progress reporting.
+
+#' Download raw SECOVI-SP indicator tables
 #'
 #' @param table Data table to import
 #' @param quiet Logical controlling messages
 #' @param max_retries Maximum number of retry attempts
 #'
-#' @return List of scraped data tables
+#' @return Named list of scraped data tables
 #' @keywords internal
-import_secovi_robust <- function(table, quiet, max_retries) {
-  # Use download_with_retry() from rppi-helpers.R
-  tryCatch(
-    {
-      download_with_retry(
-        fn = function() {
-          result <- import_secovi(table)
+download_secovi <- function(table, quiet, max_retries) {
+  url_base <- "https://indiceseconomicos.secovi.com.br/indicadormensal.php?idindicador="
 
-          # Validate we got some data
-          if (length(result) == 0) {
-            stop("No data returned from SECOVI website")
-          }
+  secovi_meta <- if (table != "all") {
+    dplyr::filter(secovi_metadata, cat == table)
+  } else {
+    secovi_metadata
+  }
 
-          return(result)
-        },
-        max_retries = max_retries,
-        quiet = quiet,
-        desc = "Scrape SECOVI data"
+  download_with_retry(
+    fn = function() {
+      cli_user(
+        "Scraping data from https://indiceseconomicos.secovi.com.br/",
+        quiet = quiet
       )
+
+      urls <- paste0(url_base, secovi_meta[["code"]])
+      parsed <- purrr::map(urls, rvest::read_html)
+
+      safe_html_table <- purrr::possibly(rvest::html_table, otherwise = list())
+      tables <- purrr::map(parsed, safe_html_table)
+      names(tables) <- secovi_meta[["label"]]
+
+      missing_mask <- purrr::map_lgl(tables, ~ length(.x) == 0)
+      if (any(missing_mask)) {
+        missing_tables <- names(tables)[missing_mask]
+        cli::cli_warn("Failed to import data for: {.val {missing_tables}}")
+        tables <- tables[!missing_mask]
+      }
+
+      if (length(tables) == 0) {
+        stop("No data returned from SECOVI website")
+      }
+
+      return(tables)
     },
-    error = function(e) {
-      cli::cli_abort(c(
-        "Failed to download SECOVI-SP data",
-        "x" = "All {max_retries + 1} attempt{?s} failed",
-        "i" = "Error: {e$message}",
-        "i" = "The SECOVI-SP website may be temporarily unavailable"
-      ))
-    }
+    max_retries = max_retries,
+    quiet = quiet,
+    desc = "Scrape SECOVI data"
   )
 }
 
 
 secovi_metadata <- dplyr::tribble(
-~code,               ~label,      ~cat,
-   14, "default_condominio",   "condo",
-   78,               "icon",   "condo",
-   80,     "acao_locaticia",    "rent",
-   18,  "tipos_de_garantia",    "rent",
-   13,         "rent_price",    "rent",
-   25,      "launches_rmsp",  "launch",
-   26,             "supply",  "launch",
-   85,           "launches",  "launch",
-   86,       "sales_1rooms",    "sale",
-   87,       "sales_2rooms",    "sale",
-   88,       "sales_3rooms",    "sale",
-   89,       "sales_4rooms",    "sale",
-   90,              "sales",    "sale",
-   118,         "sales_rmsp",    "sale"
+  ~code,               ~label,      ~cat,
+     14, "default_condominio",   "condo",
+     78,               "icon",   "condo",
+     80,     "acao_locaticia",    "rent",
+     18,  "tipos_de_garantia",    "rent",
+     13,         "rent_price",    "rent",
+     25,      "launches_rmsp",  "launch",
+     26,             "supply",  "launch",
+     85,           "launches",  "launch",
+     86,       "sales_1rooms",    "sale",
+     87,       "sales_2rooms",    "sale",
+     88,       "sales_3rooms",    "sale",
+     89,       "sales_4rooms",    "sale",
+     90,              "sales",    "sale",
+    118,         "sales_rmsp",    "sale"
 )
 
 
-#' Webscrapes data from Secovi
+#' Parse PT-BR formatted number strings to numeric
 #'
-#' @inheritParams get_secovi
-#' @noRd
-import_secovi <- function(table) {
-
-  message("Scraping data from https://indiceseconomicos.secovi.com.br/")
-
-  url <- "https://indiceseconomicos.secovi.com.br/indicadormensal.php?idindicador="
-
-  if (table != "all") {
-    secovi <- subset(secovi_metadata, cat == table)
-  } else {
-    secovi <- secovi_metadata
-  }
-
-  urls <- paste0(url, secovi[["code"]])
-  parsed <- lapply(urls, rvest::read_html)
-  tables <- lapply(parsed, \(x) try(rvest::html_table(x), silent = TRUE))
-  names(tables) <- secovi[["label"]]
-
-  check_missing <- any(sapply(tables, length) == 0)
-
-  if (check_missing) {
-    # Get the names of the missing tables
-    missing_tables <- names(tables[sapply(tables, length) == 0])
-    # Report a warning
-    cli::cli_warn("Failed to import data for: {.val {missing_tables}}")
-    # Remove elements with less than 0 length
-    tables <- tables[sapply(tables, length) > 0]
-  }
-
-  return(tables)
-
-}
-
-#' Converts numbers saved as strings into nubmers
-#' 1.203,12 -> 1203.12
+#' Converts strings like "1.203,12" to 1203.12.
 #'
 #' @param x A `character` that should be a `numeric`
-#'
 #' @return A `numeric`
 #' @noRd
-as_numeric_character <- function(x) {
+secovi_parse_number <- function(x) {
   x <- stringr::str_remove_all(x, "\\.")
   x <- stringr::str_replace(x, ",", ".")
   x <- suppressWarnings(as.numeric(x))
   return(x)
 }
 
-#' Renames columns, selects only the first two and converts second table to num
-#' Assumes first column is date and second column is a value column
-#' @param df A `data.frame`
+
+#' Standardise column names, keep first two columns, and parse value
+#'
+#' @param df A `data.frame` with a date column and one value column
 #' @noRd
-clean_basic <- function(df) {
-  # Simplify names
+secovi_basic_clean <- function(df) {
   df <- janitor::clean_names(df)
-  # dplyr::selects first two columns
   df <- df[, 1:2]
-  # Convert to long (name, value)
   df <- tidyr::pivot_longer(df, cols = -1)
-  # Cleans numeric variable
-  df$value <- as_numeric_character(df$value)
+  df$value <- secovi_parse_number(df$value)
   return(df)
 }
 
-#' Joins with dim_date and creates a Date variable
-#'
-#' @param df A `data.frame`
-#'
-#' @return A `tibble`
-#' @noRd
-clean_date_label <- function(df) {
 
+#' Join with month lookup and build a Date column
+#'
+#' @param df A `data.frame` with `year`, `mes`, `name`, and `value` columns
+#' @return A `tibble` with `date`, `name`, `value`
+#' @noRd
+secovi_clean_date_label <- function(df) {
   dim_date <- tibble::tibble(
     mes = c("JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
             "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"),
     month = 1:12
   )
 
-  df |>
-    dplyr::left_join(dim_date, by = "mes") |>
+  df <- dplyr::left_join(df, dim_date, by = "mes")
+
+  df <- df |>
     dplyr::mutate(
       year = as.numeric(year),
-      date = lubridate::make_date(year, month)
-    ) |>
-    dplyr::mutate(
+      date = lubridate::make_date(year, month),
       value = dplyr::if_else(
         stringr::str_detect(name, "percent"), value / 100, value
       )
     ) |>
     dplyr::select(date, name, value)
+
+  return(df)
 }
 
+
+#' Decide whether a scraped sub-table should be retained
+#'
+#' Returns `FALSE` for tables that are fully NA, mostly NA (>= 40 %),
+#' single-column, or single-row (header-only artefacts from the scrape).
+#'
+#' @param df A `data.frame` from the raw scrape
+#' @noRd
+secovi_keep_table <- function(df) {
+  all_na_cols <- purrr::map_lgl(df, \(x) all(is.na(x)))
+  check_all_na    <- all(all_na_cols)
+  check_mostly_na <- mean(all_na_cols) >= 0.4
+  check_single_col <- ncol(df) == 1
+  check_single_row <- nrow(df) == 1
+
+  !(check_all_na | check_mostly_na | check_single_col | check_single_row)
+}
+
+
+#' Fix the wrong header produced by html_table and return a clean data.frame
+#'
+#' `rvest::html_table()` sometimes returns the true header as the first data
+#' row. This function promotes row 1 to column names and drops it from the data.
+#'
+#' @param x A raw `data.frame` from `rvest::html_table()`
+#' @noRd
+secovi_extract_header <- function(x) {
+  xm <- as.matrix(x)
+  header <- as.character(xm[1, ])
+
+  if (nrow(xm) == 2) {
+    df <- data.frame(t(xm[-1, ]))
+  } else {
+    df <- data.frame(xm[-1, ])
+  }
+
+  if (length(header) == ncol(df)) {
+    names(df) <- header
+  }
+
+  return(df)
+}
+
+
+#' Extract the year values embedded in single-row annotation tables
+#'
+#' The SECOVI scrape includes 1-row tables of the form "Ano: 2023". This
+#' function identifies those rows and returns the years as a numeric vector.
+#'
+#' @param x Raw list of tables from `rvest::html_table()`
+#' @noRd
+secovi_get_years <- function(x) {
+  single_row <- x[purrr::map_int(x, nrow) == 1]
+  year_rows  <- dplyr::bind_rows(single_row)
+  year_vals  <- stats::na.omit(year_rows$X3)
+  years      <- as.numeric(stringr::str_remove(year_vals, "Ano: "))
+  return(years)
+}
+
+
 clean_secovi <- function(x) {
+  tables <- purrr::keep(x, secovi_keep_table)
+  tables <- purrr::map(tables, secovi_extract_header)
+  tables <- purrr::map(tables, secovi_basic_clean)
 
-  # html_table comes with wrong header. this function solves that
-  extract <- function(x) {
-    # Convert to matrix
-    xm <- as.matrix(x)
-    # Remove first row and define as header row
-    if (nrow(xm) == 2) {
-      # Undesired behavior of data.frame when input is a atomic vector
-      df <- data.frame(t(xm[-1, ]))
-      try(names(df) <- as.character(xm[1, ]))
-    } else {
-      df <- data.frame(xm[-1, ])
-      try(names(df) <- as.character(xm[1, ]))
-    }
-    return(df)
+  years <- secovi_get_years(x)
+
+  year_labels <- rep(years, each = ceiling(length(tables) / length(years)))
+  if (length(year_labels) != length(tables)) {
+    years       <- years[-1]
+    year_labels <- rep(years, each = ceiling(length(tables) / length(years)))
   }
-
-  # Drop problematic tables from scrape
-  remove_tables <- function(df) {
-
-    # Check if all columns are NA
-    check1 <- all(sapply(df, \(x) all(is.na(x))))
-    # Check if most columns are NA
-    check2 <- sum(sapply(df, \(x) all(is.na(x)))) / ncol(df)
-    # Check if there is only a single column
-    check3 <- ncol(df) == 1
-    # Check if there is only a single row
-    check4 <- nrow(df) == 1
-
-    # If any of the four conditions above is TRUE return a FALSE to drop this
-    # table
-    if (check1 | check2 >= 0.4 | check3 | check4) {
-      return(FALSE)
-    } else {
-      return(TRUE)
-    }
-  }
-
-  tables <- x[sapply(x, remove_tables)]
-  tables <- purrr::map(tables, extract)
-  tables <- purrr::map(tables, clean_basic)
-
-  get_years <- function(x) {
-    years <- x[sapply(x, nrow) == 1]
-    years <- dplyr::bind_rows(years)
-    years <- stats::na.omit(years$X3)
-    years <- as.numeric(stringr::str_remove(years, "Ano: "))
-  }
-
-  years <- get_years(x)
-  nvars <- length(unique(dplyr::bind_rows(tables)$name))
-
-  t <- try(
-    names(tables) <- rep(years, each = ceiling(length(tables) / length(years))),
-    silent = TRUE
-  )
-
-  if (inherits(t, "try-error")) {
-    #tt <- length(tables)
-    #yy <- length(rep(years, each = ceiling(length(tables) / length(years))))
-    years <- years[-1]
-  }
-
-  names(tables) <- rep(years, each = ceiling(length(tables) / length(years)))
+  names(tables) <- year_labels
 
   fact_table <- dplyr::bind_rows(tables, .id = "year")
-  fact_table <- clean_date_label(fact_table)
+  fact_table <- secovi_clean_date_label(fact_table)
 
   return(fact_table)
-
 }
