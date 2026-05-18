@@ -101,7 +101,6 @@ duplication.
 | `handle_dataset_cache(dataset_name, table, quiet, on_miss)` | Load from user cache with configurable miss behavior (`"download"` / `"return_null"` / `"error"`) |
 | `attach_dataset_metadata(data, source, category, extra_info)` | Attach `source`, `download_time`, and `download_info` attributes to the returned data |
 | `validate_dataset(data, dataset_name, required_cols, min_rows, ...)` | Check non-empty, required columns, and date sanity |
-| `validate_excel_file(path, expected_sheets, min_size)` | Validate a downloaded Excel file before reading it |
 
 #### `R/rppi-helpers.R` — RPPI-specific helpers
 
@@ -110,7 +109,6 @@ duplication.
 | `try_rppi_cached(table, source_filter)` | Load RPPI data from GitHub cache with optional source filter; returns `NULL` on miss |
 | `try_rppi_user_cache(dataset_name, quiet)` | Load RPPI data from user cache; returns `NULL` on miss |
 | `calculate_rppi_changes(data, index_col, group_col)` | Adds `chg` (month-on-month) and `acum12m` (year-on-year) columns to an index series |
-| `download_excel_with_retry(url, max_retries, quiet)` | Thin wrapper around [`download_excel()`](https://viniciusoike.github.io/realestatebr/reference/download_excel.md) for RPPI backwards compatibility |
 
 ## Common Commands
 

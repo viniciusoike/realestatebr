@@ -147,8 +147,6 @@
 <td>Attach <code>source</code>, <code>download_time</code>, and <code>download_info</code> attributes to the returned data</td>
 </tr><tr><td><code>validate_dataset(data, dataset_name, required_cols, min_rows, ...)</code></td>
 <td>Check non-empty, required columns, and date sanity</td>
-</tr><tr><td><code>validate_excel_file(path, expected_sheets, min_size)</code></td>
-<td>Validate a downloaded Excel file before reading it</td>
 </tr></tbody></table></div>
 <div class="section level4">
 <h4 id="rrppi-helpersr--rppi-specific-helpers">
@@ -161,8 +159,6 @@
 <td>Load RPPI data from user cache; returns <code>NULL</code> on miss</td>
 </tr><tr><td><code>calculate_rppi_changes(data, index_col, group_col)</code></td>
 <td>Adds <code>chg</code> (month-on-month) and <code>acum12m</code> (year-on-year) columns to an index series</td>
-</tr><tr><td><code>download_excel_with_retry(url, max_retries, quiet)</code></td>
-<td>Thin wrapper around <code><a href="reference/download_excel.html">download_excel()</a></code> for RPPI backwards compatibility</td>
 </tr></tbody></table></div>
 </div>
 </div>
