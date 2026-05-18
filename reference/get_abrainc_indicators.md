@@ -1,6 +1,6 @@
-# Import Indicators from the Abrainc-Fipe Report (DEPRECATED)
+# Import Indicators from the Abrainc-Fipe Report
 
-Import Indicators from the Abrainc-Fipe Report (DEPRECATED)
+Import Indicators from the Abrainc-Fipe Report
 
 ## Usage
 
@@ -62,16 +62,3 @@ specific tables). The return includes metadata attributes:
 Downloads data from the Abrainc-Fipe Indicators report including
 information on new launches, sales, delivered units, and market
 indicators.
-
-## Deprecation
-
-This function is deprecated since v0.4.0. Use
-[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("abrainc")
-instead:
-
-
-      # Old way:
-      data <- get_abrainc_indicators()
-
-      # New way:
-      data <- get_dataset("abrainc")

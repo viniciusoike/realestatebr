@@ -17,7 +17,6 @@ These apply when writting text for documentation like README.md or
 vignettes.
 
 - Avoid ending sentences with a colon.
-  `# Bad Multiple data sources with automatic fallback: # Good Multiple data sources with automatic fallback.`
 - Avoid emojis (e.g 🎯, 📊, etc.)
 
 ## Current Status
@@ -29,62 +28,26 @@ vignettes.
 - Active datasets: abecip, abrainc, bcb_series, bcb_realestate,
   fgv_ibre, secovi, rppi_sale, rppi_rent, bis_rppi
 
-## Architecture Transition Status
-
-### Phase 1: Core Functions ✅ COMPLETED (v0.4.0)
-
-- ✅
-  [`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
-  and
-  [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-  functions implemented
-- ✅ Dataset registry system created
-- ✅ Unified API with backward compatibility
-- ✅ All legacy functions modernized
-
-### Phase 2: Data Pipeline ✅ COMPLETED
-
-- ✅ {targets} workflow for automated data processing
-- ✅ Weekly GitHub Actions workflow
-- ✅ 37 targets across 12 datasets
-- ✅ Data validation and quality checks
-
-### Phase 3: Logic Consolidation ✅ COMPLETED (v0.6.0, 2025-10-15)
-
-- ✅ Created 7 generic helper functions (R/helpers-dataset.R)
-- ✅ Refactored 5 core files using new helpers
-- ✅ Eliminated 890 lines of code duplication
-- ✅ Achieved 15.4% codebase reduction (417 lines)
-- ✅ Added 52 comprehensive tests for helpers
-- ✅ Improved consistency across all dataset functions
-- ✅ Centralized table filtering logic
-
-**Results**: - get_abecip_indicators.R: 21.8% reduction -
-get_abrainc_indicators.R: 18.2% reduction - get_secovi.R: 18.7%
-reduction - get_bcb_series.R: 16.8% reduction - get-dataset.R: 7.2%
-reduction
-
-See `.claude/phase3_completion_summary.md` for full details.
-
-### Phase 4: Scale Up ⏳ FUTURE
-
-- ⏳ DuckDB integration for large datasets (IPTU)
-- ⏳ Rebuild CBIC from IBGE open data
-- ⏳ Lazy query support
-- ⏳ Large dataset handling
-
 ## Core Technologies & Dependencies
 
 ``` r
 
 # Core package dependencies
+library(cli)            # User-facing messages and errors
 library(dplyr)          # Data manipulation
-library(tidyr)          # Data tidying
-library(readr)          # Data reading
-library(rvest)          # Web scraping
 library(httr)           # HTTP requests
+library(lubridate)      # Date handling
+library(purrr)          # Functional programming
+library(readr)          # Data reading
+library(readxl)         # Excel reading
+library(rlang)          # Tidy evaluation
+library(rvest)          # Web scraping
+library(stringr)        # String manipulation
+library(tibble)         # Modern data frames
+library(tidyr)          # Data tidying
+library(xml2)           # HTML/XML parsing
 library(yaml)           # Configuration files
-library(stringr)           # String templates
+library(zoo)            # Time series utilities
 
 # Development tools
 library(devtools)       # Package development
@@ -95,11 +58,6 @@ library(pkgdown)        # Documentation website
 # Data pipeline
 library(targets)        # Workflow management
 library(tarchetypes)    # Additional target types
-# Note: parallel and zoo removed in v1.0.0
-
-# Large data support (Phase 4, future)
-library(duckdb)         # In-process database
-library(DBI)            # Database interface
 ```
 
 ## Key Functions & Architecture
@@ -117,6 +75,42 @@ library(DBI)            # Database interface
   [`load_dataset_registry()`](https://viniciusoike.github.io/realestatebr/reference/load_dataset_registry.md),
   [`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md),
   `update_registry_entry()`
+
+### Internal Helper Functions
+
+New and existing dataset functions must use these helpers to avoid code
+duplication.
+
+#### `R/helpers-download.R` — Download operations
+
+| Function | Purpose |
+|----|----|
+| `download_with_retry(fn, max_retries, quiet, desc)` | Core retry loop with exponential backoff; wrap any download call in it |
+| `download_file(url, file_ext, ...)` | Generic file download to a temp path |
+| `download_excel(url, expected_sheets, min_size, ...)` | Excel download with sheet and size validation |
+| `download_csv(url, min_size, ...)` | CSV download to temp path |
+| `download_zip(url, file_pattern, ...)` | Download a ZIP and extract the matching file |
+| `scrape_download_url(page_url, xpath, css, ...)` | Scrape a page for a download link, returns URL |
+| `download_multiple_files(urls, file_ext, delay, ...)` | Batch download with progress and rate limiting |
+
+#### `R/helpers-dataset.R` — Dataset lifecycle
+
+| Function | Purpose |
+|----|----|
+| `validate_dataset_params(table, valid_tables, cached, quiet, max_retries)` | Standard parameter validation at the top of every dataset function |
+| `handle_dataset_cache(dataset_name, table, quiet, on_miss)` | Load from user cache with configurable miss behavior (`"download"` / `"return_null"` / `"error"`) |
+| `attach_dataset_metadata(data, source, category, extra_info)` | Attach `source`, `download_time`, and `download_info` attributes to the returned data |
+| `validate_dataset(data, dataset_name, required_cols, min_rows, ...)` | Check non-empty, required columns, and date sanity |
+| `validate_excel_file(path, expected_sheets, min_size)` | Validate a downloaded Excel file before reading it |
+
+#### `R/rppi-helpers.R` — RPPI-specific helpers
+
+| Function | Purpose |
+|----|----|
+| `try_rppi_cached(table, source_filter)` | Load RPPI data from GitHub cache with optional source filter; returns `NULL` on miss |
+| `try_rppi_user_cache(dataset_name, quiet)` | Load RPPI data from user cache; returns `NULL` on miss |
+| `calculate_rppi_changes(data, index_col, group_col)` | Adds `chg` (month-on-month) and `acum12m` (year-on-year) columns to an index series |
+| `download_excel_with_retry(url, max_retries, quiet)` | Thin wrapper around [`download_excel()`](https://viniciusoike.github.io/realestatebr/reference/download_excel.md) for RPPI backwards compatibility |
 
 ## Common Commands
 
@@ -186,7 +180,7 @@ tar_visnetwork()
   workflow”
 - **Target groups**:
   - `weekly`: BCB, FGV, ABECIP, ABRAINC, SECOVI, RPPI (8 datasets)
-  - `monthly`: BIS, CBIC, Property Records (3 datasets)
+  - `monthly`: BIS RPPI (1 dataset)
   - `all`: All datasets
 
 #### Pipeline Architecture
@@ -205,7 +199,7 @@ After processing, GitHub Actions uploads files from
 **Weekly Datasets** (7-day update cycle): - bcb_series, bcb_realestate,
 fgv_ibre - abecip, abrainc, secovi - rppi_sale, rppi_rent
 
-**Monthly Datasets** (30-day update cycle): - bis_rppi
+**Monthly Datasets** (1st of month trigger): - bis_rppi
 
 ### Code Quality
 
@@ -252,6 +246,39 @@ get_dataset <- function(name, source = "auto") {
 }
 ```
 
+### Using Helper Functions
+
+Every dataset function must use the shared helpers instead of
+re-implementing these patterns:
+
+- **Parameter validation** — call
+  [`validate_dataset_params()`](https://viniciusoike.github.io/realestatebr/reference/validate_dataset_params.md)
+  at the top
+- **Cache loading** — use
+  [`handle_dataset_cache()`](https://viniciusoike.github.io/realestatebr/reference/handle_dataset_cache.md)
+  instead of raw `tryCatch` around
+  [`load_from_user_cache()`](https://viniciusoike.github.io/realestatebr/reference/load_from_user_cache.md)
+- **Downloading files** — use
+  [`download_excel()`](https://viniciusoike.github.io/realestatebr/reference/download_excel.md),
+  [`download_csv()`](https://viniciusoike.github.io/realestatebr/reference/download_csv.md),
+  [`download_zip()`](https://viniciusoike.github.io/realestatebr/reference/download_zip.md),
+  or
+  [`download_file()`](https://viniciusoike.github.io/realestatebr/reference/download_file.md)
+  (all in `helpers-download.R`)
+- **Retry logic** — wrap any custom download in
+  [`download_with_retry()`](https://viniciusoike.github.io/realestatebr/reference/download_with_retry.md);
+  do not write manual retry loops
+- **Metadata** — call
+  [`attach_dataset_metadata()`](https://viniciusoike.github.io/realestatebr/reference/attach_dataset_metadata.md)
+  before returning data
+- **Data validation** — call
+  [`validate_dataset()`](https://viniciusoike.github.io/realestatebr/reference/validate_dataset.md)
+  after downloading; use
+  [`validate_excel_file()`](https://viniciusoike.github.io/realestatebr/reference/validate_excel_file.md)
+  before reading Excel files
+- **RPPI series only** — use `try_rppi_cached()`,
+  `try_rppi_user_cache()`, and `calculate_rppi_changes()`
+
 ### Data Validation
 
 - Check required columns and data types
@@ -267,19 +294,24 @@ get_dataset <- function(name, source = "auto") {
     ├── data-raw/                   # Data processing scripts
     │   ├── pipeline/               # Pipeline helper functions
     │   │   ├── targets_helpers.R   # Caching and validation helpers
-    │   │   └── validation.R        # Data validation rules
+    │   │   ├── validation.R        # Data validation rules
+    │   │   ├── generate_report.R   # Pipeline summary report
+    │   │   └── update_data.R       # Data update helpers
     │   ├── cache_output/           # Staging directory for GitHub releases (git-ignored)
     │   └── [dataset].R             # Individual dataset scripts
     ├── R/                          # Package functions
     │   ├── list-datasets.R         # Dataset discovery
     │   ├── get-dataset.R           # Unified data access
     │   ├── get-*.R                 # Internal dataset functions
-    │   ├── database.R              # DuckDB integration (Phase 4)
-    │   ├── cache.R                 # Deprecated cache utilities
+    │   ├── helpers-dataset.R       # Shared helpers: validation, cache, metadata
+    │   ├── helpers-download.R      # Shared helpers: download, retry, scraping
+    │   ├── rppi-helpers.R          # RPPI-specific helpers: cache, changes
     │   ├── cache-user.R            # User-level cache management
     │   ├── cache-github.R          # GitHub releases cache
-    │   ├── utils.R                 # Helper functions
-    │   └── data-*.R                # Dataset documentation
+    │   ├── utils.R                 # General helper functions
+    │   ├── utils-encoding.R        # Encoding utilities
+    │   ├── utils-globals.R         # Global variable declarations
+    │   └── data.R                  # Dataset documentation (roxygen2 @docType data)
     ├── inst/extdata/
     │   ├── datasets.yaml           # Dataset registry
     │   └── validation/             # Validation rules

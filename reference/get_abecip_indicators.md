@@ -1,6 +1,6 @@
-# Get Credit Indicators from Abecip (DEPRECATED)
+# Get Credit Indicators from Abecip
 
-Get Credit Indicators from Abecip (DEPRECATED)
+Get Credit Indicators from Abecip
 
 ## Usage
 
@@ -59,16 +59,3 @@ specific tables). The return includes metadata attributes:
 
 Downloads housing credit data from Abecip including SBPE monetary flows,
 financed units, and home-equity loan data.
-
-## Deprecation
-
-This function is deprecated since v0.4.0. Use
-[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("abecip")
-instead:
-
-
-      # Old way:
-      data <- get_abecip_indicators()
-
-      # New way:
-      data <- get_dataset("abecip")

@@ -1,10 +1,7 @@
-# Get FGV IBRE Confidence Indicators (DEPRECATED)
+# Get FGV IBRE Confidence Indicators
 
-Deprecated since v0.4.0. Use
-[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("fgv_ibre")
-instead. Loads construction confidence indicators from FGV IBRE
-including confidence indices, expectation indicators, and INCC price
-indices.
+Loads construction confidence indicators from FGV IBRE including
+confidence indices, expectation indicators, and INCC price indices.
 
 ## Usage
 

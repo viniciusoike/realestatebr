@@ -1,8 +1,6 @@
-# Import Real Estate data from the Brazilian Central Bank (DEPRECATED)
+# Import Real Estate data from the Brazilian Central Bank
 
-Deprecated since v0.4.0. Use
-[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("bcb_realestate")
-instead. Imports real estate data from BCB including credit sources,
+Imports real estate data from BCB including credit sources,
 applications, financed units, and real estate indices.
 
 ## Usage

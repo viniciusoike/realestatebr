@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Working with Property Price Indices • realestatebr</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/Lora-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -175,7 +175,7 @@ smoothed with a 3-month moving average and the HP filter.</p>
 <code class="sourceCode R"><span><span class="va">ivgr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"ivgr"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">ivgr</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 300</span></span>
+<span><span class="co">#&gt; Rows: 301</span></span>
 <span><span class="co">#&gt; Columns: 5</span></span>
 <span><span class="co">#&gt; $ date     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2001-03-01<span style="color: #949494;">, </span>2001-04-01<span style="color: #949494;">, </span>2001-05-01<span style="color: #949494;">, </span>2001-06-01<span style="color: #949494;">, </span>2001-07-01<span style="color: #949494;">, </span>…</span></span>
 <span><span class="co">#&gt; $ name_geo <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"…</span></span>
@@ -299,7 +299,7 @@ single <code>tibble</code>.</p>
 <code class="sourceCode R"><span><span class="va">sale_indices</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"sale"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">sale_indices</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 14,457</span></span>
+<span><span class="co">#&gt; Rows: 14,458</span></span>
 <span><span class="co">#&gt; Columns: 6</span></span>
 <span><span class="co">#&gt; $ source    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "IGMI-R"<span style="color: #949494;">, </span>"IGMI-R"<span style="color: #949494;">, </span>"IGMI-R"<span style="color: #949494;">, </span>"IGMI-R"<span style="color: #949494;">, </span>"IGMI-R"<span style="color: #949494;">, </span>"IGMI-R"<span style="color: #949494;">, </span>…</span></span>
 <span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">,</span>…</span></span>
@@ -317,7 +317,7 @@ between them in the post-pandemic years. This highlights the importance
 of choosing the right index for your use case.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">comp_index</span> <span class="op">&lt;-</span> <span class="va">sale_indices</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">==</span> <span class="st">"Brazil"</span>, <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2015-01-01"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">==</span> <span class="st">"Brazil"</span>, <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/pkg/zoo/man/yearmon.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2015-01-01"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">comp_index</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">acum12m</span> <span class="op">*</span> <span class="fl">100</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
@@ -493,7 +493,7 @@ sales example.</p>
 <span>    <span class="va">rent_sale</span> <span class="op">==</span> <span class="st">"rent"</span>,</span>
 <span>    <span class="va">rooms</span> <span class="op">==</span> <span class="st">"total"</span>,</span>
 <span>    <span class="va">variable</span> <span class="op">==</span> <span class="st">"acum12m"</span>,</span>
-<span>    <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2019-01-01"</span><span class="op">)</span></span>
+<span>    <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/pkg/zoo/man/yearmon.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2019-01-01"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">sel_cities</span> <span class="op">&lt;-</span> <span class="va">fz_rent</span> <span class="op">|&gt;</span></span>
@@ -562,7 +562,7 @@ comparisons straightforward.</p>
 <code class="sourceCode R"><span><span class="va">rent_indices_comp</span> <span class="op">&lt;-</span> <span class="va">rent_indices</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">name_muni</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"São Paulo"</span>, <span class="st">"Rio de Janeiro"</span><span class="op">)</span>,</span>
-<span>    <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2019-01-01"</span><span class="op">)</span></span>
+<span>    <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/pkg/zoo/man/yearmon.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2019-01-01"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">rent_indices_comp</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">acum12m</span>, color <span class="op">=</span> <span class="va">source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -589,7 +589,7 @@ indices to January 2018 = 100.</p>
 <code class="sourceCode R"><span><span class="va">sales</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"sale"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">national</span> <span class="op">&lt;-</span> <span class="va">sales</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">==</span> <span class="st">"Brazil"</span>, <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2018-01-01"</span><span class="op">)</span>, <span class="va">date</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-12-01"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_muni</span> <span class="op">==</span> <span class="st">"Brazil"</span>, <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/pkg/zoo/man/yearmon.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2018-01-01"</span><span class="op">)</span>, <span class="va">date</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/pkg/zoo/man/yearmon.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-12-01"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">national_rebased</span> <span class="op">&lt;-</span> <span class="va">national</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
@@ -647,7 +647,7 @@ context.</p>
 <span>    <span class="va">ref_area_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Brazil"</span>, <span class="st">"United States"</span>, <span class="st">"Germany"</span>, <span class="st">"Japan"</span><span class="op">)</span>,</span>
 <span>    <span class="va">is_nominal</span> <span class="op">==</span> <span class="fl">0</span>,</span>
 <span>    <span class="va">unit</span> <span class="op">==</span> <span class="st">"index"</span>,</span>
-<span>    <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2000-01-01"</span><span class="op">)</span></span>
+<span>    <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/pkg/zoo/man/yearmon.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2000-01-01"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">bis_sub</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value</span>, color <span class="op">=</span> <span class="va">ref_area_name</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>

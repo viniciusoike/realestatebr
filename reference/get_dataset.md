@@ -114,8 +114,8 @@ fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 #> Retrieved 'all' from 'bcb_realestate' (default table). Available tables:
 #> 'accounting', 'application', 'indices', 'sources', 'units'
 
-# Get BCB data from a specific start date
-bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
+# Get core BCB real estate credit series (default)
+bcb_core <- get_dataset("bcb_series")
 #> Checking user cache for bcb_series...
 #> Dataset 'bcb_series' not found in user cache
 #> User cache not available: Dataset 'bcb_series' not found in cache
@@ -123,8 +123,21 @@ bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
 #> Attempting to download bcb_series.rds from GitHub...
 #> Downloaded bcb_series.rds (0.11 MB)
 #> Successfully downloaded from GitHub releases
-#> Retrieved 'all' from 'bcb_series' (default table). Available tables: 'price',
-#> 'credit', 'production', 'interest-rate', 'exchange', 'government',
-#> 'real-estate'
+#> Retrieved 'core' from 'bcb_series' (default table). Available tables: 'core',
+#> 'primary', 'secondary', 'tertiary', 'full'
+
+# Include key macro series such as SELIC, IPCA, INCC
+bcb_primary <- get_dataset("bcb_series", table = "primary")
+#> Checking user cache for bcb_series...
+#> Successfully loaded from user cache
+#> Retrieved 'primary' from 'bcb_series'. Available tables: 'core', 'primary',
+#> 'secondary', 'tertiary', 'full'
+
+# Filter by date
+bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
+#> Checking user cache for bcb_series...
+#> Successfully loaded from user cache
+#> Retrieved 'core' from 'bcb_series' (default table). Available tables: 'core',
+#> 'primary', 'secondary', 'tertiary', 'full'
 # }
 ```

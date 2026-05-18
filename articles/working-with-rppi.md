@@ -119,7 +119,7 @@ smoothed with a 3-month moving average and the HP filter.
 ivgr <- get_dataset("rppi", "ivgr")
 
 glimpse(ivgr)
-#> Rows: 300
+#> Rows: 301
 #> Columns: 5
 #> $ date     <date> 2001-03-01, 2001-04-01, 2001-05-01, 2001-06-01, 2001-07-01, …
 #> $ name_geo <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "…
@@ -259,7 +259,7 @@ which stacks all available indices into a single `tibble`.
 sale_indices <- get_dataset("rppi", "sale")
 
 glimpse(sale_indices)
-#> Rows: 14,457
+#> Rows: 14,458
 #> Columns: 6
 #> $ source    <chr> "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", …
 #> $ date      <date> 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01,…

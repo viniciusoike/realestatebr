@@ -93,7 +93,7 @@ ds <- list_datasets()
 | abecip | ABECIP Housing Credit Indicators | ABECIP - Associação Brasileira das Entidades de Crédito Imobiliário | sbpe, units, cgi | monthly |
 | abrainc | ABRAINC-FIPE Primary Market Indicators | ABRAINC/FIPE | indicator, radar, leading | quarterly |
 | bcb_realestate | BCB Real Estate Market Data | Banco Central do Brasil | accounting, application, indices, sources, units | monthly |
-| bcb_series | BCB Economic Series | Banco Central do Brasil - SGS | price, credit, production, interest-rate, exchange, government, real-estate | varies (daily/monthly/quarterly) |
+| bcb_series | BCB Economic Series | Banco Central do Brasil - SGS | core, primary, secondary, tertiary, full | varies (daily/monthly/quarterly) |
 | fgv_ibre | FGV IBRE Real Estate Indicators | FGV IBRE | (single table) | monthly |
 | rppi | Brazilian Residential Property Price Indices | Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP) | fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp, sale, rent, all | monthly |
 | rppi_bis | BIS Residential Property Price Indices | Bank for International Settlements | selected, detailed_monthly, detailed_quarterly, detailed_annual, detailed_halfyearly | quarterly |

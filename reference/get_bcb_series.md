@@ -1,12 +1,12 @@
-# Download macroeconomic time-series from BCB (DEPRECATED)
+# Download macroeconomic time-series from BCB
 
-Download macroeconomic time-series from BCB (DEPRECATED)
+Download macroeconomic time-series from BCB
 
 ## Usage
 
 ``` r
 get_bcb_series(
-  table = "all",
+  table = "core",
   cached = FALSE,
   date_start = as.Date("2010-01-01"),
   quiet = FALSE,
@@ -23,29 +23,46 @@ get_bcb_series(
 
 - table:
 
-  Character. Which dataset to return: "all" (default), "credit",
-  "exchange", "government", "interest-rate", "real-estate", "price", or
-  "production".
+  Character. Hierarchy level to return:
+
+  "core"
+
+  :   Core real estate credit series (default, ~40 series).
+
+  "primary"
+
+  :   Core plus key macro series such as SELIC, IPCA, INCC (~59 series).
+
+  "secondary"
+
+  :   Primary plus broader macro context such as GDP, unemployment (~109
+      series).
+
+  "tertiary"
+
+  :   All series including less relevant and discontinued ones (~141
+      series).
+
+  "full"
+
+  :   Equivalent to "tertiary". Returns all available series.
 
 - cached:
 
-  Logical. If `TRUE`, attempts to load data from package cache using the
-  unified dataset architecture.
+  Logical. If `TRUE`, attempts to load data from package cache.
 
 - date_start:
 
-  A `Date` argument indicating the first period to extract from the time
-  series. Defaults to 2010-01-01.
+  A `Date` indicating the first period to extract. Defaults to
+  2010-01-01.
 
 - quiet:
 
-  Logical. If `TRUE`, suppresses progress messages and warnings. If
-  `FALSE` (default), provides detailed progress reporting.
+  Logical. If `TRUE`, suppresses progress messages.
 
 - max_retries:
 
-  Integer. Maximum number of retry attempts for failed BCB API calls.
-  Defaults to 3.
+  Integer. Maximum retry attempts for failed API calls. Defaults to 3.
 
 - ...:
 
@@ -54,35 +71,14 @@ get_bcb_series(
 
 ## Value
 
-A 12-column `tibble` with all of the selected series from BCB. The
-tibble includes metadata attributes:
-
-- download_info:
-
-  List with download statistics
-
-- source:
-
-  Data source used (api or cache)
-
-- download_time:
-
-  Timestamp of download
+A 4-column `tibble` with columns `date`, `code_bcb`, `name_simplified`,
+and `value`. Series metadata is available in
+[`bcb_metadata`](https://viniciusoike.github.io/realestatebr/reference/bcb_metadata.md).
 
 ## Details
 
-Downloads macroeconomic time series from BCB including price indices,
-interest rates, credit indicators, and production metrics.
-
-## Deprecation
-
-This function is deprecated since v0.4.0. Use
-[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)("bcb_series")
-instead:
-
-
-      # Old way:
-      data <- get_bcb_series()
-
-      # New way:
-      data <- get_dataset("bcb_series")
+Downloads macroeconomic time series from BCB. Series are organised by
+relevance to the Brazilian real estate market using a four-level
+hierarchy. The default ("core") returns the 40 most directly relevant
+series covering real estate credit concession, interest rates, and
+delinquency. Use broader levels to include macroeconomic context series.
