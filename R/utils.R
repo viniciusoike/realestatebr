@@ -6,35 +6,22 @@
 #' @details Based on the date column, finds the range to be imported.
 #' @noRd
 get_range <- function(path = NULL, sheet, skip_row = 4) {
-  # Import all data from sheet
   cells <- tidyxl::xlsx_cells(path, sheets = sheet)
-
-  # Change skip if necessary
-  skip_row <- skip_row
-
-  # Define range for cell extraction
 
   # Finds last row that is of type Date
   maxrow <- cells |>
-    dplyr::filter(sheet == sheet, row > skip_row, data_type == "date") |>
+    dplyr::filter(.data$sheet == .env$sheet, row > skip_row, data_type == "date") |>
     dplyr::slice(dplyr::n()) |>
     dplyr::pull(address)
 
   # Finds last non-NA column
   maxcol <- cells |>
-    dplyr::filter(sheet == sheet, row > skip_row, col == max(col)) |>
-    dplyr::slice(1) |>
-    dplyr::pull(address) |>
-    unique()
-
-  maxcol <- cells |>
-    dplyr::filter(sheet == sheet, !is.na(numeric)) |>
+    dplyr::filter(.data$sheet == .env$sheet, !is.na(numeric)) |>
     dplyr::slice_max(col, n = 1) |>
     dplyr::pull(address) |>
     unique()
 
-  # Paste together range
-  # B5:BD162
+  # Paste together range: e.g. B5:BD162
   r1 <- stringr::str_extract(maxrow, "[A-Z]")
   r2 <- 1 + skip_row
   r3 <- stringr::str_extract(maxcol, "[A-Z]+")
@@ -43,104 +30,6 @@ get_range <- function(path = NULL, sheet, skip_row = 4) {
   range_excel <- paste0(r1, r2, ":", r3, r4)
   range_excel <- unique(range_excel)
   return(range_excel)
-}
-
-#' Get Excel Range for Data Extraction
-#'
-#' @description
-#' Determines the exact range of cells containing data in an Excel sheet.
-#' The function finds the boundaries of the data by identifying the last row
-#' containing dates and the last column containing non-NA values.
-#'
-#' @param path Character string. Path to the Excel file.
-#' @param sheet Character string. Name of the sheet to analyze.
-#' @param skip_row Numeric. Number of rows to skip before the actual data begins.
-#'   Defaults to 4.
-#'
-#' @return Character string representing an Excel range (e.g., "B5:BD162").
-#' @noRd
-#'
-#' @details
-#' The function works by:
-#' 1. Reading the Excel sheet
-#' 2. Identifying columns containing dates
-#' 3. Finding the last row with valid dates
-#' 4. Finding the last column with non-NA values
-#' 5. Converting column numbers to Excel-style letters
-#' 6. Constructing the range string
-#'
-#' @importFrom readxl read_excel excel_sheets
-get_range_new <- function(path = NULL, sheet, skip_row = 4) {
-  # Input validation
-  if (is.null(path)) {
-    stop("Path to Excel file must be provided")
-  }
-  if (!file.exists(path)) {
-    stop("Excel file not found at specified path")
-  }
-
-  # Read the sheet
-  df <- readxl::read_excel(
-    path,
-    sheet = sheet,
-    col_names = TRUE,
-    .name_repair = "minimal"
-  )
-
-  # Get dimensions of the data
-  dims <- readxl::excel_sheets(path) |>
-    purrr::set_names() |>
-    purrr::map(~ readxl::read_excel(path, sheet = .x, col_names = FALSE)) |>
-    purrr::map(dim)
-
-  dims <- dims[[sheet]]
-
-  # Find the last row with dates
-  date_cols <- which(
-    sapply(df, inherits, "POSIXct") |
-      sapply(df, inherits, "Date")
-  )
-
-  if (length(date_cols) == 0) {
-    stop("No date columns found in the sheet")
-  }
-
-  last_date_row <- max(which(!is.na(df[date_cols[1]])))
-
-  # Find the last non-NA column
-  last_col <- max(which(colSums(!is.na(df)) > 0))
-
-  # Convert column numbers to Excel column letters
-  number_to_letter <- function(n) {
-    if (n <= 0) {
-      return("")
-    }
-
-    letter <- ""
-    while (n > 0) {
-      n <- n - 1
-      letter <- paste0(LETTERS[(n %% 26) + 1], letter)
-      n <- n %/% 26
-    }
-    return(letter)
-  }
-
-  # Create range string
-  start_col <- number_to_letter(1) # Usually starts from first column
-  start_row <- skip_row + 1
-  end_col <- number_to_letter(last_col)
-  end_row <- last_date_row
-
-  range_excel <- paste0(start_col, start_row, ":", end_col, end_row)
-
-  return(range_excel)
-}
-
-
-add_geo_dimensions <- function(df, key = c("name_simplified", "abbrev_state")) {
-  # Join original table with geographic dimension
-  joined <- dplyr::left_join(df, dim_city, by = key)
-  return(joined)
 }
 
 #' Check if Debug Mode is Enabled
