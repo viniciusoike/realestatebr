@@ -21,8 +21,8 @@
 #'   }
 #'
 #' @source [https://www.abecip.org.br](https://www.abecip.org.br)
-#' @importFrom cli cli_inform cli_warn cli_abort cli_progress_bar cli_progress_update cli_progress_done
-#' @importFrom dplyr filter select mutate rename rename_with bind_rows group_by slice
+#' @importFrom cli cli_inform cli_warn cli_abort
+#' @importFrom dplyr filter select mutate rename rename_with bind_rows
 #' @importFrom tidyr pivot_longer pivot_wider
 #' @importFrom readxl read_excel
 #' @importFrom rvest html_elements html_attr
@@ -65,28 +65,16 @@ get_abecip_indicators <- function(
     cli::cli_inform("Downloading data from Abecip...")
   }
 
-  # Initialize result
   abecip <- NULL
-  download_info <- list(
-    source = "web",
-    category = table,
-    attempts = 0,
-    errors = character()
-  )
 
-  # Download based on category
   if (table == "sbpe") {
-    abecip <- download_abecip_sbpe(
-      quiet = quiet,
-      max_retries = max_retries
-    )
+    temp_path <- download_abecip_sbpe(quiet = quiet, max_retries = max_retries)
+    abecip <- clean_abecip_sbpe(temp_path)
   }
 
   if (table == "units") {
-    abecip <- download_abecip_units(
-      quiet = quiet,
-      max_retries = max_retries
-    )
+    temp_path <- download_abecip_units(quiet = quiet, max_retries = max_retries)
+    abecip <- clean_abecip_units(temp_path)
   }
 
   if (table == "cgi") {
@@ -106,18 +94,15 @@ get_abecip_indicators <- function(
       cli::cli_abort("CGI data file not found in package installation")
     }
 
-    abecip <- tryCatch(
+    abecip <- rlang::try_fetch(
       load_abecip_cgi(cgi_path),
-      error = function(e) {
-        cli::cli_abort(c(
-          "Failed to load CGI data",
-          "x" = "Error: {e$message}"
-        ))
+      error = function(cnd) {
+        rlang::abort("Failed to load CGI data", parent = cnd)
       }
     )
   }
 
-  # Add metadata
+  # Add metadata ----
   if (table == "cgi") {
     abecip <- attach_dataset_metadata(
       abecip,
@@ -126,12 +111,7 @@ get_abecip_indicators <- function(
       extra_info = list(note = "CGI is a static historical dataset")
     )
   } else {
-    abecip <- attach_dataset_metadata(
-      abecip,
-      source = "web",
-      category = table,
-      extra_info = download_info
-    )
+    abecip <- attach_dataset_metadata(abecip, source = "web", category = table)
   }
 
   if (!quiet) {
@@ -145,52 +125,54 @@ get_abecip_indicators <- function(
   return(abecip)
 }
 
-#' Download SBPE Data from Abecip
-#'
-#' Internal function to download and process SBPE (savings) data from Abecip
-#' with robust error handling and retry logic.
+#' Download SBPE Excel File from Abecip
 #'
 #' @param quiet Logical controlling progress messages
 #' @param max_retries Maximum number of retry attempts
 #'
-#' @return A tibble with processed SBPE data
+#' @return Path to the downloaded temporary file
 #' @keywords internal
 download_abecip_sbpe <- function(quiet = FALSE, max_retries = 3L) {
-  # Download Excel file with retry logic ----
-  temp_path <- download_abecip_file(
+  download_abecip_file(
     url_page = "https://www.abecip.org.br/credito-imobiliario/indicadores/caderneta-de-poupanca",
     xpath = '//*[@id="tab37"]/div/div/div/div/a',
     file_prefix = "abecip_poupanca",
     quiet = quiet,
     max_retries = max_retries
   )
+}
 
-  # Import the spreadsheet into R ----
-  tryCatch(
+#' Clean SBPE Data from Abecip Excel File
+#'
+#' @param temp_path Path to the downloaded Excel file
+#'
+#' @return A tibble with processed SBPE data
+#' @keywords internal
+clean_abecip_sbpe <- function(temp_path) {
+  cnames <- c(
+    "date",
+    "sbpe_inflow",
+    "sbpe_outflow",
+    "sbpe_netflow",
+    "sbpe_netflow_pct",
+    "sbpe_yield",
+    "sbpe_stock",
+    "drop",
+    "dim_currency",
+    "dim_currecy_label",
+    "dim_unit"
+  )
+  cols_select <- cnames[1:7]
+
+  # Import spreadsheet ----
+  raw <- rlang::try_fetch(
     {
-      # Get excel range to import
       range_sbpe <- get_range(temp_path, sheet = "SBPE_Mensal", skip_row = 19)
       range_sbpe <- stringr::str_replace(range_sbpe, ":R", ":K")
-      # Define column names
-      cnames <- c(
-        "date",
-        "sbpe_inflow",
-        "sbpe_outflow",
-        "sbpe_netflow",
-        "sbpe_netflow_pct",
-        "sbpe_yield",
-        "sbpe_stock",
-        "drop",
-        "dim_currency",
-        "dim_currecy_label",
-        "dim_unit"
-      )
 
-      # Get excel range to import
       range_rural <- get_range(temp_path, sheet = "Rural_Mensal")
       range_rural <- stringr::str_replace(range_rural, "A5", "A268")
 
-      # Import
       sbpe <- readxl::read_excel(
         path = temp_path,
         sheet = "SBPE_Mensal",
@@ -201,34 +183,38 @@ download_abecip_sbpe <- function(quiet = FALSE, max_retries = 3L) {
       rural <- readxl::read_excel(
         path = temp_path,
         sheet = "Rural_Mensal",
-        col_names = cnames[1:7],
+        col_names = cols_select,
         range = range_rural
       )
+
+      list(sbpe = sbpe, rural = rural)
     },
-    error = function(e) {
-      cli::cli_abort(c(
-        "Failed to read Excel file from Abecip",
-        "x" = "Error: {e$message}",
-        "i" = "The Excel file structure may have changed"
-      ))
+    error = function(cnd) {
+      rlang::abort(
+        c(
+          "Failed to read Excel file from Abecip",
+          "i" = "The Excel file structure may have changed"
+        ),
+        parent = cnd
+      )
     }
   )
 
-  # Clean the data ----
-  clean_sbpe <- process_sbpe_data(sbpe)
-  clean_rural <- process_sbpe_data(rural)
+  # Clean individual tables ----
+  clean_sbpe <- abecip_clean_sbpe_table(raw$sbpe)
+  clean_rural <- abecip_clean_sbpe_table(raw$rural)
 
-  # Combine SBPE and rural data
-  sbpe_total <- dplyr::bind_rows(
+  # Stack SBPE and rural data with category label ----
+  stacked <- dplyr::bind_rows(
     list(
-      sbpe = dplyr::select(clean_sbpe, dplyr::all_of(cnames[1:7])),
-      rural = dplyr::select(clean_rural, dplyr::all_of(cnames[1:7]))
+      sbpe = dplyr::select(clean_sbpe, dplyr::all_of(cols_select)),
+      rural = dplyr::select(clean_rural, dplyr::all_of(cols_select))
     ),
     .id = "category"
   )
 
-  # Reshape to wide format with totals
-  sbpe_total <- sbpe_total |>
+  # Reshape to wide format with totals ----
+  sbpe_total <- stacked |>
     dplyr::rename_with(~ stringr::str_replace(.x, "sbpe_", "")) |>
     tidyr::pivot_longer(
       cols = inflow:stock,
@@ -245,65 +231,64 @@ download_abecip_sbpe <- function(quiet = FALSE, max_retries = 3L) {
       total_netflow = sbpe_netflow + rural_netflow
     )
 
-  # Validate data
   validate_abecip_data(sbpe_total, "sbpe")
 
   return(sbpe_total)
 }
 
-#' Download Units Data from Abecip
-#'
-#' Internal function to download and process financed units data from Abecip
-#' with robust error handling and retry logic.
+#' Download Units Excel File from Abecip
 #'
 #' @param quiet Logical controlling progress messages
 #' @param max_retries Maximum number of retry attempts
 #'
-#' @return A tibble with processed units data
+#' @return Path to the downloaded temporary file
 #' @keywords internal
 download_abecip_units <- function(quiet = FALSE, max_retries = 3L) {
-  # Download Excel file with retry logic ----
-  temp_path <- download_abecip_file(
+  download_abecip_file(
     url_page = "https://www.abecip.org.br/credito-imobiliario/indicadores/financiamento",
     xpath = '/html/body/section/div/div/div[3]/div/div/a',
     file_prefix = "abecip_financiamento",
     quiet = quiet,
     max_retries = max_retries
   )
+}
 
-  # Import the spreadsheet into R ----
-  tryCatch(
-    {
-      # Define column names
-      cnames <- c(
-        "date",
-        "units_construction",
-        "units_acquisition",
-        "units_total",
-        "currency_construction",
-        "currency_acquisition",
-        "currency_total"
-      )
+#' Clean Units Data from Abecip Excel File
+#'
+#' @param temp_path Path to the downloaded Excel file
+#'
+#' @return A tibble with processed units data
+#' @keywords internal
+clean_abecip_units <- function(temp_path) {
+  cnames <- c(
+    "date",
+    "units_construction",
+    "units_acquisition",
+    "units_total",
+    "currency_construction",
+    "currency_acquisition",
+    "currency_total"
+  )
 
-      # Import excel sheet
-      units <- readxl::read_excel(
-        temp_path,
-        skip = 5,
-        sheet = "BD_Unidades",
-        col_names = cnames
+  raw <- rlang::try_fetch(
+    readxl::read_excel(
+      temp_path,
+      skip = 5,
+      sheet = "BD_Unidades",
+      col_names = cnames
+    ),
+    error = function(cnd) {
+      rlang::abort(
+        c(
+          "Failed to read Excel file from Abecip",
+          "i" = "The Excel file structure may have changed"
+        ),
+        parent = cnd
       )
-    },
-    error = function(e) {
-      cli::cli_abort(c(
-        "Failed to read Excel file from Abecip",
-        "x" = "Error: {e$message}",
-        "i" = "The Excel file structure may have changed"
-      ))
     }
   )
 
-  # Clean the data ----
-  clean_units <- units |>
+  clean_units <- raw |>
     dplyr::mutate(
       date = suppressWarnings(
         janitor::excel_numeric_to_date(as.numeric(date))
@@ -311,20 +296,19 @@ download_abecip_units <- function(quiet = FALSE, max_retries = 3L) {
     ) |>
     stats::na.omit()
 
-  # Validate data
   validate_abecip_data(clean_units, "units")
 
   return(clean_units)
 }
 
-#' Download Abecip Excel File with Retry Logic
+#' Download Abecip Excel File
 #'
-#' Internal helper function to download Excel files from Abecip website
-#' with automatic retry on failure.
+#' Scrapes the given page to find the download link, then downloads the Excel
+#' file using the shared `download_excel()` helper.
 #'
 #' @param url_page URL of the Abecip page containing the download link
 #' @param xpath XPath to locate the download link
-#' @param file_prefix Prefix for the temporary file name
+#' @param file_prefix Prefix used in retry-attempt messages
 #' @param quiet Logical controlling messages
 #' @param max_retries Maximum number of retry attempts
 #'
@@ -337,68 +321,53 @@ download_abecip_file <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Use existing download_with_retry() from rppi-helpers.R
-  download_with_retry(
+  # Scrape page to find download URL ----
+  url <- download_with_retry(
     fn = function() {
-      # Parse the page to find download link
       page <- xml2::read_html(url_page)
-      url <- rvest::html_elements(page, xpath = xpath) |>
+      href <- rvest::html_elements(page, xpath = xpath) |>
         rvest::html_attr("href")
 
-      if (length(url) == 0) {
+      if (length(href) == 0) {
         stop("Could not find download link on page")
       }
 
-      # Take first URL if multiple found
-      url <- url[1]
+      href <- href[1]
 
-      # Ensure URL is absolute
-      if (!stringr::str_detect(url, "^http")) {
-        url <- paste0("https://www.abecip.org.br", url)
+      if (!stringr::str_detect(href, "^http")) {
+        href <- paste0("https://www.abecip.org.br", href)
       }
 
-      # Download the file
-      temp_path <- tempfile(paste0(file_prefix, ".xlsx"))
-      utils::download.file(url, destfile = temp_path, mode = "wb", quiet = TRUE)
-
-      # Verify file was downloaded
-      if (!file.exists(temp_path) || file.size(temp_path) == 0) {
-        stop("Downloaded file is empty or missing")
-      }
-
-      return(temp_path)
+      return(href)
     },
     max_retries = max_retries,
     quiet = quiet,
-    desc = paste("Download", file_prefix)
+    desc = paste("Scrape", file_prefix, "page")
   )
+
+  # Download the Excel file ----
+  download_excel(url, max_retries = max_retries, quiet = quiet)
 }
 
-#' Process SBPE Data
-#'
-#' Internal helper function to clean and process SBPE data tables.
+#' Clean a Single SBPE-Format Table
 #'
 #' @param df Raw data frame from Excel import
 #'
 #' @return Cleaned tibble
 #' @keywords internal
-process_sbpe_data <- function(df) {
-  df |>
-    # Select only columns that are not full NA
+abecip_clean_sbpe_table <- function(df) {
+  clean <- df |>
     dplyr::select(dplyr::where(~ sum(!is.na(.x)) > 0)) |>
-    # Remove all "Total" rows
     dplyr::filter(!stringr::str_detect(date, "Total")) |>
     dplyr::mutate(
-      # Convert date column
       date = janitor::excel_numeric_to_date(as.numeric(date)),
-      # Convert percentage to proportion
       sbpe_netflow_pct = sbpe_netflow_pct / 100
     )
+
+  return(clean)
 }
 
 #' Validate Abecip Data
-#'
-#' Internal helper function to validate downloaded Abecip data.
 #'
 #' @param data Data frame to validate
 #' @param type Type of data ("sbpe" or "units")
@@ -406,7 +375,6 @@ process_sbpe_data <- function(df) {
 #' @return NULL (validates or errors)
 #' @keywords internal
 validate_abecip_data <- function(data, type) {
-  # Use generic validate_dataset() helper
   if (type == "sbpe") {
     validate_dataset(
       data,
@@ -424,7 +392,6 @@ validate_abecip_data <- function(data, type) {
       max_future_days = 90
     )
   } else {
-    # Generic validation for other types
     validate_dataset(data, dataset_name = paste0("abecip_", type))
   }
 }
@@ -437,45 +404,41 @@ validate_abecip_data <- function(data, type) {
 load_abecip_cgi <- function(path) {
   raw <- readxl::read_excel(path, col_types = "text")
   raw <- janitor::clean_names(raw)
-  raw <- dplyr::rename(
-    raw,
-    year = ano,
-    month_label = mes,
-    loan = valor_emprestimo,
-    new_contracts = no_contratos,
-    average_term = prazo_medio,
-    default_rate = inadimplencia,
-    stock_contracts = quantidade_contratos,
-    outstanding_balance = saldo_remanescente
+
+  cols_rename <- c(
+    year = "ano",
+    month_label = "mes",
+    loan = "valor_emprestimo",
+    new_contracts = "no_contratos",
+    average_term = "prazo_medio",
+    default_rate = "inadimplencia",
+    stock_contracts = "quantidade_contratos",
+    outstanding_balance = "saldo_remanescente"
+  )
+  cols_select <- c(
+    "year", "date", "new_contracts", "stock_contracts",
+    "loan", "outstanding_balance", "average_term", "default_rate"
   )
 
-  raw <- dplyr::mutate(
-    raw,
-    date = readr::parse_date(
-      paste(year, month_label),
-      format = "%Y %B",
-      locale = readr::locale("pt")
-    ),
-    year = as.numeric(year),
-    loan = parse_cgi_number(loan, decimal = TRUE),
-    average_term = as.numeric(stringr::str_replace(average_term, " ", ".")),
-    default_rate = as.numeric(stringr::str_remove(default_rate, "%")),
-    new_contracts = parse_cgi_contract(new_contracts),
-    stock_contracts = parse_cgi_stock(stock_contracts),
-    outstanding_balance = parse_cgi_balance(outstanding_balance)
-  )
+  cgi <- raw |>
+    dplyr::rename(dplyr::any_of(cols_rename)) |>
+    dplyr::mutate(
+      date = readr::parse_date(
+        paste(year, month_label),
+        format = "%Y %B",
+        locale = readr::locale("pt")
+      ),
+      year = as.numeric(year),
+      loan = parse_cgi_number(loan, decimal = TRUE),
+      average_term = as.numeric(stringr::str_replace(average_term, " ", ".")),
+      default_rate = as.numeric(stringr::str_remove(default_rate, "%")),
+      new_contracts = parse_cgi_contract(new_contracts),
+      stock_contracts = parse_cgi_stock(stock_contracts),
+      outstanding_balance = parse_cgi_balance(outstanding_balance)
+    ) |>
+    dplyr::select(dplyr::all_of(cols_select))
 
-  dplyr::select(
-    raw,
-    year,
-    date,
-    new_contracts,
-    stock_contracts,
-    loan,
-    outstanding_balance,
-    average_term,
-    default_rate
-  )
+  return(cgi)
 }
 
 parse_cgi_number <- function(x, decimal = TRUE) {

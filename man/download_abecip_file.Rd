@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_abecip_indicators.R
 \name{download_abecip_file}
 \alias{download_abecip_file}
-\title{Download Abecip Excel File with Retry Logic}
+\title{Download Abecip Excel File}
 \usage{
 download_abecip_file(
   url_page,
@@ -17,7 +17,7 @@ download_abecip_file(
 
 \item{xpath}{XPath to locate the download link}
 
-\item{file_prefix}{Prefix for the temporary file name}
+\item{file_prefix}{Prefix used in retry-attempt messages}
 
 \item{quiet}{Logical controlling messages}
 
@@ -27,7 +27,7 @@ download_abecip_file(
 Path to the downloaded temporary file
 }
 \description{
-Internal helper function to download Excel files from Abecip website
-with automatic retry on failure.
+Scrapes the given page to find the download link, then downloads the Excel
+file using the shared \code{download_excel()} helper.
 }
 \keyword{internal}

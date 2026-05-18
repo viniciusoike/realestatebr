@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_abecip_indicators.R
 \name{download_abecip_units}
 \alias{download_abecip_units}
-\title{Download Units Data from Abecip}
+\title{Download Units Excel File from Abecip}
 \usage{
 download_abecip_units(quiet = FALSE, max_retries = 3L)
 }
@@ -12,10 +12,9 @@ download_abecip_units(quiet = FALSE, max_retries = 3L)
 \item{max_retries}{Maximum number of retry attempts}
 }
 \value{
-A tibble with processed units data
+Path to the downloaded temporary file
 }
 \description{
-Internal function to download and process financed units data from Abecip
-with robust error handling and retry logic.
+Download Units Excel File from Abecip
 }
 \keyword{internal}

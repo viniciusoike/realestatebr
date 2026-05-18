@@ -15,6 +15,6 @@ validate_abecip_data(data, type)
 NULL (validates or errors)
 }
 \description{
-Internal helper function to validate downloaded Abecip data.
+Validate Abecip Data
 }
 \keyword{internal}
