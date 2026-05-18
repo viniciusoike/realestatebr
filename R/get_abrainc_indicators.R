@@ -21,11 +21,13 @@
 #'   }
 #'
 #' @source Abrainc-Fipe available at [https://www.fipe.org.br/pt-br/indices/abrainc](https://www.fipe.org.br/pt-br/indices/abrainc)
-#' @importFrom cli cli_inform cli_warn cli_abort cli_progress_bar cli_progress_update cli_progress_done
-#' @importFrom dplyr filter select mutate rename left_join group_by slice
+#' @importFrom cli cli_inform
+#' @importFrom dplyr select mutate left_join where join_by across
 #' @importFrom tidyr pivot_longer separate_wider_delim
 #' @importFrom readxl read_excel
-#' @importFrom httr GET write_disk set_config config
+#' @importFrom purrr map pluck
+#' @importFrom lubridate ymd year
+#' @importFrom stringr str_replace str_to_title
 #' @keywords internal
 get_abrainc_indicators <- function(
   table = "indicator",
@@ -64,77 +66,57 @@ get_abrainc_indicators <- function(
     cli::cli_inform("Downloading Abrainc-Fipe indicators from FIPE...")
   }
 
-  download_result <- download_abrainc_excel(
+  url <- "https://downloads.fipe.org.br/indices/abrainc/series-historicas-abraincfipe.xlsx"
+  expected_sheets <- c(
+    "Indicadores Abrainc-Fipe",
+    "Radar Abrainc-Fipe",
+    "Indicador Antecedente (SP)"
+  )
+
+  temp_path <- download_excel(
+    url = url,
+    expected_sheets = expected_sheets,
+    min_size = 1000,
+    ssl_verify = FALSE, # FIPE has SSL certificate issues
     max_retries = max_retries,
     quiet = quiet
   )
 
-  if (is.null(download_result$path)) {
-    cli::cli_abort(c(
-      "Failed to download Abrainc-Fipe data",
-      "x" = "All {max_retries} download attempt{?s} failed",
-      "i" = "Check your internet connection and try again"
-    ))
-  }
-
-  temp_path <- download_result$path
-
-  # Swap vector to convert the category into the respective sheet name
+  # Map category names to sheet names ----
   vl <- c(
     "indicator" = "Indicadores Abrainc-Fipe",
     "radar" = "Radar Abrainc-Fipe",
     "leading" = "Indicador Antecedente (SP)"
   )
 
-  # Helper function to import the data from the spreadsheet
-  import_abrainc <- function(category) {
-    if (table == "all") {
-      sheet_name <- vl
-    } else {
-      sheet_name <- vl[[category]]
-    }
-
-    data <- purrr::map(sheet_name, function(s) {
-      # Get import-range for current sheet
-      range <- get_range(path = temp_path, sheet = s, skip_row = 6)
-      # Import Excel spreadsheet
-      readxl::read_excel(temp_path, sheet = s, range = range, col_names = FALSE)
-    })
-
-    names(data) <- names(sheet_name)
-    return(data)
-  }
-
-  # Import all sheets
-  abrainc <- suppressMessages(import_abrainc(table))
-
-  # Clean all sheets
-
-  # Name each element of the list
   if (table == "all") {
+    sheet_names <- vl
     category <- names(vl)
   } else {
+    sheet_names <- vl[table]
     category <- table
   }
+
+  # Import sheets ----
+  abrainc <- suppressMessages(
+    purrr::map(sheet_names, function(s) {
+      range <- get_range(path = temp_path, sheet = s, skip_row = 6)
+      readxl::read_excel(temp_path, sheet = s, range = range, col_names = FALSE)
+    })
+  )
   names(abrainc) <- category
+
+  # Clean sheets ----
   out <- purrr::map(category, function(x) {
     suppressWarnings(clean_abrainc(abrainc, x))
   })
-
-  # Output
   names(out) <- category
-  # If only a single category is selected return a tibble else return a named list
+
   if (length(category) == 1) {
     out <- purrr::pluck(out, 1)
   }
 
-  # Add metadata attributes
-  out <- attach_dataset_metadata(
-    out,
-    source = "web",
-    category = table,
-    extra_info = list(retry_attempts = download_result$attempts)
-  )
+  out <- attach_dataset_metadata(out, source = "web", category = table)
 
   if (!quiet) {
     cli::cli_inform("Successfully processed Abrainc-Fipe indicators")
@@ -143,54 +125,13 @@ get_abrainc_indicators <- function(
   return(out)
 }
 
-#' Download Abrainc Excel File
-#'
-#' Downloads the Abrainc-Fipe Excel file using the generic download_excel() helper.
-#'
-#' @param max_retries Maximum number of retry attempts
-#' @param quiet Logical controlling messages
-#'
-#' @return List with path (character or NULL) and attempt count
-#' @keywords internal
-download_abrainc_excel <- function(max_retries, quiet) {
-  url <- "https://downloads.fipe.org.br/indices/abrainc/series-historicas-abraincfipe.xlsx"
-  expected_sheets <- c(
-    "Indicadores Abrainc-Fipe",
-    "Radar Abrainc-Fipe",
-    "Indicador Antecedente (SP)"
-  )
-
-  # Use generic download_excel() from helpers-download.R
-  result <- tryCatch(
-    {
-      path <- download_excel(
-        url = url,
-        expected_sheets = expected_sheets,
-        min_size = 1000,
-        ssl_verify = FALSE, # FIPE has SSL certificate issues
-        max_retries = max_retries,
-        quiet = quiet
-      )
-      list(path = path, attempts = 1, error = NULL)
-    },
-    error = function(e) {
-      list(path = NULL, attempts = max_retries + 1, error = e$message)
-    }
-  )
-
-  return(result)
-}
-
 abrainc_basic_clean <- function(df, subcategories) {
   df |>
-    # Convert date column to YMD and create a year column
     dplyr::mutate(
       date = lubridate::ymd(date),
       year = lubridate::year(date)
     ) |>
-    # Convert all columns except date to numeric
     dplyr::mutate(dplyr::across(!date, as.numeric)) |>
-    # Convert to long and split the column name
     tidyr::pivot_longer(cols = -c(date, year)) |>
     tidyr::separate_wider_delim(
       cols = name,
@@ -201,28 +142,24 @@ abrainc_basic_clean <- function(df, subcategories) {
 }
 
 clean_abrainc <- function(ls, category) {
-  # Pluck the tibble from the list
   df <- ls[[category]]
-  # Get column names and a auxiliar tibble with variable labels
-  nms <- abrainc_fipe_col_names()
+  nms <- build_abrainc_col_names()
   labels <- nms[[category]][["labels"]]
   col_names <- nms[[category]][["names"]]
-  # Remove columns with only NAs
+
   df <- dplyr::select(df, dplyr::where(~ !all(is.na(.x))))
-  # Just to make sure there is no error
   df <- df[, 1:length(col_names)]
   names(df) <- col_names
-  # The names will be split into these columns
+
   subcategories <- list(
     indicator = c("category", "variable"),
     radar = c("category", "variable", "source"),
     leading = c("variable", "zone")
   )
-  # Clean the tibble
+
   clean_df <- abrainc_basic_clean(df, subcategories[[category]])
 
   if (category == "indicator") {
-    # Join final table with labels for variables
     clean_df <- dplyr::left_join(
       clean_df,
       labels,
@@ -232,7 +169,6 @@ clean_abrainc <- function(ls, category) {
 
   if (category == "leading") {
     clean_df <- clean_df |>
-      # Fix the Zone column and join with variable labels
       dplyr::mutate(
         zone = stringr::str_replace(zone, "_", " "),
         zone = stringr::str_to_title(zone)
@@ -242,7 +178,6 @@ clean_abrainc <- function(ls, category) {
 
   if (category == "radar") {
     clean_df <- clean_df |>
-      # Compute yearly averages for categories and variables
       dplyr::mutate(
         avg_category = mean(value, na.rm = TRUE),
         .by = category
@@ -255,31 +190,18 @@ clean_abrainc <- function(ls, category) {
         avg_year_variable = mean(value, na.rm = TRUE),
         .by = c(year, variable)
       ) |>
-      # Compute trends for variables
       dplyr::mutate(
         ma3 = as.numeric(stats::filter(value, rep(1 / 3, 3), sides = 1)),
         ma6 = as.numeric(stats::filter(value, rep(1 / 6, 6), sides = 1)),
         .by = variable
       ) |>
-      # Join with variable labels
       dplyr::left_join(labels, by = dplyr::join_by(variable))
   }
 
   return(clean_df)
 }
 
-abrainc_fipe_col_names <- function() {
-  # ind_col_names <- c(
-  #   "date", "new_units-total", "new_units-market_rate", "new_units-social_housing",
-  #   "new_units-other", "new_units-missing_info", "sold-total", "sold-market_rate",
-  #   "sold-social_housing", "sold-other", "sold-missing_info", "delivered-total",
-  #   "delivered-market_rate", "delivered-social_housing", "delivered-other",
-  #   "delivered-missing_info", "distratado-total", "distratado-market_rate",
-  #   "distratado-social_housing", "distratado-other", "distratado-missing_info",
-  #   "supply-total", "supply-market_rate", "supply-social_housing", "supply-other",
-  #   "supply-missing_info", "value-new_units", "value-sale", "value-new_units_cpi",
-  #   "value-sale_cpi")
-
+build_abrainc_col_names <- function() {
   ind_col_names <- c(
     "date",
     "new_units-total",
@@ -405,11 +327,11 @@ abrainc_fipe_col_names <- function() {
     "alvaras_total"                                              ,
     "Number of Building Permits (per month)"                     ,
     "alvaras_prop"                                               ,
-    "Distribution of Building Permits in S\u00e3o Paulo (Total)" ,
+    "Distribution of Building Permits in São Paulo (Total)" ,
     "alvaras_total_12m"                                          ,
     "Building Permits (12-month cumulative)"                     ,
     "alvaras_prop_12m"                                           ,
-    "Distribution of Building Permits in S\u00e3o Paulo (%)"
+    "Distribution of Building Permits in São Paulo (%)"
   )
 
   out <- list(
