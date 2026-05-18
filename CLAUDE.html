@@ -121,18 +121,14 @@
 <th>Purpose</th>
 </tr></thead><tbody><tr><td><code>download_with_retry(fn, max_retries, quiet, desc)</code></td>
 <td>Core retry loop with exponential backoff; wrap any download call in it</td>
-</tr><tr><td><code>download_file(url, file_ext, ...)</code></td>
-<td>Generic file download to a temp path</td>
 </tr><tr><td><code>download_excel(url, expected_sheets, min_size, ...)</code></td>
 <td>Excel download with sheet and size validation</td>
 </tr><tr><td><code>download_csv(url, min_size, ...)</code></td>
 <td>CSV download to temp path</td>
 </tr><tr><td><code>download_zip(url, file_pattern, ...)</code></td>
 <td>Download a ZIP and extract the matching file</td>
-</tr><tr><td><code>scrape_download_url(page_url, xpath, css, ...)</code></td>
-<td>Scrape a page for a download link, returns URL</td>
-</tr><tr><td><code>download_multiple_files(urls, file_ext, delay, ...)</code></td>
-<td>Batch download with progress and rate limiting</td>
+</tr><tr><td><code>fallback_to_github_cache(dataset_name, quiet)</code></td>
+<td>Try GitHub release cache when primary download fails; returns NULL on miss</td>
 </tr></tbody></table></div>
 <div class="section level4">
 <h4 id="rhelpers-datasetr--dataset-lifecycle">
@@ -285,6 +281,7 @@
 <li>Document all exported functions with roxygen2.</li>
 <li>Prefer readability over brevity.</li>
 <li>Use meaningful variable names.</li>
+<li>Use RStudio-style section headers for code organization: <code># Section ----</code>, <code>## Subsection ----</code>, <code>### Subsubsection ----</code> with trailing dashes to fill to ~76 characters. Never use box-style comments with <code>====</code> borders above and below. Keep comments concise.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="error-handling-pattern">Error Handling Pattern<a class="anchor" aria-label="anchor" href="#error-handling-pattern"></a></h3>
