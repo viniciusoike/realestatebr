@@ -37,7 +37,13 @@
 #' # Force fresh download
 #' fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 #'
-#' # Get BCB data from a specific start date
+#' # Get core BCB real estate credit series (default)
+#' bcb_core <- get_dataset("bcb_series")
+#'
+#' # Include key macro series such as SELIC, IPCA, INCC
+#' bcb_primary <- get_dataset("bcb_series", table = "primary")
+#'
+#' # Filter by date
 #' bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
 #' }
 #'
@@ -488,20 +494,18 @@ apply_table_filtering <- function(data, name, table) {
     }
   }
 
-  # Special handling for BCB Series table filtering
-  if (name == "bcb_series" && "bcb_category" %in% names(data)) {
-    valid_tables <- c(
-      "price",
-      "credit",
-      "production",
-      "interest-rate",
-      "exchange",
-      "government",
-      "real-estate"
-    )
+  # Special handling for BCB Series table filtering (hierarchy-based)
+  if (name == "bcb_series" && "code_bcb" %in% names(data)) {
+    valid_tables <- c("core", "primary", "secondary", "tertiary", "full")
 
     if (table %in% valid_tables) {
-      data <- data[data$bcb_category == table, ]
+      codes_bcb <- resolve_bcb_hierarchy(table)
+      data <- data[data$code_bcb %in% codes_bcb, ]
+
+      cols_select <- c("date", "code_bcb", "name_simplified", "value")
+      cols_present <- intersect(cols_select, names(data))
+      data <- data[, cols_present, drop = FALSE]
+
       if (nrow(data) == 0) {
         cli::cli_abort("No data found for BCB Series table '{table}'")
       }

@@ -273,32 +273,26 @@ datasets:
     update_schedule: "weekly"
     warn_after_days: 14
     categories:
-      price:
-        name: "Price Indices"
-        description: "Various price and inflation indices"
-      credit:
-        name: "Credit Indicators"
-        description: "Credit market indicators"
-      production:
-        name: "Production Indicators"
-        description: "Production and industrial activity indicators"
-      interest-rate:
-        name: "Interest Rates"
-        description: "Interest rate indicators"
-      exchange:
-        name: "Exchange Rates"
-        description: "Exchange rate indicators"
-      government:
-        name: "Government Indicators"
-        description: "Government finance and fiscal indicators"
-      real-estate:
-        name: "Real Estate Indicators"
-        description: "Real estate market indicators"
+      core:
+        name: "Core Real Estate Series"
+        description: "Core real estate credit series (concession, rates, delinquency)"
+      primary:
+        name: "Primary Series"
+        description: "Core series plus secondary real estate and key macro series (SELIC, IPCA, INCC)"
+      secondary:
+        name: "Secondary Series"
+        description: "Primary series plus broader macroeconomic context (GDP, unemployment, income)"
+      tertiary:
+        name: "Tertiary Series"
+        description: "All series including less relevant macro and discontinued series"
+      full:
+        name: "Full Series"
+        description: "All available series (equivalent to tertiary)"
     internal_function: "fetch_bcb_series"
     dataset_function: "get_bcb_series"
     data_type: "tibble"
     cached_file: "bcb_series.rds"
-    default_table: "all"
+    default_table: "core"
     metadata_table: "bcb_metadata"
     translation_notes: "Metadata available in both Portuguese and English"
 

@@ -90,7 +90,7 @@ list(
   # ---- BCB Series - Macroeconomic Indicators ----
   tar_target(
     name = bcb_series_data,
-    command = fetch_dataset("bcb_series"),
+    command = fetch_dataset("bcb_series", table = "full"),
     cue = tar_cue_age(
       name = bcb_series_data,
       age = as.difftime(7, units = "days")

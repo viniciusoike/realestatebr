@@ -56,7 +56,13 @@ sbpe_data <- get_dataset("abecip", "sbpe")
 # Force fresh download
 fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 
-# Get BCB data from a specific start date
+# Get core BCB real estate credit series (default)
+bcb_core <- get_dataset("bcb_series")
+
+# Include key macro series such as SELIC, IPCA, INCC
+bcb_primary <- get_dataset("bcb_series", table = "primary")
+
+# Filter by date
 bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
 }
 

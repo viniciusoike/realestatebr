@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{bcb_metadata}}{
 
-A data frame with 140 rows and 10 columns:
+A data frame with 140 rows and 11 columns:
 \describe{
 \item{code_bcb}{Numeric code identifying the series.}
 \item{bcb_category}{Category of the series.}
@@ -19,6 +19,10 @@ A data frame with 140 rows and 10 columns:
 \item{first_value}{Date of the first available observation.}
 \item{last_value}{Date of the last available observation.}
 \item{source}{Source of the series.}
+\item{hierarchy}{Integer relevance tier: 1 = core real estate credit
+series; 2 = primary (key macro series such as SELIC, IPCA, INCC);
+3 = secondary (broader macro context); 4 = tertiary (less relevant
+or discontinued series).}
 }
 }
 }
@@ -30,5 +34,8 @@ bcb_metadata
 }
 \description{
 A table with metadata for BCB economic series. Use with \code{get_dataset("bcb_series")}.
+The \code{hierarchy} column controls which series are returned by default: pass
+\code{table = "core"} for the most relevant real estate series, or a broader
+level for more macroeconomic context (see \code{\link{get_dataset}}).
 }
 \keyword{datasets}

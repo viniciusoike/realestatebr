@@ -1,3 +1,18 @@
+# realestatebr (development)
+
+## Changes to `bcb_series`
+
+* `get_dataset("bcb_series")` now returns only four columns: `date`,
+  `code_bcb`, `name_simplified`, and `value`. Full metadata is available
+  via `bcb_metadata`.
+* The `table` argument now accepts a hierarchy level: `"core"` (default),
+  `"primary"`, `"secondary"`, `"tertiary"`, or `"full"`. The levels are
+  cumulative — `"primary"` includes all `"core"` series plus key macro
+  indicators such as SELIC, IPCA, and INCC. Previously the argument
+  accepted BCB category names (`"credit"`, `"price"`, etc.).
+* `bcb_metadata` gains a `hierarchy` column (integer 1-4) that records
+  the relevance tier assigned to each series.
+
 # realestatebr 1.0.0
 
 ## Breaking changes

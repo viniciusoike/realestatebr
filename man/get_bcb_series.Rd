@@ -2,13 +2,13 @@
 % Please edit documentation in R/get_bcb_series.R
 \name{get_bcb_series}
 \alias{get_bcb_series}
-\title{Download macroeconomic time-series from BCB (DEPRECATED)}
+\title{Download macroeconomic time-series from BCB}
 \source{
 \url{https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries}
 }
 \usage{
 get_bcb_series(
-  table = "all",
+  table = "core",
   cached = FALSE,
   date_start = as.Date("2010-01-01"),
   quiet = FALSE,
@@ -17,51 +17,40 @@ get_bcb_series(
 )
 }
 \arguments{
-\item{table}{Character. Which dataset to return: "all" (default), "credit", "exchange",
-"government", "interest-rate", "real-estate", "price", or "production".}
+\item{table}{Character. Hierarchy level to return:
+\describe{
+\item{"core"}{Core real estate credit series (default, ~40 series).}
+\item{"primary"}{Core plus key macro series such as SELIC, IPCA, INCC (~59 series).}
+\item{"secondary"}{Primary plus broader macro context such as GDP, unemployment (~109 series).}
+\item{"tertiary"}{All series including less relevant and discontinued ones (~141 series).}
+\item{"full"}{Equivalent to "tertiary". Returns all available series.}
+}}
 
-\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
-using the unified dataset architecture.}
+\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache.}
 
-\item{date_start}{A \code{Date} argument indicating the first period to extract
-from the time series. Defaults to 2010-01-01.}
+\item{date_start}{A \code{Date} indicating the first period to extract.
+Defaults to 2010-01-01.}
 
-\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
-If \code{FALSE} (default), provides detailed progress reporting.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses progress messages.}
 
-\item{max_retries}{Integer. Maximum number of retry attempts for failed
-BCB API calls. Defaults to 3.}
+\item{max_retries}{Integer. Maximum retry attempts for failed API calls.
+Defaults to 3.}
 
 \item{...}{Additional arguments passed to \code{rbcb::get_series}.}
 }
 \value{
-A 12-column \code{tibble} with all of the selected series from BCB.
-The tibble includes metadata attributes:
-\describe{
-\item{download_info}{List with download statistics}
-\item{source}{Data source used (api or cache)}
-\item{download_time}{Timestamp of download}
-}
+A 4-column \code{tibble} with columns \code{date}, \code{code_bcb},
+\code{name_simplified}, and \code{value}. Series metadata is available in
+\code{\link{bcb_metadata}}.
 }
 \description{
-Download macroeconomic time-series from BCB (DEPRECATED)
+Download macroeconomic time-series from BCB
 }
 \details{
-Downloads macroeconomic time series from BCB including price indices, interest
-rates, credit indicators, and production metrics.
+Downloads macroeconomic time series from BCB. Series are organised by
+relevance to the Brazilian real estate market using a four-level hierarchy.
+The default ("core") returns the 40 most directly relevant series covering
+real estate credit concession, interest rates, and delinquency. Use broader
+levels to include macroeconomic context series.
 }
-\section{Deprecation}{
-
-This function is deprecated since v0.4.0.
-Use \code{\link{get_dataset}}("bcb_series") instead:
-
-\preformatted{
-  # Old way:
-  data <- get_bcb_series()
-
-  # New way:
-  data <- get_dataset("bcb_series")
-}
-}
-
 \keyword{internal}

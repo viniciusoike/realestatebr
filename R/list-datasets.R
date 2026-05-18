@@ -104,10 +104,11 @@ load_dataset_registry <- function() {
     )
   }
 
-  # Load and parse YAML
+  # Load and parse YAML (read with explicit UTF-8 to handle non-ASCII chars)
   tryCatch(
     {
-      registry <- yaml::read_yaml(registry_path)
+      raw_text <- readLines(registry_path, encoding = "UTF-8", warn = FALSE)
+      registry <- yaml::yaml.load(paste(raw_text, collapse = "\n"))
       return(registry)
     },
     error = function(e) {
