@@ -32,6 +32,5 @@ Character. Path to downloaded and validated Excel file.
 }
 \description{
 Downloads an Excel file with validation of expected sheets and file size.
-Combines download_file() with validate_excel_file() from helpers-dataset.R.
 }
 \keyword{internal}
