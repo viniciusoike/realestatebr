@@ -57,6 +57,52 @@ get_fgv_ibre <- function(
   ))
 }
 
+# Load FGV Local CSV -------------------------------------------------------
+
+#' Load FGV IBRE Data from a Local CSV Export
+#'
+#' Reads and tidies the semicolon-delimited CSV downloaded from the FGV IBRE
+#' portal (<https://autenticacao-ibre.fgv.br/ProdutosDigitais/>). Called by the
+#' targets pipeline when the local file changes.
+#'
+#' @param path Path to the CSV file (e.g. `"data-raw/xgdvConsulta.csv"`).
+#' @return Tibble with columns: date, name_simplified, value, name_series,
+#'   code_series, unit, source.
+#' @keywords internal
+#' @noRd
+fetch_fgv_local <- function(path) {
+  fgv_raw <- readr::read_delim(
+    path,
+    delim = ";",
+    locale = readr::locale(decimal_mark = ",", encoding = "ISO-8859-1"),
+    na = " - ",
+    col_types = "cddddddddddddddd",
+    show_col_types = FALSE
+  )
+
+  fgv_long <- fgv_raw |>
+    dplyr::rename(date = Data) |>
+    dplyr::mutate(date = readr::parse_date(date, format = "%m/%Y")) |>
+    tidyr::pivot_longer(-date, names_to = "name_series")
+
+  fgv_coded <- fgv_long |>
+    dplyr::mutate(
+      code_series = stringr::str_extract(name_series, "(?<=\\()\\d{7}(?=\\))"),
+      code_series = as.numeric(code_series)
+    ) |>
+    dplyr::select(-name_series)
+
+  fgv_data <- fgv_coded |>
+    dplyr::left_join(fgv_dict, by = "code_series") |>
+    dplyr::left_join(fgv_key, by = "code_series") |>
+    dplyr::select(date, name_simplified, value, name_series, code_series, unit, source) |>
+    dplyr::filter(!is.na(value))
+
+  fgv_data <- attach_dataset_metadata(fgv_data, source = "web")
+
+  return(fgv_data)
+}
+
 # fmt: skip
 fgv_key <- tibble::tribble(
   ~code_series,      ~name_simplified,

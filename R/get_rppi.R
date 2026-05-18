@@ -570,21 +570,25 @@ get_rppi_fipezap <- function(
   url <- "https://downloads.fipe.org.br/indices/fipezap/fipezap-serieshistoricas.xlsx"
   temp_path <- download_excel(url, min_size = 1000, max_retries = max_retries, quiet = quiet)
 
-  # Get city sheet names (exclude summary sheets)
-  sheet_names <- readxl::excel_sheets(temp_path)
-  sheet_names <- stringr::str_subset(
-    sheet_names,
-    "(Resumo)|(Aux)",
-    negate = TRUE
-  )
+  # Identify city sheet indices and names.
+  # FIPE's XLSX stores sheet names as Latin-1 but readxl reports them as
+  # UTF-8; readxl::read_excel() cannot resolve them by the returned string.
+  # Workaround: filter non-city sheets by name (str_subset works fine), then
+  # record their 1-based positions and pass those to read_excel instead.
+  # tidyxl::xlsx_cells() handles accented names correctly, so get_range()
+  # (which uses tidyxl) continues to receive the string name.
+  all_sheets <- readxl::excel_sheets(temp_path)
+  city_mask <- !stringr::str_detect(all_sheets, "(Resumo)|(Aux)|(FipeZAP)")
+  sheet_names <- all_sheets[city_mask]
+  sheet_indices <- which(city_mask)
 
   city_names <- stringr::str_to_title(sheet_names)
 
-  # Import function for each sheet
-  import_sheet <- function(sheet) {
-    range <- get_range(temp_path, sheet)
+  # Import one city sheet; use index for readxl, name for get_range.
+  import_sheet <- function(sheet_name, sheet_idx) {
+    range <- get_range(temp_path, sheet_name)
 
-    # Fix range if needed (ensure column BD is included)
+    # Ensure column BD is included in the range
     if (!stringr::str_detect(range, "BD")) {
       max_col <- stringr::str_extract(
         stringr::str_match(range, ":[A-Z]+[0-9]"),
@@ -603,7 +607,7 @@ get_rppi_fipezap <- function(
 
     dat <- readxl::read_excel(
       temp_path,
-      sheet,
+      sheet_idx,
       skip = 4,
       col_names = build_fipezap_col_names(),
       col_types = col_types_vec,
@@ -613,8 +617,8 @@ get_rppi_fipezap <- function(
     return(dat)
   }
 
-  # Process all sheets
-  fipezap <- lapply(sheet_names, import_sheet)
+  # Process all city sheets
+  fipezap <- mapply(import_sheet, sheet_names, sheet_indices, SIMPLIFY = FALSE)
   names(fipezap) <- city_names
 
   # Stack and clean
