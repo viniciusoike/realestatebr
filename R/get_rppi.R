@@ -607,7 +607,7 @@ get_rppi_fipezap <- function(
 
   # Download Excel with retry
   url <- "https://downloads.fipe.org.br/indices/fipezap/fipezap-serieshistoricas.xlsx"
-  temp_path <- download_excel_with_retry(url, max_retries, quiet)
+  temp_path <- download_excel(url, min_size = 1000, max_retries = max_retries, quiet = quiet)
 
   # Get city sheet names (exclude summary sheets)
   sheet_names <- readxl::excel_sheets(temp_path)

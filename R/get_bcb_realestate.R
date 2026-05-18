@@ -167,27 +167,11 @@ download_and_process_bcb_data <- function(quiet, max_retries) {
     }
   )
 
-  # Fallback to GitHub cache if API fails
   if (is.null(bcb)) {
-    if (!quiet) {
-      cli::cli_inform(c(
-        "i" = "BCB API failed, trying GitHub cache..."
-      ))
+    data <- fallback_to_github_cache("bcb_realestate", quiet = quiet)
+    if (!is.null(data)) {
+      return(attach_dataset_metadata(data, source = "github_cache"))
     }
-    clean_bcb <- tryCatch(
-      {
-        download_from_github_release("bcb_realestate", quiet = quiet)
-      },
-      error = function(e) {
-        NULL
-      }
-    )
-
-    if (!is.null(clean_bcb) && nrow(clean_bcb) > 0) {
-      clean_bcb <- attach_dataset_metadata(clean_bcb, source = "github_cache")
-      return(clean_bcb)
-    }
-
     cli::cli_abort(c(
       "BCB API failed after {max_retries} attempts",
       "x" = "GitHub cache is also unavailable",
