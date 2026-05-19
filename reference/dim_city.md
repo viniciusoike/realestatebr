@@ -11,7 +11,7 @@ dim_city
 ## Format
 
 An object of class `tbl_df` (inherits from `tbl`, `data.frame`) with
-5570 rows and 8 columns.
+5570 rows and 9 columns.
 
 ## Source
 

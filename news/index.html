@@ -50,6 +50,43 @@
 <li>
 <code>itbi_summary</code> and the internal ITBI helpers (<code>get_itbi</code>, <code>get_itbi_bhe</code>) have been removed. They were incomplete (single-municipality coverage) and are deferred to a future version.</li>
 </ul></div>
+<div class="section level3">
+<h3 id="changes-to-bcb_series-1-0-0">Changes to <code>bcb_series</code>
+<a class="anchor" aria-label="anchor" href="#changes-to-bcb_series-1-0-0"></a></h3>
+<ul><li>
+<code>get_dataset("bcb_series")</code> now returns only four columns: <code>date</code>, <code>code_bcb</code>, <code>name_simplified</code>, and <code>value</code>. Full metadata is available via <code>bcb_metadata</code>.</li>
+<li>The <code>table</code> argument now accepts a hierarchy level: <code>"core"</code> (default), <code>"primary"</code>, <code>"secondary"</code>, <code>"tertiary"</code>, or <code>"full"</code>. The levels are cumulative — <code>"primary"</code> includes all <code>"core"</code> series plus key macro indicators such as SELIC, IPCA, and INCC. Previously the argument accepted BCB category names (<code>"credit"</code>, <code>"price"</code>, etc.).</li>
+<li>
+<code>bcb_metadata</code> gains a <code>hierarchy</code> column (integer 1–4) that records the relevance tier assigned to each series.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changes-to-rppi-1-0-0">Changes to <code>rppi</code>
+<a class="anchor" aria-label="anchor" href="#changes-to-rppi-1-0-0"></a></h3>
+<ul><li>
+<code>get_dataset("rppi", table = "all")</code> now returns two additional columns: <code>transaction_type</code> (<code>"sale"</code> or <code>"rent"</code>) and <code>source</code> (the index name, e.g., <code>"IGMI-R"</code>, <code>"IVG-R"</code>, <code>"FipeZap"</code>). Previously the stacked table had no way to distinguish transaction type from index source.</li>
+<li>Fixed a sheet-encoding mismatch in the FipeZAP XLSX download that caused <code>Sheets not found</code> errors after FIPE added a new summary sheet. Sheet selection now uses numeric indices to avoid Latin-1/UTF-8 mismatches in accented sheet names.</li>
+<li>Fixed <code>get_range()</code> failing with a malformed cell range when <code>tidyxl</code> received a sheet name with a mismatched encoding attribute. The function now derives the sheet lookup key directly from the cells returned by <code>tidyxl</code> rather than from the user-supplied string.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-1-0-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-0-0"></a></h3>
+<ul><li>Restored <code>fetch_fgv_local()</code>, which was inadvertently dropped during earlier refactoring but is still called by the <code>targets</code> pipeline to process the manually-maintained FGV IBRE CSV export.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="internal-changes-1-0-0">Internal changes<a class="anchor" aria-label="anchor" href="#internal-changes-1-0-0"></a></h3>
+<ul><li>Dataset download functions now follow a <code>download_*</code> / <code>clean_*</code> naming convention: <code>download_*</code> functions return a file path; <code>clean_*</code> functions parse and tidy that path into a tibble.</li>
+<li>Replaced bare <code>tryCatch</code> with <code><a href="https://rlang.r-lib.org/reference/try_fetch.html" class="external-link">rlang::try_fetch</a></code> throughout, using <code>parent = cnd</code> to preserve the original error chain.</li>
+<li>All dataset functions now call <code><a href="../reference/validate_dataset_params.html">validate_dataset_params()</a></code>, <code><a href="../reference/handle_dataset_cache.html">handle_dataset_cache()</a></code>, <code><a href="../reference/attach_dataset_metadata.html">attach_dataset_metadata()</a></code>, and <code><a href="../reference/validate_dataset.html">validate_dataset()</a></code> from <code>R/helpers-dataset.R</code> and <code>R/helpers-download.R</code> instead of re-implementing these patterns inline.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="ci--pipeline-1-0-0">CI / pipeline<a class="anchor" aria-label="anchor" href="#ci--pipeline-1-0-0"></a></h3>
+<ul><li>Fixed stale target names in <code>.github/workflows/update_data_weekly.yml</code>. The workflow was silently skipping <code>abecip</code> and <code>abrainc</code> targets on every automated run; those entries now use the current granular target names (<code>abecip_sbpe_data</code>, <code>abecip_units_data</code>, <code>abrainc_indicator_data</code>, etc.).</li>
+<li>Added <code>fgv_ibre_file</code> to the weekly and <code>all</code> target groups so the FGV file-change target is included in scheduled runs.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-1-0-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-0-0"></a></h3>
+<ul><li>Updated the <code>bcb_series</code> table reference in <code>vignettes/getting-started.Rmd</code> to use the new hierarchy levels (<code>"core"</code>, <code>"primary"</code>, <code>"secondary"</code>, <code>"tertiary"</code>, <code>"full"</code>) instead of the removed category names.</li>
+<li>Updated the <code>rppi_bis</code> table listing to include <code>detailed_annual</code> and <code>detailed_halfyearly</code>, which were previously omitted.</li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.1" id="realestatebr-061">realestatebr 0.6.1<a class="anchor" aria-label="anchor" href="#realestatebr-061"></a></h2>

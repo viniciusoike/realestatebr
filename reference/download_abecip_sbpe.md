@@ -1,7 +1,6 @@
-# Download SBPE Data from Abecip
+# Download SBPE Excel File from Abecip
 
-Internal function to download and process SBPE (savings) data from
-Abecip with robust error handling and retry logic.
+Download SBPE Excel File from Abecip
 
 ## Usage
 
@@ -21,4 +20,4 @@ download_abecip_sbpe(quiet = FALSE, max_retries = 3L)
 
 ## Value
 
-A tibble with processed SBPE data
+Path to the downloaded temporary file

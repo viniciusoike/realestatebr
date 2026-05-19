@@ -262,9 +262,7 @@ re-implementing these patterns:
   [`download_excel()`](https://viniciusoike.github.io/realestatebr/reference/download_excel.md),
   [`download_csv()`](https://viniciusoike.github.io/realestatebr/reference/download_csv.md),
   [`download_zip()`](https://viniciusoike.github.io/realestatebr/reference/download_zip.md),
-  or
-  [`download_file()`](https://viniciusoike.github.io/realestatebr/reference/download_file.md)
-  (all in `helpers-download.R`)
+  or `download_file()` (all in `helpers-download.R`)
 - **Retry logic** — wrap any custom download in
   [`download_with_retry()`](https://viniciusoike.github.io/realestatebr/reference/download_with_retry.md);
   do not write manual retry loops
@@ -273,9 +271,8 @@ re-implementing these patterns:
   before returning data
 - **Data validation** — call
   [`validate_dataset()`](https://viniciusoike.github.io/realestatebr/reference/validate_dataset.md)
-  after downloading; use
-  [`validate_excel_file()`](https://viniciusoike.github.io/realestatebr/reference/validate_excel_file.md)
-  before reading Excel files
+  after downloading; use `validate_excel_file()` before reading Excel
+  files
 - **RPPI series only** — use `try_rppi_cached()`,
   `try_rppi_user_cache()`, and `calculate_rppi_changes()`
 

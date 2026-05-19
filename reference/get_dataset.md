@@ -110,7 +110,17 @@ sbpe_data <- get_dataset("abecip", "sbpe")
 # Force fresh download
 fresh_data <- get_dataset("bcb_realestate", source = "fresh")
 #> Downloading real estate data from BCB API
-#> Downloading real estate data from the Brazilian Central Bank.
+#> Warning: cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'
+#> Warning: Download CSV file attempt 1/4 failed: Download failed
+#> Warning: cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'
+#> Warning: Download CSV file attempt 2/4 failed: Download failed
+#> Warning: cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'
+#> Warning: Download CSV file attempt 3/4 failed: Download failed
+#> Warning: cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'
+#> Warning: BCB API download failed: Download CSV file failed after 4 attempts
+#> ℹ Trying GitHub cache for "bcb_realestate"...
+#> Attempting to download bcb_realestate.rds from GitHub...
+#> Downloaded bcb_realestate.rds (3.33 MB)
 #> Retrieved 'all' from 'bcb_realestate' (default table). Available tables:
 #> 'accounting', 'application', 'indices', 'sources', 'units'
 
@@ -121,7 +131,7 @@ bcb_core <- get_dataset("bcb_series")
 #> User cache not available: Dataset 'bcb_series' not found in cache
 #> Attempting to download bcb_series from GitHub releases...
 #> Attempting to download bcb_series.rds from GitHub...
-#> Downloaded bcb_series.rds (0.11 MB)
+#> Downloaded bcb_series.rds (0.07 MB)
 #> Successfully downloaded from GitHub releases
 #> Retrieved 'core' from 'bcb_series' (default table). Available tables: 'core',
 #> 'primary', 'secondary', 'tertiary', 'full'

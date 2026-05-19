@@ -141,7 +141,17 @@ older than this threshold is skipped and fresh data is downloaded instead.</p></
 <span class="r-in"><span><span class="co"># Force fresh download</span></span></span>
 <span class="r-in"><span><span class="va">fresh_data</span> <span class="op">&lt;-</span> <span class="fu">get_dataset</span><span class="op">(</span><span class="st">"bcb_realestate"</span>, source <span class="op">=</span> <span class="st">"fresh"</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading real estate data from BCB API</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading real estate data from the Brazilian Central Bank.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&amp;$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Download CSV file attempt 1/4 failed: Download failed</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&amp;$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Download CSV file attempt 2/4 failed: Download failed</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&amp;$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Download CSV file attempt 3/4 failed: Download failed</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&amp;$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>BCB API download failed: Download CSV file failed after 4 attempts</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Trying GitHub cache for <span style="color: #0000BB;">"bcb_realestate"</span>...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Attempting to download bcb_realestate.rds from GitHub...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Downloaded bcb_realestate.rds (3.33 MB)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Retrieved 'all' from 'bcb_realestate' (default table). Available tables:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 'accounting', 'application', 'indices', 'sources', 'units'</span>
 <span class="r-in"><span></span></span>
@@ -152,7 +162,7 @@ older than this threshold is skipped and fresh data is downloaded instead.</p></
 <span class="r-msg co"><span class="r-pr">#&gt;</span> User cache not available: Dataset 'bcb_series' not found in cache</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Attempting to download bcb_series from GitHub releases...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Attempting to download bcb_series.rds from GitHub...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Downloaded bcb_series.rds (0.11 MB)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Downloaded bcb_series.rds (0.07 MB)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Successfully downloaded from GitHub releases</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Retrieved 'core' from 'bcb_series' (default table). Available tables: 'core',</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 'primary', 'secondary', 'tertiary', 'full'</span>

@@ -1,7 +1,9 @@
-# Download Abecip Excel File with Retry Logic
+# Download Abecip Excel File
 
-Internal helper function to download Excel files from Abecip website
-with automatic retry on failure.
+Scrapes the given page to find the download link, then downloads the
+Excel file using the shared
+[`download_excel()`](https://viniciusoike.github.io/realestatebr/reference/download_excel.md)
+helper.
 
 ## Usage
 
@@ -27,7 +29,7 @@ download_abecip_file(
 
 - file_prefix:
 
-  Prefix for the temporary file name
+  Prefix used in retry-attempt messages
 
 - quiet:
 

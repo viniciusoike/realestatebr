@@ -1,6 +1,6 @@
 # Validate Abecip Data
 
-Internal helper function to validate downloaded Abecip data.
+Validate Abecip Data
 
 ## Usage
 

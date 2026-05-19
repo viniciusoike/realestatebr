@@ -308,13 +308,13 @@
 <strong>Cache loading</strong> — use <code><a href="reference/handle_dataset_cache.html">handle_dataset_cache()</a></code> instead of raw <code>tryCatch</code> around <code><a href="reference/load_from_user_cache.html">load_from_user_cache()</a></code>
 </li>
 <li>
-<strong>Downloading files</strong> — use <code><a href="reference/download_excel.html">download_excel()</a></code>, <code><a href="reference/download_csv.html">download_csv()</a></code>, <code><a href="reference/download_zip.html">download_zip()</a></code>, or <code><a href="reference/download_file.html">download_file()</a></code> (all in <code>helpers-download.R</code>)</li>
+<strong>Downloading files</strong> — use <code><a href="reference/download_excel.html">download_excel()</a></code>, <code><a href="reference/download_csv.html">download_csv()</a></code>, <code><a href="reference/download_zip.html">download_zip()</a></code>, or <code>download_file()</code> (all in <code>helpers-download.R</code>)</li>
 <li>
 <strong>Retry logic</strong> — wrap any custom download in <code><a href="reference/download_with_retry.html">download_with_retry()</a></code>; do not write manual retry loops</li>
 <li>
 <strong>Metadata</strong> — call <code><a href="reference/attach_dataset_metadata.html">attach_dataset_metadata()</a></code> before returning data</li>
 <li>
-<strong>Data validation</strong> — call <code><a href="reference/validate_dataset.html">validate_dataset()</a></code> after downloading; use <code><a href="reference/validate_excel_file.html">validate_excel_file()</a></code> before reading Excel files</li>
+<strong>Data validation</strong> — call <code><a href="reference/validate_dataset.html">validate_dataset()</a></code> after downloading; use <code>validate_excel_file()</code> before reading Excel files</li>
 <li>
 <strong>RPPI series only</strong> — use <code>try_rppi_cached()</code>, <code>try_rppi_user_cache()</code>, and <code>calculate_rppi_changes()</code>
 </li>

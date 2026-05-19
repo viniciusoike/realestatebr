@@ -1,8 +1,7 @@
 # Download and Validate Excel File
 
 Downloads an Excel file with validation of expected sheets and file
-size. Combines download_file() with validate_excel_file() from
-helpers-dataset.R.
+size.
 
 ## Usage
 

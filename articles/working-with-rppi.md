@@ -35,7 +35,7 @@ theme_series <- function() {
     # swap for other font if needed
     base_family = "Avenir",
     base_size = 10
-    ) +
+  ) +
     theme(
       plot.title = element_text(size = 16),
       panel.grid.minor = element_blank(),
@@ -206,15 +206,15 @@ Key columns specific to FipeZap:
 fz <- get_dataset("rppi", table = "fipezap")
 
 glimpse(fz)
-#> Rows: 677,160
+#> Rows: 665,280
 #> Columns: 7
 #> $ date      <date> 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01,…
-#> $ name_muni <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", …
+#> $ name_muni <chr> "São Paulo", "São Paulo", "São Paulo", "São Paulo", "São Pau…
 #> $ market    <chr> "residential", "residential", "residential", "residential", …
 #> $ rent_sale <chr> "sale", "sale", "sale", "sale", "sale", "sale", "sale", "sal…
 #> $ variable  <chr> "index", "index", "index", "index", "index", "chg", "chg", "…
 #> $ rooms     <chr> "total", "1", "2", "3", "4", "total", "1", "2", "3", "4", "t…
-#> $ value     <dbl> 41.81107, 39.46609, 40.45048, 43.47948, 47.09432, NA, NA, NA…
+#> $ value     <dbl> 61.58949, 57.57359, 58.97781, 64.53633, 69.91496, NA, NA, NA…
 ```
 
 Working with this dataset requires more complex filtering. For most use
@@ -315,7 +315,7 @@ making it rather volatile.
 ivar <- get_dataset("rppi", table = "ivar")
 
 glimpse(ivar)
-#> Rows: 440
+#> Rows: 445
 #> Columns: 5
 #> $ date      <date> 2018-12-01, 2018-12-01, 2018-12-01, 2018-12-01, 2018-12-01,…
 #> $ name_muni <chr> NA, "São Paulo", "Rio De Janeiro", "Belo Horizonte", "Porto …
@@ -338,7 +338,7 @@ ivar_trend <- ivar |>
     group_cols = "name_muni",
     method = "ma",
     window = 5
-    )
+  )
 ```
 
 ``` r
@@ -405,7 +405,7 @@ ggplot(iqa, aes(date, index, color = name_muni)) +
     y = "Index",
     color = NULL
   ) +
-    theme_series()
+  theme_series()
 ```
 
 ![](working-with-rppi_files/figure-html/iqa-plot-1.png)
@@ -415,7 +415,10 @@ bedroom stratification (`rooms`).
 
 ``` r
 
-ggplot(subset(iqaiw, rooms == "total" & !is.na(acum12m)), aes(date, acum12m * 100, color = name_muni)) +
+ggplot(
+  subset(iqaiw, rooms == "total" & !is.na(acum12m)),
+  aes(date, acum12m * 100, color = name_muni)
+) +
   geom_line(linewidth = 0.7) +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   labs(
@@ -473,15 +476,15 @@ data from 2021.
 fz <- get_dataset("rppi", table = "fipezap")
 
 glimpse(fz)
-#> Rows: 677,160
+#> Rows: 665,280
 #> Columns: 7
 #> $ date      <date> 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01,…
-#> $ name_muni <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", …
+#> $ name_muni <chr> "São Paulo", "São Paulo", "São Paulo", "São Paulo", "São Pau…
 #> $ market    <chr> "residential", "residential", "residential", "residential", …
 #> $ rent_sale <chr> "sale", "sale", "sale", "sale", "sale", "sale", "sale", "sal…
 #> $ variable  <chr> "index", "index", "index", "index", "index", "chg", "chg", "…
 #> $ rooms     <chr> "total", "1", "2", "3", "4", "total", "1", "2", "3", "4", "t…
-#> $ value     <dbl> 41.81107, 39.46609, 40.45048, 43.47948, 47.09432, NA, NA, NA…
+#> $ value     <dbl> 61.58949, 57.57359, 58.97781, 64.53633, 69.91496, NA, NA, NA…
 ```
 
 Note that this table is the same as the one used in the previous sales
@@ -610,7 +613,11 @@ January 2018 = 100.
 sales <- get_dataset("rppi", "sale")
 
 national <- sales |>
-  filter(name_muni == "Brazil", date >= as.Date("2018-01-01"), date <= as.Date("2023-12-01"))
+  filter(
+    name_muni == "Brazil",
+    date >= as.Date("2018-01-01"),
+    date <= as.Date("2023-12-01")
+  )
 
 national_rebased <- national |>
   mutate(

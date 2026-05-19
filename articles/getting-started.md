@@ -35,7 +35,7 @@ theme_series <- function() {
     # swap for other font if needed
     base_family = "Avenir",
     base_size = 10
-    ) +
+  ) +
     theme(
       plot.title = element_text(size = 16),
       panel.grid.minor = element_blank(),
@@ -121,9 +121,9 @@ most recent data, it is slower.
 
 ``` r
 
-get_dataset("abecip", source = "cache")    # local cache (instant, works offline)
-get_dataset("abecip", source = "github")   # GitHub release
-get_dataset("abecip", source = "fresh")    # direct from the original source
+get_dataset("abecip", source = "cache") # local cache (instant, works offline)
+get_dataset("abecip", source = "github") # GitHub release
+get_dataset("abecip", source = "fresh") # direct from the original source
 ```
 
 Cache files are stored in the user data directory and can be inspected
@@ -175,7 +175,7 @@ sbpe_annual <- sbpe |>
   mutate(
     label_num = format(round(net_flow, 1)),
     ypos = if_else(net_flow > 0, net_flow + 10, net_flow - 10)
-    )
+  )
 
 ggplot(sbpe_annual, aes(year, net_flow)) +
   geom_col(fill = color_palette[1], alpha = 0.9, width = 0.8) +
@@ -226,7 +226,8 @@ ggplot(units_recent, aes(date, units_total)) +
     lwd = 0.7,
     se = FALSE,
     method = stats::loess,
-    method.args = list(span = 0.4)) +
+    method.args = list(span = 0.4)
+  ) +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   labs(
     title = "Monthly Financed Units",
@@ -348,8 +349,8 @@ The available datasets are listed below.
 | `abecip` | ABECIP | `sbpe`, `units`, `cgi` | Active |
 | `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` | Active |
 | `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` | Active |
-| `bcb_series` | Banco Central do Brasil | `price`, `credit`, `production`, `interest-rate`, `exchange`, `government`, `real-estate` | Active |
+| `bcb_series` | Banco Central do Brasil | `core`, `primary`, `secondary`, `tertiary`, `full` | Active |
 | `fgv_ibre` | FGV IBRE | — | Active |
 | `rppi` | FIPE/ZAP, IVGR, IGMI, IQA, IVAR, SECOVI-SP | `sale`, `rent`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` | Active |
-| `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly` | Active |
+| `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` | Active |
 | `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` | Active |

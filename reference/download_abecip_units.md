@@ -1,7 +1,6 @@
-# Download Units Data from Abecip
+# Download Units Excel File from Abecip
 
-Internal function to download and process financed units data from
-Abecip with robust error handling and retry logic.
+Download Units Excel File from Abecip
 
 ## Usage
 
@@ -21,4 +20,4 @@ download_abecip_units(quiet = FALSE, max_retries = 3L)
 
 ## Value
 
-A tibble with processed units data
+Path to the downloaded temporary file
