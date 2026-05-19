@@ -5,7 +5,7 @@
 \alias{dim_city}
 \title{Brazilian city identifier table}
 \format{
-An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5570 rows and 8 columns.
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5570 rows and 9 columns.
 }
 \source{
 \url{https://www.ibge.gov.br/explica/codigos-dos-municipios.php}

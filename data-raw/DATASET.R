@@ -69,33 +69,6 @@ usethis::use_data(dim_state, internal = TRUE, overwrite = TRUE)
 source("data-raw/abecip_cgi.R")
 source("data-raw/fgv_clean.R")
 
-ire <- readxl::read_excel(
-  "data-raw/nre_ire.xlsx",
-  skip = 1,
-  col_types = c(
-    "date",
-    "numeric",
-    "numeric",
-    "numeric",
-    "numeric",
-    "numeric",
-    "numeric",
-    "numeric"
-  ),
-  col_names = c(
-    "date",
-    "ire",
-    "ire_r50_plus",
-    "ire_bi",
-    "ire_r50_minus",
-    "ibov",
-    "ibov_points",
-    "ire_ibov"
-  )
-)
-
-ire <- dplyr::mutate(ire, date = lubridate::ymd(date))
 
 usethis::use_data(abecip_cgi, internal = TRUE, overwrite = TRUE)
 usethis::use_data(fgv_data, internal = TRUE, overwrite = TRUE)
-usethis::use_data(ire, internal = TRUE, overwrite = TRUE)
