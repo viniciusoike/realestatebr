@@ -175,9 +175,30 @@ list(
     command = save_to_cache(abecip_units_data, "abecip_units"),
     format = "file"
   ),
+  # NOTE: CGI data has no public API and requires manual updates.
+  # Download the updated Excel from ABECIP, replace inst/extdata/abecip_cgi.xlsx,
+  # then commit — the file tracker detects the change and re-caches automatically.
+  tar_target(
+    name = abecip_cgi_file,
+    command = "inst/extdata/abecip_cgi.xlsx",
+    format = "file"
+  ),
+  tar_target(
+    name = abecip_cgi_data,
+    command = realestatebr:::load_abecip_cgi(abecip_cgi_file)
+  ),
+  tar_target(
+    name = abecip_cgi_cache,
+    command = save_to_cache(abecip_cgi_data, "abecip_cgi"),
+    format = "file"
+  ),
+  tar_target(
+    name = abecip_cgi_validation,
+    command = validate_dataset(abecip_cgi_data, "abecip")
+  ),
   tar_target(
     name = abecip_cache,
-    command = c(abecip_sbpe_cache, abecip_units_cache)
+    command = c(abecip_sbpe_cache, abecip_units_cache, abecip_cgi_cache)
   ),
   tar_target(
     name = abecip_validation,
@@ -339,6 +360,7 @@ list(
         bcb_realestate = bcb_realestate_validation,
         fgv_ibre = fgv_ibre_validation,
         abecip = abecip_validation,
+        abecip_cgi = abecip_cgi_validation,
         abrainc = abrainc_validation,
         secovi = secovi_validation,
         rppi_sale = rppi_sale_validation,
@@ -353,6 +375,7 @@ list(
           "bcb_realestate",
           "fgv_ibre",
           "abecip",
+          "abecip_cgi",
           "abrainc",
           "secovi",
           "rppi_sale",
@@ -368,6 +391,10 @@ list(
           "secovi",
           "rppi_sale",
           "rppi_rent"
+        ),
+        manual_datasets = c(
+          "fgv_ibre",
+          "abecip_cgi"
         ),
         monthly_datasets = c(
           "bis_rppi"

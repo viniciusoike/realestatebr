@@ -1,22 +1,17 @@
-name: Scheduled Data Updates
+name: Update Cached Data
 
 on:
   schedule:
-    # Mondays at 7 AM Brazil time (UTC-3) = 10 AM UTC
+    # Every Monday at 10 AM UTC (7 AM Brazil time)
     - cron: '0 10 * * 1'
-    # 1st of each month at 8 AM Brazil time = 11 AM UTC
+    # 1st of each month at 11 AM UTC — ensures BIS RPPI (30-day cue) is caught monthly
     - cron: '0 11 1 * *'
   workflow_dispatch:
     inputs:
-      target_group:
-        description: 'Target group to update'
-        required: false
-        default: 'weekly'
-        type: choice
-        options:
-          - weekly
-          - monthly
-          - all
+      force_run:
+        description: 'Force re-run all targets (ignore cached pipeline state)'
+        type: boolean
+        default: false
 
 jobs:
   update-data:
@@ -41,214 +36,172 @@ jobs:
             any::targets
             any::tarchetypes
             any::cli
-            any::here
             any::readr
             any::dplyr
             any::purrr
             any::remotes
 
       - name: Install package
-        run: |
-          Rscript -e 'remotes::install_local(".", dependencies = TRUE)'
+        run: Rscript -e 'remotes::install_local(".", dependencies = TRUE)'
+
+      # Restore the targets store from the previous run so that tar_cue_age()
+      # and format="file" targets can correctly detect what is stale.
+      # Skipped when force_run is true so all targets re-run unconditionally.
+      - name: Restore targets store
+        if: ${{ github.event.inputs.force_run != 'true' }}
+        uses: actions/cache/restore@v4
+        with:
+          path: _targets
+          key: targets-store-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            targets-store-${{ runner.os }}-
 
       - name: Create required directories
-        run: |
-          mkdir -p data-raw/cache_output
-          mkdir -p inst/reports
-          mkdir -p _targets
+        run: mkdir -p data-raw/cache_output _targets
 
-      - name: Determine targets to run
-        id: determine-targets
-        run: |
-          # For scheduled runs, detect if this is the monthly trigger
-          if [ "${{ github.event_name }}" == "schedule" ]; then
-            day_of_month=$(date -u +%d)
-            if [ "$day_of_month" == "01" ]; then
-              target_group="all"
-            else
-              target_group="weekly"
-            fi
-          else
-            target_group="${{ github.event.inputs.target_group || 'weekly' }}"
-          fi
-
-          if [ "$target_group" == "weekly" ]; then
-            targets="bcb_series_data,bcb_series_cache,bcb_series_validation,bcb_realestate_data,bcb_realestate_cache,bcb_realestate_validation,fgv_ibre_file,fgv_ibre_data,fgv_ibre_cache,fgv_ibre_validation,abecip_sbpe_data,abecip_sbpe_cache,abecip_units_data,abecip_units_cache,abecip_cache,abecip_validation,abrainc_indicator_data,abrainc_indicator_cache,abrainc_radar_data,abrainc_radar_cache,abrainc_leading_data,abrainc_leading_cache,abrainc_cache,abrainc_validation,secovi_data,secovi_cache,secovi_validation,rppi_sale_data,rppi_sale_cache,rppi_sale_validation,rppi_rent_data,rppi_rent_cache,rppi_rent_validation,pipeline_summary"
-          elif [ "$target_group" == "monthly" ]; then
-            targets="bis_rppi_data,bis_rppi_cache,bis_rppi_validation,pipeline_summary"
-          elif [ "$target_group" == "all" ]; then
-            targets="bcb_series_data,bcb_series_cache,bcb_series_validation,bcb_realestate_data,bcb_realestate_cache,bcb_realestate_validation,fgv_ibre_file,fgv_ibre_data,fgv_ibre_cache,fgv_ibre_validation,abecip_sbpe_data,abecip_sbpe_cache,abecip_units_data,abecip_units_cache,abecip_cache,abecip_validation,abrainc_indicator_data,abrainc_indicator_cache,abrainc_radar_data,abrainc_radar_cache,abrainc_leading_data,abrainc_leading_cache,abrainc_cache,abrainc_validation,secovi_data,secovi_cache,secovi_validation,rppi_sale_data,rppi_sale_cache,rppi_sale_validation,rppi_rent_data,rppi_rent_cache,rppi_rent_validation,bis_rppi_data,bis_rppi_cache,bis_rppi_validation,pipeline_summary"
-          fi
-
-          echo "targets=$targets" >> $GITHUB_OUTPUT
-          echo "group=$target_group" >> $GITHUB_OUTPUT
-          echo "Running $target_group targets"
-
-      - name: Run selected targets pipeline
+      - name: Run targets pipeline
         run: |
           Rscript -e '
             library(targets)
 
-            target_list <- unlist(strsplit("${{ steps.determine-targets.outputs.targets }}", ","))
-            target_group <- "${{ steps.determine-targets.outputs.group }}"
+            options(timeout = 600)
+            tar_make(callr_function = NULL)
 
-            cli::cli_h1("Running {target_group} data pipeline")
-            cli::cli_inform("Targets: {paste(target_list, collapse=\", \")}")
-
-            # Run targets with extended timeout for slower sources
-            options(timeout = 600)  # 10 minutes per target
-
-            tar_make(names = any_of(target_list), callr_function = NULL)
-
-            # Report any errors (pipeline uses error = "continue")
-            meta <- tar_meta()
+            meta <- tar_meta(fields = c("name", "error"))
             errored <- meta[!is.na(meta$error), ]
             if (nrow(errored) > 0) {
-              cli::cli_alert_warning("Some targets failed:")
+              cli::cli_alert_warning("{nrow(errored)} target(s) failed:")
               for (i in seq_len(nrow(errored))) {
                 cli::cli_alert_danger("  {errored$name[i]}: {errored$error[i]}")
               }
             }
-
-            cli::cli_alert_success("{target_group} pipeline completed")
+            cli::cli_alert_success("Pipeline run complete")
           '
+
+      # Always save the updated store, even on failure, so the next run
+      # can resume from the correct state.
+      - name: Save targets store
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: _targets
+          key: targets-store-${{ runner.os }}-${{ github.run_id }}
 
       - name: Validate cached data files
         id: validate
         run: |
           Rscript -e '
             cache_dir <- "data-raw/cache_output"
-
-            # Find .rds data files (exclude metadata files)
             all_files <- list.files(cache_dir, pattern = "\\.rds$", full.names = TRUE)
             data_files <- all_files[!grepl("_metadata\\.rds$", all_files)]
 
             if (length(data_files) == 0) {
-              cli::cli_alert_danger("No data files produced by pipeline!")
-              quit(status = 1)
+              cli::cli_inform("No new files produced — all targets up to date")
+              quit(status = 0)
             }
 
-            cli::cli_inform("Found {length(data_files)} data file(s)")
-
+            cli::cli_inform("Validating {length(data_files)} file(s)...")
             failed <- character(0)
+
             for (f in data_files) {
               fname <- basename(f)
               fsize <- file.size(f)
               if (fsize < 200) {
-                cli::cli_alert_danger("{fname}: {fsize} bytes - BLOCKED (too small)")
+                cli::cli_alert_danger("{fname}: too small ({fsize} bytes) — removing")
                 failed <- c(failed, f)
               } else {
-                # Try to read the file
                 tryCatch({
                   d <- readRDS(f)
                   if (is.data.frame(d)) {
                     cli::cli_alert_success("{fname}: {nrow(d)} rows, {fsize} bytes")
-                  } else if (is.list(d)) {
-                    cli::cli_alert_success("{fname}: list with {length(d)} elements, {fsize} bytes")
                   } else {
-                    cli::cli_alert_success("{fname}: {fsize} bytes")
+                    cli::cli_alert_success("{fname}: {class(d)[1]}, {fsize} bytes")
                   }
                 }, error = function(e) {
-                  cli::cli_alert_danger("{fname}: unreadable - {e$message}")
+                  cli::cli_alert_danger("{fname}: unreadable — {e$message}")
                   failed <<- c(failed, f)
                 })
               }
             }
 
-            # Remove invalid files so they are not uploaded
             if (length(failed) > 0) {
               cli::cli_alert_warning("Removing {length(failed)} invalid file(s)")
               file.remove(failed)
             }
 
-            # Re-check that we still have valid files
             remaining <- list.files(cache_dir, pattern = "\\.rds$")
             remaining <- remaining[!grepl("_metadata\\.rds$", remaining)]
             if (length(remaining) == 0) {
               cli::cli_alert_danger("All data files failed validation!")
               quit(status = 1)
             }
-
             cli::cli_alert_success("{length(remaining)} file(s) ready for upload")
           '
+          count=$(find data-raw/cache_output -name "*.rds" ! -name "*_metadata.rds" 2>/dev/null | wc -l | tr -d ' ')
+          echo "file_count=$count" >> "$GITHUB_OUTPUT"
 
       - name: Create or update cache-latest release
+        if: steps.validate.outputs.file_count != '0'
         run: |
           if gh release view cache-latest > /dev/null 2>&1; then
-            echo "Release 'cache-latest' already exists"
+            echo "Release cache-latest already exists"
           else
-            echo "Creating release 'cache-latest'"
             gh release create cache-latest \
               --title "Latest Cached Data" \
-              --notes "Automatically updated cached datasets. This release is continuously updated by the data pipeline." \
+              --notes "Automatically updated cached datasets. Updated by the data pipeline." \
               --prerelease
           fi
 
       - name: Clean up stale release assets
+        if: steps.validate.outputs.file_count != '0'
         run: |
-          echo "Removing known stale assets from cache-latest release..."
-
           stale_assets=(
-            "abecip.csv.gz"
-            "abrainc.csv.gz"
-            "bcb_series.csv.gz"
-            "bcb_realestate.csv.gz"
-            "cbic.csv.gz"
-            "fgv_ibre.csv.gz"
-            "rppi_sale.csv.gz"
-            "rppi_rent.csv.gz"
-            "property_records.csv.gz"
-            "secovi_sp.csv.gz"
-            "secovi_sp_202408.csv.gz"
-            "bis_detailed.rds"
-            "bis_selected.csv.gz"
-            "b3_stocks.csv.gz"
+            "abecip.csv.gz" "abecip.rds"
+            "abrainc.csv.gz" "abrainc.rds"
+            "bcb_series.csv.gz" "bcb_realestate.csv.gz"
+            "cbic.csv.gz" "fgv_ibre.csv.gz"
+            "rppi_sale.csv.gz" "rppi_rent.csv.gz"
+            "property_records.csv.gz" "secovi_sp.csv.gz"
+            "secovi_sp_202408.csv.gz" "bis_detailed.rds"
+            "bis_selected.csv.gz" "b3_stocks.csv.gz"
           )
-
           for asset in "${stale_assets[@]}"; do
-            gh release delete-asset cache-latest "$asset" --yes 2>/dev/null && echo "  Deleted $asset" || true
+            gh release delete-asset cache-latest "$asset" --yes 2>/dev/null \
+              && echo "Deleted $asset" || true
           done
 
-          # Remove metadata files
-          metadata_assets=$(gh release view cache-latest --json assets --jq '.assets[].name' 2>/dev/null | grep '_metadata\.rds$' || true)
+          metadata_assets=$(gh release view cache-latest --json assets \
+            --jq '.assets[].name' 2>/dev/null | grep '_metadata\.rds$' || true)
           for asset in $metadata_assets; do
-            gh release delete-asset cache-latest "$asset" --yes 2>/dev/null && echo "  Deleted $asset" || true
+            gh release delete-asset cache-latest "$asset" --yes 2>/dev/null \
+              && echo "Deleted $asset" || true
           done
-
-          echo "Stale asset cleanup complete"
 
       - name: Upload cached datasets to GitHub release
+        if: steps.validate.outputs.file_count != '0'
         run: |
-          cache_dir="data-raw/cache_output"
-
-          # Only upload .rds data files (not metadata)
           uploaded=0
-          for file in "$cache_dir"/*.rds; do
-            if [ -f "$file" ]; then
-              filename=$(basename "$file")
-              # Skip metadata files
-              if [[ "$filename" == *"_metadata.rds" ]]; then
-                continue
-              fi
-              echo "Uploading $filename..."
-              gh release upload cache-latest "$file" --clobber
-              uploaded=$((uploaded + 1))
-            fi
+          for file in data-raw/cache_output/*.rds; do
+            [ -f "$file" ] || continue
+            filename=$(basename "$file")
+            [[ "$filename" == *"_metadata.rds" ]] && continue
+            echo "Uploading $filename..."
+            gh release upload cache-latest "$file" --clobber
+            uploaded=$((uploaded + 1))
           done
+          echo "Uploaded $uploaded file(s)"
 
-          if [ "$uploaded" -gt 0 ]; then
-            echo "Uploaded $uploaded file(s) successfully"
-          else
-            echo "No files to upload"
-          fi
-
-      - name: Report completion status
+      - name: Report completion
         if: always()
         run: |
-          target_group="${{ steps.determine-targets.outputs.group }}"
+          count="${{ steps.validate.outputs.file_count || '0' }}"
           if [ "${{ job.status }}" == "success" ]; then
-            echo "::notice::$target_group update completed successfully"
+            if [ "$count" -gt 0 ]; then
+              echo "::notice::Pipeline completed — $count dataset(s) updated"
+            else
+              echo "::notice::Pipeline completed — all datasets up to date, nothing uploaded"
+            fi
           else
-            echo "::error::$target_group update failed - check logs for details"
+            echo "::error::Pipeline failed — check logs for details"
             exit 1
           fi
