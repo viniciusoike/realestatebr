@@ -2,7 +2,7 @@
 
 ## Authors
 
-- **Vinicius Oike Reginatto**. Author, maintainer.
+- **Vinicius Oike Reginatto**. Author, maintainer, copyright holder.
 
 ## Citation
 
