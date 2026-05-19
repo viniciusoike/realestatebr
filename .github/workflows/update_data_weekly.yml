@@ -73,11 +73,11 @@ jobs:
           fi
 
           if [ "$target_group" == "weekly" ]; then
-            targets="bcb_series_data,bcb_series_cache,bcb_series_validation,bcb_realestate_data,bcb_realestate_cache,bcb_realestate_validation,fgv_ibre_data,fgv_ibre_cache,fgv_ibre_validation,abecip_data,abecip_cache,abecip_validation,abrainc_data,abrainc_cache,abrainc_validation,secovi_data,secovi_cache,secovi_validation,rppi_sale_data,rppi_sale_cache,rppi_sale_validation,rppi_rent_data,rppi_rent_cache,rppi_rent_validation,pipeline_summary"
+            targets="bcb_series_data,bcb_series_cache,bcb_series_validation,bcb_realestate_data,bcb_realestate_cache,bcb_realestate_validation,fgv_ibre_file,fgv_ibre_data,fgv_ibre_cache,fgv_ibre_validation,abecip_sbpe_data,abecip_sbpe_cache,abecip_units_data,abecip_units_cache,abecip_cache,abecip_validation,abrainc_indicator_data,abrainc_indicator_cache,abrainc_radar_data,abrainc_radar_cache,abrainc_leading_data,abrainc_leading_cache,abrainc_cache,abrainc_validation,secovi_data,secovi_cache,secovi_validation,rppi_sale_data,rppi_sale_cache,rppi_sale_validation,rppi_rent_data,rppi_rent_cache,rppi_rent_validation,pipeline_summary"
           elif [ "$target_group" == "monthly" ]; then
-            targets="bis_rppi_data,bis_rppi_cache,bis_rppi_validation,cbic_data,cbic_cache,cbic_validation,property_records_data,property_records_cache,property_records_validation,pipeline_summary"
+            targets="bis_rppi_data,bis_rppi_cache,bis_rppi_validation,pipeline_summary"
           elif [ "$target_group" == "all" ]; then
-            targets="bcb_series_data,bcb_series_cache,bcb_series_validation,bcb_realestate_data,bcb_realestate_cache,bcb_realestate_validation,fgv_ibre_data,fgv_ibre_cache,fgv_ibre_validation,abecip_data,abecip_cache,abecip_validation,abrainc_data,abrainc_cache,abrainc_validation,secovi_data,secovi_cache,secovi_validation,rppi_sale_data,rppi_sale_cache,rppi_sale_validation,rppi_rent_data,rppi_rent_cache,rppi_rent_validation,bis_rppi_data,bis_rppi_cache,bis_rppi_validation,cbic_data,cbic_cache,cbic_validation,property_records_data,property_records_cache,property_records_validation,pipeline_summary"
+            targets="bcb_series_data,bcb_series_cache,bcb_series_validation,bcb_realestate_data,bcb_realestate_cache,bcb_realestate_validation,fgv_ibre_file,fgv_ibre_data,fgv_ibre_cache,fgv_ibre_validation,abecip_sbpe_data,abecip_sbpe_cache,abecip_units_data,abecip_units_cache,abecip_cache,abecip_validation,abrainc_indicator_data,abrainc_indicator_cache,abrainc_radar_data,abrainc_radar_cache,abrainc_leading_data,abrainc_leading_cache,abrainc_cache,abrainc_validation,secovi_data,secovi_cache,secovi_validation,rppi_sale_data,rppi_sale_cache,rppi_sale_validation,rppi_rent_data,rppi_rent_cache,rppi_rent_validation,bis_rppi_data,bis_rppi_cache,bis_rppi_validation,pipeline_summary"
           fi
 
           echo "targets=$targets" >> $GITHUB_OUTPUT
