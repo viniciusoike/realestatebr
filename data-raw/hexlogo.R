@@ -125,7 +125,7 @@ ggsave(
   plot = inner,
   width = 5,
   height = 6,
-  dpi = 600,
+  dpi = 400,
   bg = "transparent"
 )
 
@@ -150,7 +150,23 @@ sticker(
   h_color = "black",
   h_size = 1.2,
   filename = "man/figures/hexlogo.png",
-  dpi = 600,
+  dpi = 400,
+  white_around_sticker = TRUE
+)
+
+# Pass the path instead of the object
+sticker(
+  subplot = "man/figures/inner_temp.png",
+  s_x = 0.9,
+  s_y = 0.8,
+  s_width = 1,
+  s_height = 1,
+  package = "",
+  h_fill = col_bg,
+  h_color = "black",
+  h_size = 1.2,
+  filename = "man/figures/hexlogo.svg",
+  dpi = 72,
   white_around_sticker = TRUE
 )
 
