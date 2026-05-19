@@ -1,18 +1,3 @@
-# realestatebr (development)
-
-## Changes to `bcb_series`
-
-* `get_dataset("bcb_series")` now returns only four columns: `date`,
-  `code_bcb`, `name_simplified`, and `value`. Full metadata is available
-  via `bcb_metadata`.
-* The `table` argument now accepts a hierarchy level: `"core"` (default),
-  `"primary"`, `"secondary"`, `"tertiary"`, or `"full"`. The levels are
-  cumulative — `"primary"` includes all `"core"` series plus key macro
-  indicators such as SELIC, IPCA, and INCC. Previously the argument
-  accepted BCB category names (`"credit"`, `"price"`, etc.).
-* `bcb_metadata` gains a `hierarchy` column (integer 1-4) that records
-  the relevance tier assigned to each series.
-
 # realestatebr 1.0.0
 
 ## Breaking changes
@@ -27,6 +12,69 @@
 * `itbi_summary` and the internal ITBI helpers (`get_itbi`, `get_itbi_bhe`)
   have been removed. They were incomplete (single-municipality coverage) and
   are deferred to a future version.
+
+## Changes to `bcb_series`
+
+* `get_dataset("bcb_series")` now returns only four columns: `date`,
+  `code_bcb`, `name_simplified`, and `value`. Full metadata is available
+  via `bcb_metadata`.
+* The `table` argument now accepts a hierarchy level: `"core"` (default),
+  `"primary"`, `"secondary"`, `"tertiary"`, or `"full"`. The levels are
+  cumulative — `"primary"` includes all `"core"` series plus key macro
+  indicators such as SELIC, IPCA, and INCC. Previously the argument
+  accepted BCB category names (`"credit"`, `"price"`, etc.).
+* `bcb_metadata` gains a `hierarchy` column (integer 1–4) that records the
+  relevance tier assigned to each series.
+
+## Changes to `rppi`
+
+* `get_dataset("rppi", table = "all")` now returns two additional columns:
+  `transaction_type` (`"sale"` or `"rent"`) and `source` (the index name,
+  e.g., `"IGMI-R"`, `"IVG-R"`, `"FipeZap"`). Previously the stacked table
+  had no way to distinguish transaction type from index source.
+* Fixed a sheet-encoding mismatch in the FipeZAP XLSX download that caused
+  `Sheets not found` errors after FIPE added a new summary sheet. Sheet
+  selection now uses numeric indices to avoid Latin-1/UTF-8 mismatches in
+  accented sheet names.
+* Fixed `get_range()` failing with a malformed cell range when `tidyxl`
+  received a sheet name with a mismatched encoding attribute. The function
+  now derives the sheet lookup key directly from the cells returned by
+  `tidyxl` rather than from the user-supplied string.
+
+## Bug fixes
+
+* Restored `fetch_fgv_local()`, which was inadvertently dropped during
+  earlier refactoring but is still called by the `targets` pipeline to
+  process the manually-maintained FGV IBRE CSV export.
+
+## Internal changes
+
+* Dataset download functions now follow a `download_*` / `clean_*` naming
+  convention: `download_*` functions return a file path; `clean_*` functions
+  parse and tidy that path into a tibble.
+* Replaced bare `tryCatch` with `rlang::try_fetch` throughout, using
+  `parent = cnd` to preserve the original error chain.
+* All dataset functions now call `validate_dataset_params()`,
+  `handle_dataset_cache()`, `attach_dataset_metadata()`, and
+  `validate_dataset()` from `R/helpers-dataset.R` and
+  `R/helpers-download.R` instead of re-implementing these patterns inline.
+
+## CI / pipeline
+
+* Fixed stale target names in `.github/workflows/update_data_weekly.yml`.
+  The workflow was silently skipping `abecip` and `abrainc` targets on every
+  automated run; those entries now use the current granular target names
+  (`abecip_sbpe_data`, `abecip_units_data`, `abrainc_indicator_data`, etc.).
+* Added `fgv_ibre_file` to the weekly and `all` target groups so the FGV
+  file-change target is included in scheduled runs.
+
+## Documentation
+
+* Updated the `bcb_series` table reference in `vignettes/getting-started.Rmd`
+  to use the new hierarchy levels (`"core"`, `"primary"`, `"secondary"`,
+  `"tertiary"`, `"full"`) instead of the removed category names.
+* Updated the `rppi_bis` table listing to include `detailed_annual` and
+  `detailed_halfyearly`, which were previously omitted.
 
 # realestatebr 0.6.1
 
