@@ -6,7 +6,7 @@
 \usage{
 attach_dataset_metadata(
   data,
-  source = c("web", "cache", "github"),
+  source = c("web", "cache", "github", "github_cache"),
   category = NULL,
   extra_info = list()
 )

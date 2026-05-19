@@ -54,10 +54,9 @@ harmonize_fipezap_for_stacking <- function(dat, transaction_type = NULL) {
 #' Standardize RPPI Structure
 #'
 #' @param dat Input tibble from any RPPI source
-#' @param source_name Name to add as source column
 #' @return Standardized tibble with consistent columns
 #' @keywords internal
-standardize_rppi_structure <- function(dat, source_name) {
+standardize_rppi_structure <- function(dat) {
   # Handle IQA special case (has rent_price instead of index)
   if ("rent_price" %in% names(dat) && !"index" %in% names(dat)) {
     dat <- dat |>
@@ -66,17 +65,10 @@ standardize_rppi_structure <- function(dat, source_name) {
         .by = name_muni
       )
   }
-  # Handle different column name variations
+
   dat <- dat |>
     dplyr::rename(dplyr::any_of(c("name_muni" = "name_geo")))
 
-  # Handle different column name variations
-  # if ("name_geo" %in% names(dat) && !"name_muni" %in% names(dat)) {
-  #   dat <- dat |>
-  #     dplyr::rename(name_muni = name_geo)
-  # }
-
-  # Ensure standard columns exist and are in correct order
   standardized_data <- dat |>
     dplyr::mutate(name_muni = standardize_city_names(name_muni)) |>
     dplyr::select(dplyr::all_of(.rppi_cols))
@@ -110,24 +102,18 @@ get_rppi <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Validate table
   valid_tables <- c(
-    "sale",
-    "rent",
-    "all",
-    "fipezap",
-    "ivgr",
-    "igmi",
-    "iqa",
-    "iqaiw",
-    "ivar",
+    "sale", "rent", "fipezap", "ivgr", "igmi", "iqa", "iqaiw", "ivar",
     "secovi_sp"
   )
-  if (!table %in% valid_tables) {
-    cli::cli_abort(
-      "Invalid table: {.val {table}}. Valid: {.val {valid_tables}}"
-    )
-  }
+  validate_dataset_params(
+    table = table,
+    valid_tables = valid_tables,
+    cached = cached,
+    quiet = quiet,
+    max_retries = max_retries,
+    allow_all = TRUE
+  )
 
   # Route individual tables to their respective functions
   rppi_fns <- list(
@@ -182,11 +168,21 @@ get_rppi <- function(
       "FipeZap" = harmonize_fipezap_for_stacking(fipezap, "rent")
     )
   } else {
-    # Stack all (both sale and rent) using the same sources
+    # Stack all: each sub-call already has a 'source' column; add
+    # 'transaction_type' ("sale"/"rent") as the outer grouping key.
     series <- list(
-      "rent" = get_rppi("rent", cached, quiet, max_retries),
-      "sale" = get_rppi("sale", cached, quiet, max_retries)
+      "sale" = get_rppi("sale", cached, quiet, max_retries),
+      "rent" = get_rppi("rent", cached, quiet, max_retries)
     )
+    stacked_data <- dplyr::bind_rows(series, .id = "transaction_type")
+
+    if (!quiet) {
+      cli::cli_inform(
+        "\u2713 RPPI (all): {nrow(stacked_data)} records"
+      )
+    }
+
+    return(stacked_data)
   }
 
   stacked_data <- dplyr::bind_rows(series, .id = "source")
@@ -361,7 +357,7 @@ get_rppi_igmi <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     )
 
   igmi <- igmi |>
-    dplyr::left_join(dim_geo, by = "name_simplified") |>
+    dplyr::left_join(dim_geo, by = dplyr::join_by(name_simplified)) |>
     dplyr::select(dplyr::all_of(.rppi_cols))
 
   return(igmi)
@@ -447,39 +443,15 @@ get_rppi_ivar <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     if (!is.null(data)) return(data)
   }
 
-  # Check for required package data - if not available, force cache
   if (!exists("fgv_data") || !exists("dim_city")) {
     if (!quiet) {
-      cli::cli_inform(c(
-        "i" = "IVAR source data not available, loading from cache..."
-      ))
+      cli::cli_inform(c("i" = "IVAR source data not available, loading from cache..."))
     }
 
-    # Try user cache first
-    data <- tryCatch(
-      {
-        load_from_user_cache("rppi_ivar", quiet = quiet)
-      },
-      error = function(e) {
-        NULL
-      }
-    )
+    data <- try_rppi_user_cache("rppi_ivar", quiet = quiet)
 
-    # If user cache fails, try GitHub cache
     if (is.null(data)) {
-      if (!quiet) {
-        cli::cli_inform(c(
-          "i" = "User cache not available, trying GitHub cache..."
-        ))
-      }
-      data <- tryCatch(
-        {
-          download_from_github_release("rppi_ivar", quiet = quiet)
-        },
-        error = function(e) {
-          NULL
-        }
-      )
+      data <- fallback_to_github_cache("rppi_ivar", quiet = quiet)
     }
 
     if (is.null(data)) {
@@ -517,7 +489,7 @@ get_rppi_ivar <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     dplyr::mutate(
       name_simplified = stringr::str_remove(name_simplified, "ivar_")
     ) |>
-    dplyr::left_join(ivar_cities, by = "name_simplified") |>
+    dplyr::left_join(ivar_cities, by = dplyr::join_by(name_simplified)) |>
     dplyr::mutate(name_muni = standardize_city_names(name_muni)) |>
     dplyr::select(dplyr::all_of(.rppi_cols))
 
@@ -589,9 +561,8 @@ get_rppi_fipezap <- function(
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Try cached first
   if (cached) {
-    data <- tryCatch(
+    data <- rlang::try_fetch(
       {
         df <- get_dataset("rppi", "fipezap", source = "github")
         if (city != "all" && city %in% unique(df$name_muni)) {
@@ -599,7 +570,7 @@ get_rppi_fipezap <- function(
         }
         df
       },
-      error = function(e) NULL
+      error = function(cnd) NULL
     )
 
     if (!is.null(data)) return(data)
@@ -609,21 +580,25 @@ get_rppi_fipezap <- function(
   url <- "https://downloads.fipe.org.br/indices/fipezap/fipezap-serieshistoricas.xlsx"
   temp_path <- download_excel(url, min_size = 1000, max_retries = max_retries, quiet = quiet)
 
-  # Get city sheet names (exclude summary sheets)
-  sheet_names <- readxl::excel_sheets(temp_path)
-  sheet_names <- stringr::str_subset(
-    sheet_names,
-    "(Resumo)|(Aux)",
-    negate = TRUE
-  )
+  # Identify city sheet indices and names.
+  # FIPE's XLSX stores sheet names as Latin-1 but readxl reports them as
+  # UTF-8; readxl::read_excel() cannot resolve them by the returned string.
+  # Workaround: filter non-city sheets by name (str_subset works fine), then
+  # record their 1-based positions and pass those to read_excel instead.
+  # tidyxl::xlsx_cells() handles accented names correctly, so get_range()
+  # (which uses tidyxl) continues to receive the string name.
+  all_sheets <- readxl::excel_sheets(temp_path)
+  city_mask <- !stringr::str_detect(all_sheets, "(Resumo)|(Aux)|(FipeZAP)")
+  sheet_names <- all_sheets[city_mask]
+  sheet_indices <- which(city_mask)
 
   city_names <- stringr::str_to_title(sheet_names)
 
-  # Import function for each sheet
-  import_sheet <- function(sheet) {
-    range <- get_range(temp_path, sheet)
+  # Import one city sheet; use index for readxl, name for get_range.
+  import_sheet <- function(sheet_name, sheet_idx) {
+    range <- get_range(temp_path, sheet_name)
 
-    # Fix range if needed (ensure column BD is included)
+    # Ensure column BD is included in the range
     if (!stringr::str_detect(range, "BD")) {
       max_col <- stringr::str_extract(
         stringr::str_match(range, ":[A-Z]+[0-9]"),
@@ -638,13 +613,13 @@ get_rppi_fipezap <- function(
       )
     }
 
-    col_types_vec <- c("date", rep("numeric", length(fipezap_col_names()) - 1))
+    col_types_vec <- c("date", rep("numeric", length(build_fipezap_col_names()) - 1))
 
     dat <- readxl::read_excel(
       temp_path,
-      sheet,
+      sheet_idx,
       skip = 4,
-      col_names = fipezap_col_names(),
+      col_names = build_fipezap_col_names(),
       col_types = col_types_vec,
       range = range
     )
@@ -652,8 +627,8 @@ get_rppi_fipezap <- function(
     return(dat)
   }
 
-  # Process all sheets
-  fipezap <- lapply(sheet_names, import_sheet)
+  # Process all city sheets
+  fipezap <- mapply(import_sheet, sheet_names, sheet_indices, SIMPLIFY = FALSE)
   names(fipezap) <- city_names
 
   # Stack and clean
@@ -688,9 +663,8 @@ get_rppi_fipezap <- function(
     ) |>
     dplyr::select(dplyr::all_of(cols_fipe))
 
-  # Filter by city if specified
   if (city != "all" && city %in% unique(fipe$name_muni)) {
-    fipe <- subset(fipe, name_muni == !!city)
+    fipe <- dplyr::filter(fipe, name_muni == city)
   }
 
   return(fipe)
@@ -707,7 +681,7 @@ get_rppi_fipezap <- function(
 #' and price/rent per squared meter (price_m2).
 #' Total rooms represents a weighted average of 1, 2, 3, and 4 bedrooms indicies.
 #' @noRd
-fipezap_col_names <- function() {
+build_fipezap_col_names <- function() {
   market <- c("residential", "commercial")
   transaction <- c("sale", "rent")
   var_sale <- c("index", "chg", "acum12m", "price_m2")
@@ -779,17 +753,14 @@ get_rppi_iqaiw <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     desc = "IQAIW CSV from QuintoAndar"
   )
 
-  # Expected column structure
-  expected_names <- c(
-    "ts_date",
-    "city_name",
-    "house_room",
-    "est_price",
-    "chg",
-    "acum12m"
-  )
+  expected_cols <- c("ts_date", "city_name", "house_room", "est_price", "chg", "acum12m")
 
-  new_names <- c("date", "name_muni", "rooms", "price_m2", "chg", "acum12m")
+  cols_rename <- c(
+    "date"      = "ts_date",
+    "name_muni" = "city_name",
+    "rooms"     = "house_room",
+    "price_m2"  = "est_price"
+  )
 
   # City name mapping
   convert_city_names <- function(city) {
@@ -804,21 +775,17 @@ get_rppi_iqaiw <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     return(unname(vlname[city]))
   }
 
-  # Validate column structure
-  if (!all(expected_names %in% names(dat))) {
+  if (!all(expected_cols %in% names(dat))) {
     cli::cli_abort(c(
       "x" = "IQAIW data format has changed",
-      "i" = "Expected columns: {.val {expected_names}}",
+      "i" = "Expected columns: {.val {expected_cols}}",
       "i" = "Found columns: {.val {names(dat)}}",
       "i" = "Please check the source or contact package maintainer"
     ))
   }
 
-  # Clean and transform
-  names(expected_names) <- new_names
-
   iqaiw <- dat |>
-    dplyr::rename(dplyr::all_of(expected_names)) |>
+    dplyr::rename(dplyr::any_of(cols_rename)) |>
     dplyr::filter(!is.na(price_m2))
 
   .rppi_cols_iqaiw <- c("date", "name_muni", "rooms", "index", "chg", "acum12m")

@@ -6,17 +6,23 @@
 #' @details Based on the date column, finds the range to be imported.
 #' @noRd
 get_range <- function(path = NULL, sheet, skip_row = 4) {
+  # readxl::excel_sheets() marks strings as UTF-8 while tidyxl uses "unknown".
+  # Stripping the attribute lets tidyxl locate the sheet, but cells$sheet comes
+  # back as UTF-8. We re-derive the lookup key from the returned cells so the
+  # dplyr::filter comparisons always use matching encoding attributes.
+  Encoding(sheet) <- "unknown"
   cells <- tidyxl::xlsx_cells(path, sheets = sheet)
+  sheet_key <- unique(cells$sheet)[1L]
 
   # Finds last row that is of type Date
   maxrow <- cells |>
-    dplyr::filter(.data$sheet == .env$sheet, row > skip_row, data_type == "date") |>
+    dplyr::filter(.data$sheet == sheet_key, row > skip_row, data_type == "date") |>
     dplyr::slice(dplyr::n()) |>
     dplyr::pull(address)
 
   # Finds last non-NA column
   maxcol <- cells |>
-    dplyr::filter(.data$sheet == .env$sheet, !is.na(numeric)) |>
+    dplyr::filter(.data$sheet == sheet_key, !is.na(numeric)) |>
     dplyr::slice_max(col, n = 1) |>
     dplyr::pull(address) |>
     unique()

@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_abecip_indicators.R
 \name{download_abecip_sbpe}
 \alias{download_abecip_sbpe}
-\title{Download SBPE Data from Abecip}
+\title{Download SBPE Excel File from Abecip}
 \usage{
 download_abecip_sbpe(quiet = FALSE, max_retries = 3L)
 }
@@ -12,10 +12,9 @@ download_abecip_sbpe(quiet = FALSE, max_retries = 3L)
 \item{max_retries}{Maximum number of retry attempts}
 }
 \value{
-A tibble with processed SBPE data
+Path to the downloaded temporary file
 }
 \description{
-Internal function to download and process SBPE (savings) data from Abecip
-with robust error handling and retry logic.
+Download SBPE Excel File from Abecip
 }
 \keyword{internal}

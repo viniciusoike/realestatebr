@@ -760,7 +760,6 @@ download_zip(url, ...)
 
 # Dataset-specific — wrap the generic helpers for one particular source
 download_abecip_sbpe(quiet, max_retries)   # calls download_excel() internally
-download_abrainc_excel(max_retries, quiet) # calls download_excel() internally
 download_secovi(table, quiet, max_retries) # calls rvest internally
 ```
 
@@ -782,8 +781,9 @@ these to `download_*` in future refactors.
 | `standardize_*` | Harmonize values across sources | `standardize_city_names()` |
 | `resolve_*` | Look up or map a value | `resolve_bcb_hierarchy()` |
 
-Note: `fipezap_col_names()` and `abrainc_fipe_col_names()` predate this convention and should
-eventually be renamed `build_fipezap_col_names()` / `build_abrainc_col_names()`.
+Note: `fipezap_col_names()` predates this convention and should eventually be renamed
+`build_fipezap_col_names()`. `abrainc_fipe_col_names()` has already been renamed to
+`build_abrainc_col_names()`.
 
 ### Dataset-specific Helper Naming
 
