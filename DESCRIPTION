@@ -6,12 +6,18 @@ Authors@R: person(
     given = "Vinicius Oike",
     family = "Reginatto",
     email = "viniciusoike@gmail.com",
-    role = c("aut", "cre")
+    role = c("aut", "cre", "cph")
     )
-Description: Provides a simplified interface to import
-    Brazilian real estate data from various open sources.
+Description: Provides access to Brazilian real estate market data from multiple
+    official sources: the Central Bank of Brazil (BCB)
+    <https://www.bcb.gov.br/>, the Brazilian Association of Real Estate
+    Developers (ABRAINC) <https://abrainc.org.br/>, the Brazilian Association
+    of Real Estate Credit and Savings Entities (ABECIP)
+    <https://www.abecip.org.br/>, the Getulio Vargas Foundation (FGV)
+    <https://portalibre.fgv.br/>, and the Bank for International Settlements
+    (BIS) <https://www.bis.org/>.
 License: MIT + file LICENSE
-URL: https://github.com/viniciusoike/realestatebr, https://viniciusoike.github.io/realestatebr
+URL: https://github.com/viniciusoike/realestatebr, https://viniciusoike.github.io/realestatebr/
 BugReports: https://github.com/viniciusoike/realestatebr/issues
 Encoding: UTF-8
 Language: en-US
@@ -24,7 +30,6 @@ Imports:
     dplyr,
     httr,
     janitor,
-    lifecycle,
     lubridate,
     purrr,
     rappdirs,
