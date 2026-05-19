@@ -168,11 +168,21 @@ get_rppi <- function(
       "FipeZap" = harmonize_fipezap_for_stacking(fipezap, "rent")
     )
   } else {
-    # Stack all (both sale and rent) using the same sources
+    # Stack all: each sub-call already has a 'source' column; add
+    # 'transaction_type' ("sale"/"rent") as the outer grouping key.
     series <- list(
-      "rent" = get_rppi("rent", cached, quiet, max_retries),
-      "sale" = get_rppi("sale", cached, quiet, max_retries)
+      "sale" = get_rppi("sale", cached, quiet, max_retries),
+      "rent" = get_rppi("rent", cached, quiet, max_retries)
     )
+    stacked_data <- dplyr::bind_rows(series, .id = "transaction_type")
+
+    if (!quiet) {
+      cli::cli_inform(
+        "\u2713 RPPI (all): {nrow(stacked_data)} records"
+      )
+    }
+
+    return(stacked_data)
   }
 
   stacked_data <- dplyr::bind_rows(series, .id = "source")
