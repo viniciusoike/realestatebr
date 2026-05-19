@@ -11,7 +11,7 @@ utils::globalVariables(c("price_m2"))
 #' @noRd
 standardize_city_names <- function(x) {
   y <- stringr::str_replace(x, "Brasil", "Brazil")
-  y <- stringr::str_replace(y, "(?i)\u00cdndice\\s+FipeZap\\+?", "Brazil")
+  y <- stringr::str_replace(y, "(?i)Índice\\s+FipeZAP\\+?", "Brazil")
   y <- stringr::str_to_title(y)
   y <- stringr::str_squish(y)
 
@@ -103,7 +103,14 @@ get_rppi <- function(
   max_retries = 3L
 ) {
   valid_tables <- c(
-    "sale", "rent", "fipezap", "ivgr", "igmi", "iqa", "iqaiw", "ivar",
+    "sale",
+    "rent",
+    "fipezap",
+    "ivgr",
+    "igmi",
+    "iqa",
+    "iqaiw",
+    "ivar",
     "secovi_sp"
   )
   validate_dataset_params(
@@ -445,7 +452,9 @@ get_rppi_ivar <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
 
   if (!exists("fgv_data") || !exists("dim_city")) {
     if (!quiet) {
-      cli::cli_inform(c("i" = "IVAR source data not available, loading from cache..."))
+      cli::cli_inform(c(
+        "i" = "IVAR source data not available, loading from cache..."
+      ))
     }
 
     data <- try_rppi_user_cache("rppi_ivar", quiet = quiet)
@@ -531,7 +540,7 @@ get_rppi_secovi_sp <- function(
   secovi <- dat |>
     dplyr::filter(name == "indice_de_locacao_residencial") |>
     dplyr::rename(index = value) |>
-    dplyr::mutate(name_muni = "S\u00e3o Paulo") |>
+    dplyr::mutate(name_muni = "São Paulo") |>
     dplyr::select(date, name_muni, index) |>
     calculate_rppi_changes(index_col = "index")
 
@@ -578,7 +587,12 @@ get_rppi_fipezap <- function(
 
   # Download Excel with retry
   url <- "https://downloads.fipe.org.br/indices/fipezap/fipezap-serieshistoricas.xlsx"
-  temp_path <- download_excel(url, min_size = 1000, max_retries = max_retries, quiet = quiet)
+  temp_path <- download_excel(
+    url,
+    min_size = 1000,
+    max_retries = max_retries,
+    quiet = quiet
+  )
 
   # Identify city sheet indices and names.
   # FIPE's XLSX stores sheet names as Latin-1 but readxl reports them as
@@ -588,7 +602,7 @@ get_rppi_fipezap <- function(
   # tidyxl::xlsx_cells() handles accented names correctly, so get_range()
   # (which uses tidyxl) continues to receive the string name.
   all_sheets <- readxl::excel_sheets(temp_path)
-  city_mask <- !stringr::str_detect(all_sheets, "(Resumo)|(Aux)|(FipeZAP)")
+  city_mask <- !stringr::str_detect(all_sheets, "(Resumo)|(Aux)")
   sheet_names <- all_sheets[city_mask]
   sheet_indices <- which(city_mask)
 
@@ -613,7 +627,10 @@ get_rppi_fipezap <- function(
       )
     }
 
-    col_types_vec <- c("date", rep("numeric", length(build_fipezap_col_names()) - 1))
+    col_types_vec <- c(
+      "date",
+      rep("numeric", length(build_fipezap_col_names()) - 1)
+    )
 
     dat <- readxl::read_excel(
       temp_path,
@@ -621,7 +638,8 @@ get_rppi_fipezap <- function(
       skip = 4,
       col_names = build_fipezap_col_names(),
       col_types = col_types_vec,
-      range = range
+      range = range,
+      na = c("", "#N/A", ".")
     )
 
     return(dat)
@@ -630,7 +648,6 @@ get_rppi_fipezap <- function(
   # Process all city sheets
   fipezap <- mapply(import_sheet, sheet_names, sheet_indices, SIMPLIFY = FALSE)
   names(fipezap) <- city_names
-
   # Stack and clean
   series <- dplyr::bind_rows(fipezap, .id = "name_muni")
 
@@ -753,13 +770,20 @@ get_rppi_iqaiw <- function(cached = FALSE, quiet = FALSE, max_retries = 3L) {
     desc = "IQAIW CSV from QuintoAndar"
   )
 
-  expected_cols <- c("ts_date", "city_name", "house_room", "est_price", "chg", "acum12m")
+  expected_cols <- c(
+    "ts_date",
+    "city_name",
+    "house_room",
+    "est_price",
+    "chg",
+    "acum12m"
+  )
 
   cols_rename <- c(
-    "date"      = "ts_date",
+    "date" = "ts_date",
     "name_muni" = "city_name",
-    "rooms"     = "house_room",
-    "price_m2"  = "est_price"
+    "rooms" = "house_room",
+    "price_m2" = "est_price"
   )
 
   # City name mapping
