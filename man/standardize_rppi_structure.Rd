@@ -4,12 +4,10 @@
 \alias{standardize_rppi_structure}
 \title{Standardize RPPI Structure}
 \usage{
-standardize_rppi_structure(dat, source_name)
+standardize_rppi_structure(dat)
 }
 \arguments{
 \item{dat}{Input tibble from any RPPI source}
-
-\item{source_name}{Name to add as source column}
 }
 \value{
 Standardized tibble with consistent columns
