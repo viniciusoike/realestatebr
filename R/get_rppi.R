@@ -175,7 +175,7 @@ get_rppi <- function(
     )
   }
 
-  stacked_data <- dplyr::bind_rows(series, .id = "transaction_type")
+  stacked_data <- dplyr::bind_rows(series, .id = "source")
 
   if (!quiet) {
     cli::cli_inform(

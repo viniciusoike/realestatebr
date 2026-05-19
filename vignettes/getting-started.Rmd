@@ -291,8 +291,8 @@ The available datasets are listed below.
 | `abecip` | ABECIP | `sbpe`, `units`, `cgi` | Active |
 | `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` | Active |
 | `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` | Active |
-| `bcb_series` | Banco Central do Brasil | `price`, `credit`, `production`, `interest-rate`, `exchange`, `government`, `real-estate` | Active |
+| `bcb_series` | Banco Central do Brasil | `core`, `primary`, `secondary`, `tertiary`, `full` | Active |
 | `fgv_ibre` | FGV IBRE | — | Active |
 | `rppi` | FIPE/ZAP, IVGR, IGMI, IQA, IVAR, SECOVI-SP | `sale`, `rent`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` | Active |
-| `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly` | Active |
+| `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` | Active |
 | `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` | Active |
