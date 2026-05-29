@@ -2,10 +2,11 @@
 #'
 #' @description
 #' Loads construction confidence indicators from FGV IBRE including confidence
-#' indices, expectation indicators, and INCC price indices.
+#' indices, expectation indicators, and INCC price indices. FGV data is not
+#' available via API; this function fetches the pre-processed dataset from the
+#' package's GitHub release.
 #'
 #' @param table Character. Which dataset to return: "indicators" (default) or "all".
-#' @param cached Logical. If `TRUE` (default), loads data from cache.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages.
 #'
 #' @return Tibble with FGV IBRE indicators. Includes metadata attributes:
@@ -14,47 +15,35 @@
 #' @keywords internal
 get_fgv_ibre <- function(
   table = "indicators",
-  cached = TRUE,
   quiet = FALSE
 ) {
-  # Input validation ----
   valid_tables <- c("indicators")
 
   validate_dataset_params(
     table,
     valid_tables,
-    cached,
     quiet,
     max_retries = 3,
     allow_all = TRUE
   )
 
-  # Handle cached data ----
-  if (cached) {
-    fgv_data <- handle_dataset_cache(
-      "fgv_ibre",
-      table = NULL,
-      quiet = quiet,
-      on_miss = "error"
-    )
+  fgv_data <- fetch_github_release_asset("fgv_ibre", quiet = quiet)
 
-    if (!is.null(fgv_data)) {
-      fgv_data <- attach_dataset_metadata(
-        fgv_data,
-        source = "cache",
-        category = table
-      )
-      return(fgv_data)
-    }
+  if (is.null(fgv_data)) {
+    cli::cli_abort(c(
+      "FGV IBRE data is not available",
+      "x" = "Could not fetch the dataset from the GitHub release",
+      "i" = "FGV data is not web-scrapable; the package distributes it via GitHub releases only"
+    ))
   }
 
-  # Fresh downloads not supported ----
-  cli::cli_abort(c(
-    "Fresh downloads not supported for FGV IBRE data",
-    "x" = "FGV data is not accessible via API and requires manual updates",
-    "i" = "Use {.code cached = TRUE} to access the most recent cached data",
-    "i" = "Or use {.code get_dataset('fgv_ibre')} which automatically uses cache"
-  ))
+  fgv_data <- attach_dataset_metadata(
+    fgv_data,
+    source = "github",
+    category = table
+  )
+
+  return(fgv_data)
 }
 
 # Load FGV Local CSV -------------------------------------------------------
@@ -95,7 +84,15 @@ fetch_fgv_local <- function(path) {
   fgv_data <- fgv_coded |>
     dplyr::left_join(fgv_dict, by = "code_series") |>
     dplyr::left_join(fgv_key, by = "code_series") |>
-    dplyr::select(date, name_simplified, value, name_series, code_series, unit, source) |>
+    dplyr::select(
+      date,
+      name_simplified,
+      value,
+      name_series,
+      code_series,
+      unit,
+      source
+    ) |>
     dplyr::filter(!is.na(value))
 
   fgv_data <- attach_dataset_metadata(fgv_data, source = "web")
@@ -123,7 +120,7 @@ fgv_key <- tibble::tribble(
        1000370,                "incc"
 )
 # fmt: skip
-fgv_dict <- data.frame(
+fgv_dict <- tibble::tibble(
   id_series = 1:15,
   code_series = c(
     1463201, 1463202, 1463203, 1463204, 1463205, 1428409, 1416233, 1416234, 1416232,

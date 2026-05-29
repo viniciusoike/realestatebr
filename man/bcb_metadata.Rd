@@ -27,7 +27,7 @@ or discontinued series).}
 }
 }
 \source{
-\url{https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries}
+Brazilian Central Bank (BCB)
 }
 \usage{
 bcb_metadata

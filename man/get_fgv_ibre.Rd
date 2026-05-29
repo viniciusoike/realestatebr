@@ -4,12 +4,10 @@
 \alias{get_fgv_ibre}
 \title{Get FGV IBRE Confidence Indicators}
 \usage{
-get_fgv_ibre(table = "indicators", cached = TRUE, quiet = FALSE)
+get_fgv_ibre(table = "indicators", quiet = FALSE)
 }
 \arguments{
 \item{table}{Character. Which dataset to return: "indicators" (default) or "all".}
-
-\item{cached}{Logical. If \code{TRUE} (default), loads data from cache.}
 
 \item{quiet}{Logical. If \code{TRUE}, suppresses progress messages.}
 }
@@ -19,6 +17,8 @@ source, download_time.
 }
 \description{
 Loads construction confidence indicators from FGV IBRE including confidence
-indices, expectation indicators, and INCC price indices.
+indices, expectation indicators, and INCC price indices. FGV data is not
+available via API; this function fetches the pre-processed dataset from the
+package's GitHub release.
 }
 \keyword{internal}

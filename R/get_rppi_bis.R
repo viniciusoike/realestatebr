@@ -6,7 +6,6 @@
 #'
 #' @param table Character. Dataset table: "selected", "detailed_monthly",
 #'   "detailed_quarterly", "detailed_annual", or "detailed_halfyearly".
-#' @param cached Logical. If `TRUE`, loads data from cache.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages.
 #' @param max_retries Integer. Maximum retry attempts. Defaults to 3.
 #'
@@ -17,11 +16,9 @@
 #' @keywords internal
 get_rppi_bis <- function(
   table = "selected",
-  cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Input validation ----
   valid_tables <- c(
     "selected",
     "detailed_monthly",
@@ -33,28 +30,11 @@ get_rppi_bis <- function(
   validate_dataset_params(
     table,
     valid_tables,
-    cached,
     quiet,
     max_retries,
     allow_all = FALSE
   )
 
-  # Handle cached data ----
-  if (cached) {
-    data <- handle_dataset_cache(
-      "rppi_bis",
-      table = table,
-      quiet = quiet,
-      on_miss = "download"
-    )
-
-    if (!is.null(data)) {
-      data <- attach_dataset_metadata(data, source = "cache", category = table)
-      return(data)
-    }
-  }
-
-  # Download and process data ----
   cli_user("Downloading BIS RPPI data for table '{table}'", quiet = quiet)
 
   if (table == "selected") {
@@ -66,15 +46,17 @@ get_rppi_bis <- function(
 
     df <- switch(
       table,
-      "detailed_monthly"   = detailed_data[["monthly"]],
+      "detailed_monthly" = detailed_data[["monthly"]],
       "detailed_quarterly" = detailed_data[["quarterly"]],
-      "detailed_annual"    = detailed_data[["annual"]],
+      "detailed_annual" = detailed_data[["annual"]],
       "detailed_halfyearly" = detailed_data[["halfyearly"]],
       cli::cli_abort("Unknown detailed table: {.val {table}}")
     )
 
     if (is.null(df)) {
-      cli::cli_abort("Failed to extract table {.val {table}} from detailed data")
+      cli::cli_abort(
+        "Failed to extract table {.val {table}} from detailed data"
+      )
     }
   }
 
@@ -139,20 +121,26 @@ clean_bis_selected <- function(csv_path, quiet) {
     )
 
   cols_rename <- c(
-    "freq_code"      = "FREQ",
-    "frequency"      = "Frequency",
-    "ref_area_code"  = "REF_AREA",
-    "ref_area_name"  = "Reference area",
+    "freq_code" = "FREQ",
+    "frequency" = "Frequency",
+    "ref_area_code" = "REF_AREA",
+    "ref_area_name" = "Reference area",
     "unit_value_code" = "VALUE",
-    "unit_value"     = "Value",
-    "unit_code"      = "UNIT_MEASURE",
-    "unit_name"      = "Unit of measure",
-    "series_code"    = "Series"
+    "unit_value" = "Value",
+    "unit_code" = "UNIT_MEASURE",
+    "unit_name" = "Unit of measure",
+    "series_code" = "Series"
   )
 
   cols_select <- c(
-    "date", "ref_area_code", "ref_area_name",
-    "unit", "unit_name", "is_nominal", "series_code", "value"
+    "date",
+    "ref_area_code",
+    "ref_area_name",
+    "unit",
+    "unit_name",
+    "is_nominal",
+    "series_code",
+    "value"
   )
 
   cli_debug("Cleaning BIS selected data...")
@@ -229,24 +217,32 @@ read_bis_detailed_csv <- function(csv_path) {
 #' @noRd
 parse_bis_detailed_columns <- function(data) {
   cols_to_split <- list(
-    structure_id                      = c("series_code", "series_name"),
-    freq_frequency                    = c("freq_code", "freq_name"),
-    ref_area_reference_area           = c("ref_area_code", "ref_area_name"),
-    covered_area_covered_area         = c("covered_area_code", "covered_area_name"),
-    re_type_real_estate_type          = c("re_type_code", "re_type_name"),
-    re_vintage_real_estate_vintage    = c("re_vintage_code", "re_vintage_name"),
-    compiling_org_compiling_agency    = c("compiling_org_code", "compiling_org_name"),
-    priced_unit_priced_unit           = c("priced_unit_code", "priced_unit_name"),
-    adjust_coded_seasonal_adjustment  = c("seas_adjust_code", "seas_adjust_name"),
-    availability_availability         = c("availability_code", "availability_name"),
-    unit_measure_unit_of_measure      = c("unit_code", "unit_name"),
-    unit_mult_unit_multiplier         = c("unit_mult_code", "unit_mult_name")
+    structure_id = c("series_code", "series_name"),
+    freq_frequency = c("freq_code", "freq_name"),
+    ref_area_reference_area = c("ref_area_code", "ref_area_name"),
+    covered_area_covered_area = c("covered_area_code", "covered_area_name"),
+    re_type_real_estate_type = c("re_type_code", "re_type_name"),
+    re_vintage_real_estate_vintage = c("re_vintage_code", "re_vintage_name"),
+    compiling_org_compiling_agency = c(
+      "compiling_org_code",
+      "compiling_org_name"
+    ),
+    priced_unit_priced_unit = c("priced_unit_code", "priced_unit_name"),
+    adjust_coded_seasonal_adjustment = c(
+      "seas_adjust_code",
+      "seas_adjust_name"
+    ),
+    availability_availability = c("availability_code", "availability_name"),
+    unit_measure_unit_of_measure = c("unit_code", "unit_name"),
+    unit_mult_unit_multiplier = c("unit_mult_code", "unit_mult_name")
   )
 
   result <- purrr::reduce(
     names(cols_to_split),
     function(df, col) {
-      if (!col %in% names(df)) return(df)
+      if (!col %in% names(df)) {
+        return(df)
+      }
       tidyr::separate_wider_delim(
         df,
         cols = dplyr::all_of(col),
@@ -390,70 +386,104 @@ clean_bis_detailed <- function(csv_path, quiet) {
   # Each frequency keeps different metadata columns so they cannot be merged.
   drop_cols_annual <- c(
     "time_period_time_period_or_range",
-    "series_name", "structure", "action",
-    "freq_code", "freq_name",
+    "series_name",
+    "structure",
+    "action",
+    "freq_code",
+    "freq_name",
     "obs_conf_observation_confidentiality",
     "obs_status_observation_status",
-    "seas_adjust_code", "seas_adjust_name"
+    "seas_adjust_code",
+    "seas_adjust_name"
   )
 
   drop_cols_monthly <- c(
     "time_period_time_period_or_range",
-    "series_name", "structure", "action",
-    "freq_code", "freq_name",
+    "series_name",
+    "structure",
+    "action",
+    "freq_code",
+    "freq_name",
     "obs_conf_observation_confidentiality"
   )
 
   drop_cols_quarterly <- c(
     "time_period_time_period_or_range",
-    "series_name", "structure", "action",
-    "freq_code", "freq_name",
+    "series_name",
+    "structure",
+    "action",
+    "freq_code",
+    "freq_name",
     "obs_conf_observation_confidentiality"
   )
 
   drop_cols_halfyearly <- c(
     "time",
-    "series_name", "structure", "action",
-    "freq_code", "freq_name",
+    "series_name",
+    "structure",
+    "action",
+    "freq_code",
+    "freq_name",
     "obs_conf_observation_confidentiality"
   )
 
   # Per-frequency code columns to convert to integer ----
   num_cols_annual <- c(
-    "re_vintage_code", "compiling_org_code", "priced_unit_code"
+    "re_vintage_code",
+    "compiling_org_code",
+    "priced_unit_code"
   )
 
   num_cols_monthly <- c(
-    "covered_area_code", "re_vintage_code", "compiling_org_code",
-    "priced_unit_code", "seas_adjust_code"
+    "covered_area_code",
+    "re_vintage_code",
+    "compiling_org_code",
+    "priced_unit_code",
+    "seas_adjust_code"
   )
 
   num_cols_quarterly <- c(
-    "re_vintage_code", "compiling_org_code",
-    "priced_unit_code", "seas_adjust_code"
+    "re_vintage_code",
+    "compiling_org_code",
+    "priced_unit_code",
+    "seas_adjust_code"
   )
 
   num_cols_halfyearly <- c(
-    "re_vintage_code", "compiling_org_code",
-    "priced_unit_code", "seas_adjust_code"
+    "re_vintage_code",
+    "compiling_org_code",
+    "priced_unit_code",
+    "seas_adjust_code"
   )
 
   return(list(
     monthly = clean_bis_frequency(
-      parsed, "Monthly",
-      parse_bis_monthly_date, drop_cols_monthly, num_cols_monthly
+      parsed,
+      "Monthly",
+      parse_bis_monthly_date,
+      drop_cols_monthly,
+      num_cols_monthly
     ),
     quarterly = clean_bis_frequency(
-      parsed, "Quarterly",
-      parse_bis_quarterly_date, drop_cols_quarterly, num_cols_quarterly
+      parsed,
+      "Quarterly",
+      parse_bis_quarterly_date,
+      drop_cols_quarterly,
+      num_cols_quarterly
     ),
     annual = clean_bis_frequency(
-      parsed, "Annual",
-      parse_bis_annual_date, drop_cols_annual, num_cols_annual
+      parsed,
+      "Annual",
+      parse_bis_annual_date,
+      drop_cols_annual,
+      num_cols_annual
     ),
     halfyearly = clean_bis_frequency(
-      parsed, "Half-yearly",
-      parse_bis_halfyearly_date, drop_cols_halfyearly, num_cols_halfyearly
+      parsed,
+      "Half-yearly",
+      parse_bis_halfyearly_date,
+      drop_cols_halfyearly,
+      num_cols_halfyearly
     )
   ))
 }

@@ -1,7 +1,7 @@
 #' Download macroeconomic time-series from BCB
 #'
 #' @details
-#' Downloads macroeconomic time series from BCB. Series are organised by
+#' Downloads macroeconomic time series from BCB. Series are organized by
 #' relevance to the Brazilian real estate market using a four-level hierarchy.
 #' The default ("core") returns the 40 most directly relevant series covering
 #' real estate credit concession, interest rates, and delinquency. Use broader
@@ -10,12 +10,11 @@
 #' @param table Character. Hierarchy level to return:
 #'   \describe{
 #'     \item{"core"}{Core real estate credit series (default, ~40 series).}
-#'     \item{"primary"}{Core plus key macro series such as SELIC, IPCA, INCC (~59 series).}
+#'     \item{"primary"}{Core plus key macro series such as inflation rate (~59 series).}
 #'     \item{"secondary"}{Primary plus broader macro context such as GDP, unemployment (~109 series).}
 #'     \item{"tertiary"}{All series including less relevant and discontinued ones (~141 series).}
 #'     \item{"full"}{Equivalent to "tertiary". Returns all available series.}
 #'   }
-#' @param cached Logical. If `TRUE`, attempts to load data from package cache.
 #' @param date_start A `Date` indicating the first period to extract.
 #'   Defaults to 2010-01-01.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages.
@@ -35,7 +34,6 @@
 #' @keywords internal
 get_bcb_series <- function(
   table = "core",
-  cached = FALSE,
   date_start = as.Date("2010-01-01"),
   quiet = FALSE,
   max_retries = 3L,
@@ -53,7 +51,6 @@ get_bcb_series <- function(
   validate_dataset_params(
     table,
     hierarchy_levels,
-    cached,
     quiet,
     max_retries,
     allow_all = TRUE
@@ -78,31 +75,9 @@ get_bcb_series <- function(
   codes_bcb <- resolve_bcb_hierarchy(table)
 
   if (!quiet) {
-    cli::cli_inform("Selected {length(codes_bcb)} BCB series (table: {.val {table}})")
-  }
-
-  if (cached) {
-    data <- handle_dataset_cache(
-      "bcb_series",
-      table = NULL,
-      quiet = quiet,
-      on_miss = "download"
+    cli::cli_inform(
+      "Selected {length(codes_bcb)} BCB series (table: {.val {table}})"
     )
-
-    if (!is.null(data)) {
-      data <- dplyr::filter(
-        data,
-        .data$code_bcb %in% codes_bcb,
-        .data$date >= date_start
-      )
-      data <- attach_dataset_metadata(
-        data,
-        source = "cache",
-        category = table,
-        extra_info = list(series_count = length(codes_bcb), date_start = date_start)
-      )
-      return(data)
-    }
   }
 
   if (!quiet) {
@@ -119,7 +94,11 @@ get_bcb_series <- function(
 
   cols_select <- c("date", "code_bcb", "name_simplified", "value")
 
-  bcb_series <- dplyr::left_join(bcb_series, bcb_metadata, by = dplyr::join_by(code_bcb))
+  bcb_series <- dplyr::left_join(
+    bcb_series,
+    bcb_metadata,
+    by = dplyr::join_by(code_bcb)
+  )
   bcb_series <- dplyr::select(bcb_series, dplyr::all_of(cols_select))
 
   bcb_series <- attach_dataset_metadata(
@@ -152,12 +131,12 @@ get_bcb_series <- function(
 #' @keywords internal
 resolve_bcb_hierarchy <- function(table) {
   hierarchy_map <- c(
-    "core"      = 1L,
-    "primary"   = 2L,
+    "core" = 1L,
+    "primary" = 2L,
     "secondary" = 3L,
-    "tertiary"  = 4L,
-    "full"      = 4L,
-    "all"       = 4L
+    "tertiary" = 4L,
+    "full" = 4L,
+    "all" = 4L
   )
 
   max_level <- hierarchy_map[[table]]
@@ -199,7 +178,9 @@ download_bcb_series <- function(
           result <- suppressMessages(
             rbcb::get_series(code = code, start_date = date_start, ...)
           )
-          if (!is.data.frame(result)) stop("result is not a data frame")
+          if (!is.data.frame(result)) {
+            stop("result is not a data frame")
+          }
           dplyr::rename(result, value = 2)
         },
         max_retries = max_retries,
@@ -213,7 +194,9 @@ download_bcb_series <- function(
   results <- purrr::map(codes_bcb, function(code) {
     cli_debug("Downloading series {code}...")
     res <- safe_get(code)
-    if (!is.null(res)) res$code_bcb <- code
+    if (!is.null(res)) {
+      res$code_bcb <- code
+    }
     res
   })
 

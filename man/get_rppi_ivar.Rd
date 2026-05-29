@@ -4,11 +4,9 @@
 \alias{get_rppi_ivar}
 \title{Get IVAR Rent Index}
 \usage{
-get_rppi_ivar(cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_rppi_ivar(quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{cached}{Logical. If TRUE, loads from GitHub cache (recommended)}
-
 \item{quiet}{Logical. If TRUE, suppresses warnings}
 
 \item{max_retries}{Integer. Maximum retry attempts (not used for this data source)}
@@ -22,13 +20,13 @@ Get IVAR Rent Index
 \details{
 The IVAR (Residential Rent Variation Index) is a repeat-rent index from IBRE/FGV,
 comparing the same housing unit over time. Based on rental contracts from brokers.
-Available for 4 major cities (São Paulo, Rio, Porto Alegre, Belo Horizonte); the
+Available for 4 major cities (Sao Paulo, Rio, Porto Alegre, Belo Horizonte); the
 national index is a weighted average. More theoretically sound than IGP-M for rent
 contracts as it measures only rent prices.
 }
 \note{
-IVAR data is only available from cache as the source data (FGV) is not
-accessible via web scraping. This function will automatically use cached data
-when source data is unavailable.
+IVAR's underlying source (FGV) is not accessible via web scraping;
+when the static \code{fgv_data} object is unavailable, this function falls back
+to the package's GitHub release.
 }
 \keyword{internal}

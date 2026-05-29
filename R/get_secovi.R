@@ -6,8 +6,6 @@
 #'
 #' @param table Character. One of `'condo'`, `'rent'`, `'launch'`, `'sale'` or `'all'`
 #'   (default).
-#' @param cached Logical. If `TRUE`, attempts to load data from package cache
-#'   using the unified dataset architecture.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
 #'   If `FALSE` (default), provides detailed progress reporting.
 #' @param max_retries Integer. Maximum number of retry attempts for failed
@@ -17,7 +15,7 @@
 #'   metadata attributes:
 #'   \describe{
 #'     \item{download_info}{List with download statistics}
-#'     \item{source}{Data source used (web or cache)}
+#'     \item{source}{Data source used}
 #'     \item{download_time}{Timestamp of download}
 #'   }
 #'
@@ -26,31 +24,26 @@
 #' @keywords internal
 get_secovi <- function(
   table = "all",
-  cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
   valid_tables <- c("all", "condo", "launch", "rent", "sale")
-  validate_dataset_params(table, valid_tables, cached, quiet, max_retries, allow_all = TRUE)
-
-  if (cached) {
-    data <- handle_dataset_cache("secovi", table = NULL, quiet = quiet, on_miss = "download")
-
-    if (!is.null(data)) {
-      if (table != "all") {
-        data <- dplyr::filter(data, category == !!table)
-      }
-      data <- attach_dataset_metadata(data, source = "cache", category = table)
-      return(data)
-    }
-  }
+  validate_dataset_params(
+    table,
+    valid_tables,
+    quiet,
+    max_retries,
+    allow_all = TRUE
+  )
 
   cli_user("Downloading SECOVI-SP data from website", quiet = quiet)
 
   scrape <- rlang::try_fetch(
     download_secovi(table = table, quiet = quiet, max_retries = max_retries),
     error = function(cnd) {
-      if (!quiet) cli::cli_warn("Web scraping failed: {cnd$message}")
+      if (!quiet) {
+        cli::cli_warn("Web scraping failed: {cnd$message}")
+      }
       NULL
     }
   )
@@ -58,13 +51,19 @@ get_secovi <- function(
   if (is.null(scrape) || length(scrape) == 0) {
     data <- fallback_to_github_cache("secovi_sp", quiet = quiet)
     if (!is.null(data)) {
-      if (table != "all") data <- dplyr::filter(data, category == !!table)
-      data <- attach_dataset_metadata(data, source = "github_cache", category = table)
+      if (table != "all") {
+        data <- dplyr::filter(data, category == !!table)
+      }
+      data <- attach_dataset_metadata(
+        data,
+        source = "github",
+        category = table
+      )
       return(data)
     }
     cli::cli_abort(c(
       "Failed to retrieve SECOVI-SP data",
-      "x" = "Web scraping returned empty and GitHub cache is unavailable",
+      "x" = "Web scraping returned empty and GitHub release is unavailable",
       "i" = "The SECOVI-SP website may be blocking automated requests"
     ))
   }
@@ -85,7 +84,14 @@ get_secovi <- function(
     secovi_meta,
     by = dplyr::join_by(variable == label)
   )
-  tbl_secovi <- dplyr::select(tbl_secovi, date, category = cat, variable, name, value)
+  tbl_secovi <- dplyr::select(
+    tbl_secovi,
+    date,
+    category = cat,
+    variable,
+    name,
+    value
+  )
 
   tbl_secovi <- attach_dataset_metadata(
     tbl_secovi,
@@ -95,7 +101,7 @@ get_secovi <- function(
   )
 
   if (!quiet) {
-    cli::cli_inform("✓ SECOVI-SP data retrieved: {nrow(tbl_secovi)} records")
+    cli::cli_inform("SECOVI-SP data retrieved: {nrow(tbl_secovi)} records")
   }
 
   return(tbl_secovi)
@@ -154,21 +160,21 @@ download_secovi <- function(table, quiet, max_retries) {
 
 
 secovi_metadata <- dplyr::tribble(
-  ~code,               ~label,      ~cat,
-     14, "default_condominio",   "condo",
-     78,               "icon",   "condo",
-     80,     "acao_locaticia",    "rent",
-     18,  "tipos_de_garantia",    "rent",
-     13,         "rent_price",    "rent",
-     25,      "launches_rmsp",  "launch",
-     26,             "supply",  "launch",
-     85,           "launches",  "launch",
-     86,       "sales_1rooms",    "sale",
-     87,       "sales_2rooms",    "sale",
-     88,       "sales_3rooms",    "sale",
-     89,       "sales_4rooms",    "sale",
-     90,              "sales",    "sale",
-    118,         "sales_rmsp",    "sale"
+  ~code , ~label               , ~cat     ,
+     14 , "default_condominio" , "condo"  ,
+     78 , "icon"               , "condo"  ,
+     80 , "acao_locaticia"     , "rent"   ,
+     18 , "tipos_de_garantia"  , "rent"   ,
+     13 , "rent_price"         , "rent"   ,
+     25 , "launches_rmsp"      , "launch" ,
+     26 , "supply"             , "launch" ,
+     85 , "launches"           , "launch" ,
+     86 , "sales_1rooms"       , "sale"   ,
+     87 , "sales_2rooms"       , "sale"   ,
+     88 , "sales_3rooms"       , "sale"   ,
+     89 , "sales_4rooms"       , "sale"   ,
+     90 , "sales"              , "sale"   ,
+    118 , "sales_rmsp"         , "sale"
 )
 
 
@@ -207,8 +213,20 @@ secovi_basic_clean <- function(df) {
 #' @noRd
 secovi_clean_date_label <- function(df) {
   dim_date <- tibble::tibble(
-    mes = c("JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
-            "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"),
+    mes = c(
+      "JAN",
+      "FEV",
+      "MAR",
+      "ABR",
+      "MAI",
+      "JUN",
+      "JUL",
+      "AGO",
+      "SET",
+      "OUT",
+      "NOV",
+      "DEZ"
+    ),
     month = 1:12
   )
 
@@ -219,7 +237,9 @@ secovi_clean_date_label <- function(df) {
       year = as.numeric(year),
       date = lubridate::make_date(year, month),
       value = dplyr::if_else(
-        stringr::str_detect(name, "percent"), value / 100, value
+        stringr::str_detect(name, "percent"),
+        value / 100,
+        value
       )
     ) |>
     dplyr::select(date, name, value)
@@ -237,7 +257,7 @@ secovi_clean_date_label <- function(df) {
 #' @noRd
 secovi_keep_table <- function(df) {
   all_na_cols <- purrr::map_lgl(df, \(x) all(is.na(x)))
-  check_all_na    <- all(all_na_cols)
+  check_all_na <- all(all_na_cols)
   check_mostly_na <- mean(all_na_cols) >= 0.4
   check_single_col <- ncol(df) == 1
   check_single_row <- nrow(df) == 1
@@ -280,9 +300,9 @@ secovi_extract_header <- function(x) {
 #' @noRd
 secovi_get_years <- function(x) {
   single_row <- x[purrr::map_int(x, nrow) == 1]
-  year_rows  <- dplyr::bind_rows(single_row)
-  year_vals  <- stats::na.omit(year_rows$X3)
-  years      <- as.numeric(stringr::str_remove(year_vals, "Ano: "))
+  year_rows <- dplyr::bind_rows(single_row)
+  year_vals <- stats::na.omit(year_rows$X3)
+  years <- as.numeric(stringr::str_remove(year_vals, "Ano: "))
   return(years)
 }
 
@@ -296,7 +316,7 @@ clean_secovi <- function(x) {
 
   year_labels <- rep(years, each = ceiling(length(tables) / length(years)))
   if (length(year_labels) != length(tables)) {
-    years       <- years[-1]
+    years <- years[-1]
     year_labels <- rep(years, each = ceiling(length(tables) / length(years)))
   }
   names(tables) <- year_labels

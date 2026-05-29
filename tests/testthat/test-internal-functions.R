@@ -34,13 +34,11 @@ test_that("get_dataset uses internal functions for fresh downloads", {
 })
 
 test_that("internal functions have consistent parameter interface", {
-  # All internal functions should accept these standard parameters
-  required_params <- c("table", "cached", "quiet", "max_retries")
+  required_params <- c("table", "quiet", "max_retries")
 
-  # Note: fetch_ functions don't exist, using actual legacy functions instead
   internal_functions <- c(
-    "get_rppi", "get_abecip_indicators", "get_abrainc_indicators", "get_bcb_realestate",
-    "get_bcb_series", "get_secovi", "get_rppi_bis", "get_fgv_indicators"
+    "get_rppi", "get_abecip_indicators", "get_abrainc_indicators",
+    "get_bcb_realestate", "get_bcb_series", "get_secovi", "get_rppi_bis"
   )
 
   for (func_name in internal_functions) {
@@ -48,7 +46,6 @@ test_that("internal functions have consistent parameter interface", {
       func <- get(func_name, envir = asNamespace("realestatebr"))
       func_params <- names(formals(func))
 
-      # Check that required parameters are present
       for (param in required_params) {
         expect_true(
           param %in% func_params,
@@ -115,40 +112,37 @@ test_that("internal functions handle errors gracefully", {
 })
 
 test_that("internal functions validate input parameters", {
-  # Test parameter validation using actual legacy functions
   expect_error(get_abecip_indicators(table = 123), "must be")
-  expect_error(get_abecip_indicators(cached = "yes"), "logical")
-
-  # Skip max_retries test as legacy functions may not have this parameter
+  expect_error(get_abecip_indicators(quiet = "no"), "logical")
 })
 
 test_that("internal functions return expected data structure", {
   skip_if_offline()
 
-  # Test that internal functions return data with proper metadata
-  tryCatch({
-    # Use cached=TRUE to avoid network issues in tests
-    data <- get_abecip_indicators(table = "sbpe", cached = TRUE)
-
-    # Should have metadata attributes
-    expect_true(!is.null(attr(data, "source")))
-    expect_true(!is.null(attr(data, "download_time")))
-    expect_true(!is.null(attr(data, "download_info")))
-  }, error = function(e) {
-    # If cached data doesn't exist, that's okay for this test
-    skip("Cached data not available")
-  })
+  tryCatch(
+    {
+      data <- get_dataset("abecip", table = "sbpe", source = "github")
+      expect_true(!is.null(attr(data, "source")))
+      expect_true(!is.null(attr(data, "download_time")))
+      expect_true(!is.null(attr(data, "download_info")))
+    },
+    error = function(e) {
+      skip("GitHub release not reachable")
+    }
+  )
 })
 
-test_that("BCB functions handle multiple datasets correctly", {
+test_that("BCB datasets have distinct dataset_function entries", {
   registry <- load_dataset_registry()
 
-  # BCB should have both bcb_realestate and bcb_series with different internal functions
-  bcb_realestate <- registry$datasets$bcb_realestate
-  bcb_series <- registry$datasets$bcb_series
-
-  expect_equal(bcb_realestate$internal_function, "fetch_bcb_realestate")
-  expect_equal(bcb_series$internal_function, "fetch_bcb_series")
+  expect_equal(
+    registry$datasets$bcb_realestate$dataset_function,
+    "get_bcb_realestate"
+  )
+  expect_equal(
+    registry$datasets$bcb_series$dataset_function,
+    "get_bcb_series"
+  )
 })
 
 test_that("all datasets are accessible through get_dataset", {

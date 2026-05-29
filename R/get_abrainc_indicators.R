@@ -5,8 +5,6 @@
 #' new launches, sales, delivered units, and market indicators.
 #'
 #' @param table Character. One of `'indicator'` (default), `'radar'`, `'leading'`, or `'all'`.
-#' @param cached Logical. If `TRUE`, attempts to load data from package cache
-#'   using the unified dataset architecture.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages and warnings.
 #'   If `FALSE` (default), provides detailed progress reporting.
 #' @param max_retries Integer. Maximum number of retry attempts for failed
@@ -16,7 +14,7 @@
 #'   (for specific tables). The return includes metadata attributes:
 #'   \describe{
 #'     \item{download_info}{List with download statistics}
-#'     \item{source}{Data source used (web or cache)}
+#'     \item{source}{Data source used}
 #'     \item{download_time}{Timestamp of download}
 #'   }
 #'
@@ -31,37 +29,18 @@
 #' @keywords internal
 get_abrainc_indicators <- function(
   table = "indicator",
-  cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Input validation ----
   valid_tables <- c("all", "indicator", "radar", "leading")
   validate_dataset_params(
     table,
     valid_tables,
-    cached,
     quiet,
     max_retries,
     allow_all = TRUE
   )
 
-  # Handle cached data ----
-  if (cached) {
-    data <- handle_dataset_cache(
-      "abrainc",
-      table = table,
-      quiet = quiet,
-      on_miss = "download"
-    )
-
-    if (!is.null(data)) {
-      data <- attach_dataset_metadata(data, source = "cache", category = table)
-      return(data)
-    }
-  }
-
-  # Download Excel file ----
   if (!quiet) {
     cli::cli_inform("Downloading Abrainc-Fipe indicators from FIPE...")
   }
@@ -318,20 +297,20 @@ build_abrainc_col_names <- function() {
   lead_col_names <- c("date", paste(rep(xx, each = length(yy)), yy, sep = "-"))
 
   lead_labels <- dplyr::tribble(
-    ~variable                                                    ,
-    ~variable_label                                              ,
-    "leading_index"                                              ,
-    "Real Estate Leading Indicator (100 = dec/2000)"             ,
-    "leading_index_12m"                                          ,
-    "Real Estate Leading Indicator (% 12-month cumulative) (%)"  ,
-    "alvaras_total"                                              ,
-    "Number of Building Permits (per month)"                     ,
-    "alvaras_prop"                                               ,
-    "Distribution of Building Permits in São Paulo (Total)" ,
-    "alvaras_total_12m"                                          ,
-    "Building Permits (12-month cumulative)"                     ,
-    "alvaras_prop_12m"                                           ,
-    "Distribution of Building Permits in São Paulo (%)"
+    ~variable                                                   ,
+    ~variable_label                                             ,
+    "leading_index"                                             ,
+    "Real Estate Leading Indicator (100 = dec/2000)"            ,
+    "leading_index_12m"                                         ,
+    "Real Estate Leading Indicator (% 12-month cumulative) (%)" ,
+    "alvaras_total"                                             ,
+    "Number of Building Permits (per month)"                    ,
+    "alvaras_prop"                                              ,
+    "Distribution of Building Permits in S\u00e3o Paulo (Total)"     ,
+    "alvaras_total_12m"                                         ,
+    "Building Permits (12-month cumulative)"                    ,
+    "alvaras_prop_12m"                                          ,
+    "Distribution of Building Permits in S\u00e3o Paulo (%)"
   )
 
   out <- list(

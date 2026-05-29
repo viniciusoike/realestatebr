@@ -4,14 +4,11 @@
 \alias{get_secovi}
 \title{Import data from Secovi-SP}
 \usage{
-get_secovi(table = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_secovi(table = "all", quiet = FALSE, max_retries = 3L)
 }
 \arguments{
 \item{table}{Character. One of \code{'condo'}, \code{'rent'}, \code{'launch'}, \code{'sale'} or \code{'all'}
 (default).}
-
-\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
-using the unified dataset architecture.}
 
 \item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
 If \code{FALSE} (default), provides detailed progress reporting.}
@@ -24,7 +21,7 @@ A \code{tibble} with SECOVI-SP real estate data. The return includes
 metadata attributes:
 \describe{
 \item{download_info}{List with download statistics}
-\item{source}{Data source used (web or cache)}
+\item{source}{Data source used}
 \item{download_time}{Timestamp of download}
 }
 }

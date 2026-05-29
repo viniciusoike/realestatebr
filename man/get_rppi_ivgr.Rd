@@ -4,11 +4,9 @@
 \alias{get_rppi_ivgr}
 \title{Get the IVGR Sales Index}
 \usage{
-get_rppi_ivgr(cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_rppi_ivgr(quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{cached}{Logical. If TRUE, loads from GitHub cache}
-
 \item{quiet}{Logical. If TRUE, suppresses warnings}
 
 \item{max_retries}{Integer. Maximum retry attempts for downloads}

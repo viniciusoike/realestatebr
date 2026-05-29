@@ -7,18 +7,10 @@
 \url{https://www.abecip.org.br}
 }
 \usage{
-get_abecip_indicators(
-  table = "sbpe",
-  cached = FALSE,
-  quiet = FALSE,
-  max_retries = 3L
-)
+get_abecip_indicators(table = "sbpe", quiet = FALSE, max_retries = 3L)
 }
 \arguments{
 \item{table}{Character. One of \code{'sbpe'} (default), \code{'units'}, or \code{'cgi'}.}
-
-\item{cached}{Logical. If \code{TRUE}, attempts to load data from package cache
-using the unified dataset architecture.}
 
 \item{quiet}{Logical. If \code{TRUE}, suppresses progress messages and warnings.
 If \code{FALSE} (default), provides detailed progress reporting.}
@@ -31,7 +23,7 @@ Either a named \code{list} (when table is \code{'all'}) or a \code{tibble}
 (for specific tables). The return includes metadata attributes:
 \describe{
 \item{download_info}{List with download statistics}
-\item{source}{Data source used (web or cache)}
+\item{source}{Data source used}
 \item{download_time}{Timestamp of download}
 }
 }

@@ -4,12 +4,10 @@
 \alias{get_rppi}
 \title{Get Stacked RPPI Data}
 \usage{
-get_rppi(table = "sale", cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_rppi(table = "sale", quiet = FALSE, max_retries = 3L)
 }
 \arguments{
 \item{table}{Character. "sale", "rent", or "all"}
-
-\item{cached}{Logical. If TRUE, loads from GitHub cache}
 
 \item{quiet}{Logical. If TRUE, suppresses messages}
 

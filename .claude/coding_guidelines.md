@@ -753,7 +753,7 @@ Both the dataset functions and the shared infrastructure use the `download_*` pr
 Distinguish them by name specificity:
 
 ```r
-# helpers-download.R — generic infrastructure, reusable across datasets
+# helpers_download.R — generic infrastructure, reusable across datasets
 download_excel(url, ...)
 download_csv(url, ...)
 download_zip(url, ...)

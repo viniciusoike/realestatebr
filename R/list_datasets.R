@@ -1,11 +1,11 @@
 #' List Available Datasets
 #'
 #' Returns a tibble describing all datasets available in the realestatebr package.
-#' Optionally filter by category, source organisation, or geographic coverage.
+#' Optionally filter by category, source organization, or geographic coverage.
 #'
 #' @param category Optional character. Keyword matched against the dataset description
 #'   (e.g., \code{"indicators"}, \code{"prices"}, \code{"credit"}).
-#' @param source Optional character. Filter by data source organisation
+#' @param source Optional character. Filter by data source organization
 #'   (e.g., \code{"BCB"}, \code{"FIPE"}, \code{"ABRAINC"}).
 #' @param geography Optional character. Filter by geographic coverage
 #'   (e.g., \code{"Brazil"}, \code{"São Paulo"}).
@@ -16,7 +16,7 @@
 #'     \item{title}{English dataset name.}
 #'     \item{title_pt}{Portuguese dataset name.}
 #'     \item{description}{Brief description.}
-#'     \item{source}{Data source organisation.}
+#'     \item{source}{Data source organization.}
 #'     \item{geography}{Geographic coverage.}
 #'     \item{frequency}{Update frequency.}
 #'     \item{coverage}{Time period covered.}
@@ -24,14 +24,9 @@
 #'   }
 #'
 #' @examples
-#' # List all available datasets
-#' datasets <- list_datasets()
+#' list_datasets()
 #'
-#' # Filter by data source
-#' bcb_data <- list_datasets(source = "abecip")
-#'
-#' # Filter by geography
-#' sao_paulo_data <- list_datasets(geography = "São Paulo")
+#' list_datasets(source = "BCB")
 #'
 #' @seealso \code{\link{get_dataset}} for retrieving data,
 #'   \code{\link{get_dataset_info}} for detailed metadata on a single dataset.
@@ -170,7 +165,7 @@ registry_to_tibble <- function(registry) {
 #'   \describe{
 #'     \item{metadata}{Title, description, geography, frequency, and coverage.}
 #'     \item{categories}{Available tables/subtables and their descriptions.}
-#'     \item{source_info}{Source organisation and URL.}
+#'     \item{source_info}{Source organization and URL.}
 #'     \item{technical_info}{Cached file names and translation notes.}
 #'   }
 #'

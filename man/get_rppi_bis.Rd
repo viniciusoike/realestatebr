@@ -7,18 +7,11 @@
 \url{https://data.bis.org/topics/RPP}
 }
 \usage{
-get_rppi_bis(
-  table = "selected",
-  cached = FALSE,
-  quiet = FALSE,
-  max_retries = 3L
-)
+get_rppi_bis(table = "selected", quiet = FALSE, max_retries = 3L)
 }
 \arguments{
 \item{table}{Character. Dataset table: "selected", "detailed_monthly",
 "detailed_quarterly", "detailed_annual", or "detailed_halfyearly".}
-
-\item{cached}{Logical. If \code{TRUE}, loads data from cache.}
 
 \item{quiet}{Logical. If \code{TRUE}, suppresses progress messages.}
 

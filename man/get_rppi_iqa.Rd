@@ -4,11 +4,9 @@
 \alias{get_rppi_iqa}
 \title{Get QuintoAndar Rental Index (IQA)}
 \usage{
-get_rppi_iqa(cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_rppi_iqa(quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{cached}{Logical. If TRUE, loads from GitHub cache}
-
 \item{quiet}{Logical. If TRUE, suppresses warnings}
 
 \item{max_retries}{Integer. Maximum retry attempts for downloads}
@@ -21,7 +19,7 @@ Get QuintoAndar Rental Index (IQA)
 }
 \details{
 The IQA (QuintoAndar Rental Index) is a median stratified index for Rio de Janeiro
-and São Paulo, based on new rent contracts managed by QuintoAndar. Includes only
+and Sao Paulo, based on new rent contracts managed by QuintoAndar. Includes only
 apartments, studios, and flats. Note: IQA provides raw prices (not index numbers),
 so \code{rent_price} is the median rent per square meter.
 }

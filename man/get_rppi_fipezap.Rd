@@ -4,12 +4,10 @@
 \alias{get_rppi_fipezap}
 \title{Get FipeZap RPPI}
 \usage{
-get_rppi_fipezap(city = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_rppi_fipezap(city = "all", quiet = FALSE, max_retries = 3L)
 }
 \arguments{
 \item{city}{City name or "all" (default). Filtering by city doesn't save processing time.}
-
-\item{cached}{Logical. If TRUE, loads from GitHub cache}
 
 \item{quiet}{Logical. If TRUE, suppresses warnings}
 
@@ -23,7 +21,7 @@ Get FipeZap RPPI
 }
 \details{
 The FipeZap Index is a monthly median stratified index across ~20 Brazilian cities,
-based on online listings from Zap Imóveis. Includes residential and commercial markets,
+based on online listings from Zap Imoveis. Includes residential and commercial markets,
 both sale and rent, stratified by number of rooms. The overall city index is a weighted
 sum of median prices by room/region. Residential index includes only apartments, studios,
 and flats. National index: \code{name_muni == 'Brazil'} (after standardization).

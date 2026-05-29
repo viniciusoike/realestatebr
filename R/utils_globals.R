@@ -92,7 +92,7 @@ utils::globalVariables(c(
   "unit_code",
   "unit_value_code",
 
-  # Conditionally-called function (R/get-dataset.R)
+  # Conditionally-called function (R/get_dataset.R)
   "translate_dataset",
 
   # ABECIP CGI column names (R/get_abecip_indicators.R)

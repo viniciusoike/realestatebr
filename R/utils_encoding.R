@@ -4,7 +4,7 @@
 #' The package uses UTF-8 encoding (declared in DESCRIPTION) throughout.
 #'
 #' @keywords internal
-#' @name encoding-utils
+#' @name encoding_utils
 NULL
 
 #' Character mappings for consistent encoding

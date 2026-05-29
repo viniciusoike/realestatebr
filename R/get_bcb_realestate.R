@@ -6,7 +6,6 @@
 #'
 #' @param table Character. One of `'accounting'`, `'application'`, `'indices'`,
 #'   `'sources'`, `'units'`, or `'all'` (default).
-#' @param cached Logical. If `TRUE`, attempts to load data from cache.
 #' @param quiet Logical. If `TRUE`, suppresses progress messages.
 #' @param max_retries Integer. Maximum retry attempts. Defaults to 3.
 #'
@@ -17,67 +16,45 @@
 #' @keywords internal
 get_bcb_realestate <- function(
   table = "all",
-  cached = FALSE,
   quiet = FALSE,
   max_retries = 3L
 ) {
-  # Input validation ----
   valid_tables <- c("accounting", "application", "indices", "sources", "units")
 
   validate_dataset_params(
     table,
     valid_tables,
-    cached,
     quiet,
     max_retries,
     allow_all = TRUE
   )
 
-  # Resolve data: cache or fresh download ----
-  clean_bcb <- NULL
+  cli_user("Downloading real estate data from BCB API", quiet = quiet)
 
-  if (cached) {
-    cached_data <- handle_dataset_cache(
-      "bcb_realestate",
-      table = NULL,
-      quiet = quiet,
-      on_miss = "download"
-    )
-    if (!is.null(cached_data)) {
-      clean_bcb <- attach_dataset_metadata(
-        cached_data,
-        source = "cache",
-        category = table
-      )
+  bcb <- rlang::try_fetch(
+    download_bcb_realestate(quiet = quiet, max_retries = max_retries),
+    error = function(cnd) {
+      if (!quiet) {
+        cli::cli_warn("BCB API download failed: {cnd$message}")
+      }
+      NULL
     }
-  }
+  )
 
-  if (is.null(clean_bcb)) {
-    cli_user("Downloading real estate data from BCB API", quiet = quiet)
-
-    bcb <- rlang::try_fetch(
-      download_bcb_realestate(quiet = quiet, max_retries = max_retries),
-      error = function(cnd) {
-        if (!quiet) cli::cli_warn("BCB API download failed: {cnd$message}")
-        NULL
-      }
-    )
-
-    if (is.null(bcb)) {
-      data <- fallback_to_github_cache("bcb_realestate", quiet = quiet)
-      if (!is.null(data)) {
-        clean_bcb <- attach_dataset_metadata(data, source = "github_cache")
-      } else {
-        cli::cli_abort(c(
-          "BCB API failed after {max_retries} attempts",
-          "x" = "GitHub cache is also unavailable",
-          "i" = "The BCB API may be temporarily down"
-        ))
-      }
+  if (is.null(bcb)) {
+    data <- fallback_to_github_cache("bcb_realestate", quiet = quiet)
+    if (!is.null(data)) {
+      clean_bcb <- attach_dataset_metadata(data, source = "github")
     } else {
-      clean_bcb <- clean_bcb_realestate(bcb)
-      clean_bcb <- attach_dataset_metadata(clean_bcb, source = "web")
+      cli::cli_abort(c(
+        "BCB API failed after {max_retries} attempts",
+        "x" = "GitHub release is also unavailable",
+        "i" = "The BCB API may be temporarily down"
+      ))
     }
+  } else {
+    clean_bcb <- clean_bcb_realestate(bcb)
+    clean_bcb <- attach_dataset_metadata(clean_bcb, source = "web")
   }
 
   # Return full cleaned table ----
@@ -100,7 +77,13 @@ get_bcb_realestate <- function(
   }
 
   params <- dplyr::tibble(
-    category_label = c("units", "accounting", "indices", "sources", "application"),
+    category_label = c(
+      "units",
+      "accounting",
+      "indices",
+      "sources",
+      "application"
+    ),
     cat = c("imoveis", "contabil", "indices", "fontes", "direcionamento"),
     id_cols = list(c("date", "abbrev_state"), "date", "date", "date", "date"),
     names_from = list(
@@ -121,13 +104,19 @@ get_bcb_realestate <- function(
     dplyr::select(-category_label, -cat, -id_cols, -names_from)
 
   source_val <- attr(clean_bcb, "source", exact = TRUE)
-  if (is.null(source_val)) source_val <- "web"
+  if (is.null(source_val)) {
+    source_val <- "web"
+  }
 
-  tbl_bcb <- attach_dataset_metadata(tbl_bcb, source = source_val, category = table)
+  tbl_bcb <- attach_dataset_metadata(
+    tbl_bcb,
+    source = source_val,
+    category = table
+  )
 
   n_records <- nrow(tbl_bcb)
   cli_user(
-    "✓ BCB real estate data retrieved: {n_records} records",
+    "BCB real estate data retrieved: {n_records} records",
     quiet = quiet
   )
 
@@ -173,7 +162,18 @@ clean_bcb_realestate <- function(df) {
     df,
     series_info,
     delim = "_",
-    names = c("category", "type", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"),
+    names = c(
+      "category",
+      "type",
+      "v1",
+      "v2",
+      "v3",
+      "v4",
+      "v5",
+      "v6",
+      "v7",
+      "v8"
+    ),
     too_few = "align_start",
     cols_remove = FALSE
   )
@@ -191,10 +191,7 @@ clean_bcb_realestate <- function(df) {
     )
 
   df <- dplyr::select(df, dplyr::where(~ !all(is.na(.x))))
-
-  df <- df |>
-    dplyr::arrange(series_info) |>
-    dplyr::arrange(date)
+  df <- dplyr::arrange(df, date)
 
   return(df)
 }

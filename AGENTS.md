@@ -1,6 +1,6 @@
-# Claude Code Configuration
+# Codex Configuration
 
-This file contains configuration and commands for Claude Code to help with package development.
+This file contains configuration and commands for Codex to help with package development.
 
 ## Package Information
 - **Package Name**: realestatebr
@@ -16,10 +16,8 @@ These apply when writting text for documentation like README.md or vignettes.
 
 ## Current Status
 
-- v1.0.0 — CRAN resubmission in progress
+- v1.0.0 released — all core functions verified, CRAN submission prepared
 - Breaking changes in v1.0.0: cbic, nre_ire, property_records, itbi removed
-- v1.0.0 caching refactor: user disk cache removed (CRAN policy); two-tier
-  resolution via GitHub release + fresh download, plus in-session memo
 - Active datasets: abecip, abrainc, bcb_series, bcb_realestate, fgv_ibre, secovi, rppi_sale, rppi_rent, bis_rppi
 
 ## Core Technologies & Dependencies
@@ -175,14 +173,14 @@ After processing, GitHub Actions uploads files from `data-raw/cache_output/` to 
 - bis_rppi
 
 ### Code Quality
-- Look into claude/coding_guidelines.md for detailed coding standards
+- Look into Codex/coding_guidelines.md for detailed coding standards
 - **Lint code**: `lintr::lint_package()`
 - **Style code**: `styler::style_pkg()`
 - **Final check**: `devtools::check(cran = TRUE)`
 
 ## Development Standards
 
-- Always refer to claude/coding_guidelines.md for detailed instructions
+- Always refer to Codex/coding_guidelines.md for detailed instructions
 
 ### Document changes
 - Update `NEWS.md` with each release
@@ -230,7 +228,7 @@ Every dataset function must use the shared helpers instead of re-implementing th
 ## Project Structure
 ```
 realestatebr/
-├── .claude/                    # Claude Code configuration
+├── .Codex/                    # Codex configuration
 ├── _targets.R                  # Data processing pipeline (Phase 2)
 ├── data-raw/                   # Data processing scripts
 │   ├── pipeline/               # Pipeline helper functions
@@ -314,7 +312,7 @@ uploads them to the `cache-latest` release.
 ## Important notes
 
 1. Always use relevant Posit skills
-2. Always follow coding convetions when coding (both listed here and @claude/coding_guidelines.md)
+2. Always follow coding convetions when coding (both listed here and @Codex/coding_guidelines.md)
 
 ### Coding conventions
 

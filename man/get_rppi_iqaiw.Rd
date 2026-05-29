@@ -4,11 +4,9 @@
 \alias{get_rppi_iqaiw}
 \title{Get QuintoAndar ImovelWeb Rental Index (IQAIW)}
 \usage{
-get_rppi_iqaiw(cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_rppi_iqaiw(quiet = FALSE, max_retries = 3L)
 }
 \arguments{
-\item{cached}{Logical. If TRUE, loads from GitHub cache}
-
 \item{quiet}{Logical. If TRUE, suppresses warnings}
 
 \item{max_retries}{Integer. Maximum retry attempts for downloads}
@@ -20,7 +18,7 @@ Tibble with columns: date, name_muni, index, chg, acum12m, price_m2
 Get QuintoAndar ImovelWeb Rental Index (IQAIW)
 }
 \details{
-The IQAIW (Índice QuintoAndar ImovelWeb) is a rental index for major Brazilian
+The IQAIW (Indice QuintoAndar ImovelWeb) is a rental index for major Brazilian
 cities. The index is based on both new rental contracts (managed by QuintoAndar)
 and online listings from QuintoAndar's listings (including ImovelWeb).
 The IQAIW was developed in 2023 and replaced the former IQA index. Given the

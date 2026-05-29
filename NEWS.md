@@ -1,5 +1,33 @@
 # realestatebr 1.0.0
 
+## Caching architecture
+
+The user-level disk cache has been removed to comply with CRAN's policy on
+home-filespace writes. The package no longer writes to
+`~/.cache/realestatebr/` (or any other location outside the R session's
+temporary directory).
+
+* `get_dataset()` is now two-tier: it tries the package's GitHub release
+  asset first and falls back to a fresh download from the original source.
+  The `source` argument no longer accepts `"cache"`; valid values are
+  `"auto"`, `"github"`, and `"fresh"`. The `max_age` argument has been
+  removed (cache freshness is now managed by the weekly CI/CD release
+  pipeline).
+* Repeated `get_dataset()` calls within one R session are served from a
+  package-private in-memory environment. Use the new
+  `clear_session_cache()` function to drop it.
+* The exported helpers `clear_user_cache()`, `check_cache_status()`, and
+  `update_cache_from_github()` have been removed. There is no user cache
+  to manage.
+* Internal dataset functions (`get_abecip_indicators()`, `get_secovi()`,
+  `get_rppi_*()`, etc.) no longer accept a `cached` argument. They always
+  download from the original source; use `get_dataset(source = "github")`
+  for the pre-processed asset.
+* `piggyback` (formerly Suggests) and `rappdirs` (formerly Imports) have
+  been dropped. GitHub release assets are now fetched directly via
+  `httr::GET()` against the public release-asset URL, avoiding the
+  transitive `gh::gh()` cache writes that also violated CRAN policy.
+
 ## Breaking changes
 
 * `nre_ire` has been removed. It required fully manual updates and had no
@@ -55,9 +83,9 @@
 * Replaced bare `tryCatch` with `rlang::try_fetch` throughout, using
   `parent = cnd` to preserve the original error chain.
 * All dataset functions now call `validate_dataset_params()`,
-  `handle_dataset_cache()`, `attach_dataset_metadata()`, and
-  `validate_dataset()` from `R/helpers-dataset.R` and
-  `R/helpers-download.R` instead of re-implementing these patterns inline.
+  `attach_dataset_metadata()`, and `validate_dataset()` from
+  `R/helpers_dataset.R` and `R/helpers_download.R` instead of
+  re-implementing these patterns inline.
 
 ## CI / pipeline
 

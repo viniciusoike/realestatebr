@@ -1,10 +1,4 @@
-# Generic Helper Functions for Download Operations
-# Created: 2025-12-16 (v0.6.x)
-# Purpose: Consolidate repetitive download logic across dataset functions
-
-# ==============================================================================
-# HELPER 1: DOWNLOAD WITH RETRY
-# ==============================================================================
+# Download with retry --------------------------------------------------------
 
 #' Download with Retry Logic
 #'
@@ -26,10 +20,10 @@ download_with_retry <- function(
   desc = "Download"
 ) {
   for (i in seq_len(max_retries + 1)) {
-    result <- tryCatch(fn(), error = function(e) {
+    result <- rlang::try_fetch(fn(), error = function(cnd) {
       if (i <= max_retries && !quiet) {
         cli::cli_warn(
-          "{desc} attempt {i}/{max_retries + 1} failed: {e$message}"
+          "{desc} attempt {i}/{max_retries + 1} failed: {cnd$message}"
         )
       }
       NULL
@@ -42,9 +36,7 @@ download_with_retry <- function(
   cli::cli_abort("{desc} failed after {max_retries + 1} attempts")
 }
 
-# ==============================================================================
-# HELPER 2: EXCEL DOWNLOAD
-# ==============================================================================
+# Excel download -------------------------------------------------------------
 
 #' Download and Validate Excel File
 #'
@@ -101,10 +93,10 @@ download_excel <- function(
 
       # Validate Excel sheets if specified
       if (!is.null(expected_sheets)) {
-        sheets <- tryCatch(
+        sheets <- rlang::try_fetch(
           readxl::excel_sheets(temp_path),
-          error = function(e) {
-            stop("Downloaded file is not a valid Excel file: ", e$message)
+          error = function(cnd) {
+            rlang::abort("Downloaded file is not a valid Excel file", parent = cnd)
           }
         )
 
@@ -126,9 +118,7 @@ download_excel <- function(
   )
 }
 
-# ==============================================================================
-# HELPER 4: CSV DOWNLOAD
-# ==============================================================================
+# CSV download ---------------------------------------------------------------
 
 #' Download CSV File
 #'
@@ -162,22 +152,10 @@ download_csv <- function(
       temp_path <- tempfile(fileext = ".csv")
 
       # Download using utils::download.file for CSV (more robust for text files)
-      result <- tryCatch(
-        {
-          utils::download.file(
-            url = url,
-            destfile = temp_path,
-            mode = "wb",
-            quiet = TRUE
-          )
-          0
-        },
-        error = function(e) 1
+      rlang::try_fetch(
+        utils::download.file(url = url, destfile = temp_path, mode = "wb", quiet = TRUE),
+        error = function(cnd) rlang::abort("Download failed", parent = cnd)
       )
-
-      if (result != 0) {
-        stop("Download failed")
-      }
 
       # Validate file size
       file_size <- file.size(temp_path)
@@ -197,9 +175,7 @@ download_csv <- function(
   )
 }
 
-# ==============================================================================
-# HELPER 4b: ZIP DOWNLOAD
-# ==============================================================================
+# ZIP download ---------------------------------------------------------------
 
 #' Download and Extract File from ZIP Archive
 #'
@@ -236,22 +212,10 @@ download_zip <- function(
       # Download ZIP to temp file
       temp_zip <- tempfile(fileext = ".zip")
 
-      result <- tryCatch(
-        {
-          utils::download.file(
-            url = url,
-            destfile = temp_zip,
-            mode = "wb",
-            quiet = TRUE
-          )
-          0
-        },
-        error = function(e) 1
+      rlang::try_fetch(
+        utils::download.file(url = url, destfile = temp_zip, mode = "wb", quiet = TRUE),
+        error = function(cnd) rlang::abort("ZIP download failed", parent = cnd)
       )
-
-      if (result != 0) {
-        stop("ZIP download failed")
-      }
 
       # Extract to a dedicated temp directory (avoids stale file conflicts)
       extract_dir <- tempfile(pattern = "zip_extract_")
@@ -312,31 +276,26 @@ download_zip <- function(
   )
 }
 
-# ==============================================================================
-# HELPER 5: GITHUB CACHE FALLBACK
-# ==============================================================================
+# GitHub cache fallback -------------------------------------------------------
 
-#' Fallback to GitHub Cache on Download Failure
+#' Fallback to GitHub Release on Download Failure
 #'
-#' Attempts to load a dataset from the GitHub release cache when a primary
-#' web download has failed. Returns NULL on miss so callers can decide
-#' whether to abort or degrade gracefully.
+#' Attempts to load a dataset from the package's GitHub release when a primary
+#' web download has failed. Returns NULL on miss so callers can decide whether
+#' to abort or degrade gracefully.
 #'
-#' @param dataset_name Character. Cache key used in GitHub releases (e.g.,
-#'   "bcb_realestate", "secovi_sp").
+#' @param dataset_name Character. Asset stem used in the GitHub release (e.g.,
+#'   `"bcb_realestate"`, `"secovi_sp"`).
 #' @param quiet Logical. If TRUE, suppresses messages.
 #'
-#' @return A tibble if the GitHub cache is available, otherwise NULL.
+#' @return A tibble if the GitHub release asset is available, otherwise NULL.
 #' @keywords internal
 fallback_to_github_cache <- function(dataset_name, quiet = FALSE) {
   if (!quiet) {
-    cli::cli_inform(c("i" = "Trying GitHub cache for {.val {dataset_name}}..."))
+    cli::cli_inform(c("i" = "Trying GitHub release for {.val {dataset_name}}..."))
   }
 
-  data <- tryCatch(
-    download_from_github_release(dataset_name, quiet = quiet),
-    error = function(e) NULL
-  )
+  data <- fetch_github_release_asset(dataset_name, quiet = quiet)
 
   if (!is.null(data) && is.data.frame(data) && nrow(data) > 0) {
     return(data)

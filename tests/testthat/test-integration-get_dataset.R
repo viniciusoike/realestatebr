@@ -203,38 +203,34 @@ test_that("bcb_realestate table parameter filters correctly", {
 })
 
 # BCB Series Tests
-test_that("bcb_series table parameter filters correctly", {
+test_that("bcb_series hierarchy levels filter cumulatively", {
   skip_on_cran()
 
-  # Previously reported that all tables returned identical 27,181 rows
-  tables <- c("credit", "price", "production")
+  # Hierarchy levels are cumulative: primary includes core, secondary
+  # includes primary, etc. (introduced in 1.0.0).
+  tables <- c("core", "primary", "secondary", "tertiary")
 
-  results <- list()
-  for (tbl in tables) {
-    result <- get_dataset("bcb_series", table = tbl)
+  code_counts <- vapply(
+    tables,
+    function(tbl) {
+      result <- get_dataset("bcb_series", table = tbl)
 
-    expect_s3_class(result, "data.frame")
-    expect_true(nrow(result) > 0)
+      expect_s3_class(result, "data.frame")
+      expect_true(nrow(result) > 0)
+      expect_true(all(
+        c("date", "code_bcb", "name_simplified", "value") %in% names(result)
+      ))
 
-    # Verify we got the right table by checking bcb_category column
-    if ("bcb_category" %in% names(result)) {
-      actual_categories <- unique(result$bcb_category)
-      expect_true(
-        tbl %in% actual_categories,
-        label = paste("Expected category", tbl, "in results")
-      )
-    }
+      length(unique(result$code_bcb))
+    },
+    integer(1)
+  )
 
-    results[[tbl]] <- nrow(result)
-  }
-
-  # Verify that different tables have different row counts
-  unique_counts <- unique(unlist(results))
   expect_true(
-    length(unique_counts) > 1,
+    all(diff(code_counts) >= 0),
     label = paste(
-      "Tables should have different row counts. Got:",
-      paste(names(results), results, sep = "=", collapse = ", ")
+      "Hierarchy must be cumulative. Code counts:",
+      paste(tables, code_counts, sep = "=", collapse = ", ")
     )
   )
 })
@@ -243,54 +239,49 @@ test_that("bcb_series table parameter filters correctly", {
 test_that("bcb_series handles partial failures gracefully with fresh download", {
   skip_on_cran()
 
-  # One series (432 - daily Selic) may fail, but function should return the others
-  # This should succeed even if one series fails
+  # One series (e.g., daily Selic) may fail, but function should return the rest
   result <- suppressWarnings(
-    get_dataset("bcb_series", table = "all", source = "fresh", quiet = TRUE)
+    get_dataset("bcb_series", table = "core", source = "fresh", quiet = TRUE)
   )
 
   expect_s3_class(result, "data.frame")
   expect_true(nrow(result) > 0)
+  expect_true(all(
+    c("date", "code_bcb", "name_simplified", "value") %in% names(result)
+  ))
 
-  # Should have at least some of the 15 series
   unique_codes <- unique(result$code_bcb)
   expect_true(
-    length(unique_codes) >= 10,
-    label = paste("Expected at least 10 series, got", length(unique_codes))
+    length(unique_codes) >= 30,
+    label = paste("Expected at least 30 core series, got", length(unique_codes))
   )
-
-  # Should have joined with metadata
-  expect_true("bcb_category" %in% names(result))
 })
 
 test_that("bcb_series table filtering works with fresh download", {
   skip_on_cran()
 
-  # Get just price series
-  price_data <- suppressWarnings(
-    get_dataset("bcb_series", table = "price", source = "fresh", quiet = TRUE)
+  core_data <- suppressWarnings(
+    get_dataset("bcb_series", table = "core", source = "fresh", quiet = TRUE)
+  )
+  primary_data <- suppressWarnings(
+    get_dataset("bcb_series", table = "primary", source = "fresh", quiet = TRUE)
   )
 
-  expect_s3_class(price_data, "data.frame")
-  expect_true(nrow(price_data) > 0)
+  expect_s3_class(core_data, "data.frame")
+  expect_s3_class(primary_data, "data.frame")
+  expect_true(nrow(core_data) > 0)
+  expect_true(nrow(primary_data) > 0)
 
-  # Should only have price category
-  if ("bcb_category" %in% names(price_data)) {
-    categories <- unique(price_data$bcb_category)
-    expect_true(
-      all(categories == "price"),
-      label = paste("Expected only 'price', got:", paste(categories, collapse = ", "))
-    )
-  }
+  # Primary must be a strict superset of core (cumulative hierarchy)
+  core_codes <- unique(core_data$code_bcb)
+  primary_codes <- unique(primary_data$code_bcb)
 
-  # Get credit series
-  credit_data <- suppressWarnings(
-    get_dataset("bcb_series", table = "credit", source = "fresh", quiet = TRUE)
+  expect_true(
+    all(core_codes %in% primary_codes),
+    label = "Primary should include every code in core"
   )
-
-  # Should be different from price data
-  expect_false(
-    identical(nrow(price_data), nrow(credit_data)),
-    label = "Price and credit tables should have different row counts"
+  expect_true(
+    length(primary_codes) > length(core_codes),
+    label = "Primary should add codes beyond core"
   )
 })

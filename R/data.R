@@ -23,7 +23,7 @@
 #'     3 = secondary (broader macro context); 4 = tertiary (less relevant
 #'     or discontinued series).}
 #' }
-#' @source <https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries>
+#' @source Brazilian Central Bank (BCB)
 "bcb_metadata"
 
 
@@ -41,7 +41,7 @@
 #'   \item{name_region}{Name of the region}
 #'   \item{name_simplified}{Simplified version of the city name for easier subsetting.}
 #' }
-#' @source \url{https://www.ibge.gov.br/explica/codigos-dos-municipios.php}
+#' @source IBGE (Brazilian Institute of Geography and Statistics)
 "dim_city"
 
 #' Real Estate Players listed on B3
@@ -55,5 +55,5 @@
 #'   \item{name}{Full company name.}
 #'   \item{name_short}{A shorter version of the company name.}
 #' }
-#' @source <https://www.b3.com.br/pt_br/produtos-e-servicos/negociacao/renda-variavel/empresas-listadas.htm>
+#' @source B3
 "b3_real_estate"

@@ -16,7 +16,7 @@ A tibble with 38 rows and 3 columns:
 }
 }
 \source{
-\url{https://www.b3.com.br/pt_br/produtos-e-servicos/negociacao/renda-variavel/empresas-listadas.htm}
+B3
 }
 \usage{
 b3_real_estate
