@@ -173,17 +173,15 @@
 </h3>
 <p>The <code>source</code> parameter controls where data comes from.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Auto (default): cache → GitHub → fresh</span></span>
+<code class="sourceCode R"><span><span class="co"># Auto (default): in-session memo -&gt; GitHub release -&gt; fresh download</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># User cache only (instant, offline)</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"cache"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># GitHub releases (requires piggyback package)</span></span>
+<span><span class="co"># Pre-processed asset from the package's GitHub release</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"github"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Fresh download from original source</span></span>
+<span><span class="co"># Fresh download from the original source</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"fresh"</span><span class="op">)</span></span></code></pre></div>
+<p>Repeated calls within one R session are served from an in-memory memo. Use <code><a href="reference/clear_session_cache.html">clear_session_cache()</a></code> to drop the memo without restarting R.</p>
 </div>
 </div>
 <div class="section level2">
@@ -271,6 +269,7 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=realestatebr" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/viniciusoike/realestatebr/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/viniciusoike/realestatebr/issues" class="external-link">Report a bug</a></li>
 </ul>

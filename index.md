@@ -67,18 +67,20 @@ The `source` parameter controls where data comes from.
 
 ``` r
 
-# Auto (default): cache → GitHub → fresh
+# Auto (default): in-session memo -> GitHub release -> fresh download
 data <- get_dataset("abecip")
 
-# User cache only (instant, offline)
-data <- get_dataset("abecip", source = "cache")
-
-# GitHub releases (requires piggyback package)
+# Pre-processed asset from the package's GitHub release
 data <- get_dataset("abecip", source = "github")
 
-# Fresh download from original source
+# Fresh download from the original source
 data <- get_dataset("abecip", source = "fresh")
 ```
+
+Repeated calls within one R session are served from an in-memory memo.
+Use
+[`clear_session_cache()`](https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.md)
+to drop the memo without restarting R.
 
 ## Example: Property Price Indices
 

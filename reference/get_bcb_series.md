@@ -7,7 +7,6 @@ Download macroeconomic time-series from BCB
 ``` r
 get_bcb_series(
   table = "core",
-  cached = FALSE,
   date_start = as.Date("2010-01-01"),
   quiet = FALSE,
   max_retries = 3L,
@@ -31,7 +30,7 @@ get_bcb_series(
 
   "primary"
 
-  :   Core plus key macro series such as SELIC, IPCA, INCC (~59 series).
+  :   Core plus key macro series such as inflation rate (~59 series).
 
   "secondary"
 
@@ -46,10 +45,6 @@ get_bcb_series(
   "full"
 
   :   Equivalent to "tertiary". Returns all available series.
-
-- cached:
-
-  Logical. If `TRUE`, attempts to load data from package cache.
 
 - date_start:
 
@@ -77,7 +72,7 @@ and `value`. Series metadata is available in
 
 ## Details
 
-Downloads macroeconomic time series from BCB. Series are organised by
+Downloads macroeconomic time series from BCB. Series are organized by
 relevance to the Brazilian real estate market using a four-level
 hierarchy. The default ("core") returns the 40 most directly relevant
 series covering real estate credit concession, interest rates, and

@@ -5,7 +5,7 @@ Import data from Secovi-SP
 ## Usage
 
 ``` r
-get_secovi(table = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_secovi(table = "all", quiet = FALSE, max_retries = 3L)
 ```
 
 ## Arguments
@@ -14,11 +14,6 @@ get_secovi(table = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
 
   Character. One of `'condo'`, `'rent'`, `'launch'`, `'sale'` or `'all'`
   (default).
-
-- cached:
-
-  Logical. If `TRUE`, attempts to load data from package cache using the
-  unified dataset architecture.
 
 - quiet:
 
@@ -41,7 +36,7 @@ attributes:
 
 - source:
 
-  Data source used (web or cache)
+  Data source used
 
 - download_time:
 

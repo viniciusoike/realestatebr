@@ -155,7 +155,7 @@ city-level index available. Coverage spans major Brazilian cities from
 igmi <- get_dataset("rppi", "igmi")
 
 glimpse(igmi)
-#> Rows: 1,617
+#> Rows: 1,628
 #> Columns: 5
 #> $ date      <date> 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01,…
 #> $ name_muni <chr> "São Paulo", "Rio De Janeiro", "Belo Horizonte", "Fortaleza"…

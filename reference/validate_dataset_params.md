@@ -1,8 +1,6 @@
 # Generic Parameter Validation for Dataset Functions
 
-Validates common parameters used across all dataset functions. This
-consolidates repetitive validation logic into a single reusable
-function.
+Validates common parameters used across all dataset functions.
 
 ## Usage
 
@@ -10,7 +8,6 @@ function.
 validate_dataset_params(
   table,
   valid_tables,
-  cached,
   quiet,
   max_retries,
   allow_all = TRUE
@@ -27,10 +24,6 @@ validate_dataset_params(
 
   Character vector. Valid table names for the dataset.
 
-- cached:
-
-  Logical. Whether to use cached data.
-
 - quiet:
 
   Logical. Whether to suppress messages.
@@ -46,16 +39,3 @@ validate_dataset_params(
 ## Value
 
 Invisible TRUE if all validations pass. Errors otherwise.
-
-## Details
-
-This function performs standard validation for:
-
-- table: Must be character, length 1, in valid_tables (or "all" if
-  allowed)
-
-- cached: Must be logical, length 1
-
-- quiet: Must be logical, length 1
-
-- max_retries: Must be numeric, length 1, positive

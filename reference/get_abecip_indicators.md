@@ -5,12 +5,7 @@ Get Credit Indicators from Abecip
 ## Usage
 
 ``` r
-get_abecip_indicators(
-  table = "sbpe",
-  cached = FALSE,
-  quiet = FALSE,
-  max_retries = 3L
-)
+get_abecip_indicators(table = "sbpe", quiet = FALSE, max_retries = 3L)
 ```
 
 ## Source
@@ -22,11 +17,6 @@ get_abecip_indicators(
 - table:
 
   Character. One of `'sbpe'` (default), `'units'`, or `'cgi'`.
-
-- cached:
-
-  Logical. If `TRUE`, attempts to load data from package cache using the
-  unified dataset architecture.
 
 - quiet:
 
@@ -49,7 +39,7 @@ specific tables). The return includes metadata attributes:
 
 - source:
 
-  Data source used (web or cache)
+  Data source used
 
 - download_time:
 

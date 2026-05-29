@@ -8,7 +8,7 @@ metadata attachment logic used across all dataset functions.
 ``` r
 attach_dataset_metadata(
   data,
-  source = c("web", "cache", "github", "github_cache"),
+  source = c("web", "github"),
   category = NULL,
   extra_info = list()
 )
@@ -22,7 +22,8 @@ attach_dataset_metadata(
 
 - source:
 
-  Character. Data source: "web", "cache", or "github".
+  Character. Data source: "web" (fresh from the original source) or
+  "github" (the package's GitHub release).
 
 - category:
 

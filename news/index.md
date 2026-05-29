@@ -2,6 +2,43 @@
 
 ## realestatebr 1.0.0
 
+CRAN release: 2026-05-27
+
+### Caching architecture
+
+The user-level disk cache has been removed to comply with CRAN’s policy
+on home-filespace writes. The package no longer writes to
+`~/.cache/realestatebr/` (or any other location outside the R session’s
+temporary directory).
+
+- [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
+  is now two-tier: it tries the package’s GitHub release asset first and
+  falls back to a fresh download from the original source. The `source`
+  argument no longer accepts `"cache"`; valid values are `"auto"`,
+  `"github"`, and `"fresh"`. The `max_age` argument has been removed
+  (cache freshness is now managed by the weekly CI/CD release pipeline).
+- Repeated
+  [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
+  calls within one R session are served from a package-private in-memory
+  environment. Use the new
+  [`clear_session_cache()`](https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.md)
+  function to drop it.
+- The exported helpers `clear_user_cache()`, `check_cache_status()`, and
+  `update_cache_from_github()` have been removed. There is no user cache
+  to manage.
+- Internal dataset functions
+  ([`get_abecip_indicators()`](https://viniciusoike.github.io/realestatebr/reference/get_abecip_indicators.md),
+  [`get_secovi()`](https://viniciusoike.github.io/realestatebr/reference/get_secovi.md),
+  `get_rppi_*()`, etc.) no longer accept a `cached` argument. They
+  always download from the original source; use
+  `get_dataset(source = "github")` for the pre-processed asset.
+- `piggyback` (formerly Suggests) and `rappdirs` (formerly Imports) have
+  been dropped. GitHub release assets are now fetched directly via
+  [`httr::GET()`](https://httr.r-lib.org/reference/GET.html) against the
+  public release-asset URL, avoiding the transitive
+  [`gh::gh()`](https://gh.r-lib.org/reference/gh.html) cache writes that
+  also violated CRAN policy.
+
 ### Breaking changes
 
 - `nre_ire` has been removed. It required fully manual updates and had
@@ -61,11 +98,10 @@
   throughout, using `parent = cnd` to preserve the original error chain.
 - All dataset functions now call
   [`validate_dataset_params()`](https://viniciusoike.github.io/realestatebr/reference/validate_dataset_params.md),
-  [`handle_dataset_cache()`](https://viniciusoike.github.io/realestatebr/reference/handle_dataset_cache.md),
   [`attach_dataset_metadata()`](https://viniciusoike.github.io/realestatebr/reference/attach_dataset_metadata.md),
   and
   [`validate_dataset()`](https://viniciusoike.github.io/realestatebr/reference/validate_dataset.md)
-  from `R/helpers-dataset.R` and `R/helpers-download.R` instead of
+  from `R/helpers_dataset.R` and `R/helpers_download.R` instead of
   re-implementing these patterns inline.
 
 ### CI / pipeline
@@ -112,12 +148,11 @@ warnings.**
 
 ##### Cache Age Tracking
 
-- **[`get_cache_age()`](https://viniciusoike.github.io/realestatebr/reference/get_cache_age.md)**:
-  Returns cache age in days for any dataset
-- **[`is_cache_stale()`](https://viniciusoike.github.io/realestatebr/reference/is_cache_stale.md)**:
-  Checks if cache exceeds recommended freshness thresholds
-- **[`check_cache_status()`](https://viniciusoike.github.io/realestatebr/reference/check_cache_status.md)**:
-  Diagnostic function showing status of all cached datasets
+- **`get_cache_age()`**: Returns cache age in days for any dataset
+- **`is_cache_stale()`**: Checks if cache exceeds recommended freshness
+  thresholds
+- **`check_cache_status()`**: Diagnostic function showing status of all
+  cached datasets
 
 ##### Relaxed Warning Thresholds
 
@@ -544,22 +579,15 @@ data <- get_dataset("abecip", source = "github")  # GitHub releases only
 
 #### New Functions
 
-- [`get_user_cache_dir()`](https://viniciusoike.github.io/realestatebr/reference/get_user_cache_dir.md):
-  Get path to user cache directory
-- [`list_cached_files()`](https://viniciusoike.github.io/realestatebr/reference/list_cached_files.md):
-  List all cached datasets
-- [`clear_user_cache()`](https://viniciusoike.github.io/realestatebr/reference/clear_user_cache.md):
-  Remove cached datasets
-- [`is_cached()`](https://viniciusoike.github.io/realestatebr/reference/is_cached.md):
-  Check if dataset is in cache
-- [`list_github_assets()`](https://viniciusoike.github.io/realestatebr/reference/list_github_assets.md):
-  List available datasets on GitHub releases
-- [`download_from_github_release()`](https://viniciusoike.github.io/realestatebr/reference/download_from_github_release.md):
-  Download specific dataset from releases
-- [`update_cache_from_github()`](https://viniciusoike.github.io/realestatebr/reference/update_cache_from_github.md):
-  Update cached datasets from GitHub
-- [`is_cache_up_to_date()`](https://viniciusoike.github.io/realestatebr/reference/is_cache_up_to_date.md):
-  Compare local vs GitHub cache timestamps
+- `get_user_cache_dir()`: Get path to user cache directory
+- `list_cached_files()`: List all cached datasets
+- `clear_user_cache()`: Remove cached datasets
+- `is_cached()`: Check if dataset is in cache
+- `list_github_assets()`: List available datasets on GitHub releases
+- `download_from_github_release()`: Download specific dataset from
+  releases
+- `update_cache_from_github()`: Update cached datasets from GitHub
+- `is_cache_up_to_date()`: Compare local vs GitHub cache timestamps
 
 #### Migration Guide
 

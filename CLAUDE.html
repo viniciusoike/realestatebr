@@ -59,8 +59,9 @@
 </ul></div>
 <div class="section level2">
 <h2 id="current-status">Current Status<a class="anchor" aria-label="anchor" href="#current-status"></a></h2>
-<ul><li>v1.0.0 released — all core functions verified, CRAN submission prepared</li>
+<ul><li>v1.0.0 — CRAN resubmission in progress</li>
 <li>Breaking changes in v1.0.0: cbic, nre_ire, property_records, itbi removed</li>
+<li>v1.0.0 caching refactor: user disk cache removed (CRAN policy); two-tier resolution via GitHub release + fresh download, plus in-session memo</li>
 <li>Active datasets: abecip, abrainc, bcb_series, bcb_realestate, fgv_ibre, secovi, rppi_sale, rppi_rent, bis_rppi</li>
 </ul></div>
 <div class="section level2">
@@ -115,8 +116,8 @@
 <h3 id="internal-helper-functions">Internal Helper Functions<a class="anchor" aria-label="anchor" href="#internal-helper-functions"></a></h3>
 <p>New and existing dataset functions must use these helpers to avoid code duplication.</p>
 <div class="section level4">
-<h4 id="rhelpers-downloadr--download-operations">
-<code>R/helpers-download.R</code> — Download operations<a class="anchor" aria-label="anchor" href="#rhelpers-downloadr--download-operations"></a></h4>
+<h4 id="rhelpers_downloadr--download-operations">
+<code>R/helpers_download.R</code> — Download operations<a class="anchor" aria-label="anchor" href="#rhelpers_downloadr--download-operations"></a></h4>
 <table class="table"><colgroup><col width="50%"><col width="50%"></colgroup><thead><tr><th>Function</th>
 <th>Purpose</th>
 </tr></thead><tbody><tr><td><code>download_with_retry(fn, max_retries, quiet, desc)</code></td>
@@ -131,28 +132,39 @@
 <td>Try GitHub release cache when primary download fails; returns NULL on miss</td>
 </tr></tbody></table></div>
 <div class="section level4">
-<h4 id="rhelpers-datasetr--dataset-lifecycle">
-<code>R/helpers-dataset.R</code> — Dataset lifecycle<a class="anchor" aria-label="anchor" href="#rhelpers-datasetr--dataset-lifecycle"></a></h4>
+<h4 id="rhelpers_datasetr--dataset-lifecycle">
+<code>R/helpers_dataset.R</code> — Dataset lifecycle<a class="anchor" aria-label="anchor" href="#rhelpers_datasetr--dataset-lifecycle"></a></h4>
 <table class="table"><colgroup><col width="50%"><col width="50%"></colgroup><thead><tr><th>Function</th>
 <th>Purpose</th>
-</tr></thead><tbody><tr><td><code>validate_dataset_params(table, valid_tables, cached, quiet, max_retries)</code></td>
+</tr></thead><tbody><tr><td><code>validate_dataset_params(table, valid_tables, quiet, max_retries)</code></td>
 <td>Standard parameter validation at the top of every dataset function</td>
-</tr><tr><td><code>handle_dataset_cache(dataset_name, table, quiet, on_miss)</code></td>
-<td>Load from user cache with configurable miss behavior (<code>"download"</code> / <code>"return_null"</code> / <code>"error"</code>)</td>
 </tr><tr><td><code>attach_dataset_metadata(data, source, category, extra_info)</code></td>
 <td>Attach <code>source</code>, <code>download_time</code>, and <code>download_info</code> attributes to the returned data</td>
 </tr><tr><td><code>validate_dataset(data, dataset_name, required_cols, min_rows, ...)</code></td>
 <td>Check non-empty, required columns, and date sanity</td>
 </tr></tbody></table></div>
 <div class="section level4">
-<h4 id="rrppi-helpersr--rppi-specific-helpers">
-<code>R/rppi-helpers.R</code> — RPPI-specific helpers<a class="anchor" aria-label="anchor" href="#rrppi-helpersr--rppi-specific-helpers"></a></h4>
+<h4 id="rcache_githubr--github-release-fetch-and-in-session-memo">
+<code>R/cache_github.R</code> — GitHub release fetch and in-session memo<a class="anchor" aria-label="anchor" href="#rcache_githubr--github-release-fetch-and-in-session-memo"></a></h4>
+<table class="table"><colgroup><col width="50%"><col width="50%"></colgroup><thead><tr><th>Function</th>
+<th>Purpose</th>
+</tr></thead><tbody><tr><td><code>fetch_github_release_asset(cached_name, quiet)</code></td>
+<td>Download a single asset from the <code>cache-latest</code> GitHub release via <code><a href="https://httr.r-lib.org/reference/GET.html" class="external-link">httr::GET()</a></code> into a tempfile; returns the deserialised object or <code>NULL</code> on miss</td>
+</tr><tr><td>
+<code>memo_get(key)</code> / <code>memo_set(key, value)</code>
+</td>
+<td>Read/write the package-private in-session environment (in-memory only; no disk writes)</td>
+</tr><tr><td>
+<code><a href="reference/clear_session_cache.html">clear_session_cache()</a></code> (exported)</td>
+<td>Drop every memoised dataset in the current R session</td>
+</tr></tbody></table></div>
+<div class="section level4">
+<h4 id="rrppi_helpersr--rppi-specific-helpers">
+<code>R/rppi_helpers.R</code> — RPPI-specific helpers<a class="anchor" aria-label="anchor" href="#rrppi_helpersr--rppi-specific-helpers"></a></h4>
 <table class="table"><colgroup><col width="50%"><col width="50%"></colgroup><thead><tr><th>Function</th>
 <th>Purpose</th>
 </tr></thead><tbody><tr><td><code>try_rppi_cached(table, source_filter)</code></td>
-<td>Load RPPI data from GitHub cache with optional source filter; returns <code>NULL</code> on miss</td>
-</tr><tr><td><code>try_rppi_user_cache(dataset_name, quiet)</code></td>
-<td>Load RPPI data from user cache; returns <code>NULL</code> on miss</td>
+<td>Load RPPI data from the GitHub release with optional source filter; returns <code>NULL</code> on miss</td>
 </tr><tr><td><code>calculate_rppi_changes(data, index_col, group_col)</code></td>
 <td>Adds <code>chg</code> (month-on-month) and <code>acum12m</code> (year-on-year) columns to an index series</td>
 </tr></tbody></table></div>
@@ -286,17 +298,14 @@
 <div class="section level3">
 <h3 id="error-handling-pattern">Error Handling Pattern<a class="anchor" aria-label="anchor" href="#error-handling-pattern"></a></h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Graceful degradation with fallbacks</span></span>
+<code class="sourceCode R"><span><span class="co"># Two-tier resolution with fallback (handled by get_dataset, not internal fns)</span></span>
 <span><span class="va">get_dataset</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">name</span>, <span class="va">source</span> <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>    <span class="fu">load_from_cache</span><span class="op">(</span><span class="va">name</span><span class="op">)</span>  <span class="co"># Try primary method</span></span>
-<span>  <span class="op">}</span>, error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>      <span class="fu">download_from_github</span><span class="op">(</span><span class="va">name</span><span class="op">)</span>  <span class="co"># Try secondary method</span></span>
-<span>    <span class="op">}</span>, error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e2</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="fu">download_fresh</span><span class="op">(</span><span class="va">name</span><span class="op">)</span>  <span class="co"># Try fresh download</span></span>
-<span>    <span class="op">}</span><span class="op">)</span></span>
-<span>  <span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/try_fetch.html" class="external-link">try_fetch</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="reference/fetch_github_release_asset.html">fetch_github_release_asset</a></span><span class="op">(</span><span class="va">name</span><span class="op">)</span>,</span>
+<span>    error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">cnd</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="fu"><a href="reference/get_from_internal_function.html">get_from_internal_function</a></span><span class="op">(</span><span class="va">name</span><span class="op">)</span>  <span class="co"># Fresh download from source</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -305,10 +314,7 @@
 <ul><li>
 <strong>Parameter validation</strong> — call <code><a href="reference/validate_dataset_params.html">validate_dataset_params()</a></code> at the top</li>
 <li>
-<strong>Cache loading</strong> — use <code><a href="reference/handle_dataset_cache.html">handle_dataset_cache()</a></code> instead of raw <code>tryCatch</code> around <code><a href="reference/load_from_user_cache.html">load_from_user_cache()</a></code>
-</li>
-<li>
-<strong>Downloading files</strong> — use <code><a href="reference/download_excel.html">download_excel()</a></code>, <code><a href="reference/download_csv.html">download_csv()</a></code>, <code><a href="reference/download_zip.html">download_zip()</a></code>, or <code>download_file()</code> (all in <code>helpers-download.R</code>)</li>
+<strong>Downloading files</strong> — use <code><a href="reference/download_excel.html">download_excel()</a></code>, <code><a href="reference/download_csv.html">download_csv()</a></code>, <code><a href="reference/download_zip.html">download_zip()</a></code>, or <code>download_file()</code> (all in <code>helpers_download.R</code>)</li>
 <li>
 <strong>Retry logic</strong> — wrap any custom download in <code><a href="reference/download_with_retry.html">download_with_retry()</a></code>; do not write manual retry loops</li>
 <li>
@@ -316,7 +322,10 @@
 <li>
 <strong>Data validation</strong> — call <code><a href="reference/validate_dataset.html">validate_dataset()</a></code> after downloading; use <code>validate_excel_file()</code> before reading Excel files</li>
 <li>
-<strong>RPPI series only</strong> — use <code>try_rppi_cached()</code>, <code>try_rppi_user_cache()</code>, and <code>calculate_rppi_changes()</code>
+<strong>GitHub release fallback</strong> — use <code><a href="reference/fallback_to_github_cache.html">fallback_to_github_cache()</a></code> (in <code>helpers_download.R</code>) when a primary web download fails; it delegates to <code><a href="reference/fetch_github_release_asset.html">fetch_github_release_asset()</a></code>
+</li>
+<li>
+<strong>RPPI series only</strong> — use <code>try_rppi_cached()</code> and <code>calculate_rppi_changes()</code>
 </li>
 </ul></div>
 <div class="section level3">
@@ -341,17 +350,16 @@
 │   ├── cache_output/           # Staging directory for GitHub releases (git-ignored)
 │   └── [dataset].R             # Individual dataset scripts
 ├── R/                          # Package functions
-│   ├── list-datasets.R         # Dataset discovery
-│   ├── get-dataset.R           # Unified data access
-│   ├── get-*.R                 # Internal dataset functions
-│   ├── helpers-dataset.R       # Shared helpers: validation, cache, metadata
-│   ├── helpers-download.R      # Shared helpers: download, retry, scraping
-│   ├── rppi-helpers.R          # RPPI-specific helpers: cache, changes
-│   ├── cache-user.R            # User-level cache management
-│   ├── cache-github.R          # GitHub releases cache
+│   ├── list_datasets.R         # Dataset discovery
+│   ├── get_dataset.R           # Unified data access (two-tier + memo)
+│   ├── get_*.R                 # Internal dataset functions
+│   ├── helpers_dataset.R       # Shared helpers: validation, metadata
+│   ├── helpers_download.R      # Shared helpers: download, retry, fallback
+│   ├── rppi_helpers.R          # RPPI-specific helpers: cached, changes
+│   ├── cache_github.R          # GitHub release fetch + in-session memo
 │   ├── utils.R                 # General helper functions
-│   ├── utils-encoding.R        # Encoding utilities
-│   ├── utils-globals.R         # Global variable declarations
+│   ├── utils_encoding.R        # Encoding utilities
+│   ├── utils_globals.R         # Global variable declarations
 │   └── data.R                  # Dataset documentation (roxygen2 @docType data)
 ├── inst/extdata/
 │   ├── datasets.yaml           # Dataset registry
@@ -363,25 +371,30 @@
 </div>
 <div class="section level2">
 <h2 id="caching-architecture">Caching Architecture<a class="anchor" aria-label="anchor" href="#caching-architecture"></a></h2>
-<p>The package uses a three-tier caching system:</p>
+<p>The package uses a two-tier resolution strategy. No persistent writes are made outside the R session’s temporary directory (CRAN policy compliance).</p>
 <ol style="list-style-type: decimal"><li>
-<strong>User Cache</strong> (~/.local/share/realestatebr/)
-<ul><li>Fastest access</li>
-<li>Managed by R/cache-user.R</li>
-<li>Used for runtime caching</li>
+<strong>In-Session Memo</strong> (package-private environment, in-memory only)
+<ul><li>Holds deserialised datasets keyed by <code>name:table</code>
+</li>
+<li>Populated by every successful <code><a href="reference/get_dataset.html">get_dataset()</a></code> call</li>
+<li>Cleared at session end or via <code><a href="reference/clear_session_cache.html">clear_session_cache()</a></code>
+</li>
+<li>Managed by <code>R/cache_github.R</code>
+</li>
 </ul></li>
 <li>
-<strong>GitHub Releases</strong> (tag: cache-latest)
-<ul><li>Medium speed (download from GitHub)</li>
-<li>Managed by R/cache-github.R</li>
-<li>Updated weekly/monthly by GitHub Actions</li>
+<strong>GitHub Releases</strong> (tag: <code>cache-latest</code>)
+<ul><li>Pre-processed <code>.rds</code> and <code>.csv.gz</code> files updated weekly/monthly by GitHub Actions</li>
+<li>Fetched directly via <code><a href="https://httr.r-lib.org/reference/GET.html" class="external-link">httr::GET()</a></code> into <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile()</a></code> (no <code>piggyback</code>, no <code><a href="https://gh.r-lib.org/reference/gh.html" class="external-link">gh::gh()</a></code> cache writes)</li>
+<li>Default tier for <code>get_dataset(source = "auto")</code> when the memo misses</li>
 </ul></li>
 <li>
 <strong>Fresh Download</strong> (original sources)
 <ul><li>Slowest but always current</li>
-<li>Automatically saves to user cache after download</li>
+<li>Used as fallback when GitHub releases are unavailable or when <code>source = "fresh"</code> is requested</li>
+<li>Result is added to the in-session memo</li>
 </ul></li>
-</ol><p>The <code>data-raw/cache_output/</code> directory is a git-ignored staging location where the targets pipeline saves processed datasets before GitHub Actions uploads them to releases.</p>
+</ol><p>The <code>data-raw/cache_output/</code> directory is a git-ignored staging location where the targets pipeline saves processed datasets before GitHub Actions uploads them to the <code>cache-latest</code> release.</p>
 </div>
 <div class="section level2">
 <h2 id="adding-new-datasets">Adding New Datasets<a class="anchor" aria-label="anchor" href="#adding-new-datasets"></a></h2>

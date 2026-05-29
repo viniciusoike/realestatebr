@@ -5,14 +5,10 @@ Get IVAR Rent Index
 ## Usage
 
 ``` r
-get_rppi_ivar(cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_rppi_ivar(quiet = FALSE, max_retries = 3L)
 ```
 
 ## Arguments
-
-- cached:
-
-  Logical. If TRUE, loads from GitHub cache (recommended)
 
 - quiet:
 
@@ -31,13 +27,13 @@ name_simplified, abbrev_state
 
 The IVAR (Residential Rent Variation Index) is a repeat-rent index from
 IBRE/FGV, comparing the same housing unit over time. Based on rental
-contracts from brokers. Available for 4 major cities (São Paulo, Rio,
+contracts from brokers. Available for 4 major cities (Sao Paulo, Rio,
 Porto Alegre, Belo Horizonte); the national index is a weighted average.
 More theoretically sound than IGP-M for rent contracts as it measures
 only rent prices.
 
 ## Note
 
-IVAR data is only available from cache as the source data (FGV) is not
-accessible via web scraping. This function will automatically use cached
-data when source data is unavailable.
+IVAR's underlying source (FGV) is not accessible via web scraping; when
+the static `fgv_data` object is unavailable, this function falls back to
+the package's GitHub release.

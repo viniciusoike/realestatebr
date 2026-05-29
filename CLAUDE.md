@@ -21,10 +21,12 @@ vignettes.
 
 ## Current Status
 
-- v1.0.0 released — all core functions verified, CRAN submission
-  prepared
+- v1.0.0 — CRAN resubmission in progress
 - Breaking changes in v1.0.0: cbic, nre_ire, property_records, itbi
   removed
+- v1.0.0 caching refactor: user disk cache removed (CRAN policy);
+  two-tier resolution via GitHub release + fresh download, plus
+  in-session memo
 - Active datasets: abecip, abrainc, bcb_series, bcb_realestate,
   fgv_ibre, secovi, rppi_sale, rppi_rent, bis_rppi
 
@@ -81,7 +83,7 @@ library(tarchetypes)    # Additional target types
 New and existing dataset functions must use these helpers to avoid code
 duplication.
 
-#### `R/helpers-download.R` — Download operations
+#### `R/helpers_download.R` — Download operations
 
 | Function | Purpose |
 |----|----|
@@ -91,21 +93,27 @@ duplication.
 | `download_zip(url, file_pattern, ...)` | Download a ZIP and extract the matching file |
 | `fallback_to_github_cache(dataset_name, quiet)` | Try GitHub release cache when primary download fails; returns NULL on miss |
 
-#### `R/helpers-dataset.R` — Dataset lifecycle
+#### `R/helpers_dataset.R` — Dataset lifecycle
 
 | Function | Purpose |
 |----|----|
-| `validate_dataset_params(table, valid_tables, cached, quiet, max_retries)` | Standard parameter validation at the top of every dataset function |
-| `handle_dataset_cache(dataset_name, table, quiet, on_miss)` | Load from user cache with configurable miss behavior (`"download"` / `"return_null"` / `"error"`) |
+| `validate_dataset_params(table, valid_tables, quiet, max_retries)` | Standard parameter validation at the top of every dataset function |
 | `attach_dataset_metadata(data, source, category, extra_info)` | Attach `source`, `download_time`, and `download_info` attributes to the returned data |
 | `validate_dataset(data, dataset_name, required_cols, min_rows, ...)` | Check non-empty, required columns, and date sanity |
 
-#### `R/rppi-helpers.R` — RPPI-specific helpers
+#### `R/cache_github.R` — GitHub release fetch and in-session memo
 
 | Function | Purpose |
 |----|----|
-| `try_rppi_cached(table, source_filter)` | Load RPPI data from GitHub cache with optional source filter; returns `NULL` on miss |
-| `try_rppi_user_cache(dataset_name, quiet)` | Load RPPI data from user cache; returns `NULL` on miss |
+| `fetch_github_release_asset(cached_name, quiet)` | Download a single asset from the `cache-latest` GitHub release via [`httr::GET()`](https://httr.r-lib.org/reference/GET.html) into a tempfile; returns the deserialised object or `NULL` on miss |
+| `memo_get(key)` / `memo_set(key, value)` | Read/write the package-private in-session environment (in-memory only; no disk writes) |
+| [`clear_session_cache()`](https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.md) (exported) | Drop every memoised dataset in the current R session |
+
+#### `R/rppi_helpers.R` — RPPI-specific helpers
+
+| Function | Purpose |
+|----|----|
+| `try_rppi_cached(table, source_filter)` | Load RPPI data from the GitHub release with optional source filter; returns `NULL` on miss |
 | `calculate_rppi_changes(data, index_col, group_col)` | Adds `chg` (month-on-month) and `acum12m` (year-on-year) columns to an index series |
 
 ## Common Commands
@@ -232,17 +240,14 @@ fgv_ibre - abecip, abrainc, secovi - rppi_sale, rppi_rent
 
 ``` r
 
-# Graceful degradation with fallbacks
+# Two-tier resolution with fallback (handled by get_dataset, not internal fns)
 get_dataset <- function(name, source = "auto") {
-  tryCatch({
-    load_from_cache(name)  # Try primary method
-  }, error = function(e) {
-    tryCatch({
-      download_from_github(name)  # Try secondary method
-    }, error = function(e2) {
-      download_fresh(name)  # Try fresh download
-    })
-  })
+  rlang::try_fetch(
+    fetch_github_release_asset(name),
+    error = function(cnd) {
+      get_from_internal_function(name)  # Fresh download from source
+    }
+  )
 }
 ```
 
@@ -254,15 +259,11 @@ re-implementing these patterns:
 - **Parameter validation** — call
   [`validate_dataset_params()`](https://viniciusoike.github.io/realestatebr/reference/validate_dataset_params.md)
   at the top
-- **Cache loading** — use
-  [`handle_dataset_cache()`](https://viniciusoike.github.io/realestatebr/reference/handle_dataset_cache.md)
-  instead of raw `tryCatch` around
-  [`load_from_user_cache()`](https://viniciusoike.github.io/realestatebr/reference/load_from_user_cache.md)
 - **Downloading files** — use
   [`download_excel()`](https://viniciusoike.github.io/realestatebr/reference/download_excel.md),
   [`download_csv()`](https://viniciusoike.github.io/realestatebr/reference/download_csv.md),
   [`download_zip()`](https://viniciusoike.github.io/realestatebr/reference/download_zip.md),
-  or `download_file()` (all in `helpers-download.R`)
+  or `download_file()` (all in `helpers_download.R`)
 - **Retry logic** — wrap any custom download in
   [`download_with_retry()`](https://viniciusoike.github.io/realestatebr/reference/download_with_retry.md);
   do not write manual retry loops
@@ -273,8 +274,13 @@ re-implementing these patterns:
   [`validate_dataset()`](https://viniciusoike.github.io/realestatebr/reference/validate_dataset.md)
   after downloading; use `validate_excel_file()` before reading Excel
   files
-- **RPPI series only** — use `try_rppi_cached()`,
-  `try_rppi_user_cache()`, and `calculate_rppi_changes()`
+- **GitHub release fallback** — use
+  [`fallback_to_github_cache()`](https://viniciusoike.github.io/realestatebr/reference/fallback_to_github_cache.md)
+  (in `helpers_download.R`) when a primary web download fails; it
+  delegates to
+  [`fetch_github_release_asset()`](https://viniciusoike.github.io/realestatebr/reference/fetch_github_release_asset.md)
+- **RPPI series only** — use `try_rppi_cached()` and
+  `calculate_rppi_changes()`
 
 ### Data Validation
 
@@ -297,17 +303,16 @@ re-implementing these patterns:
     │   ├── cache_output/           # Staging directory for GitHub releases (git-ignored)
     │   └── [dataset].R             # Individual dataset scripts
     ├── R/                          # Package functions
-    │   ├── list-datasets.R         # Dataset discovery
-    │   ├── get-dataset.R           # Unified data access
-    │   ├── get-*.R                 # Internal dataset functions
-    │   ├── helpers-dataset.R       # Shared helpers: validation, cache, metadata
-    │   ├── helpers-download.R      # Shared helpers: download, retry, scraping
-    │   ├── rppi-helpers.R          # RPPI-specific helpers: cache, changes
-    │   ├── cache-user.R            # User-level cache management
-    │   ├── cache-github.R          # GitHub releases cache
+    │   ├── list_datasets.R         # Dataset discovery
+    │   ├── get_dataset.R           # Unified data access (two-tier + memo)
+    │   ├── get_*.R                 # Internal dataset functions
+    │   ├── helpers_dataset.R       # Shared helpers: validation, metadata
+    │   ├── helpers_download.R      # Shared helpers: download, retry, fallback
+    │   ├── rppi_helpers.R          # RPPI-specific helpers: cached, changes
+    │   ├── cache_github.R          # GitHub release fetch + in-session memo
     │   ├── utils.R                 # General helper functions
-    │   ├── utils-encoding.R        # Encoding utilities
-    │   ├── utils-globals.R         # Global variable declarations
+    │   ├── utils_encoding.R        # Encoding utilities
+    │   ├── utils_globals.R         # Global variable declarations
     │   └── data.R                  # Dataset documentation (roxygen2 @docType data)
     ├── inst/extdata/
     │   ├── datasets.yaml           # Dataset registry
@@ -319,23 +324,37 @@ re-implementing these patterns:
 
 ## Caching Architecture
 
-The package uses a three-tier caching system:
+The package uses a two-tier resolution strategy. No persistent writes
+are made outside the R session’s temporary directory (CRAN policy
+compliance).
 
-1.  **User Cache** (~/.local/share/realestatebr/)
-    - Fastest access
-    - Managed by R/cache-user.R
-    - Used for runtime caching
-2.  **GitHub Releases** (tag: cache-latest)
-    - Medium speed (download from GitHub)
-    - Managed by R/cache-github.R
-    - Updated weekly/monthly by GitHub Actions
+1.  **In-Session Memo** (package-private environment, in-memory only)
+    - Holds deserialised datasets keyed by `name:table`
+    - Populated by every successful
+      [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
+      call
+    - Cleared at session end or via
+      [`clear_session_cache()`](https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.md)
+    - Managed by `R/cache_github.R`
+2.  **GitHub Releases** (tag: `cache-latest`)
+    - Pre-processed `.rds` and `.csv.gz` files updated weekly/monthly by
+      GitHub Actions
+    - Fetched directly via
+      [`httr::GET()`](https://httr.r-lib.org/reference/GET.html) into
+      [`tempfile()`](https://rdrr.io/r/base/tempfile.html) (no
+      `piggyback`, no
+      [`gh::gh()`](https://gh.r-lib.org/reference/gh.html) cache writes)
+    - Default tier for `get_dataset(source = "auto")` when the memo
+      misses
 3.  **Fresh Download** (original sources)
     - Slowest but always current
-    - Automatically saves to user cache after download
+    - Used as fallback when GitHub releases are unavailable or when
+      `source = "fresh"` is requested
+    - Result is added to the in-session memo
 
 The `data-raw/cache_output/` directory is a git-ignored staging location
 where the targets pipeline saves processed datasets before GitHub
-Actions uploads them to releases.
+Actions uploads them to the `cache-latest` release.
 
 ## Adding New Datasets
 

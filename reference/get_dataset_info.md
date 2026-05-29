@@ -31,7 +31,7 @@ A named list with the following elements:
 
 - source_info:
 
-  Source organisation and URL.
+  Source organization and URL.
 
 - technical_info:
 

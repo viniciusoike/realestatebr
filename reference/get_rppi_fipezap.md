@@ -5,7 +5,7 @@ Get FipeZap RPPI
 ## Usage
 
 ``` r
-get_rppi_fipezap(city = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_rppi_fipezap(city = "all", quiet = FALSE, max_retries = 3L)
 ```
 
 ## Arguments
@@ -14,10 +14,6 @@ get_rppi_fipezap(city = "all", cached = FALSE, quiet = FALSE, max_retries = 3L)
 
   City name or "all" (default). Filtering by city doesn't save
   processing time.
-
-- cached:
-
-  Logical. If TRUE, loads from GitHub cache
 
 - quiet:
 
@@ -35,7 +31,7 @@ rooms, value
 ## Details
 
 The FipeZap Index is a monthly median stratified index across ~20
-Brazilian cities, based on online listings from Zap Imóveis. Includes
+Brazilian cities, based on online listings from Zap Imoveis. Includes
 residential and commercial markets, both sale and rent, stratified by
 number of rooms. The overall city index is a weighted sum of median
 prices by room/region. Residential index includes only apartments,

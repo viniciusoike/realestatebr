@@ -1,8 +1,10 @@
 # Get Dataset
 
-Unified interface for accessing all realestatebr datasets with automatic
-fallback between data sources: user cache, GitHub releases, and fresh
-download.
+Unified interface for accessing all realestatebr datasets. Resolves data
+from the package's GitHub release assets when possible (fast,
+pre-processed, updated weekly by CI) and falls back to a fresh download
+from the original source. Repeated calls within one R session are served
+from an in-memory memo to avoid redundant network traffic.
 
 ## Usage
 
@@ -13,7 +15,6 @@ get_dataset(
   source = "auto",
   date_start = NULL,
   date_end = NULL,
-  max_age = NULL,
   ...
 )
 ```
@@ -38,21 +39,20 @@ get_dataset(
 
   "auto"
 
-  :   Automatic fallback: user cache, then GitHub releases, then fresh
-      download (default).
-
-  "cache"
-
-  :   User cache only (`~/.local/share/realestatebr/`).
+  :   Use the in-session memo if available, otherwise GitHub releases,
+      otherwise fresh download (default).
 
   "github"
 
-  :   GitHub releases (requires the piggyback package).
+  :   Pre-processed asset from the package's GitHub release.
 
   "fresh"
 
-  :   Fresh download from the original source; result is saved to user
-      cache.
+  :   Fresh download from the original source.
+
+  Use
+  [`clear_session_cache`](https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.md)
+  to drop the in-session memo.
 
 - date_start:
 
@@ -61,11 +61,6 @@ get_dataset(
 - date_end:
 
   Date. End date for time series filtering (where applicable).
-
-- max_age:
-
-  Numeric. Maximum acceptable cache age in days. Cached data older than
-  this threshold is skipped and fresh data is downloaded instead.
 
 - ...:
 
@@ -82,72 +77,18 @@ to inspect the expected structure.
 [`list_datasets`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
 for available datasets,
 [`get_dataset_info`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
-for dataset details.
+for dataset details,
+[`clear_session_cache`](https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.md)
+to drop the in-session memo.
 
 ## Examples
 
 ``` r
-# \donttest{
-# Get all ABECIP indicators (default table)
+if (FALSE) { # interactive()
 abecip_data <- get_dataset("abecip")
-#> Checking user cache for abecip...
-#> Created cache directory: ~/.cache/realestatebr
-#> Dataset 'abecip_sbpe' not found in user cache
-#> User cache not available: Dataset 'abecip' not found in cache
-#> Attempting to download abecip from GitHub releases...
-#> Attempting to download abecip_sbpe.rds from GitHub...
-#> Downloaded abecip_sbpe.rds (0.03 MB)
-#> Successfully downloaded from GitHub releases
-#> Retrieved 'sbpe' from 'abecip' (default table). Available tables: 'sbpe',
-#> 'units', 'cgi'
 
-# Get only SBPE data from ABECIP
-sbpe_data <- get_dataset("abecip", "sbpe")
-#> Checking user cache for abecip...
-#> Successfully loaded from user cache
-#> Retrieved 'sbpe' from 'abecip'. Available tables: 'sbpe', 'units', 'cgi'
+sbpe_data <- get_dataset("abecip", table = "sbpe")
 
-# Force fresh download
-fresh_data <- get_dataset("bcb_realestate", source = "fresh")
-#> Downloading real estate data from BCB API
-#> Warning: cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'
-#> Warning: Download CSV file attempt 1/4 failed: Download failed
-#> Warning: cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'
-#> Warning: Download CSV file attempt 2/4 failed: Download failed
-#> Warning: cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'
-#> Warning: Download CSV file attempt 3/4 failed: Download failed
-#> Warning: cannot open URL 'https://olinda.bcb.gov.br/olinda/servico/MercadoImobiliario/versao/v1/odata/mercadoimobiliario?$format=text/csv&$select=Data,Info,Valor': HTTP status was '503 Service Unavailable'
-#> Warning: BCB API download failed: Download CSV file failed after 4 attempts
-#> ℹ Trying GitHub cache for "bcb_realestate"...
-#> Attempting to download bcb_realestate.rds from GitHub...
-#> Downloaded bcb_realestate.rds (3.33 MB)
-#> Retrieved 'all' from 'bcb_realestate' (default table). Available tables:
-#> 'accounting', 'application', 'indices', 'sources', 'units'
-
-# Get core BCB real estate credit series (default)
-bcb_core <- get_dataset("bcb_series")
-#> Checking user cache for bcb_series...
-#> Dataset 'bcb_series' not found in user cache
-#> User cache not available: Dataset 'bcb_series' not found in cache
-#> Attempting to download bcb_series from GitHub releases...
-#> Attempting to download bcb_series.rds from GitHub...
-#> Downloaded bcb_series.rds (0.07 MB)
-#> Successfully downloaded from GitHub releases
-#> Retrieved 'core' from 'bcb_series' (default table). Available tables: 'core',
-#> 'primary', 'secondary', 'tertiary', 'full'
-
-# Include key macro series such as SELIC, IPCA, INCC
-bcb_primary <- get_dataset("bcb_series", table = "primary")
-#> Checking user cache for bcb_series...
-#> Successfully loaded from user cache
-#> Retrieved 'primary' from 'bcb_series'. Available tables: 'core', 'primary',
-#> 'secondary', 'tertiary', 'full'
-
-# Filter by date
 bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
-#> Checking user cache for bcb_series...
-#> Successfully loaded from user cache
-#> Retrieved 'core' from 'bcb_series' (default table). Available tables: 'core',
-#> 'primary', 'secondary', 'tertiary', 'full'
-# }
+}
 ```

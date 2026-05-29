@@ -318,18 +318,19 @@ tables and metadata for a given dataset.</li>
 <h3 id="the-source-argument">The <code>source</code> Argument<a class="anchor" aria-label="anchor" href="#the-source-argument"></a>
 </h3>
 <p>The <code>source</code> argument from <code><a href="../reference/get_dataset.html">get_dataset()</a></code>
-controls where data comes from. The default (<code>"auto"</code>) checks
-the local cache first, then falls back to the GitHub release. Typically,
-the best option is to use the default or <code>"github"</code>. Choosing
-<code>"fresh"</code> will download the data from the original source:
-while this guarantees the most recent data, it is slower.</p>
+controls where data comes from. The default (<code>"auto"</code>) reads
+the in-session memo if present, falls back to the package’s GitHub
+release, and finally falls back to a fresh download from the original
+source. Typically the default is fine. Use <code>"github"</code> to
+force the pre-processed asset, or <code>"fresh"</code> to always pull
+from the original source (slower but guaranteed up-to-date).</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"cache"</span><span class="op">)</span> <span class="co"># local cache (instant, works offline)</span></span>
-<span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"github"</span><span class="op">)</span> <span class="co"># GitHub release</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"github"</span><span class="op">)</span> <span class="co"># pre-processed asset from GitHub release</span></span>
 <span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"fresh"</span><span class="op">)</span> <span class="co"># direct from the original source</span></span></code></pre></div>
-<p>Cache files are stored in the user data directory and can be
-inspected with <code><a href="../reference/list_cached_files.html">list_cached_files()</a></code> or cleared with
-<code><a href="../reference/clear_user_cache.html">clear_user_cache()</a></code>.</p>
+<p>Repeated calls within one R session are served from an in-memory
+memo, so fetching the same dataset twice does not re-download. Use
+<code><a href="../reference/clear_session_cache.html">clear_session_cache()</a></code> to drop the memo without restarting
+R.</p>
 </div>
 </div>
 <div class="section level2">
