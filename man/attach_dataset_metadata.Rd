@@ -6,7 +6,7 @@
 \usage{
 attach_dataset_metadata(
   data,
-  source = c("web", "github"),
+  source = c("web", "github", "bundled"),
   category = NULL,
   extra_info = list()
 )
@@ -14,8 +14,9 @@ attach_dataset_metadata(
 \arguments{
 \item{data}{Data frame or tibble. The dataset to attach metadata to.}
 
-\item{source}{Character. Data source: "web" (fresh from the original
-source) or "github" (the package's GitHub release).}
+\item{source}{Character. Data source: \code{"web"} (fresh from the original
+source), \code{"github"} (the package's GitHub release), or \code{"bundled"}
+(static file shipped with the package in \code{inst/extdata}).}
 
 \item{category}{Character or NULL. Dataset category/table name.}
 

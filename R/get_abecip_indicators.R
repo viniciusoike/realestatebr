@@ -85,7 +85,7 @@ get_abecip_indicators <- function(
   if (table == "cgi") {
     abecip <- attach_dataset_metadata(
       abecip,
-      source = "cache",
+      source = "bundled",
       category = table,
       extra_info = list(note = "CGI is a static historical dataset")
     )

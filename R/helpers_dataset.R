@@ -55,8 +55,9 @@ validate_dataset_params <- function(
 #' metadata attachment logic used across all dataset functions.
 #'
 #' @param data Data frame or tibble. The dataset to attach metadata to.
-#' @param source Character. Data source: "web" (fresh from the original
-#'   source) or "github" (the package's GitHub release).
+#' @param source Character. Data source: `"web"` (fresh from the original
+#'   source), `"github"` (the package's GitHub release), or `"bundled"`
+#'   (static file shipped with the package in `inst/extdata`).
 #' @param category Character or NULL. Dataset category/table name.
 #' @param extra_info List. Additional metadata to include in download_info.
 #'
@@ -65,7 +66,7 @@ validate_dataset_params <- function(
 #' @keywords internal
 attach_dataset_metadata <- function(
   data,
-  source = c("web", "github"),
+  source = c("web", "github", "bundled"),
   category = NULL,
   extra_info = list()
 ) {
