@@ -10,7 +10,11 @@
 #' @importFrom yaml read_yaml
 #' @importFrom tibble tibble
 #'
-#' @param name Character. Dataset name (see \code{\link{list_datasets}} for options).
+#' @param name Character. Dataset name (see \code{\link{list_datasets}} for
+#'   options). Each dataset has its own help topic documenting tables and
+#'   columns: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
+#'   \link{bcb_series}, \link{fgv_ibre}, \link{rppi}, \link{rppi_bis},
+#'   and \link{secovi}.
 #' @param table Character. Specific table within a multi-table dataset. See
 #'   \code{\link{get_dataset_info}} for available tables per dataset.
 #' @param source Character. Data source preference:
@@ -37,6 +41,10 @@
 #' @seealso \code{\link{list_datasets}} for available datasets,
 #'   \code{\link{get_dataset_info}} for dataset details,
 #'   \code{\link{clear_session_cache}} to drop the in-session memo.
+#'   For table and column documentation of each dataset, see the dataset
+#'   help topics: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
+#'   \link{bcb_series}, \link{fgv_ibre}, \link{rppi}, \link{rppi_bis},
+#'   \link{secovi}.
 #'
 #' @export
 get_dataset <- function(

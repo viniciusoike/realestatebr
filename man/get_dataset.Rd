@@ -14,7 +14,11 @@ get_dataset(
 )
 }
 \arguments{
-\item{name}{Character. Dataset name (see \code{\link{list_datasets}} for options).}
+\item{name}{Character. Dataset name (see \code{\link{list_datasets}} for
+options). Each dataset has its own help topic documenting tables and
+columns: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
+\link{bcb_series}, \link{fgv_ibre}, \link{rppi}, \link{rppi_bis},
+and \link{secovi}.}
 
 \item{table}{Character. Specific table within a multi-table dataset. See
 \code{\link{get_dataset_info}} for available tables per dataset.}
@@ -57,4 +61,8 @@ bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
 \code{\link{list_datasets}} for available datasets,
 \code{\link{get_dataset_info}} for dataset details,
 \code{\link{clear_session_cache}} to drop the in-session memo.
+For table and column documentation of each dataset, see the dataset
+help topics: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
+\link{bcb_series}, \link{fgv_ibre}, \link{rppi}, \link{rppi_bis},
+\link{secovi}.
 }
