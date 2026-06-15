@@ -22,7 +22,7 @@
 #'   Defaults to 3.
 #' @param ... Additional arguments passed to `rbcb::get_series`.
 #'
-#' @source [https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+#' @source Brazilian Central Bank (BCB) Time Series Management System (SGS)
 #' @return A 4-column `tibble` with columns `date`, `code_bcb`,
 #'   `name_simplified`, and `value`. Series metadata is available in
 #'   \code{\link{bcb_metadata}}.

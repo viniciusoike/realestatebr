@@ -4,7 +4,7 @@
 \alias{get_bcb_realestate}
 \title{Import Real Estate data from the Brazilian Central Bank}
 \source{
-\url{https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario}
+Brazilian Central Bank (BCB) Open Data Portal
 }
 \usage{
 get_bcb_realestate(table = "all", quiet = FALSE, max_retries = 3L)

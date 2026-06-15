@@ -12,7 +12,7 @@
 #' @return Tibble with BCB real estate data. Includes metadata attributes:
 #'   source, download_time.
 #'
-#' @source \url{https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario}
+#' @source Brazilian Central Bank (BCB) Open Data Portal
 #' @keywords internal
 get_bcb_realestate <- function(
   table = "all",

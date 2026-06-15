@@ -4,7 +4,7 @@
 \alias{get_abrainc_indicators}
 \title{Import Indicators from the Abrainc-Fipe Report}
 \source{
-Abrainc-Fipe available at \url{https://www.fipe.org.br/pt-br/indices/abrainc}
+Abrainc-Fipe Indicators (FIPE)
 }
 \usage{
 get_abrainc_indicators(table = "indicator", quiet = FALSE, max_retries = 3L)

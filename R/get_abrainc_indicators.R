@@ -18,7 +18,7 @@
 #'     \item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @source Abrainc-Fipe available at [https://www.fipe.org.br/pt-br/indices/abrainc](https://www.fipe.org.br/pt-br/indices/abrainc)
+#' @source Abrainc-Fipe Indicators (FIPE)
 #' @importFrom cli cli_inform
 #' @importFrom dplyr select mutate left_join where join_by across
 #' @importFrom tidyr pivot_longer separate_wider_delim

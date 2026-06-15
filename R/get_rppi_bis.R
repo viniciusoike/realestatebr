@@ -12,7 +12,7 @@
 #' @return Tibble with BIS RPPI data. Includes metadata attributes:
 #'   source, download_time.
 #'
-#' @source \url{https://data.bis.org/topics/RPP}
+#' @source Bank for International Settlements (BIS) Residential Property Prices
 #' @keywords internal
 get_rppi_bis <- function(
   table = "selected",

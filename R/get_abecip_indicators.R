@@ -18,7 +18,7 @@
 #'     \item{download_time}{Timestamp of download}
 #'   }
 #'
-#' @source [https://www.abecip.org.br](https://www.abecip.org.br)
+#' @source Brazilian Association of Real Estate Credit and Savings (ABECIP)
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr filter select mutate rename rename_with bind_rows
 #' @importFrom tidyr pivot_longer pivot_wider

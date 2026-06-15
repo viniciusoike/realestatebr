@@ -4,7 +4,7 @@
 \alias{get_abecip_indicators}
 \title{Get Credit Indicators from Abecip}
 \source{
-\url{https://www.abecip.org.br}
+Brazilian Association of Real Estate Credit and Savings (ABECIP)
 }
 \usage{
 get_abecip_indicators(table = "sbpe", quiet = FALSE, max_retries = 3L)

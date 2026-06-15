@@ -31,14 +31,16 @@
 #'
 #' A table with official IBGE identifiers for all Brazilian cities.
 #'
-#' A `tibble` with 5,570 rows and 8 columns:
+#' A `tibble` with 5,570 rows and 9 columns:
 #' \describe{
 #'   \item{code_muni}{7-digit IBGE code identifying the city.}
 #'   \item{name_muni}{Name of the city.}
 #'   \item{code_state}{2-digit IBGE code identifying the state.}
+#'   \item{abbrev_state}{Two-letter state abbreviation (e.g. "SP").}
 #'   \item{name_state}{Name of the state.}
-#'   \item{code_region}{1-digit IBGE code identifying the region}
-#'   \item{name_region}{Name of the region}
+#'   \item{code_region}{1-digit IBGE code identifying the region.}
+#'   \item{name_region}{Name of the region.}
+#'   \item{year}{Reference year of the IBGE territorial division (2020).}
 #'   \item{name_simplified}{Simplified version of the city name for easier subsetting.}
 #' }
 #' @source IBGE (Brazilian Institute of Geography and Statistics)

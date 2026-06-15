@@ -4,7 +4,7 @@
 \alias{get_rppi_bis}
 \title{Get Residential Property Price Indices from BIS}
 \source{
-\url{https://data.bis.org/topics/RPP}
+Bank for International Settlements (BIS) Residential Property Prices
 }
 \usage{
 get_rppi_bis(table = "selected", quiet = FALSE, max_retries = 3L)

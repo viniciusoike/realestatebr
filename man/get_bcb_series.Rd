@@ -4,7 +4,7 @@
 \alias{get_bcb_series}
 \title{Download macroeconomic time-series from BCB}
 \source{
-\url{https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries}
+Brazilian Central Bank (BCB) Time Series Management System (SGS)
 }
 \usage{
 get_bcb_series(
