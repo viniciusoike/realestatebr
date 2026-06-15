@@ -1,7 +1,7 @@
 Package: realestatebr
 Type: Package
 Title: Import Brazilian Real Estate Data into R
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: person(
     given = "Vinicius Oike",
     family = "Reginatto",
