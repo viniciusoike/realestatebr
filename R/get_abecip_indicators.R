@@ -429,7 +429,13 @@ load_abecip_cgi <- function(path) {
 parse_cgi_number <- function(x, decimal = TRUE) {
   y <- stringr::str_extract_all(x, "\\d+")
   if (decimal) {
-    y <- sapply(y, \(z) paste0(paste(z[1:3], collapse = ""), ".", z[4]))
+    # Expects four digit groups (three integer + one decimal); NA otherwise
+    y <- sapply(y, \(z) {
+      if (length(z) < 4) {
+        return(NA_character_)
+      }
+      paste0(paste(z[1:3], collapse = ""), ".", z[4])
+    })
   } else {
     y <- sapply(y, paste, collapse = "")
   }
@@ -477,7 +483,8 @@ parse_cgi_stock <- function(x) {
       width = 5,
       side = "right",
       pad = "0"
-    )
+    ),
+    .default = NA_character_
   )
   as.numeric(y)
 }

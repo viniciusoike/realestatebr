@@ -28,7 +28,7 @@ get_range <- function(path = NULL, sheet, skip_row = 4) {
     unique()
 
   # Paste together range: e.g. B5:BD162
-  r1 <- stringr::str_extract(maxrow, "[A-Z]")
+  r1 <- stringr::str_extract(maxrow, "[A-Z]+")
   r2 <- 1 + skip_row
   r3 <- stringr::str_extract(maxcol, "[A-Z]+")
   r4 <- stringr::str_extract(maxrow, "[0-9]+")

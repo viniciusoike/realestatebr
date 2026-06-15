@@ -53,7 +53,7 @@ get_bcb_realestate <- function(
       ))
     }
   } else {
-    clean_bcb <- clean_bcb_realestate(bcb)
+    clean_bcb <- clean_bcb_realestate(bcb, quiet = quiet)
     clean_bcb <- attach_dataset_metadata(clean_bcb, source = "web")
   }
 
@@ -138,7 +138,7 @@ download_bcb_realestate <- function(quiet = FALSE, max_retries = 3L) {
   return(raw)
 }
 
-clean_bcb_realestate <- function(df) {
+clean_bcb_realestate <- function(df, quiet = FALSE) {
   # Named vector to swap hyphenated tokens before splitting on underscore
   new_names <- c(
     "home_equity" = "home-equity",
@@ -151,12 +151,22 @@ clean_bcb_realestate <- function(df) {
   df <- df |>
     dplyr::rename(date = Data, series_info = Info, value = Valor) |>
     dplyr::mutate(
-      value = stringr::str_replace(value, ",", "."),
-      value = suppressWarnings(as.numeric(value)),
+      value_raw = stringr::str_replace(value, ",", "."),
+      value = suppressWarnings(as.numeric(value_raw)),
       series_info = stringr::str_replace_all(series_info, new_names),
       year = lubridate::year(date),
       month = lubridate::month(date),
     )
+
+  # Report values that silently failed numeric coercion
+  coercion_failures <- sum(is.na(df$value) & !is.na(df$value_raw))
+  if (coercion_failures > 0 && !quiet) {
+    cli::cli_warn(
+      "{coercion_failures} BCB value{?s} could not be parsed as numeric and {?was/were} set to {.val {NA}}"
+    )
+  }
+
+  df <- dplyr::select(df, -value_raw)
 
   df <- tidyr::separate_wider_delim(
     df,

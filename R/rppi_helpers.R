@@ -25,14 +25,26 @@ calculate_rppi_changes <- function(
   data <- data |>
     dplyr::mutate(
       chg = .data[[index_col]] / dplyr::lag(.data[[index_col]]) - 1,
-      acum12m = exp(as.numeric(stats::filter(
-        log(1 + chg),
-        rep(1, 12),
-        sides = 1
-      ))) -
-        1,
+      acum12m = rppi_acum12m(chg),
       .by = dplyr::all_of(group_col)
     )
 
   return(data)
+}
+
+#' Trailing 12-month accumulated change from monthly changes
+#'
+#' Returns `NA` for the first 11 observations (and for any group with fewer
+#' than 12 observations) instead of erroring, since `stats::filter()` aborts
+#' when the filter is longer than the series.
+#'
+#' @param chg Numeric vector of month-on-month changes
+#' @return Numeric vector of trailing 12-month accumulated changes
+#' @keywords internal
+#' @noRd
+rppi_acum12m <- function(chg) {
+  if (length(chg) < 12) {
+    return(rep(NA_real_, length(chg)))
+  }
+  exp(as.numeric(stats::filter(log(1 + chg), rep(1, 12), sides = 1))) - 1
 }

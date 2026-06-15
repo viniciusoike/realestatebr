@@ -211,6 +211,7 @@ download_zip <- function(
 
       # Download ZIP to temp file
       temp_zip <- tempfile(fileext = ".zip")
+      on.exit(unlink(temp_zip), add = TRUE)
 
       rlang::try_fetch(
         utils::download.file(url = url, destfile = temp_zip, mode = "wb", quiet = TRUE),

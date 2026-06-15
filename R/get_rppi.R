@@ -25,7 +25,7 @@ standardize_city_names <- function(x) {
 #' @return Harmonized tibble with standard RPPI columns
 #' @keywords internal
 harmonize_fipezap_for_stacking <- function(dat, transaction_type = NULL) {
-  if (!any(c("sale", "rent") %in% transaction_type)) {
+  if (length(transaction_type) != 1 || !transaction_type %in% c("sale", "rent")) {
     cli::cli_abort("Invalid transaction type: {.val {transaction_type}}")
   }
 
@@ -60,6 +60,7 @@ standardize_rppi_structure <- function(dat) {
   # Handle IQA special case (has rent_price instead of index)
   if ("rent_price" %in% names(dat) && !"index" %in% names(dat)) {
     dat <- dat |>
+      dplyr::arrange(name_muni, date) |>
       dplyr::mutate(
         index = rent_price / dplyr::first(rent_price) * 100,
         .by = name_muni
@@ -370,7 +371,10 @@ get_rppi_iqa <- function(quiet = FALSE, max_retries = 3L) {
     dplyr::rename(dplyr::any_of(cols_rename)) |>
     dplyr::mutate(
       rent_price = as.numeric(rent_price),
-      name_muni = standardize_city_names(name_muni),
+      name_muni = standardize_city_names(name_muni)
+    ) |>
+    dplyr::arrange(name_muni, date) |>
+    dplyr::mutate(
       index = rent_price / dplyr::first(rent_price) * 100,
       .by = "name_muni"
     )
@@ -730,9 +734,10 @@ get_rppi_iqaiw <- function(quiet = FALSE, max_retries = 3L) {
       # Standardize with FipeZap
       rooms = dplyr::if_else(rooms == "city", "total", as.character(rooms))
     ) |>
+    dplyr::arrange(name_muni, rooms, date) |>
     dplyr::mutate(
       index = price_m2 / dplyr::first(price_m2) * 100,
-      .by = "name_muni"
+      .by = c("name_muni", "rooms")
     ) |>
     dplyr::select(dplyr::all_of(.rppi_cols_iqaiw))
 
