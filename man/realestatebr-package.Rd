@@ -18,7 +18,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Vinicius Oike Reginatto \email{viniciusoike@gmail.com} [copyright holder]
+\strong{Maintainer}: Vinicius Oike \email{viniciusoike@gmail.com} [copyright holder]
 
 }
 \keyword{internal}
