@@ -16,10 +16,11 @@ These apply when writting text for documentation like README.md or vignettes.
 
 ## Current Status
 
-- v1.0.0 — CRAN resubmission in progress
+- v1.0.1 — live on CRAN (published 2026-06-05); v1.0.0 was archived
+  2026-05-28 over a home-filespace cache-write policy violation
 - Breaking changes in v1.0.0: cbic, nre_ire, property_records, itbi removed
-- v1.0.0 caching refactor: user disk cache removed (CRAN policy); two-tier
-  resolution via GitHub release + fresh download, plus in-session memo
+- v1.0.0/1.0.1 caching refactor: user disk cache removed (CRAN policy);
+  two-tier resolution via GitHub release + fresh download, plus in-session memo
 - Active datasets: abecip, abrainc, bcb_series, bcb_realestate, fgv_ibre, secovi, rppi_sale, rppi_rent, bis_rppi
 
 ## Core Technologies & Dependencies
