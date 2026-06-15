@@ -119,7 +119,7 @@ smoothed with a 3-month moving average and the HP filter.
 ivgr <- get_dataset("rppi", "ivgr")
 
 glimpse(ivgr)
-#> Rows: 301
+#> Rows: 302
 #> Columns: 5
 #> $ date     <date> 2001-03-01, 2001-04-01, 2001-05-01, 2001-06-01, 2001-07-01, …
 #> $ name_geo <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "…
@@ -206,7 +206,7 @@ Key columns specific to FipeZap:
 fz <- get_dataset("rppi", table = "fipezap")
 
 glimpse(fz)
-#> Rows: 677,160
+#> Rows: 680,238
 #> Columns: 7
 #> $ date      <date> 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01,…
 #> $ name_muni <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", …
@@ -259,7 +259,7 @@ which stacks all available indices into a single `tibble`.
 sale_indices <- get_dataset("rppi", "sale")
 
 glimpse(sale_indices)
-#> Rows: 14,458
+#> Rows: 14,527
 #> Columns: 6
 #> $ source    <chr> "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", …
 #> $ date      <date> 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01,…
@@ -476,7 +476,7 @@ data from 2021.
 fz <- get_dataset("rppi", table = "fipezap")
 
 glimpse(fz)
-#> Rows: 677,160
+#> Rows: 680,238
 #> Columns: 7
 #> $ date      <date> 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01,…
 #> $ name_muni <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", …

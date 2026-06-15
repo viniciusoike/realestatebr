@@ -1,14 +1,12 @@
 # Get FGV IBRE Confidence Indicators
 
 Loads construction confidence indicators from FGV IBRE including
-confidence indices, expectation indicators, and INCC price indices. FGV
-data is not available via API; this function fetches the pre-processed
-dataset from the package's GitHub release.
+confidence indices, expectation indicators, and INCC price indices.
 
 ## Usage
 
 ``` r
-get_fgv_ibre(table = "indicators", quiet = FALSE)
+get_fgv_ibre(table = "indicators", cached = TRUE, quiet = FALSE)
 ```
 
 ## Arguments
@@ -16,6 +14,10 @@ get_fgv_ibre(table = "indicators", quiet = FALSE)
 - table:
 
   Character. Which dataset to return: "indicators" (default) or "all".
+
+- cached:
+
+  Logical. If `TRUE` (default), loads data from cache.
 
 - quiet:
 

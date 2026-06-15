@@ -5,10 +5,14 @@ Get the IGMI Sales Index
 ## Usage
 
 ``` r
-get_rppi_igmi(quiet = FALSE, max_retries = 3L)
+get_rppi_igmi(cached = FALSE, quiet = FALSE, max_retries = 3L)
 ```
 
 ## Arguments
+
+- cached:
+
+  Logical. If TRUE, loads from GitHub cache
 
 - quiet:
 

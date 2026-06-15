@@ -1,9 +1,52 @@
 # Get Dataset with Fallback Strategy
 
-Auto strategy: in-session memo -\> GitHub release -\> fresh download.
+Internal function implementing the auto fallback strategy: cache -\>
+GitHub -\> fresh download
 
 ## Usage
 
 ``` r
-get_dataset_with_fallback(name, dataset_info, table, date_start, date_end, ...)
+get_dataset_with_fallback(
+  name,
+  dataset_info,
+  table,
+  date_start,
+  date_end,
+  max_age = NULL,
+  ...
+)
 ```
+
+## Arguments
+
+- name:
+
+  Dataset name
+
+- dataset_info:
+
+  Dataset metadata from registry
+
+- table:
+
+  Optional table filter
+
+- date_start:
+
+  Optional start date
+
+- date_end:
+
+  Optional end date
+
+- max_age:
+
+  Optional maximum cache age in days
+
+- ...:
+
+  Additional arguments
+
+## Value
+
+Dataset or NULL if all methods fail

@@ -113,23 +113,24 @@ names(info$categories)
 
 The `source` argument from
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-controls where data comes from. The default (`"auto"`) reads the
-in-session memo if present, falls back to the package’s GitHub release,
-and finally falls back to a fresh download from the original source.
-Typically the default is fine. Use `"github"` to force the pre-processed
-asset, or `"fresh"` to always pull from the original source (slower but
-guaranteed up-to-date).
+controls where data comes from. The default (`"auto"`) checks the local
+cache first, then falls back to the GitHub release. Typically, the best
+option is to use the default or `"github"`. Choosing `"fresh"` will
+download the data from the original source: while this guarantees the
+most recent data, it is slower.
 
 ``` r
 
-get_dataset("abecip", source = "github") # pre-processed asset from GitHub release
+get_dataset("abecip", source = "cache") # local cache (instant, works offline)
+get_dataset("abecip", source = "github") # GitHub release
 get_dataset("abecip", source = "fresh") # direct from the original source
 ```
 
-Repeated calls within one R session are served from an in-memory memo,
-so fetching the same dataset twice does not re-download. Use
-[`clear_session_cache()`](https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.md)
-to drop the memo without restarting R.
+Cache files are stored in the user data directory and can be inspected
+with
+[`list_cached_files()`](https://viniciusoike.github.io/realestatebr/reference/list_cached_files.md)
+or cleared with
+[`clear_user_cache()`](https://viniciusoike.github.io/realestatebr/reference/clear_user_cache.md).
 
 ## Example: Housing Credit Cycle
 
@@ -198,7 +199,7 @@ The companion table `"units"` contains monthly counts of financed units.
 units <- get_dataset("abecip", table = "units")
 
 glimpse(units)
-#> Rows: 291
+#> Rows: 292
 #> Columns: 7
 #> $ date                  <date> 2002-01-01, 2002-02-01, 2002-03-01, 2002-04-01,…
 #> $ units_construction    <dbl> 200, 483, 1049, 684, 571, 1109, 216, 506, 1698, …

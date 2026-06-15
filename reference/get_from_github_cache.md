@@ -1,7 +1,6 @@
-# Get Data from GitHub Release Cache
+# Get Data from GitHub Cache
 
-Downloads the appropriate asset into a tempfile and returns the
-deserialised object, applying table filtering where applicable.
+Downloads dataset from GitHub releases to user cache, then loads it.
 
 ## Usage
 

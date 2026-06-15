@@ -7,7 +7,12 @@ datasets.
 ## Usage
 
 ``` r
-get_rppi_bis(table = "selected", quiet = FALSE, max_retries = 3L)
+get_rppi_bis(
+  table = "selected",
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+)
 ```
 
 ## Source
@@ -20,6 +25,10 @@ get_rppi_bis(table = "selected", quiet = FALSE, max_retries = 3L)
 
   Character. Dataset table: "selected", "detailed_monthly",
   "detailed_quarterly", "detailed_annual", or "detailed_halfyearly".
+
+- cached:
+
+  Logical. If `TRUE`, loads data from cache.
 
 - quiet:
 

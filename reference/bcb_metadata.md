@@ -68,4 +68,4 @@ A data frame with 140 rows and 11 columns:
 
 ## Source
 
-Brazilian Central Bank (BCB)
+<https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries>

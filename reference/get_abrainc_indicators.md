@@ -5,7 +5,12 @@ Import Indicators from the Abrainc-Fipe Report
 ## Usage
 
 ``` r
-get_abrainc_indicators(table = "indicator", quiet = FALSE, max_retries = 3L)
+get_abrainc_indicators(
+  table = "indicator",
+  cached = FALSE,
+  quiet = FALSE,
+  max_retries = 3L
+)
 ```
 
 ## Source
@@ -19,6 +24,11 @@ Abrainc-Fipe available at
 
   Character. One of `'indicator'` (default), `'radar'`, `'leading'`, or
   `'all'`.
+
+- cached:
+
+  Logical. If `TRUE`, attempts to load data from package cache using the
+  unified dataset architecture.
 
 - quiet:
 
@@ -41,7 +51,7 @@ specific tables). The return includes metadata attributes:
 
 - source:
 
-  Data source used
+  Data source used (web or cache)
 
 - download_time:
 
