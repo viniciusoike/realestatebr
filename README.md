@@ -4,7 +4,10 @@
 # realestatebr: Brazilian Real Estate Data in R <img src="man/figures/hexlogo.png" align="right" />
 
 <!-- badges: start -->
-
+[![CRAN status](https://www.r-pkg.org/badges/version/realestatebr)](https://CRAN.R-project.org/package=realestatebr)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/realestatebr)](https://CRAN.R-project.org/package=realestatebr)
+[![R-CMD-check](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml)
+[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 <!-- badges: end -->
 
 **realestatebr** aims to provide an unified interface to Brazilian real
@@ -19,7 +22,10 @@ dataset by name.
 ## Installation
 
 ``` r
-# Install the development version from GitHub
+# Install the released version from CRAN
+install.packages("realestatebr")
+
+# Or install the development version from GitHub
 # install.packages("remotes")
 remotes::install_github("viniciusoike/realestatebr")
 ```

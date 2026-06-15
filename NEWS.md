@@ -1,10 +1,15 @@
-# realestatebr 1.0.0
+# realestatebr 1.0.1
+
+CRAN resubmission. Version 1.0.0 was archived on 2026-05-28 because the
+package and its transitive `piggyback`/`gh` dependencies wrote to
+`~/.cache/realestatebr/` and `~/.cache/R/gh/`, violating CRAN's policy on
+home-filespace writes. This release removes this: the caching
+architecture is fully overhauled.
 
 ## Caching architecture
 
-The user-level disk cache has been removed to comply with CRAN's policy on
-home-filespace writes. The package no longer writes to
-`~/.cache/realestatebr/` (or any other location outside the R session's
+The user-level disk cache has been removed. The package no longer writes
+to `~/.cache/realestatebr/` (or any other location outside the R session's
 temporary directory).
 
 * `get_dataset()` is now two-tier: it tries the package's GitHub release
@@ -17,8 +22,7 @@ temporary directory).
   package-private in-memory environment. Use the new
   `clear_session_cache()` function to drop it.
 * The exported helpers `clear_user_cache()`, `check_cache_status()`, and
-  `update_cache_from_github()` have been removed. There is no user cache
-  to manage.
+  `update_cache_from_github()` have been removed.
 * Internal dataset functions (`get_abecip_indicators()`, `get_secovi()`,
   `get_rppi_*()`, etc.) no longer accept a `cached` argument. They always
   download from the original source; use `get_dataset(source = "github")`
@@ -27,6 +31,36 @@ temporary directory).
   been dropped. GitHub release assets are now fetched directly via
   `httr::GET()` against the public release-asset URL, avoiding the
   transitive `gh::gh()` cache writes that also violated CRAN policy.
+
+## Documentation
+
+* Every dataset now has its own help topic (`?abecip`, `?bcb_realestate`,
+  `?rppi`, and so on) documenting available tables, columns, units, and
+  coverage. The topics are generated from the dataset registry
+  (`inst/extdata/datasets.yaml`), which now carries column-level metadata,
+  via `data-raw/generate_dataset_docs.R`.
+* Fixed stale `dim_city` documentation: the table has 9 columns, including
+  the previously undocumented `abbrev_state` and `year`.
+* Two new website-only articles, "Housing Credit in Brazil" (`abecip`,
+  `bcb_series`, `bcb_realestate`) and "The Primary Market and the
+  Construction Cycle" (`abrainc`, `secovi`, `fgv_ibre`).
+
+## Bug fixes
+
+* `attach_dataset_metadata()` now accepts `"bundled"` as a valid `source`
+  value, fixing a hard error when `get_dataset("abecip", "cgi")` was
+  called with `source = "fresh"`. The CGI table loads from a bundled
+  `inst/extdata` file and was previously tagged with the rejected value
+  `"cache"`.
+
+## Internal
+
+* Removed the unused `data-raw/publish-cache.R` script, which still
+  imported the dropped `piggyback` dependency. The weekly workflow has
+  uploaded `data-raw/cache_output/` via `gh release upload` since the
+  caching refactor.
+
+# realestatebr 1.0.0
 
 ## Breaking changes
 
