@@ -8,9 +8,11 @@ vignette: >
 ---
 
 ```{r knitr-setup, include = FALSE}
+NOT_CRAN <- identical(tolower(Sys.getenv("NOT_CRAN")), "true")
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
+  eval = NOT_CRAN,
   fig.width = 7,
   fig.asp = 0.618,
   fig.align = "center",
@@ -30,7 +32,6 @@ library(dplyr)
 The code below defines a common theme for all plots in this vignette and is required to fully replicate the code in this document. Despite this, this code is entirely optional and can be omitted.
 
 ```{r setup, message = FALSE}
-#| code-fold: true
 library(ggplot2)
 
 color_palette <- c(
@@ -223,7 +224,6 @@ comp_index <- sale_indices |>
 ```
 
 ```{r sale-stacked-plot}
-#| code-fold: true
 ggplot(comp_index, aes(date, acum12m * 100, color = source)) +
   geom_line(linewidth = 0.7) +
   labs(
@@ -266,7 +266,6 @@ ivar_trend <- ivar |>
 ```
 
 ```{r ivar-plot}
-#| code-fold: true
 ggplot(ivar_trend, aes(date, color = name_muni)) +
   geom_line(aes(y = index), lwd = 0.5, alpha = 0.5) +
   geom_line(aes(y = trend_ma), lwd = 0.7) +
@@ -301,7 +300,6 @@ glimpse(iqaiw)
 ```
 
 ```{r iqa-plot}
-#| code-fold: true
 ggplot(iqa, aes(date, index, color = name_muni)) +
   geom_line(linewidth = 0.7) +
   geom_hline(yintercept = 100) +
@@ -318,7 +316,6 @@ ggplot(iqa, aes(date, index, color = name_muni)) +
 The newer IQAIW index has more cities and, similar to FipeZap, has a bedroom stratification (`rooms`).
 
 ```{r iqaiw-plot}
-#| code-fold: true
 ggplot(
   subset(iqaiw, rooms == "total" & !is.na(acum12m)),
   aes(date, acum12m * 100, color = name_muni)
@@ -347,7 +344,6 @@ quintoandar_spo <- quintoandar |>
 ```
 
 ```{r quintoandar-compare}
-#| code-fold: true
 ggplot(quintoandar_spo, aes(date, index, color = source)) +
   geom_line(linewidth = 0.7) +
   geom_hline(yintercept = 100) +
@@ -394,7 +390,6 @@ sel_cities <- fz_rent |>
 The plot emphasizes the main strength of FipeZap's index: its broad geographic coverage.
 
 ```{r fipezap-rent-plot}
-#| code-fold: true
 #| fig-width: 12
 #| fig-height: 9
 #| out-width: 100%
@@ -421,7 +416,6 @@ glimpse(secovi)
 ```
 
 ```{r secovi-plot}
-#| code-fold: true
 ggplot(secovi, aes(date, acum12m * 100)) +
   geom_line(color = color_palette[1], linewidth = 0.7) +
   geom_hline(yintercept = 0) +
@@ -455,7 +449,6 @@ rent_indices_comp <- rent_indices |>
 ```
 
 ```{r rent-stacked-plot}
-#| code-fold: true
 ggplot(rent_indices_comp, aes(date, acum12m, color = source)) +
   geom_line(linewidth = 0.7) +
   geom_hline(yintercept = 0) +
