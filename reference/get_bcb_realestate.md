@@ -6,17 +6,12 @@ applications, financed units, and real estate indices.
 ## Usage
 
 ``` r
-get_bcb_realestate(
-  table = "all",
-  cached = FALSE,
-  quiet = FALSE,
-  max_retries = 3L
-)
+get_bcb_realestate(table = "all", quiet = FALSE, max_retries = 3L)
 ```
 
 ## Source
 
-<https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario>
+Brazilian Central Bank (BCB) Open Data Portal
 
 ## Arguments
 
@@ -24,10 +19,6 @@ get_bcb_realestate(
 
   Character. One of `'accounting'`, `'application'`, `'indices'`,
   `'sources'`, `'units'`, or `'all'` (default).
-
-- cached:
-
-  Logical. If `TRUE`, attempts to load data from cache.
 
 - quiet:
 

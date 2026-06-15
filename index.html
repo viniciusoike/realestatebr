@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,12 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/getting-started.html">Getting Started with realestatebr</a></li>
     <li><a class="dropdown-item" href="articles/working-with-rppi.html">Working with Property Price Indices</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Market deep dives</h6></li>
+    <li><a class="dropdown-item" href="articles/housing-credit.html">Housing Credit in Brazil</a></li>
+    <li><a class="dropdown-item" href="articles/primary-market.html">The Primary Market and the Construction Cycle</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="articles/index.html">More articles...</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -59,14 +65,17 @@
 <div class="page-header"><h1 id="realestatebr-brazilian-real-estate-data-in-r-">realestatebr: Brazilian Real Estate Data in R <img src="reference/figures/hexlogo.png" align="right"><a class="anchor" aria-label="anchor" href="#realestatebr-brazilian-real-estate-data-in-r-"></a>
 </h1></div>
 <!-- badges: start -->
-<!-- badges: end -->
+
 <p><strong>realestatebr</strong> aims to provide an unified interface to Brazilian real estate information, delivering data from different sources in a tidy format. The package is organized by source, with each source having multiple associated tables (datasets).</p>
 <p>All datasets are returned as <code>tibble</code> objects. The package is centered around a key function: <code>get_dataset(name, table)</code> which retrieves any dataset by name.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Install the development version from GitHub</span></span>
+<code class="sourceCode R"><span><span class="co"># Install the released version from CRAN</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"realestatebr"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Or install the development version from GitHub</span></span>
 <span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"viniciusoike/realestatebr"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -173,17 +182,15 @@
 </h3>
 <p>The <code>source</code> parameter controls where data comes from.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Auto (default): cache → GitHub → fresh</span></span>
+<code class="sourceCode R"><span><span class="co"># Auto (default): in-session memo -&gt; GitHub release -&gt; fresh download</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># User cache only (instant, offline)</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"cache"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># GitHub releases (requires piggyback package)</span></span>
+<span><span class="co"># Pre-processed asset from the package's GitHub release</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"github"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Fresh download from original source</span></span>
+<span><span class="co"># Fresh download from the original source</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, source <span class="op">=</span> <span class="st">"fresh"</span><span class="op">)</span></span></code></pre></div>
+<p>Repeated calls within one R session are served from an in-memory memo. Use <code><a href="reference/clear_session_cache.html">clear_session_cache()</a></code> to drop the memo without restarting R.</p>
 </div>
 </div>
 <div class="section level2">
@@ -296,18 +303,26 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Vinicius Oike Reginatto <br><small class="roles"> Author, maintainer, copyright holder </small>   </li>
+<li>Vinicius Oike <br><small class="roles"> Author, maintainer, copyright holder </small>   </li>
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://CRAN.R-project.org/package=realestatebr" class="external-link"><img src="https://www.r-pkg.org/badges/version/realestatebr" alt="CRAN status"></a></li>
+<li><a href="https://CRAN.R-project.org/package=realestatebr" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/realestatebr" alt="CRAN downloads"></a></li>
+<li><a href="https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#stable" class="external-link"><img src="https://img.shields.io/badge/lifecycle-stable-brightgreen.svg" alt="Lifecycle: stable"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Vinicius Oike Reginatto.</p>
+  <p>Developed by Vinicius Oike.</p>
 </div>
 
 <div class="pkgdown-footer-right">

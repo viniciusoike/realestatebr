@@ -1,8 +1,8 @@
-# Fallback to GitHub Cache on Download Failure
+# Fallback to GitHub Release on Download Failure
 
-Attempts to load a dataset from the GitHub release cache when a primary
-web download has failed. Returns NULL on miss so callers can decide
-whether to abort or degrade gracefully.
+Attempts to load a dataset from the package's GitHub release when a
+primary web download has failed. Returns NULL on miss so callers can
+decide whether to abort or degrade gracefully.
 
 ## Usage
 
@@ -14,8 +14,8 @@ fallback_to_github_cache(dataset_name, quiet = FALSE)
 
 - dataset_name:
 
-  Character. Cache key used in GitHub releases (e.g., "bcb_realestate",
-  "secovi_sp").
+  Character. Asset stem used in the GitHub release (e.g.,
+  `"bcb_realestate"`, `"secovi_sp"`).
 
 - quiet:
 
@@ -23,4 +23,4 @@ fallback_to_github_cache(dataset_name, quiet = FALSE)
 
 ## Value
 
-A tibble if the GitHub cache is available, otherwise NULL.
+A tibble if the GitHub release asset is available, otherwise NULL.

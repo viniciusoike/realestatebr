@@ -9,7 +9,7 @@ and source information."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,6 +22,12 @@ and source information."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with realestatebr</a></li>
     <li><a class="dropdown-item" href="../articles/working-with-rppi.html">Working with Property Price Indices</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Market deep dives</h6></li>
+    <li><a class="dropdown-item" href="../articles/housing-credit.html">Housing Credit in Brazil</a></li>
+    <li><a class="dropdown-item" href="../articles/primary-market.html">The Primary Market and the Construction Cycle</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -36,7 +42,7 @@ and source information."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Get Dataset Information</h1>
-      <small class="dont-index">Source: <a href="https://github.com/viniciusoike/realestatebr/blob/v1.0.0/R/list-datasets.R" class="external-link"><code>R/list-datasets.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/viniciusoike/realestatebr/blob/main/R/list_datasets.R" class="external-link"><code>R/list_datasets.R</code></a></small>
       <div class="d-none name"><code>get_dataset_info.Rd</code></div>
     </div>
 
@@ -67,7 +73,7 @@ and source information.</p>
 <dd><p>Available tables/subtables and their descriptions.</p></dd>
 
 <dt>source_info</dt>
-<dd><p>Source organisation and URL.</p></dd>
+<dd><p>Source organization and URL.</p></dd>
 
 <dt>technical_info</dt>
 <dd><p>Cached file names and translation notes.</p></dd>
@@ -89,18 +95,51 @@ and source information.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ frequency  : chr "monthly"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ coverage   : chr "1982-present (varies by category)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ categories    :List of 3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ sbpe :List of 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ sbpe :List of 4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ name       : chr "SBPE Monetary Flows"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ description: chr "Monetary flows from SBPE (Sistema Brasileiro de Poupança e Empréstimo)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ coverage   : chr "January 1982-present"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ units:List of 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ columns    :List of 15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ date             : chr "Reference month."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ sbpe_inflow      : chr "Deposits into SBPE savings accounts during the month (R$ million; historical values in the currency of the period)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ sbpe_outflow     : chr "Withdrawals from SBPE savings accounts during the month (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ sbpe_netflow     : chr "Net savings flow: inflow minus outflow (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ sbpe_netflow_pct : chr "Net flow as a share of the SBPE savings stock."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ sbpe_yield       : chr "Interest credited to SBPE savings accounts (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ sbpe_stock       : chr "End-of-month SBPE savings stock (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ rural_inflow     : chr "Deposits into rural savings accounts during the month (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ rural_outflow    : chr "Withdrawals from rural savings accounts during the month (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ rural_netflow    : chr "Net rural savings flow: inflow minus outflow (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ rural_netflow_pct: chr "Net rural flow as a share of the rural savings stock."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ rural_yield      : chr "Interest credited to rural savings accounts (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ rural_stock      : chr "End-of-month rural savings stock (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ total_stock      : chr "Combined SBPE and rural savings stock (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ total_netflow    : chr "Combined SBPE and rural net savings flow (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ units:List of 4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ name       : chr "Financed Units"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ description: chr "Number of units financed by SBPE, split by construction and acquisition"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ coverage   : chr "January 2002-present"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ cgi  :List of 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ columns    :List of 7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ date                 : chr "Reference month."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ units_construction   : chr "Number of units financed for construction."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ units_acquisition    : chr "Number of units financed for acquisition."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ units_total          : chr "Total number of financed units."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ currency_construction: chr "Value of construction financing (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ currency_acquisition : chr "Value of acquisition financing (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ currency_total       : chr "Total value of financing (R$ million)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ cgi  :List of 4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ name       : chr "Home Equity Loans (CGI)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ description: chr "Summary data on home equity loans including default rates and average terms"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ coverage   : chr "January 2017-present"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ columns    :List of 8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ year               : chr "Reference year."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ date               : chr "Reference month."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ new_contracts      : chr "Number of new home equity loan contracts signed in the month."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ stock_contracts    : chr "Number of outstanding contracts at the end of the month."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ loan               : chr "Value of new loans granted in the month (R$)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ outstanding_balance: chr "Outstanding loan balance at the end of the month (R$)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ average_term       : chr "Average contract term (months)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   .. .. ..$ default_rate       : chr "Share of loans in default (percent)."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ source_info   :List of 2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ source: chr "ABECIP - Associação Brasileira das Entidades de Crédito Imobiliário"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ url   : chr "https://www.abecip.org.br"</span>
@@ -119,7 +158,7 @@ and source information.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Vinicius Oike Reginatto.</p>
+  <p>Developed by Vinicius Oike.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -1,8 +1,7 @@
 # Get Data from Internal Function
 
-Calls internal dataset-specific functions (e.g., get_abecip_indicators)
-for fresh data downloads. These are the core internal functions, not
-legacy code.
+Calls dataset-specific internal functions for a fresh download from the
+original source.
 
 ## Usage
 

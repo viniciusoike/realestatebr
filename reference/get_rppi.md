@@ -5,7 +5,7 @@ Get Stacked RPPI Data
 ## Usage
 
 ``` r
-get_rppi(table = "sale", cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_rppi(table = "sale", quiet = FALSE, max_retries = 3L)
 ```
 
 ## Arguments
@@ -13,10 +13,6 @@ get_rppi(table = "sale", cached = FALSE, quiet = FALSE, max_retries = 3L)
 - table:
 
   Character. "sale", "rent", or "all"
-
-- cached:
-
-  Logical. If TRUE, loads from GitHub cache
 
 - quiet:
 

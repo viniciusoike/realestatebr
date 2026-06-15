@@ -1,7 +1,7 @@
-# Get Cached Name for Dataset
+# Get Cached Asset Stem for Dataset
 
-Maps dataset names to the cached file names used by
-load_from_user_cache()
+Maps a dataset name (and optional table) to the asset stem used in
+GitHub releases — i.e. the file name without extension.
 
 ## Usage
 

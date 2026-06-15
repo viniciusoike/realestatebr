@@ -5,7 +5,7 @@
 This vignette provides a minimal introduction to the `realestatebr`
 package, showing how to use its core functions. Since `realestatebr`
 returns `tibble` as default values, we recommend using it together with
-the `dplyr` package, though conversion do `data.table` is trivial.
+the `dplyr` package, though conversion to `data.table` is trivial.
 
 ``` r
 
@@ -113,31 +113,30 @@ names(info$categories)
 
 The `source` argument from
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-controls where data comes from. The default (`"auto"`) checks the local
-cache first, then falls back to the GitHub release. Typically, the best
-option is to use the default or `"github"`. Choosing `"fresh"` will
-download the data from the original source: while this guarantees the
-most recent data, it is slower.
+controls where data comes from. The default (`"auto"`) reads the
+in-session memo if present, falls back to the package’s GitHub release,
+and finally falls back to a fresh download from the original source.
+Typically the default is fine. Use `"github"` to force the pre-processed
+asset, or `"fresh"` to always pull from the original source (slower but
+guaranteed up-to-date).
 
 ``` r
 
-get_dataset("abecip", source = "cache") # local cache (instant, works offline)
-get_dataset("abecip", source = "github") # GitHub release
+get_dataset("abecip", source = "github") # pre-processed asset from GitHub release
 get_dataset("abecip", source = "fresh") # direct from the original source
 ```
 
-Cache files are stored in the user data directory and can be inspected
-with
-[`list_cached_files()`](https://viniciusoike.github.io/realestatebr/reference/list_cached_files.md)
-or cleared with
-[`clear_user_cache()`](https://viniciusoike.github.io/realestatebr/reference/clear_user_cache.md).
+Repeated calls within one R session are served from an in-memory memo,
+so fetching the same dataset twice does not re-download. Use
+[`clear_session_cache()`](https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.md)
+to drop the memo without restarting R.
 
 ## Example: Housing Credit Cycle
 
 SBPE (Sistema Brasileiro de Poupança e Empréstimo) is the primary
 funding mechanism for residential mortgages in Brazil. The table `sbpe`
-fromabecip\` tracks the deposits and withdrawals from saving accounts,
-that help finance real estate construction and acquisition.
+from `abecip` tracks the deposits and withdrawals from savings accounts,
+which help finance real estate construction and acquisition.
 
 ``` r
 
@@ -241,12 +240,10 @@ ggplot(units_recent, aes(date, units_total)) +
 ## Example: Real Estate Credit Portfolio
 
 The `bcb_realestate` dataset imports all real estate statistics from the
-[Brazilian Central
-Bank](https://www.bcb.gov.br/estatisticas/mercadoimobiliario). This is a
-relatively large dataset and exploring can be cumbersome. Each series is
-uniquely identified by `date` and `series_info`. Helper functions `v1`,
-`v2`, …, `v5`, `abbrev_state`, `category`, and `type` are provided to
-simplify the use of the dataset.
+Brazilian Central Bank. This is a relatively large dataset and exploring
+can be cumbersome. Each series is uniquely identified by `date` and
+`series_info`. Helper functions `v1`, `v2`, …, `v5`, `abbrev_state`,
+`category`, and `type` are provided to simplify the use of the dataset.
 
 The code below shows how to access a specific series and also how to
 fetch a group of related series.

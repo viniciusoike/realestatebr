@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,12 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with realestatebr</a></li>
     <li><a class="dropdown-item" href="../articles/working-with-rppi.html">Working with Property Price Indices</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Market deep dives</h6></li>
+    <li><a class="dropdown-item" href="../articles/housing-credit.html">Housing Credit in Brazil</a></li>
+    <li><a class="dropdown-item" href="../articles/primary-market.html">The Primary Market and the Construction Cycle</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -62,7 +68,7 @@
       <h1>Working with Property Price Indices</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/viniciusoike/realestatebr/blob/v1.0.0/vignettes/working-with-rppi.Rmd" class="external-link"><code>vignettes/working-with-rppi.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/viniciusoike/realestatebr/blob/main/vignettes/working-with-rppi.Rmd" class="external-link"><code>vignettes/working-with-rppi.Rmd</code></a></small>
       <div class="d-none name"><code>working-with-rppi.Rmd</code></div>
     </div>
 
@@ -405,12 +411,12 @@ value.</p>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">iqaiw</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 1,660</span></span>
 <span><span class="co">#&gt; Columns: 6</span></span>
-<span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2019-05-01<span style="color: #949494;">, </span>2019-10-01<span style="color: #949494;">, </span>2019-11-01<span style="color: #949494;">, </span>2019-12-01<span style="color: #949494;">, </span>2020-01-01<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2021-05-01<span style="color: #949494;">, </span>2021-06-01<span style="color: #949494;">, </span>2021-07-01<span style="color: #949494;">, </span>2021-08-01<span style="color: #949494;">, </span>2021-09-01<span style="color: #949494;">,</span>…</span></span>
 <span><span class="co">#&gt; $ name_muni <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Belo Horizonte"<span style="color: #949494;">, </span>"Belo Horizonte"<span style="color: #949494;">, </span>"Belo Horizonte"<span style="color: #949494;">, </span>"Belo …</span></span>
-<span><span class="co">#&gt; $ rooms     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "total"<span style="color: #949494;">, </span>"total"<span style="color: #949494;">, </span>"total"<span style="color: #949494;">, </span>"total"<span style="color: #949494;">, </span>"total"<span style="color: #949494;">, </span>"total"<span style="color: #949494;">, </span>"total…</span></span>
-<span><span class="co">#&gt; $ index     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 100.0000<span style="color: #949494;">, </span>100.1882<span style="color: #949494;">, </span>100.4708<span style="color: #949494;">, </span>100.6167<span style="color: #949494;">, </span>101.3517<span style="color: #949494;">, </span>102.6531<span style="color: #949494;">, </span>…</span></span>
-<span><span class="co">#&gt; $ chg       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>0.003514777<span style="color: #949494;">, </span>0.002820158<span style="color: #949494;">, </span>0.001452626<span style="color: #949494;">, </span>0.007304582<span style="color: #949494;">, </span>0.01…</span></span>
-<span><span class="co">#&gt; $ acum12m   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>0.07024414<span style="color: #949494;">, </span>0.07004492<span style="color: #949494;">, </span>0.07…</span></span></code></pre></div>
+<span><span class="co">#&gt; $ rooms     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ index     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 100.00000<span style="color: #949494;">, </span>100.00508<span style="color: #949494;">, </span>99.51814<span style="color: #949494;">, </span>99.17578<span style="color: #949494;">, </span>99.24295<span style="color: #949494;">, </span>99.99587…</span></span>
+<span><span class="co">#&gt; $ chg       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>5.084921e-05<span style="color: #949494;">, </span>-4.869240e-03<span style="color: #949494;">, </span>-3.440099e-03<span style="color: #949494;">, </span>6.772126e-04…</span></span>
+<span><span class="co">#&gt; $ acum12m   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>0.1598557<span style="color: #949494;">, </span>0…</span></span></code></pre></div>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">iqa</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">index</span>, color <span class="op">=</span> <span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
@@ -748,7 +754,7 @@ context.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Vinicius Oike Reginatto.</p>
+  <p>Developed by Vinicius Oike.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -15,11 +15,11 @@ An object of class `tbl_df` (inherits from `tbl`, `data.frame`) with
 
 ## Source
 
-<https://www.ibge.gov.br/explica/codigos-dos-municipios.php>
+IBGE (Brazilian Institute of Geography and Statistics)
 
 ## Details
 
-A `tibble` with 5,570 rows and 8 columns:
+A `tibble` with 5,570 rows and 9 columns:
 
 - code_muni:
 
@@ -33,17 +33,25 @@ A `tibble` with 5,570 rows and 8 columns:
 
   2-digit IBGE code identifying the state.
 
+- abbrev_state:
+
+  Two-letter state abbreviation (e.g. "SP").
+
 - name_state:
 
   Name of the state.
 
 - code_region:
 
-  1-digit IBGE code identifying the region
+  1-digit IBGE code identifying the region.
 
 - name_region:
 
-  Name of the region
+  Name of the region.
+
+- year:
+
+  Reference year of the IBGE territorial division (2020).
 
 - name_simplified:
 

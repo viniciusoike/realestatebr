@@ -7,17 +7,12 @@ datasets.
 ## Usage
 
 ``` r
-get_rppi_bis(
-  table = "selected",
-  cached = FALSE,
-  quiet = FALSE,
-  max_retries = 3L
-)
+get_rppi_bis(table = "selected", quiet = FALSE, max_retries = 3L)
 ```
 
 ## Source
 
-<https://data.bis.org/topics/RPP>
+Bank for International Settlements (BIS) Residential Property Prices
 
 ## Arguments
 
@@ -25,10 +20,6 @@ get_rppi_bis(
 
   Character. Dataset table: "selected", "detailed_monthly",
   "detailed_quarterly", "detailed_annual", or "detailed_halfyearly".
-
-- cached:
-
-  Logical. If `TRUE`, loads data from cache.
 
 - quiet:
 

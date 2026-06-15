@@ -5,14 +5,10 @@ Get the IVGR Sales Index
 ## Usage
 
 ``` r
-get_rppi_ivgr(cached = FALSE, quiet = FALSE, max_retries = 3L)
+get_rppi_ivgr(quiet = FALSE, max_retries = 3L)
 ```
 
 ## Arguments
-
-- cached:
-
-  Logical. If TRUE, loads from GitHub cache
 
 - quiet:
 
