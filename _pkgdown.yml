@@ -10,7 +10,33 @@ template:
 
 logo:
   src: man/figures/hexlogo.png
-  alt: "trendseries hexsticker"
+  alt: "realestatebr hexsticker"
+
+reference:
+  - title: "Access data"
+    desc: "Discover and retrieve datasets"
+    contents:
+      - get_dataset
+      - list_datasets
+      - get_dataset_info
+      - clear_session_cache
+  - title: "Datasets"
+    desc: "Table and column documentation for each dataset"
+    contents:
+      - abecip
+      - abrainc
+      - bcb_realestate
+      - bcb_series
+      - fgv_ibre
+      - rppi
+      - rppi_bis
+      - secovi
+  - title: "Bundled tables"
+    desc: "Auxiliary data shipped with the package"
+    contents:
+      - bcb_metadata
+      - dim_city
+      - b3_real_estate
 
 articles:
   - title: "Get started"
@@ -18,6 +44,14 @@ articles:
     contents:
       - getting-started
       - working-with-rppi
+  - title: "Market deep dives"
+    navbar: Market deep dives
+    contents:
+      - articles/housing-credit
+      - articles/primary-market
+  - title: "Release notes"
+    contents:
+      - articles/realestatebr-1-0-0
 
 navbar:
   structure:
