@@ -18,6 +18,7 @@ knitr::opts_chunk$set(
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/realestatebr)](https://CRAN.R-project.org/package=realestatebr)
 [![R-CMD-check](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/viniciusoike/realestatebr/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+[![R-universe](https://viniciusoike.r-universe.dev/badges/realestatebr)](https://viniciusoike.r-universe.dev/realestatebr)
 <!-- badges: end -->
 
 **realestatebr** aims to provide an unified interface to Brazilian real estate information, delivering data from different sources in a tidy format. The package is organized by source, with each source having multiple associated tables (datasets).

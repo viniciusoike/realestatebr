@@ -6,7 +6,8 @@ Authors@R: person(
     given = "Vinicius",
     family = "Oike",
     email = "viniciusoike@gmail.com",
-    role = c("aut", "cre", "cph")
+    role = c("aut", "cre", "cph"),
+    comment = c(ORCID = "0009-0005-8015-9189")
     )
 Description: Provides access to Brazilian real estate market data from multiple
     official sources: the Central Bank of Brazil (BCB)
