@@ -57,7 +57,7 @@ accumulated over twelve months.
 abrainc <- get_dataset("abrainc", table = "indicator")
 
 glimpse(abrainc)
-#> Rows: 3,504
+#> Rows: 3,528
 #> Columns: 6
 #> $ date           <date> 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01, 2014-0…
 #> $ year           <dbl> 2014, 2014, 2014, 2014, 2014, 2014, 2014, 2014, 2014, 2…

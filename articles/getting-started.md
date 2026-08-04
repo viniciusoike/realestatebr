@@ -198,7 +198,7 @@ The companion table `"units"` contains monthly counts of financed units.
 units <- get_dataset("abecip", table = "units")
 
 glimpse(units)
-#> Rows: 292
+#> Rows: 293
 #> Columns: 7
 #> $ date                  <date> 2002-01-01, 2002-02-01, 2002-03-01, 2002-04-01,…
 #> $ units_construction    <dbl> 200, 483, 1049, 684, 571, 1109, 216, 506, 1698, …

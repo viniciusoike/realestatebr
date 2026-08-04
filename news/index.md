@@ -39,9 +39,8 @@ session’s temporary directory).
 - `piggyback` (formerly Suggests) and `rappdirs` (formerly Imports) have
   been dropped. GitHub release assets are now fetched directly via
   [`httr::GET()`](https://httr.r-lib.org/reference/GET.html) against the
-  public release-asset URL, avoiding the transitive
-  [`gh::gh()`](https://gh.r-lib.org/reference/gh.html) cache writes that
-  also violated CRAN policy.
+  public release-asset URL, avoiding the transitive `gh::gh()` cache
+  writes that also violated CRAN policy.
 
 ### Documentation
 

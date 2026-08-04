@@ -343,8 +343,7 @@ compliance).
     - Fetched directly via
       [`httr::GET()`](https://httr.r-lib.org/reference/GET.html) into
       [`tempfile()`](https://rdrr.io/r/base/tempfile.html) (no
-      `piggyback`, no
-      [`gh::gh()`](https://gh.r-lib.org/reference/gh.html) cache writes)
+      `piggyback`, no `gh::gh()` cache writes)
     - Default tier for `get_dataset(source = "auto")` when the memo
       misses
 3.  **Fresh Download** (original sources)

@@ -13,11 +13,3 @@
   Brazil](https://viniciusoike.github.io/realestatebr/articles/housing-credit.md):
 - [The Primary Market and the Construction
   Cycle](https://viniciusoike.github.io/realestatebr/articles/primary-market.md):
-
-### Release notes
-
-- [realestatebr
-  1.0.0](https://viniciusoike.github.io/realestatebr/articles/realestatebr-1-0-0.md):
-
-  The first CRAN release of realestatebr brings a single, unified
-  interface for Brazilian real estate data.

@@ -1,13 +1,13 @@
 pandoc: 3.8.3
-pkgdown: 2.2.0
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   getting-started: getting-started.html
   articles/housing-credit: housing-credit.html
   articles/primary-market: primary-market.html
-  articles/realestatebr-1-0-0: realestatebr-1-0-0.html
+  articles/realestatebr-1-0-1: realestatebr-1-0-1.html
   working-with-rppi: working-with-rppi.html
-last_built: 2026-06-21T13:10Z
+last_built: 2026-08-04T20:40Z
 urls:
   reference: https://viniciusoike.github.io/realestatebr/reference
   article: https://viniciusoike.github.io/realestatebr/articles

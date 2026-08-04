@@ -155,7 +155,7 @@ city-level index available. Coverage spans major Brazilian cities from
 igmi <- get_dataset("rppi", "igmi")
 
 glimpse(igmi)
-#> Rows: 1,628
+#> Rows: 1,639
 #> Columns: 5
 #> $ date      <date> 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01,…
 #> $ name_muni <chr> "São Paulo", "Rio De Janeiro", "Belo Horizonte", "Fortaleza"…
@@ -206,7 +206,7 @@ Key columns specific to FipeZap:
 fz <- get_dataset("rppi", table = "fipezap")
 
 glimpse(fz)
-#> Rows: 680,238
+#> Rows: 686,394
 #> Columns: 7
 #> $ date      <date> 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01,…
 #> $ name_muni <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", …
@@ -259,7 +259,7 @@ which stacks all available indices into a single `tibble`.
 sale_indices <- get_dataset("rppi", "sale")
 
 glimpse(sale_indices)
-#> Rows: 14,527
+#> Rows: 14,595
 #> Columns: 6
 #> $ source    <chr> "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", …
 #> $ date      <date> 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01,…
@@ -315,7 +315,7 @@ making it rather volatile.
 ivar <- get_dataset("rppi", table = "ivar")
 
 glimpse(ivar)
-#> Rows: 445
+#> Rows: 455
 #> Columns: 5
 #> $ date      <date> 2018-12-01, 2018-12-01, 2018-12-01, 2018-12-01, 2018-12-01,…
 #> $ name_muni <chr> NA, "São Paulo", "Rio De Janeiro", "Belo Horizonte", "Porto …
@@ -476,7 +476,7 @@ data from 2021.
 fz <- get_dataset("rppi", table = "fipezap")
 
 glimpse(fz)
-#> Rows: 680,238
+#> Rows: 686,394
 #> Columns: 7
 #> $ date      <date> 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01,…
 #> $ name_muni <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", …
