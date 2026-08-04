@@ -49,9 +49,14 @@ articles:
     contents:
       - articles/housing-credit
       - articles/primary-market
-  - title: "Release notes"
+  - title: internal
     contents:
-      - articles/realestatebr-1-0-0
+      - articles/realestatebr-1-0-1
+
+news:
+  releases:
+  - text: "Version 1.0.1"
+    href: articles/realestatebr-1-0-1.html
 
 navbar:
   structure:
