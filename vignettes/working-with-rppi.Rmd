@@ -22,14 +22,17 @@ knitr::opts_chunk$set(
 ```
 ## Introduction
 
-This vignette provides a brief introduction to Residential Property Price Indices (RPPI) in the `realestatebr` package. Since `realestatebr` returns `tibble` as default values, we recommend using it together with the `dplyr` package, though conversion do `data.table` is trivial.
+This vignette provides a brief introduction to Residential Property Price
+Indices (RPPI) in the `realestatebr` package. Since `realestatebr` returns
+tibbles by default, we recommend using it together with `dplyr`.
 
 ```{r load-packages}
 library(realestatebr)
 library(dplyr)
 ```
 
-The code below defines a common theme for all plots in this vignette and is required to fully replicate the code in this document. Despite this, this code is entirely optional and can be omitted.
+The code below defines an optional common theme for the plots in this vignette.
+It can be omitted.
 
 ```{r setup, message = FALSE}
 library(ggplot2)
@@ -44,11 +47,7 @@ color_palette <- c(
 )
 
 theme_series <- function() {
-  theme_minimal(
-    # swap for other font if needed
-    base_family = "Avenir",
-    base_size = 10
-  ) +
+  theme_minimal(base_size = 10) +
     theme(
       plot.title = element_text(size = 16),
       panel.grid.minor = element_blank(),
@@ -68,19 +67,31 @@ spans. This vignette shows how to access and work with each one.
 
 ## Recommended Workflow
 
-Before getting into all the details, it's convenient to establish which are the "best" indices to use.
+Before getting into the details, it is useful to identify which indices are
+best suited to different applications.
 
 ### The best indices
 
-The two most consistent indices are the IGMI-R (for sale prices) and the IVAR (for rent prices). The only available option for commercial prices is FipeZap. These indices are sourced from good datasets and are built with a robust methodology.
+The IGMI-R is a useful choice for sale prices, while the IVAR is a useful choice
+for rent prices. FipeZap is the main option for commercial prices. These indices
+use different source data and methodologies, so the best choice depends on the
+question being studied.
 
-The IGMI-R is a hedonic price index based on transaction prices of housing mortgages. The only shortcoming of the index is its relatively short time span (2014-present) and geographic coverage (major cities only).
+The IGMI-R is a hedonic price index based on transaction prices from housing
+mortgages. Its main limitations are its relatively short time span
+(2014-present) and geographic coverage (major cities only).
 
-The IVAR is a repeat-rent index based on residential rental contracts. Unfortunately, the dataset has a very short time span (2019-present) and even more limited geographic coverage (only 4 cities).
+The IVAR is a repeat-rent index based on residential rental contracts. The
+dataset has a relatively short time span (2019-present) and limited geographic
+coverage (four cities).
 
-FipeZap has the broadest geographic (50+ cities) and temporal coverage (2008-present), but is based on median listing prices rather than transaction prices. As a result, the index is much less reliable.
+FipeZap has the broadest geographic (50+ cities) and temporal coverage
+(2008-present), but is based on median listing prices rather than transaction
+prices. It is therefore best suited to questions about advertised prices, not
+transaction prices.
 
-The IGMI-R and IVAR are the most precise indices for sales and rent, respectively, and should be used for most applications.
+The IGMI-R and IVAR are practical choices for sales and rent comparisons,
+respectively, when their coverage and methodologies fit the application.
 
 ### Working with realestatebr
 
@@ -93,7 +104,9 @@ ivar <- get_dataset("rppi", table = "ivar")
 fipezap <- get_dataset("rppi", table = "fipezap")
 ```
 
-For easier comparison between indices, the `table` parameter accepts a `"sale"` or `"rent"` argument, which stacks all available indices into a single `tibble`.
+For easier comparison between indices, the `table` parameter accepts `"sale"`
+and `"rent"` as options, which stack the available indices into a single
+`tibble`.
 
 ```{r load-stacked-datasets}
 #| eval: false
@@ -214,9 +227,14 @@ sale_indices <- get_dataset("rppi", "sale")
 glimpse(sale_indices)
 ```
 
-For convenience, the stacked version of the dataset implicitly only includes `rooms == "total"` for FipeZap. Also, "Brazil" (spelled with a 'z') is listed under `name_muni`, which shows the nation-wide index, instead of the city specific ones.
+For convenience, the stacked version of the dataset implicitly only includes
+`rooms == "total"` for FipeZap. Also, "Brazil" is listed under `name_muni` for
+the nationwide index, rather than a city-specific name.
 
-The plot shows the three sale indexes at a national level. While there's some convergence between the indices, there is a growing gap between them in the post-pandemic years. This highlights the importance of choosing the right index for your use case.
+The plot shows the three sale indices at a national level. While there is some
+convergence between the indices, there is a growing gap between them in the
+post-pandemic years. This highlights the importance of choosing an index whose
+coverage and methodology fit the use case.
 
 ```{r sale-stacked-filter}
 comp_index <- sale_indices |>
@@ -260,7 +278,7 @@ ivar_trend <- ivar |>
   augment_trends(
     value_col = "index",
     group_cols = "name_muni",
-    method = "ma",
+    methods = "ma",
     window = 5
   )
 ```
@@ -335,12 +353,15 @@ Finally, note that IQAIW is effectively the newer (and improved) version of the 
 
 ```{r quintoandar-combine}
 quintoandar <- bind_rows(
-  list("IQA" = iqa, "IQAIW" = iqaiw),
+  list(
+    "IQA" = mutate(iqa, rooms = "total"),
+    "IQAIW" = iqaiw
+  ),
   .id = "source"
 )
 
 quintoandar_spo <- quintoandar |>
-  filter(name_muni == "São Paulo", !rooms %in% c("1", "2", "3"))
+  filter(name_muni == "São Paulo", rooms == "total")
 ```
 
 ```{r quintoandar-compare}
@@ -379,15 +400,16 @@ fz_rent <- fz |>
     rent_sale == "rent",
     rooms == "total",
     variable == "acum12m",
-    date >= as.Date("2019-01-01")
+    date >= as.Date("2021-01-01")
   )
 
 sel_cities <- fz_rent |>
-  filter(date == "2019-01-01", !is.na(value)) |>
+  filter(date == as.Date("2021-01-01"), !is.na(value)) |>
   pull(name_muni)
 ```
 
-The plot emphasizes the main strength of FipeZap's index: its broad geographic coverage.
+The plot emphasizes the main strength of FipeZap's index: its broad geographic
+coverage. The example uses cities with observations starting in 2021.
 
 ```{r fipezap-rent-plot}
 #| fig-width: 12
@@ -449,15 +471,15 @@ rent_indices_comp <- rent_indices |>
 ```
 
 ```{r rent-stacked-plot}
-ggplot(rent_indices_comp, aes(date, acum12m, color = source)) +
+ggplot(rent_indices_comp, aes(date, acum12m * 100, color = source)) +
   geom_line(linewidth = 0.7) +
   geom_hline(yintercept = 0) +
   facet_wrap(vars(name_muni)) +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   labs(
     title = "Rent Indices — São Paulo and Rio de Janeiro",
-    subtitle = "12-month accumulated change",
-    y = "Accumulated change",
+    subtitle = "12-month accumulated change (%)",
+    y = "Accumulated change (%)",
     color = NULL
   ) +
   theme_series()
@@ -465,7 +487,7 @@ ggplot(rent_indices_comp, aes(date, acum12m, color = source)) +
 
 ### Normalising to a common base
 
-Each index has its own base period, so normalisation is required before
+Each index has its own base period, so normalization is required before
 comparing levels. The example below rebases all national sale indices to
 January 2018 = 100.
 
@@ -480,6 +502,7 @@ national <- sales |>
   )
 
 national_rebased <- national |>
+  arrange(source, date) |>
   mutate(
     index_rebased = index / first(index) * 100,
     .by = source
@@ -504,7 +527,6 @@ ggplot(national_rebased, aes(date, index_rebased, color = source)) +
     aes(label = label),
     hjust = 0,
     nudge_x = 30,
-    nudge_y = c(-5, 10, -5),
     show.legend = FALSE,
     size = 3
   ) +
