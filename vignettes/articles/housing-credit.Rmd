@@ -6,22 +6,31 @@ title: "Housing Credit in Brazil"
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
+  dev = "ragg_png",
   fig.width = 7,
   fig.asp = 0.618,
   fig.align = "center",
-  message = FALSE,
-  warning = FALSE
+  warning = FALSE,
+  message = FALSE
 )
 ```
 
-Housing credit in Brazil is organized around the SFH (Sistema Financeiro da
-Habitação), in which most mortgages are funded by savings deposits (SBPE) and
-by the FGTS workers' fund. This article follows the credit cycle from funding
-to lending using three datasets
+Brazilian housing finance is largely organized around the SFH (Sistema
+Financeiro da Habitação), in which mortgages are funded by savings deposits
+(SBPE) and by the FGTS workers' fund. There are three main datasets that hold
+housing credit information, in increasing order of complexity and detail:
+`abecip`, `bcb_series`, and `bcb_realestate`.
 
-- `abecip` for savings flows and financed units,
-- `bcb_series` for lending volumes, rates, and delinquency,
-- `bcb_realestate` for the regional distribution of the credit stock.
+| Table name | Source | Description |
+|----|----|----|
+| `abecip` | Abecip | Savings flows and financed units by the SBPE system. |
+| `bcb_series` | Brazilian Central Bank (SGS) | Economic time series related to credit and housing credit (e.g. lending volumes, rates, delinquency, etc.). |
+| `bcb_realestate` | Brazilian Central Bank (Estatísticas do Mercado Imobiliário) | A more detailed dataset containing economic time series related to housing credit. |
+
+It's important to note that `realestatebr` follows its source datasets closely.
+As such, monetary values are reported in nominal Brazilian reais and are not
+adjusted for inflation. This disclaimer applies to all three datasets presented
+in this article.
 
 ```{r}
 library(realestatebr)
@@ -29,42 +38,22 @@ library(dplyr)
 library(ggplot2)
 ```
 
-```{r}
-#| include: false
-library(knitr)
-```
-
-The code below defines a common theme for the plots in this article. It is
-entirely optional and can be omitted.
+The code below defines a common theme for the plots in this article. It is entirely optional and can be omitted.
 
 ```{r}
-color_palette <- c(
-  "#1E3A5F",
-  "#DD6B20",
-  "#2C7A7B",
-  "#D69E2E",
-  "#805AD5",
-  "#C53030"
-)
-
+library(ekioplot)
+color_palette <- ekio_pal()
 theme_series <- function() {
-  theme_minimal(base_size = 10) +
+  theme_ekio(base_size = 10) +
     theme(
-      plot.title = element_text(size = 16),
-      panel.grid.minor = element_blank(),
-      panel.grid.major.x = element_blank(),
-      axis.line.x = element_line(color = "gray10", linewidth = 0.5),
-      axis.ticks.x = element_line(color = "gray10", linewidth = 0.5),
-      axis.title.x = element_blank(),
-      legend.position = "bottom",
       palette.color.discrete = color_palette
     )
 }
 ```
 
-## Funding: savings deposits
+## Funding
 
-SBPE savings accounts are the cheapest funding source for mortgages, so
+SBPE savings accounts are an important funding source for mortgages, so
 sustained withdrawals eventually constrain new lending. The `sbpe` table from
 `abecip` tracks monthly deposits, withdrawals, and the resulting stock.
 
@@ -74,9 +63,7 @@ sbpe <- get_dataset("abecip", table = "sbpe")
 glimpse(sbpe)
 ```
 
-The plot shows the accumulated net flow over twelve months. Periods of
-persistent outflows, such as the years after 2021, signal tighter funding
-ahead.
+The plot shows the accumulated net flow over twelve months. Periods of persistent outflows, such as the years after 2021, signal tighter funding ahead.
 
 ```{r}
 sbpe_flows <- sbpe |>
@@ -97,11 +84,42 @@ ggplot(sbpe_flows, aes(date, netflow_12m)) +
   theme_series()
 ```
 
-## Lending: new mortgage loans
+We now use the `bcb_realestate` dataset to get more details about the rest of
+the funding market. This is quite a complex dataset to manipulate, and
+discovering how it works can take some time. Luckily, the code below is quite
+simple and gets the total amount of credit funding from private sources for real
+estate loans in Brazil.
+
+```{r}
+bcb_re <- get_dataset("bcb_realestate")
+
+bcb_funding <- bcb_re |>
+  filter(category == "fontes", v1 == "br") |>
+  mutate(funding_source = factor(type), value_bln = value / 1e9)
+```
+
+```{r}
+ggplot(bcb_funding, aes(date, value_bln)) +
+  geom_area(aes(fill = funding_source)) +
+  scale_fill_manual(values = color_palette, labels = \(x) toupper(x)) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) +
+  labs(
+    title = "Market Funding Sources",
+    subtitle = "Private source credit funding for real estate loans",
+    y = "R$ (billion)",
+    fill = NULL
+  ) +
+  theme_series()
+```
+
+## Lending
 
 The flow of new real estate loans to households is reported by the Central
 Bank. The series below is part of the `core` table of `bcb_series`, which
-gathers the most relevant real estate credit series.
+gathers the most relevant real estate credit series. Note that while we use the
+`name_simplified` column to filter series, the `bcb_series` dataset includes a
+`code_bcb` column that matches the original codes from SGS.
 
 ```{r}
 bcb <- get_dataset("bcb_series", table = "core")
@@ -112,6 +130,8 @@ fimob <- bcb |>
     lending_12m = zoo::rollsumr(value, k = 12, fill = NA) / 1e3
   )
 ```
+
+As mentioned above, these values are nominal (i.e. not adjusted for inflation).
 
 ```{r}
 ggplot(filter(fimob, !is.na(lending_12m)), aes(date, lending_12m)) +
@@ -125,8 +145,7 @@ ggplot(filter(fimob, !is.na(lending_12m)), aes(date, lending_12m)) +
   theme_series()
 ```
 
-In physical terms, the `units` table from `abecip` counts how many homes were
-financed with SBPE funds, split between construction and acquisition loans.
+In physical terms, the `units` table from `abecip` counts how many homes were financed with SBPE funds, split between construction and acquisition loans.
 
 ```{r}
 units <- get_dataset("abecip", table = "units")
@@ -137,7 +156,9 @@ units_12m <- units |>
   mutate(
     units_12m = zoo::rollsumr(units, k = 12, fill = NA) / 1e3,
     type_label = if_else(
-      type == "units_construction", "Construction", "Acquisition"
+      type == "units_construction",
+      "Construction",
+      "Acquisition"
     ),
     .by = type
   )
@@ -159,10 +180,10 @@ ggplot(filter(units_12m, !is.na(units_12m)), aes(date, units_12m)) +
 
 ## The price of credit
 
-Mortgage rates move with monetary policy but are partly insulated by
-regulated pricing within the SFH. The `core` table includes both the average
-rate charged on new operations and the average cost of the outstanding stock,
-which adjusts much more slowly.
+Mortgage rates move with monetary policy but are partly insulated by regulated
+pricing within the SFH. The `core` table includes both the average rate charged
+on new operations and the average cost of the outstanding stock, which adjusts
+much more slowly.
 
 ```{r}
 rates <- bcb |>
@@ -186,7 +207,52 @@ ggplot(rates_recent, aes(date, value)) +
   labs(
     title = "Household Mortgage Rates",
     subtitle = "Earmarked real estate credit operations (% per year)",
-    y = "% p.y.",
+    y = "%",
+    color = NULL
+  ) +
+  theme_series()
+```
+
+For a more detailed view of credit rates, we use the `bcb_realestate` dataset.
+The code below shows how to find the rates for all credit lines at the national
+(`BR`) level. It's also important to note that `pf` is short for `pessoa
+física` (i.e. private individual), while `pj` is short for `pessoa jurídica`
+(i.e. private corporation).
+
+```{r}
+credit_rates <- bcb_re |>
+  filter(
+    category == "credito",
+    v1 == "taxa",
+    # only for families/individuals (i.e. pessoa física)
+    v2 == "pf",
+    # weighted average for Brazil
+    abbrev_state == "BR"
+  ) |>
+  mutate(
+    credit_label = dplyr::recode(
+      v3,
+      comercial = "Commercial",
+      fgts = "FGTS",
+      `home-equity` = "Home Equity",
+      livre = "Market",
+      sfh = "SFH"
+    )
+  )
+```
+
+The plot shows the average rate applied across each credit line, making the
+size of the spread clear.
+
+```{r}
+ggplot(credit_rates, aes(date, value)) +
+  geom_line(aes(color = credit_label), lwd = 0.8) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "Household Mortgage Rates",
+    subtitle = "Detailed view of credit rates (% per year)",
+    y = "%",
     color = NULL
   ) +
   theme_series()
@@ -194,16 +260,18 @@ ggplot(rates_recent, aes(date, value)) +
 
 ## Credit risk
 
-Delinquency in housing credit is structurally low because loans are
-collateralized. Even so, arrears track the economic cycle.
+Delinquency in housing credit is typically low because loans are
+collateralized, although borrowers can still fall behind when economic
+conditions deteriorate.
 
 ```{r}
 risk <- bcb |>
   filter(
-    name_simplified %in% c(
-      "inad_credito_direcionado_pf_fimob",
-      "atraso_fimob_pf_total"
-    )
+    name_simplified %in%
+      c(
+        "inad_credito_direcionado_pf_fimob",
+        "atraso_fimob_pf_total"
+      )
   ) |>
   mutate(
     risk_label = if_else(
@@ -228,15 +296,51 @@ ggplot(risk, aes(date, value)) +
   theme_series()
 ```
 
+Once again, for a more detailed view we use `bcb_realestate`. The code below
+finds the risk classification of the stock of SFH loans.
+
+```{r}
+sfh_risk_stock <- bcb_re |>
+  filter(
+    category == "credito",
+    type == "estoque",
+    v1 == "risco-operacao",
+    # only for families/individuals (i.e. pessoa física)
+    v2 == "pf",
+    v3 == "sfh",
+    v5 == "br"
+  ) |>
+  mutate(
+    credit_risk = factor(
+      v4,
+      levels = c("aa", "a", "b", "c", "d-mais"),
+      labels = c("AA", "A", "B", "C", "D+")
+    )
+  )
+```
+
+```{r}
+ggplot(sfh_risk_stock, aes(date, value)) +
+  geom_area(aes(fill = credit_risk)) +
+  scale_fill_manual(values = color_palette) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) +
+  labs(
+    title = "Risk Classification of SFH Loans",
+    subtitle = "Share of total SFH credit loans classified by risk credit (following resolution 2.682/1999)",
+    y = "% (share of stock)",
+    fill = NULL
+  ) +
+  theme_series()
+```
+
 ## Where the credit is
 
-The `bcb_realestate` dataset breaks the credit stock down by state. The code
-below sums the household credit portfolio across credit lines for the latest
+The `bcb_realestate` dataset has regional data by state. The code below sums the
+household credit portfolio across credit lines for each state's latest
 available month.
 
 ```{r}
-bcb_re <- get_dataset("bcb_realestate")
-
 stock_states <- bcb_re |>
   filter(
     category == "credito",
@@ -244,37 +348,38 @@ stock_states <- bcb_re |>
     v1 == "carteira",
     v2 == "credito",
     v3 == "pf",
-    abbrev_state != "BR",
-    date == max(date)
+    abbrev_state != "BR"
   ) |>
+  filter(date == max(date), .by = abbrev_state) |>
   summarise(stock = sum(value) / 1e9, .by = abbrev_state) |>
   slice_max(stock, n = 10)
 ```
 
 ```{r}
-ggplot(stock_states, aes(reorder(abbrev_state, stock), stock)) +
-  geom_col(fill = color_palette[1], alpha = 0.9) +
-  coord_flip() +
+ggplot(stock_states, aes(stock, reorder(abbrev_state, stock))) +
+  geom_col(fill = color_palette[1], width = 0.8) +
+  scale_x_continuous(expand = expansion(c(0, 0.05))) +
   labs(
     title = "Household Credit Stock by State",
-    subtitle = "Ten largest states, latest available month",
-    x = NULL,
-    y = "R$ (billion)"
+    subtitle = "Ten largest states, latest available observation",
+    y = NULL,
+    x = "R$ (billion)"
   ) +
   theme_series() +
   theme(
     panel.grid.major.x = element_line(),
     panel.grid.major.y = element_blank(),
     axis.line.x = element_blank(),
-    axis.ticks.x = element_blank()
+    axis.ticks.x = element_blank(),
+    axis.title.x = element_text(),
+    axis.line.y = element_line(color = "gray10", linewidth = 0.5),
+    axis.ticks.y = element_line(color = "gray10", linewidth = 0.5)
   )
 ```
 
 ## Home equity lending
 
-Home equity loans (CGI, Crédito com Garantia de Imóvel) remain a small but
-growing market. The `cgi` table from `abecip` summarizes contracts, balances,
-and default rates.
+Home equity loans (CGI, Crédito com Garantia de Imóvel) remain a small but growing market. The `cgi` table from `abecip` summarizes contracts, balances, and default rates.
 
 ```{r}
 cgi <- get_dataset("abecip", table = "cgi")
@@ -296,5 +401,5 @@ ggplot(cgi, aes(date, stock_contracts / 1e3)) +
 ## Learn more
 
 The column-level documentation of each dataset used here is available in the
-help topics `?abecip`, `?bcb_series`, and `?bcb_realestate`. For price
-indices, see the vignette `vignette("working-with-rppi")`.
+help topics `?abecip`, `?bcb_series`, and `?bcb_realestate`. For price indices,
+see the vignette `vignette("working-with-rppi")`.

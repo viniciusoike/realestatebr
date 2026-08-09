@@ -139,6 +139,15 @@ sale and rent prices for the city of São Paulo.
 library(dplyr)
 library(ggplot2)
 
+plot_font <- if (
+  requireNamespace("systemfonts", quietly = TRUE) &&
+    any(systemfonts::system_fonts()[["family"]] == "Avenir")
+) {
+  "Avenir"
+} else {
+  "sans"
+}
+
 fipezap <- get_dataset("rppi", table = "fipezap")
 
 rppi_spo <- fipezap |>
@@ -160,7 +169,7 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
     y = "YoY chg. (%)",
     color = ""
   ) +
-  theme_minimal() +
+  theme_minimal(base_family = plot_font) +
   theme(legend.position = "bottom")
 ```
 
