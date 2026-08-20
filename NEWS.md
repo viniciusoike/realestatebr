@@ -1,3 +1,10 @@
+# realestatebr 1.0.1.9000
+
+* Fixed `get_dataset("bcb_series")` failing with `object 'bcb_metadata' not
+  found` when the package was not attached (#23). The IVAR series in
+  `get_dataset("rppi")` silently fell back to the GitHub release for the
+  same reason.
+
 # realestatebr 1.0.1
 
 CRAN resubmission. Version 1.0.0 was archived on 2026-05-28 because the
@@ -432,7 +439,7 @@ Full migration examples are available in each function's `@section Deprecation` 
 
 ```r
 # Now returns all categories by default
-get_dataset("secovi")  # → 9,398 rows, 4 categories ✅
+get_dataset("secovi")  # → 9,398 rows, 4 categories
 
 # Specific tables still work correctly
 get_dataset("secovi", "launch")  # → 780 rows
@@ -527,14 +534,6 @@ clear_user_cache()            # Clear all (with confirmation)
 - Package size reduced from ~25MB to <5MB (CRAN compliant)
 - `inst/cached_data/` kept for development/CI but excluded from distribution
 - GitHub Actions workflow publishes cache to releases via `data-raw/publish-cache.R`
-
-### Benefits
-- ✅ **CRAN Compliant**: Package size now <5MB (was 25MB)
-- ✅ **Faster Installation**: Package downloads are much smaller
-- ✅ **Offline Usage**: Once cached, datasets work offline
-- ✅ **User Control**: Users manage their own cache
-- ✅ **Weekly Updates**: GitHub releases updated automatically by CI
-- ✅ **No Breaking APIs**: `get_dataset()` interface unchanged
 
 ### Deprecations
 - `import_cached()`: Still works but now loads from user cache (previously from `inst/`)
@@ -659,7 +658,7 @@ clear_user_cache()            # Clear all (with confirmation)
 
 ## Major Breaking Changes - API Consolidation
 
-### 🎯 Unified Data Interface
+### Unified Data Interface
 
 This release implements a **major breaking change** that consolidates 15+ individual `get_*()` functions into a single, unified `get_dataset()` interface. This dramatically simplifies the package API while maintaining full functionality.
 
@@ -667,7 +666,7 @@ This release implements a **major breaking change** that consolidates 15+ indivi
 - `get_abecip_indicators()`, `get_abrainc_indicators()`, `get_rppi()`, `get_bcb_realestate()`, etc.
 - **Migration**: Use `get_dataset("dataset_name")` instead
 
-### 🔧 RPPI Code Simplification (Internal)
+### RPPI Code Simplification (Internal)
 
 **Major refactoring** of RPPI functions for better maintainability:
 - **67% code reduction**: 1579 lines → 519 lines (1060 lines removed)
@@ -683,20 +682,20 @@ This release implements a **major breaking change** that consolidates 15+ indivi
 - Consistent error handling across all indices
 - Bug fixes apply to all functions automatically
 
-### 📊 CBIC Dataset - Partial Release (Cement Only)
+### CBIC Dataset - Partial Release (Cement Only)
 
 **Note**: In v0.4.0, the CBIC dataset is limited to **cement tables only** (validated data). Steel and PIM tables will be added in v0.4.1.
 
 **Available in v0.4.0**:
-- ✅ `cement_monthly_consumption` - Monthly cement consumption by state
-- ✅ `cement_annual_consumption` - Annual cement consumption by region
-- ✅ `cement_production_exports` - Production, consumption, and export data
-- ✅ `cement_monthly_production` - Monthly cement production by state
-- ✅ `cement_cub_prices` - CUB cement prices by state
+- `cement_monthly_consumption` - Monthly cement consumption by state
+- `cement_annual_consumption` - Annual cement consumption by region
+- `cement_production_exports` - Production, consumption, and export data
+- `cement_monthly_production` - Monthly cement production by state
+- `cement_cub_prices` - CUB cement prices by state
 
 **Coming in v0.4.1**:
-- ⏳ Steel prices and production data
-- ⏳ PIM industrial production indices
+- Steel prices and production data
+- PIM industrial production indices
 
 ```r
 # Works in v0.4.0
@@ -714,7 +713,7 @@ get_dataset("cbic", "steel_prices")  # Deferred to v0.4.1
 - **Hierarchical RPPI**: Consolidated `rppi` and `rppi_indices` into single hierarchical structure
 - **Consistent parameters**: All internal functions use standardized `table`, `cached`, `quiet`, `max_retries`
 
-### 📋 Simplified Public API
+### Simplified Public API
 
 **New unified interface:**
 ```r
@@ -736,14 +735,14 @@ info <- get_dataset_info("rppi")
 - `get_bcb_series()` → `get_dataset("bcb_series")`
 - Plus 10 more functions
 
-### 🔧 Enhanced Data Access
+### Enhanced Data Access
 
 - **Smart fallback**: Auto fallback from GitHub cache → fresh download
 - **Source control**: Explicit `source = "cache"/"github"/"fresh"` options
 - **Better error messages**: Detailed troubleshooting information
 - **Metadata preservation**: All data includes source tracking and download info
 
-### 🧪 Comprehensive Testing
+### Comprehensive Testing
 
 - **New test suite**: `test-internal-functions-0.4.0.R` with 100 tests
 - **Registry validation**: Ensures all datasets have proper internal function mappings
@@ -823,35 +822,35 @@ bis <- get_dataset("rppi", table = "bis")
 
 ## Major Features and Improvements
 
-### 🎯 Phase 2: Data Pipeline Implementation Complete
+### Phase 2: Data Pipeline Implementation Complete
 
 - **{targets} Pipeline Framework**: Implemented comprehensive targets workflow for automated data processing and validation
 - **Automated Data Workflows**: Added daily and weekly GitHub Actions workflows using the targets pipeline
 - **Data Validation Infrastructure**: Added comprehensive validation rules and reporting for all datasets
 - **Pipeline Performance Monitoring**: Added automated report generation and validation status tracking
 
-### 📊 Enhanced Data Processing
+### Enhanced Data Processing
 
 - **Targets Pipeline**: `_targets.R` workflow with automated dependency management and parallel processing
 - **Validation System**: Comprehensive data validation rules with automated quality checks
 - **Pipeline Helpers**: Centralized helper functions for consistent data processing across all sources
 - **Report Generation**: Automated pipeline status reports and data quality summaries
 
-### 🔧 Improved Function Reliability
+### Improved Function Reliability
 
 - **Error Handling**: Enhanced error handling in `cache.R` with better fallback mechanisms
 - **Function Fixes**: Fixed parameter bugs in `get_abrainc_indicators()` (category → table)
 - **Data Access**: Improved `get_nre_ire()` to use internal package data directly
 - **Internal Data**: Updated `sysdata.rda` with latest processed datasets
 
-### 🚀 Infrastructure Improvements
+### Infrastructure Improvements
 
 - **Workflow Automation**: Replaced single update workflow with focused daily/weekly pipelines
 - **Cache Management**: Improved cache validation and fallback strategies
 - **Data Source Updates**: Enhanced FGV data cleaning with improved formatting
 - **Dependency Updates**: Added `targets` and `tarchetypes` to package dependencies
 
-### 📈 New Data Sources
+### New Data Sources
 
 - **B3 Stocks**: Added enhanced B3 stock data processing with standardized formatting
 - **FGV Indicators**: Improved FGV consultation data processing and validation
@@ -904,28 +903,28 @@ bis <- get_dataset("rppi", table = "bis")
 
 ## Major Features and Improvements
 
-### 🎯 Phase 1 Modernization Complete
+### Phase 1 Modernization Complete
 
 - **Modernized 13 core `get_*` functions** with consistent APIs, CLI-based error handling, and progress reporting
 - **Standardized function signatures** with `table`, `cached`, `quiet`, and `max_retries` parameters
 - **Robust error handling** with retry logic, exponential backoff, and informative error messages
 - **Enhanced documentation** with comprehensive examples and @section blocks
 
-### 📊 New Unified Data Architecture
+### New Unified Data Architecture
 
 - **`list_datasets()`** - Discover available datasets with filtering capabilities
 - **`get_dataset()`** - Unified data access function with intelligent fallback
 - **Registry system** in `inst/extdata/datasets.yaml` for centralized dataset management
 - **Improved caching** with standardized cache location and validation
 
-### 🔧 API Standardization
+### API Standardization
 
 - **Introduced `table` parameter** replacing `category` across all functions
 - **Backward compatibility maintained** with deprecation warnings for `category` parameter
 - **Consistent return types** - single tibble by default, list when `table = "all"`
 - **Metadata attributes** on all returned data with source tracking and download info
 
-### 📈 New Data Sources
+### New Data Sources
 
 - **CBIC construction materials data**:
   - `get_cbic_cement()` - Cement consumption, production, and CUB prices
@@ -934,14 +933,14 @@ bis <- get_dataset("rppi", table = "bis")
 - **Enhanced RPPI suite** with improved coordination and error handling
 - **Updated B3 stock data** with standardized column names
 
-### 🚀 Performance and Reliability
+### Performance and Reliability
 
 - **Progress reporting** with `cli` package integration for long-running operations
 - **Exponential backoff** for failed web scraping and API calls
 - **Parallel processing support** in web scraping functions
 - **Comprehensive input validation** with helpful error messages
 
-### 🌐 Bilingual Support
+### Bilingual Support
 
 - **Translation system** for Portuguese/English column names and values
 - **Standardized naming conventions** across all datasets

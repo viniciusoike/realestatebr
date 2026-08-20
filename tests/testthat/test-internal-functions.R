@@ -207,6 +207,19 @@ test_that("legacy function fallback still works", {
   })
 })
 
+test_that("lazy-loaded data resolves without attaching the package", {
+  skip_on_cran()
+  skip_if_not_installed("callr")
+
+  # Runs in a subprocess because testthat attaches the package, which masks
+  # the bug: lazy-loaded data lives in the namespace's lazydata environment.
+  # The subprocess loads the installed package, so run after R CMD INSTALL.
+  codes <- callr::r(function() realestatebr:::resolve_bcb_hierarchy("core"))
+
+  expect_gt(length(codes), 0)
+  expect_false(anyNA(codes))
+})
+
 # Helper function for offline testing
 skip_if_offline <- function() {
   # Simple connection test - try to resolve a domain

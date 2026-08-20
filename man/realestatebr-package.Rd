@@ -18,7 +18,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Vinicius Oike \email{viniciusoike@gmail.com} [copyright holder]
+\strong{Maintainer}: Vinicius Oike \email{viniciusoike@gmail.com} (\href{https://orcid.org/0009-0005-8015-9189}{ORCID}) [copyright holder]
 
 }
 \keyword{internal}

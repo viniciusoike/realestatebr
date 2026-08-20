@@ -406,7 +406,7 @@ get_rppi_iqa <- function(quiet = FALSE, max_retries = 3L) {
 #'
 #' @keywords internal
 get_rppi_ivar <- function(quiet = FALSE, max_retries = 3L) {
-  if (!exists("fgv_data") || !exists("dim_city")) {
+  if (!exists("fgv_data")) {
     if (!quiet) {
       cli::cli_inform(c(
         "i" = "IVAR source data not available, loading from GitHub release..."
@@ -428,7 +428,7 @@ get_rppi_ivar <- function(quiet = FALSE, max_retries = 3L) {
   }
 
   # City mapping for IVAR cities
-  ivar_cities <- dim_city |>
+  ivar_cities <- realestatebr::dim_city |>
     dplyr::filter(code_muni %in% c(3550308, 4314902, 3304557, 3106200)) |>
     dplyr::select(name_simplified, name_muni, abbrev_state)
 

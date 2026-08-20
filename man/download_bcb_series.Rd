@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_bcb_series.R
 \name{download_bcb_series}
 \alias{download_bcb_series}
-\title{Download BCB Series Data with Robust Error Handling}
+\title{Download BCB Series Data}
 \usage{
 download_bcb_series(codes_bcb, date_start, quiet, max_retries, ...)
 }

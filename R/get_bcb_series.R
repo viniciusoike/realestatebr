@@ -39,14 +39,6 @@ get_bcb_series <- function(
   max_retries = 3L,
   ...
 ) {
-  if (!exists("bcb_metadata")) {
-    cli::cli_abort(c(
-      "Required data dependency not available",
-      "x" = "This function requires the {.pkg bcb_metadata} object",
-      "i" = "Please ensure all package data is properly loaded"
-    ))
-  }
-
   hierarchy_levels <- c("core", "primary", "secondary", "tertiary", "full")
   validate_dataset_params(
     table,
@@ -96,7 +88,7 @@ get_bcb_series <- function(
 
   bcb_series <- dplyr::left_join(
     bcb_series,
-    bcb_metadata,
+    realestatebr::bcb_metadata,
     by = dplyr::join_by(code_bcb)
   )
   bcb_series <- dplyr::select(bcb_series, dplyr::all_of(cols_select))
@@ -141,7 +133,7 @@ resolve_bcb_hierarchy <- function(table) {
 
   max_level <- hierarchy_map[[table]]
 
-  codes_bcb <- bcb_metadata |>
+  codes_bcb <- realestatebr::bcb_metadata |>
     dplyr::filter(.data$hierarchy <= max_level) |>
     dplyr::pull(.data$code_bcb)
 
@@ -150,7 +142,7 @@ resolve_bcb_hierarchy <- function(table) {
 
 # Download BCB Series ---------------------------------------------------------
 
-#' Download BCB Series Data with Robust Error Handling
+#' Download BCB Series Data
 #'
 #' Downloads BCB series data with per-series retry logic. Uses
 #' `purrr::possibly()` to collect failures without aborting, then reports

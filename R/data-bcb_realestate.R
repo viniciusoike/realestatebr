@@ -4,7 +4,7 @@
 #' BCB Real Estate Market Data
 #'
 #' @description
-#' Comprehensive real estate credit and market data from Brazilian Central
+#' Detailed real estate credit and market series from the Brazilian Central
 #' Bank.
 #'
 #' Retrieve this dataset with [get_dataset()] using the name `"bcb_realestate"`.

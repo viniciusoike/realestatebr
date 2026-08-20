@@ -4,8 +4,8 @@
 #' ABRAINC-FIPE Primary Market Indicators
 #'
 #' @description
-#' Primary real estate market indicators including launches, sales, and
-#' business conditions from 66+ partnered developers.
+#' Primary real estate market indicators from a panel of large developers,
+#' covering launches, sales, and business conditions.
 #'
 #' Retrieve this dataset with [get_dataset()] using the name `"abrainc"`.
 #'

@@ -71,7 +71,7 @@ datasets:
   abrainc:
     name: "ABRAINC-FIPE Primary Market Indicators"
     name_pt: "Indicadores ABRAINC-FIPE do Mercado Primário"
-    description: "Primary real estate market indicators including launches, sales, and business conditions from 66+ partnered developers"
+    description: "Primary real estate market indicators from a panel of large developers, covering launches, sales, and business conditions"
     source: "ABRAINC/FIPE"
     url: "https://www.fipe.org.br/pt-br/indices/abrainc"
     geography: "Brazil (major cities)"
@@ -128,7 +128,7 @@ datasets:
   bcb_realestate:
     name: "BCB Real Estate Market Data"
     name_pt: "Dados do Mercado Imobiliário BCB"
-    description: "Comprehensive real estate credit and market data from Brazilian Central Bank"
+    description: "Detailed real estate credit and market series from the Brazilian Central Bank"
     source: "Banco Central do Brasil"
     url: "https://dadosabertos.bcb.gov.br/dataset/informacoes-do-mercado-imobiliario"
     geography: "Brazil (by state)"
@@ -292,7 +292,7 @@ datasets:
   rppi:
     name: "Brazilian Residential Property Price Indices"
     name_pt: "Índices de Preços Residenciais Brasileiros"
-    description: "Comprehensive collection of all Brazilian residential property price indices"
+    description: "Brazilian residential property price indices from every major publisher"
     source: "Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP)"
     url: "varies by index"
     geography: "Brazil"
