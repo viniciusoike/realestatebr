@@ -21,5 +21,5 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Vinicius Oike <viniciusoike@gmail.com> \[copyright
-holder\]
+**Maintainer**: Vinicius Oike <viniciusoike@gmail.com>
+([ORCID](https://orcid.org/0009-0005-8015-9189)) \[copyright holder\]

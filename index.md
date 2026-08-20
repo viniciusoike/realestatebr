@@ -1,13 +1,8 @@
 # realestatebr: Brazilian Real Estate Data in R ![](reference/figures/hexlogo.png)
 
-**realestatebr** aims to provide an unified interface to Brazilian real
-estate information, delivering data from different sources in a tidy
-format. The package is organized by source, with each source having
-multiple associated tables (datasets).
-
-All datasets are returned as `tibble` objects. The package is centered
-around a key function: `get_dataset(name, table)` which retrieves any
-dataset by name.
+**realestatebr** provides a unified interface to Brazilian real estate
+data. The package is organized by source, and each source holds one or
+more tables. Every table is returned as a tidy `tibble`.
 
 ## Installation
 
@@ -23,15 +18,14 @@ remotes::install_github("viniciusoike/realestatebr")
 
 ## Quick Start
 
-There are two key functions in **realestatebr**:
+Two functions cover most of the package.
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-and
-[`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md).
-The former retrieves data, while the latter lists all available
-datasets.
+retrieves data and
+[`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
+lists what is available.
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-expects a `name` and a (optional) `table` argument. If no `table` is
-specified, the function returns the first available table.
+takes a dataset `name` and an optional `table`. Without `table`, it
+returns the default table for that dataset.
 
 ``` r
 
@@ -49,20 +43,19 @@ fipezap <- get_dataset("rppi", "fipezap")
 
 ## Available Datasets
 
-The package acts as a convenient wrapper around public data sources. All
-data is provided in a tidy format in a `tibble` object. Datasets are
-updated weekly or monthly, depending on the source.
+The package wraps public data sources and returns each table in a tidy
+format. Datasets are updated weekly or monthly, depending on the source.
 
-| Dataset | Source | Tables | Status |
-|----|----|----|----|
-| `abecip` | ABECIP | `sbpe`, `units`, `cgi` | Active |
-| `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` | Active |
-| `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` | Active |
-| `bcb_series` | Banco Central do Brasil | `price`, `credit`, `production`, `interest-rate`, `exchange`, `government`, `real-estate` | Active |
-| `fgv_ibre` | FGV IBRE | — | Active |
-| `rppi` | FIPE/ZAP, IVGR, IGMI, IQA, IVAR, SECOVI-SP | `sale`, `rent`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` | Active |
-| `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly` | Active |
-| `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` | Active |
+| Dataset | Source | Tables |
+|----|----|----|
+| `abecip` | ABECIP | `sbpe`, `units`, `cgi` |
+| `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` |
+| `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` |
+| `bcb_series` | Banco Central do Brasil | `core`, `primary`, `secondary`, `tertiary`, `full` |
+| `fgv_ibre` | FGV IBRE | — |
+| `rppi` | FIPE/ZAP, IVG-R, IGMI-R, IQA, IQAIW, IVAR, SECOVI-SP | `sale`, `rent`, `all`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` |
+| `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` |
+| `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` |
 
 ### Data Sources
 
@@ -96,7 +89,7 @@ library(dplyr)
 # Get FipeZap index
 fipezap <- get_dataset("rppi", table = "fipezap")
 
-# Brazil national index
+# Residential sale and rent prices in São Paulo
 rppi_spo <- fipezap |>
   filter(
     name_muni == "São Paulo",
@@ -110,11 +103,11 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
   geom_line(lwd = 0.8) +
   geom_hline(yintercept = 0) +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
-  scale_y_continuous(labels = seq(-0.05, 0.15, by = 0.05) * 100, ) +
+  scale_y_continuous(labels = scales::label_percent()) +
   labs(
-    title = "Brazil Property Price Index",
+    title = "São Paulo Property Price Index",
     x = NULL,
-    y = "YoY chg. (%)",
+    y = "Year-on-year change",
     color = ""
   ) +
   theme_minimal() +
@@ -136,17 +129,17 @@ bis <- get_dataset("rppi_bis")
 # Compare countries
 bis_compare <- bis |>
   filter(
-    reference_area %in% c("Brazil", "United States", "Japan"),
-    is_nominal == FALSE,
-    unit == "Index, 2010 = 100",
+    ref_area_name %in% c("Brazil", "United States", "Japan"),
+    is_nominal == 0,
+    unit == "index",
     date >= as.Date("2010-01-01")
   )
 
-ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
+ggplot(bis_compare, aes(x = date, y = value, color = ref_area_name)) +
   geom_line(lwd = 0.8) +
   geom_hline(yintercept = 100) +
   labs(
-    title = "Real Property Prices - International",
+    title = "Real Property Prices Across Countries",
     x = NULL,
     y = "Index (2010 = 100)",
     color = ""
@@ -162,7 +155,11 @@ ggplot(bis_compare, aes(x = date, y = value, color = reference_area)) +
 
 ## Learn More
 
-- [Getting Started
-  vignette](https://viniciusoike.github.io/realestatebr/vignettes/getting-started.Rmd)
-- [Working with RPPI
-  vignette](https://viniciusoike.github.io/realestatebr/vignettes/working-with-rppi.Rmd)
+- [Getting
+  started](https://viniciusoike.github.io/realestatebr/articles/getting-started.html)
+- [Working with property price
+  indices](https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.html)
+- [Housing credit in
+  Brazil](https://viniciusoike.github.io/realestatebr/articles/housing-credit.html)
+- [The primary market and the construction
+  cycle](https://viniciusoike.github.io/realestatebr/articles/primary-market.html)

@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,53 +82,82 @@
 
     
     
-<p>Housing credit in Brazil is organized around the SFH (Sistema
-Financeiro da Habitação), in which most mortgages are funded by savings
-deposits (SBPE) and by the FGTS workers’ fund. This article follows the
-credit cycle from funding to lending using three datasets</p>
-<ul>
-<li>
-<code>abecip</code> for savings flows and financed units,</li>
-<li>
-<code>bcb_series</code> for lending volumes, rates, and
-delinquency,</li>
-<li>
-<code>bcb_realestate</code> for the regional distribution of the
-credit stock.</li>
-</ul>
+<p>Brazilian housing finance is largely organized around the SFH
+(Sistema Financeiro da Habitação), in which mortgages are funded by
+savings deposits (SBPE) and by the FGTS workers’ fund. Three datasets
+cover this market. <code>abecip</code>, <code>bcb_series</code>, and
+<code>bcb_realestate</code> appear below in increasing order of
+detail.</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Table name</th>
+<th>Source</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>abecip</code></td>
+<td>Abecip</td>
+<td>Savings flows and financed units by the SBPE system.</td>
+</tr>
+<tr class="even">
+<td><code>bcb_series</code></td>
+<td>Brazilian Central Bank (SGS)</td>
+<td>Economic time series related to credit and housing credit
+(e.g. lending volumes, rates, delinquency, etc.).</td>
+</tr>
+<tr class="odd">
+<td><code>bcb_realestate</code></td>
+<td>Brazilian Central Bank (Estatísticas do Mercado Imobiliário)</td>
+<td>A more detailed dataset containing economic time series related to
+housing credit.</td>
+</tr>
+</tbody>
+</table>
+<p><code>realestatebr</code> follows its sources closely, so monetary
+values come in nominal Brazilian reais with no inflation adjustment.
+This holds for all three datasets used here.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/viniciusoike/realestatebr" class="external-link">realestatebr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
-<p>The code below defines a common theme for the plots in this article.
-It is entirely optional and can be omitted.</p>
+<p>The code below defines a common theme for the plots in this article
+and can be omitted.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">color_palette</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">"#1E3A5F"</span>,</span>
-<span>  <span class="st">"#DD6B20"</span>,</span>
-<span>  <span class="st">"#2C7A7B"</span>,</span>
-<span>  <span class="st">"#D69E2E"</span>,</span>
-<span>  <span class="st">"#805AD5"</span>,</span>
-<span>  <span class="st">"#C53030"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">theme_series</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
-<span>      plot.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span>,</span>
-<span>      panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>      panel.grid.major.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>      axis.line.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"gray10"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
-<span>      axis.ticks.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"gray10"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
-<span>      axis.title.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>      legend.position <span class="op">=</span> <span class="st">"bottom"</span>,</span>
-<span>      palette.color.discrete <span class="op">=</span> <span class="va">color_palette</span></span>
-<span>    <span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ekioplot"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">color_palette</span> <span class="op">&lt;-</span> <span class="fu">ekioplot</span><span class="fu">::</span><span class="fu">ekio_pal</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">theme_series</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu">ekioplot</span><span class="fu">::</span><span class="fu">theme_ekio</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
+<span>        palette.color.discrete <span class="op">=</span> <span class="va">color_palette</span></span>
+<span>      <span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="va">color_palette</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"#1E3A5F"</span>,</span>
+<span>    <span class="st">"#DD6B20"</span>,</span>
+<span>    <span class="st">"#2C7A7B"</span>,</span>
+<span>    <span class="st">"#D69E2E"</span>,</span>
+<span>    <span class="st">"#805AD5"</span>,</span>
+<span>    <span class="st">"#C53030"</span></span>
+<span>  <span class="op">)</span></span>
+<span>  <span class="va">theme_series</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
+<span>        legend.position <span class="op">=</span> <span class="st">"bottom"</span>,</span>
+<span>        palette.color.discrete <span class="op">=</span> <span class="va">color_palette</span></span>
+<span>      <span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <div class="section level2">
-<h2 id="funding-savings-deposits">Funding: savings deposits<a class="anchor" aria-label="anchor" href="#funding-savings-deposits"></a>
+<h2 id="funding">Funding<a class="anchor" aria-label="anchor" href="#funding"></a>
 </h2>
-<p>SBPE savings accounts are the cheapest funding source for mortgages,
+<p>SBPE savings accounts are an important funding source for mortgages,
 so sustained withdrawals eventually constrain new lending. The
 <code>sbpe</code> table from <code>abecip</code> tracks monthly
 deposits, withdrawals, and the resulting stock.</p>
@@ -173,16 +202,44 @@ funding ahead.</p>
 <span>    y <span class="op">=</span> <span class="st">"R$ (billion)"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="housing-credit_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="housing-credit_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>The rest of the funding market shows up in
+<code>bcb_realestate</code>. That dataset takes some time to learn,
+since a chain of <code>v1</code> to <code>v5</code> components
+identifies each series, but the query below stays short. It returns
+total credit funding from private sources for real estate loans in
+Brazil.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bcb_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"bcb_realestate"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">bcb_funding</span> <span class="op">&lt;-</span> <span class="va">bcb_re</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">category</span> <span class="op">==</span> <span class="st">"fontes"</span>, <span class="va">v1</span> <span class="op">==</span> <span class="st">"br"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>funding_source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">type</span><span class="op">)</span>, value_bln <span class="op">=</span> <span class="va">value</span> <span class="op">/</span> <span class="fl">1e9</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">bcb_funding</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value_bln</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_area</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">funding_source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">color_palette</span>, labels <span class="op">=</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/chartr.html" class="external-link">toupper</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>date_breaks <span class="op">=</span> <span class="st">"1 year"</span>, date_labels <span class="op">=</span> <span class="st">"%Y"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>expand <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expansion.html" class="external-link">expansion</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Market Funding Sources"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Private source credit funding for real estate loans"</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"R$ (billion)"</span>,</span>
+<span>    fill <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="housing-credit_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
-<h2 id="lending-new-mortgage-loans">Lending: new mortgage loans<a class="anchor" aria-label="anchor" href="#lending-new-mortgage-loans"></a>
+<h2 id="lending">Lending<a class="anchor" aria-label="anchor" href="#lending"></a>
 </h2>
-<p>The flow of new real estate loans to households is reported by the
-Central Bank. The series below is part of the <code>core</code> table of
+<p>The Central Bank reports the flow of new real estate loans to
+households. That series sits in the <code>core</code> table of
 <code>bcb_series</code>, which gathers the most relevant real estate
-credit series.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+credit series. We filter on <code>name_simplified</code> here, but the
+dataset also carries <code>code_bcb</code>, which matches the original
+SGS codes.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bcb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"bcb_series"</span>, table <span class="op">=</span> <span class="st">"core"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">fimob</span> <span class="op">&lt;-</span> <span class="va">bcb</span> <span class="op">|&gt;</span></span>
@@ -190,7 +247,9 @@ credit series.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    lending_12m <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/rollmean.html" class="external-link">rollsumr</a></span><span class="op">(</span><span class="va">value</span>, k <span class="op">=</span> <span class="fl">12</span>, fill <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e3</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>As mentioned above, these values are nominal (i.e. not adjusted for
+inflation).</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fimob</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">lending_12m</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">lending_12m</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>date_breaks <span class="op">=</span> <span class="st">"2 years"</span>, date_labels <span class="op">=</span> <span class="st">"%Y"</span><span class="op">)</span> <span class="op">+</span></span>
@@ -200,11 +259,11 @@ credit series.</p>
 <span>    y <span class="op">=</span> <span class="st">"R$ (billion)"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="housing-credit_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="housing-credit_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>In physical terms, the <code>units</code> table from
 <code>abecip</code> counts how many homes were financed with SBPE funds,
 split between construction and acquisition loans.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">units</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"units"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">units_12m</span> <span class="op">&lt;-</span> <span class="va">units</span> <span class="op">|&gt;</span></span>
@@ -213,11 +272,13 @@ split between construction and acquisition loans.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    units_12m <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/rollmean.html" class="external-link">rollsumr</a></span><span class="op">(</span><span class="va">units</span>, k <span class="op">=</span> <span class="fl">12</span>, fill <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e3</span>,</span>
 <span>    type_label <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html" class="external-link">if_else</a></span><span class="op">(</span></span>
-<span>      <span class="va">type</span> <span class="op">==</span> <span class="st">"units_construction"</span>, <span class="st">"Construction"</span>, <span class="st">"Acquisition"</span></span>
+<span>      <span class="va">type</span> <span class="op">==</span> <span class="st">"units_construction"</span>,</span>
+<span>      <span class="st">"Construction"</span>,</span>
+<span>      <span class="st">"Acquisition"</span></span>
 <span>    <span class="op">)</span>,</span>
 <span>    .by <span class="op">=</span> <span class="va">type</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">units_12m</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">units_12m</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">units_12m</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">type_label</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
@@ -229,7 +290,7 @@ split between construction and acquisition loans.</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="housing-credit_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="housing-credit_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="the-price-of-credit">The price of credit<a class="anchor" aria-label="anchor" href="#the-price-of-credit"></a>
@@ -238,7 +299,7 @@ split between construction and acquisition loans.</p>
 regulated pricing within the SFH. The <code>core</code> table includes
 both the average rate charged on new operations and the average cost of
 the outstanding stock, which adjusts much more slowly.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rates</span> <span class="op">&lt;-</span> <span class="va">bcb</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_simplified</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"taxa_fimob_pf_total"</span>, <span class="st">"icc_fimob"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
@@ -250,7 +311,7 @@ the outstanding stock, which adjusts much more slowly.</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">rates_recent</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">rates</span>, <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/pkg/zoo/man/yearmon.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2012-01-01"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">rates_recent</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">rate_label</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
@@ -258,24 +319,67 @@ the outstanding stock, which adjusts much more slowly.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
 <span>    title <span class="op">=</span> <span class="st">"Household Mortgage Rates"</span>,</span>
 <span>    subtitle <span class="op">=</span> <span class="st">"Earmarked real estate credit operations (% per year)"</span>,</span>
-<span>    y <span class="op">=</span> <span class="st">"% p.y."</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"%"</span>,</span>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="housing-credit_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="housing-credit_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>For a more detailed view of credit rates, we turn to
+<code>bcb_realestate</code>. The code below finds the rates for all
+credit lines at the national (<code>BR</code>) level. In these series
+<code>pf</code> stands for <code>pessoa física</code> (private
+individual) and <code>pj</code> for <code>pessoa jurídica</code>
+(company).</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">credit_rates</span> <span class="op">&lt;-</span> <span class="va">bcb_re</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">category</span> <span class="op">==</span> <span class="st">"credito"</span>,</span>
+<span>    <span class="va">v1</span> <span class="op">==</span> <span class="st">"taxa"</span>,</span>
+<span>    <span class="co"># only for families/individuals (i.e. pessoa física)</span></span>
+<span>    <span class="va">v2</span> <span class="op">==</span> <span class="st">"pf"</span>,</span>
+<span>    <span class="co"># weighted average for Brazil</span></span>
+<span>    <span class="va">abbrev_state</span> <span class="op">==</span> <span class="st">"BR"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    credit_label <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/recode.html" class="external-link">recode</a></span><span class="op">(</span></span>
+<span>      <span class="va">v3</span>,</span>
+<span>      comercial <span class="op">=</span> <span class="st">"Commercial"</span>,</span>
+<span>      fgts <span class="op">=</span> <span class="st">"FGTS"</span>,</span>
+<span>      `home-equity` <span class="op">=</span> <span class="st">"Home Equity"</span>,</span>
+<span>      livre <span class="op">=</span> <span class="st">"Market"</span>,</span>
+<span>      sfh <span class="op">=</span> <span class="st">"SFH"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p>The plot shows the average rate applied across each credit line,
+making the size of the spread clear.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">credit_rates</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">credit_label</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>date_breaks <span class="op">=</span> <span class="st">"1 year"</span>, date_labels <span class="op">=</span> <span class="st">"%Y"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Household Mortgage Rates"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Detailed view of credit rates (% per year)"</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"%"</span>,</span>
+<span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="housing-credit_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="credit-risk">Credit risk<a class="anchor" aria-label="anchor" href="#credit-risk"></a>
 </h2>
-<p>Delinquency in housing credit is structurally low because loans are
-collateralized. Even so, arrears track the economic cycle.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<p>Delinquency in housing credit is typically low because loans are
+collateralized, although borrowers can still fall behind when economic
+conditions deteriorate.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">risk</span> <span class="op">&lt;-</span> <span class="va">bcb</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">name_simplified</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>      <span class="st">"inad_credito_direcionado_pf_fimob"</span>,</span>
-<span>      <span class="st">"atraso_fimob_pf_total"</span></span>
-<span>    <span class="op">)</span></span>
+<span>    <span class="va">name_simplified</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>        <span class="st">"inad_credito_direcionado_pf_fimob"</span>,</span>
+<span>        <span class="st">"atraso_fimob_pf_total"</span></span>
+<span>      <span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    risk_label <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html" class="external-link">if_else</a></span><span class="op">(</span></span>
@@ -284,7 +388,7 @@ collateralized. Even so, arrears track the economic cycle.</p>
 <span>      <span class="st">"Past due (90+ days)"</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">risk</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">risk_label</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
@@ -296,47 +400,83 @@ collateralized. Even so, arrears track the economic cycle.</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="housing-credit_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="housing-credit_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>Once again, for a more detailed view we use
+<code>bcb_realestate</code>. The code below finds the risk
+classification of the stock of SFH loans.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sfh_risk_stock</span> <span class="op">&lt;-</span> <span class="va">bcb_re</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">category</span> <span class="op">==</span> <span class="st">"credito"</span>,</span>
+<span>    <span class="va">type</span> <span class="op">==</span> <span class="st">"estoque"</span>,</span>
+<span>    <span class="va">v1</span> <span class="op">==</span> <span class="st">"risco-operacao"</span>,</span>
+<span>    <span class="co"># only for families/individuals (i.e. pessoa física)</span></span>
+<span>    <span class="va">v2</span> <span class="op">==</span> <span class="st">"pf"</span>,</span>
+<span>    <span class="va">v3</span> <span class="op">==</span> <span class="st">"sfh"</span>,</span>
+<span>    <span class="va">v5</span> <span class="op">==</span> <span class="st">"br"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    credit_risk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
+<span>      <span class="va">v4</span>,</span>
+<span>      levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aa"</span>, <span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d-mais"</span><span class="op">)</span>,</span>
+<span>      labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AA"</span>, <span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>, <span class="st">"D+"</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">sfh_risk_stock</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_area</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">credit_risk</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">color_palette</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>date_breaks <span class="op">=</span> <span class="st">"1 year"</span>, date_labels <span class="op">=</span> <span class="st">"%Y"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>expand <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expansion.html" class="external-link">expansion</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Risk Classification of SFH Loans"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Share of total SFH credit loans classified by risk credit (following resolution 2.682/1999)"</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"% (share of stock)"</span>,</span>
+<span>    fill <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="housing-credit_files/figure-html/unnamed-chunk-19-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="where-the-credit-is">Where the credit is<a class="anchor" aria-label="anchor" href="#where-the-credit-is"></a>
 </h2>
-<p>The <code>bcb_realestate</code> dataset breaks the credit stock down
-by state. The code below sums the household credit portfolio across
-credit lines for the latest available month.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bcb_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"bcb_realestate"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">stock_states</span> <span class="op">&lt;-</span> <span class="va">bcb_re</span> <span class="op">|&gt;</span></span>
+<p>The <code>bcb_realestate</code> dataset has regional data by state.
+The code below sums the household credit portfolio across credit lines
+for each state’s latest available month.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">stock_states</span> <span class="op">&lt;-</span> <span class="va">bcb_re</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">category</span> <span class="op">==</span> <span class="st">"credito"</span>,</span>
 <span>    <span class="va">type</span> <span class="op">==</span> <span class="st">"estoque"</span>,</span>
 <span>    <span class="va">v1</span> <span class="op">==</span> <span class="st">"carteira"</span>,</span>
 <span>    <span class="va">v2</span> <span class="op">==</span> <span class="st">"credito"</span>,</span>
 <span>    <span class="va">v3</span> <span class="op">==</span> <span class="st">"pf"</span>,</span>
-<span>    <span class="va">abbrev_state</span> <span class="op">!=</span> <span class="st">"BR"</span>,</span>
-<span>    <span class="va">date</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span></span>
+<span>    <span class="va">abbrev_state</span> <span class="op">!=</span> <span class="st">"BR"</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span>, .by <span class="op">=</span> <span class="va">abbrev_state</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>stock <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e9</span>, .by <span class="op">=</span> <span class="va">abbrev_state</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_max</a></span><span class="op">(</span><span class="va">stock</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">stock_states</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/reorder.factor.html" class="external-link">reorder</a></span><span class="op">(</span><span class="va">abbrev_state</span>, <span class="va">stock</span><span class="op">)</span>, <span class="va">stock</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, alpha <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">stock_states</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">stock</span>, <span class="fu"><a href="https://rdrr.io/r/stats/reorder.factor.html" class="external-link">reorder</a></span><span class="op">(</span><span class="va">abbrev_state</span>, <span class="va">stock</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, width <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>expand <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expansion.html" class="external-link">expansion</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
 <span>    title <span class="op">=</span> <span class="st">"Household Credit Stock by State"</span>,</span>
-<span>    subtitle <span class="op">=</span> <span class="st">"Ten largest states, latest available month"</span>,</span>
-<span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>    y <span class="op">=</span> <span class="st">"R$ (billion)"</span></span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Ten largest states, latest available observation"</span>,</span>
+<span>    y <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    x <span class="op">=</span> <span class="st">"R$ (billion)"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
 <span>    panel.grid.major.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_line</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    panel.grid.major.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    axis.line.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    axis.ticks.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    axis.ticks.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    axis.title.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    axis.line.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"gray10"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>    axis.ticks.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"gray10"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p><img src="housing-credit_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="housing-credit_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="home-equity-lending">Home equity lending<a class="anchor" aria-label="anchor" href="#home-equity-lending"></a>
@@ -345,7 +485,7 @@ credit lines for the latest available month.</p>
 small but growing market. The <code>cgi</code> table from
 <code>abecip</code> summarizes contracts, balances, and default
 rates.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cgi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"cgi"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">cgi</span><span class="op">)</span></span>
@@ -359,7 +499,7 @@ rates.</p>
 <span><span class="co">#&gt; $ outstanding_balance <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 12725110368<span style="color: #949494;">, </span>11120992240<span style="color: #949494;">, </span>10598834209<span style="color: #949494;">, </span>10514921327…</span></span>
 <span><span class="co">#&gt; $ average_term        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 144.8<span style="color: #949494;">, </span>145.3<span style="color: #949494;">, </span>140.8<span style="color: #949494;">, </span>130.2<span style="color: #949494;">, </span>134.3<span style="color: #949494;">, </span>128.7<span style="color: #949494;">, </span>137.4<span style="color: #949494;">, </span>1…</span></span>
 <span><span class="co">#&gt; $ default_rate        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 4.8<span style="color: #949494;">, </span>5.0<span style="color: #949494;">, </span>4.9<span style="color: #949494;">, </span>5.2<span style="color: #949494;">, </span>4.7<span style="color: #949494;">, </span>4.4<span style="color: #949494;">, </span>5.0<span style="color: #949494;">, </span>4.7<span style="color: #949494;">, </span>4.6<span style="color: #949494;">, </span>4.7<span style="color: #949494;">, </span>…</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">cgi</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">stock_contracts</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>date_breaks <span class="op">=</span> <span class="st">"1 year"</span>, date_labels <span class="op">=</span> <span class="st">"%Y"</span><span class="op">)</span> <span class="op">+</span></span>
@@ -368,14 +508,15 @@ rates.</p>
 <span>    y <span class="op">=</span> <span class="st">"Contracts (thousand)"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="housing-credit_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="housing-credit_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
 </h2>
-<p>The column-level documentation of each dataset used here is available
-in the help topics <code><a href="../reference/abecip.html">?abecip</a></code>, <code><a href="../reference/bcb_series.html">?bcb_series</a></code>, and
-<code><a href="../reference/bcb_realestate.html">?bcb_realestate</a></code>. For price indices, see the vignette
+<p>The help topics <code><a href="../reference/abecip.html">?abecip</a></code>, <code><a href="../reference/bcb_series.html">?bcb_series</a></code>, and
+<code><a href="../reference/bcb_realestate.html">?bcb_realestate</a></code> document the columns of each dataset used
+here. For the primary market, see <a href="primary-market.html">The
+Primary Market and the Construction Cycle</a>; for price indices, see
 <code><a href="../articles/working-with-rppi.html">vignette("working-with-rppi")</a></code>.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

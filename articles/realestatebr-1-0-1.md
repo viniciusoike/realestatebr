@@ -33,11 +33,10 @@ bcb <- get_bcb_series(table = "price")
 secovi <- get_secovi()
 ```
 
-While having separate functions helped with discoverability and
-documentation, it didn’t work as the number of datasets started to grow.
-From 1.0.1 onwards, the core function of the package is
+Separate functions helped with discoverability and documentation, but
+they stopped scaling as the number of datasets grew. From 1.0.1 onwards,
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-which retrieves data from any of the datasets available in the package.
+retrieves any dataset in the package.
 
 ``` r
 
@@ -45,7 +44,7 @@ library(realestatebr)
 
 # The new way
 abecip <- get_dataset("abecip", table = "sbpe")
-bcb <- get_dataset("bcb_series", table = "price")
+bcb <- get_dataset("bcb_series", table = "core")
 secovi <- get_dataset("secovi", table = "all")
 ```
 
@@ -69,7 +68,7 @@ equivalent.
 | `get_abecip_indicators("sbpe")` | `get_dataset("abecip", "sbpe")` |
 | [`get_abrainc_indicators()`](https://viniciusoike.github.io/realestatebr/reference/get_abrainc_indicators.md) | `get_dataset("abrainc")` |
 | [`get_bcb_realestate()`](https://viniciusoike.github.io/realestatebr/reference/get_bcb_realestate.md) | `get_dataset("bcb_realestate")` |
-| `get_bcb_series("price")` | `get_dataset("bcb_series", "price")` |
+| `get_bcb_series("price")` | `get_dataset("bcb_series", "core")` |
 | [`get_secovi()`](https://viniciusoike.github.io/realestatebr/reference/get_secovi.md) | `get_dataset("secovi")` |
 | `get_rppi("fipezap")` | `get_dataset("rppi", "fipezap")` |
 | [`get_rppi_bis()`](https://viniciusoike.github.io/realestatebr/reference/get_rppi_bis.md) | `get_dataset("rppi_bis")` |
@@ -80,8 +79,7 @@ Since the names of datasets and tables are now arguments, you need a way
 to find them.
 [`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
 returns a `tibble` describing every dataset, its source, and the tables
-it contains. In the future, there will be better, more interactive forms
-of displaying this information.
+it contains.
 
 ``` r
 
@@ -98,21 +96,20 @@ price indices.
 | `abecip` | ABECIP | `sbpe`, `units`, `cgi` |
 | `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` |
 | `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` |
-| `bcb_series` | Banco Central do Brasil | `price`, `credit`, `production`, and others |
+| `bcb_series` | Banco Central do Brasil | `core`, `primary`, `secondary`, `tertiary`, `full` |
 | `fgv_ibre` | FGV IBRE | — |
 | `rppi` | FipeZap, IVG-R, IGMI-R, IQA, IVAR, SECOVI-SP | `sale`, `rent`, and individual indices |
 | `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly` |
 | `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` |
 
-Users of previous versions of `realestatebr` might be missing the tables
-from CBIC (Câmara Brasileira da Indústria da Construção) and from
-Registro de Imóveis (`property_records`). The latter doesn’t publish
-consolidated Excel reports anymore: the data is now published in a
-completely new format and I’m still evaluating the best way to integrate
-it into the package. The former is unavailable since [CBIC
-paywalled](https://cbic.org.br/hubdedados/) all of its previously open
-datasets. Since several of CBIC’s tables were built upon open datasets,
-I will try to include them in future releases.
+Users of previous versions might miss the tables from CBIC (Câmara
+Brasileira da Indústria da Construção) and from Registro de Imóveis
+(`property_records`). Registro de Imóveis no longer publishes
+consolidated Excel reports; the data now comes in a different format,
+which the package does not yet read. CBIC
+[paywalled](https://cbic.org.br/hubdedados/) all of its previously open
+datasets. Several CBIC tables were built on open sources, so they may
+return in a future release.
 
 ## Choosing where data comes from
 
@@ -160,6 +157,15 @@ change in sale and rent prices for the city of São Paulo.
 library(dplyr)
 library(ggplot2)
 
+plot_font <- if (
+  requireNamespace("systemfonts", quietly = TRUE) &&
+    any(systemfonts::system_fonts()[["family"]] == "Avenir")
+) {
+  "Avenir"
+} else {
+  "sans"
+}
+
 fipezap <- get_dataset("rppi", table = "fipezap")
 
 rppi_spo <- fipezap |>
@@ -181,7 +187,7 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
     y = "YoY chg. (%)",
     color = ""
   ) +
-  theme_minimal() +
+  theme_minimal(base_family = plot_font) +
   theme(legend.position = "bottom")
 ```
 
@@ -189,13 +195,11 @@ ggplot(rppi_spo, aes(x = date, y = value, color = rent_sale)) +
 
 Consolidating the interface meant retiring a few datasets that could not
 be maintained reliably. The `cbic`, `property_records`, `nre_ire`, and
-`itbi` datasets have been removed. As mentioned above,
-`property_records` and `cbic` (in some format) will return in future
-releases, but `nre_ire` and `itbi` will not. The upkeep of the `nre_ire`
-dataset is too high, since it’s hard to automate, and the perceived gain
-is little. The `itbi` dataset was an experiment of bringing large real
-estate datasets into the package, but such a dataset adds a lot of
-complexity and I’ve decided it merits a separate one.
+`itbi` datasets have been removed. `property_records` and `cbic` may
+return, as noted above, but `nre_ire` and `itbi` will not. `nre_ire`
+resists automation and costs more upkeep than it returns. `itbi` was an
+experiment in bringing large transaction-level datasets into the
+package; that scale of data belongs in a package of its own.
 
 The `bcb_series` and `rppi` datasets also changed shape. `bcb_series`
 now returns a compact set of columns and accepts a hierarchy level such

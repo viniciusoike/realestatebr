@@ -1,6 +1,6 @@
 # BCB Real Estate Market Data
 
-Comprehensive real estate credit and market data from Brazilian Central
+Detailed real estate credit and market series from the Brazilian Central
 Bank.
 
 Retrieve this dataset with

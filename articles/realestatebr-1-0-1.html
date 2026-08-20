@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -108,17 +108,15 @@ own function, its own arguments, and its own quirks.</p>
 <span><span class="va">abecip</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_abecip_indicators.html">get_abecip_indicators</a></span><span class="op">(</span>table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span>
 <span><span class="va">bcb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_bcb_series.html">get_bcb_series</a></span><span class="op">(</span>table <span class="op">=</span> <span class="st">"price"</span><span class="op">)</span></span>
 <span><span class="va">secovi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_secovi.html">get_secovi</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>While having separate functions helped with discoverability and
-documentation, it didn’t work as the number of datasets started to grow.
-From 1.0.1 onwards, the core function of the package is
-<code><a href="../reference/get_dataset.html">get_dataset()</a></code> which retrieves data from any of the datasets
-available in the package.</p>
+<p>Separate functions helped with discoverability and documentation, but
+they stopped scaling as the number of datasets grew. From 1.0.1 onwards,
+<code><a href="../reference/get_dataset.html">get_dataset()</a></code> retrieves any dataset in the package.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/viniciusoike/realestatebr" class="external-link">realestatebr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># The new way</span></span>
 <span><span class="va">abecip</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span>
-<span><span class="va">bcb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"bcb_series"</span>, table <span class="op">=</span> <span class="st">"price"</span><span class="op">)</span></span>
+<span><span class="va">bcb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"bcb_series"</span>, table <span class="op">=</span> <span class="st">"core"</span><span class="op">)</span></span>
 <span><span class="va">secovi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span>, table <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span></code></pre></div>
 <p>When the <code>table</code> argument is omitted,
 <code><a href="../reference/get_dataset.html">get_dataset()</a></code> returns the default table for that
@@ -149,7 +147,7 @@ the public interface. The table below maps the most common ones to their
 </tr>
 <tr class="even">
 <td><code>get_bcb_series("price")</code></td>
-<td><code>get_dataset("bcb_series", "price")</code></td>
+<td><code>get_dataset("bcb_series", "core")</code></td>
 </tr>
 <tr class="odd">
 <td><code><a href="../reference/get_secovi.html">get_secovi()</a></code></td>
@@ -172,8 +170,7 @@ the public interface. The table below maps the most common ones to their
 <p>Since the names of datasets and tables are now arguments, you need a
 way to find them. <code><a href="../reference/list_datasets.html">list_datasets()</a></code> returns a
 <code>tibble</code> describing every dataset, its source, and the tables
-it contains. In the future, there will be better, more interactive forms
-of displaying this information.</p>
+it contains.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">datasets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_datasets.html">list_datasets</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">datasets</span></span></code></pre></div>
@@ -219,8 +216,9 @@ property price indices.</p>
 <td><code>bcb_series</code></td>
 <td>Banco Central do Brasil</td>
 <td>
-<code>price</code>, <code>credit</code>, <code>production</code>,
-and others</td>
+<code>core</code>, <code>primary</code>, <code>secondary</code>,
+<code>tertiary</code>, <code>full</code>
+</td>
 </tr>
 <tr class="odd">
 <td><code>fgv_ibre</code></td>
@@ -251,15 +249,13 @@ and others</td>
 </tr>
 </tbody>
 </table>
-<p>Users of previous versions of <code>realestatebr</code> might be
-missing the tables from CBIC (Câmara Brasileira da Indústria da
-Construção) and from Registro de Imóveis
-(<code>property_records</code>). The latter doesn’t publish consolidated
-Excel reports anymore: the data is now published in a completely new
-format and I’m still evaluating the best way to integrate it into the
-package. The former is unavailable since <a href="https://cbic.org.br/hubdedados/" class="external-link">CBIC paywalled</a> all of its
-previously open datasets. Since several of CBIC’s tables were built upon
-open datasets, I will try to include them in future releases.</p>
+<p>Users of previous versions might miss the tables from CBIC (Câmara
+Brasileira da Indústria da Construção) and from Registro de Imóveis
+(<code>property_records</code>). Registro de Imóveis no longer publishes
+consolidated Excel reports; the data now comes in a different format,
+which the package does not yet read. CBIC <a href="https://cbic.org.br/hubdedados/" class="external-link">paywalled</a> all of its
+previously open datasets. Several CBIC tables were built on open
+sources, so they may return in a future release.</p>
 </div>
 <div class="section level2">
 <h2 id="choosing-where-data-comes-from">Choosing where data comes from<a class="anchor" aria-label="anchor" href="#choosing-where-data-comes-from"></a>
@@ -298,6 +294,15 @@ change in sale and rent prices for the city of São Paulo.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
+<span><span class="va">plot_font</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"systemfonts"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&amp;&amp;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu">systemfonts</span><span class="fu">::</span><span class="fu"><a href="https://systemfonts.r-lib.org/reference/system_fonts.html" class="external-link">system_fonts</a></span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="st">"family"</span><span class="op">]</span><span class="op">]</span> <span class="op">==</span> <span class="st">"Avenir"</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="st">"Avenir"</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="st">"sans"</span></span>
+<span><span class="op">}</span></span>
+<span></span>
 <span><span class="va">fipezap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"fipezap"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">rppi_spo</span> <span class="op">&lt;-</span> <span class="va">fipezap</span> <span class="op">|&gt;</span></span>
@@ -319,7 +324,7 @@ change in sale and rent prices for the city of São Paulo.</p>
 <span>    y <span class="op">=</span> <span class="st">"YoY chg. (%)"</span>,</span>
 <span>    color <span class="op">=</span> <span class="st">""</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_family <span class="op">=</span> <span class="va">plot_font</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -328,14 +333,13 @@ change in sale and rent prices for the city of São Paulo.</p>
 <p>Consolidating the interface meant retiring a few datasets that could
 not be maintained reliably. The <code>cbic</code>,
 <code>property_records</code>, <code>nre_ire</code>, and
-<code>itbi</code> datasets have been removed. As mentioned above,
-<code>property_records</code> and <code>cbic</code> (in some format)
-will return in future releases, but <code>nre_ire</code> and
-<code>itbi</code> will not. The upkeep of the <code>nre_ire</code>
-dataset is too high, since it’s hard to automate, and the perceived gain
-is little. The <code>itbi</code> dataset was an experiment of bringing
-large real estate datasets into the package, but such a dataset adds a
-lot of complexity and I’ve decided it merits a separate one.</p>
+<code>itbi</code> datasets have been removed.
+<code>property_records</code> and <code>cbic</code> may return, as noted
+above, but <code>nre_ire</code> and <code>itbi</code> will not.
+<code>nre_ire</code> resists automation and costs more upkeep than it
+returns. <code>itbi</code> was an experiment in bringing large
+transaction-level datasets into the package; that scale of data belongs
+in a package of its own.</p>
 <p>The <code>bcb_series</code> and <code>rppi</code> datasets also
 changed shape. <code>bcb_series</code> now returns a compact set of
 columns and accepts a hierarchy level such as <code>"core"</code> or

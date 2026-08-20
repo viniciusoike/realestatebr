@@ -1,4 +1,4 @@
-# Download BCB Series Data with Robust Error Handling
+# Download BCB Series Data
 
 Downloads BCB series data with per-series retry logic. Uses
 [`purrr::possibly()`](https://purrr.tidyverse.org/reference/possibly.html)

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,10 @@
       <small>Source: <a href="https://github.com/viniciusoike/realestatebr/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.1.9000" id="realestatebr-1019000">realestatebr 1.0.1.9000<a class="anchor" aria-label="anchor" href="#realestatebr-1019000"></a></h2>
+<ul><li>Fixed <code>get_dataset("bcb_series")</code> failing with <code>object 'bcb_metadata' not found</code> when the package was not attached (<a href="https://github.com/viniciusoike/realestatebr/issues/23" class="external-link">#23</a>). The IVAR series in <code>get_dataset("rppi")</code> silently fell back to the GitHub release for the same reason.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.1" id="realestatebr-101">realestatebr 1.0.1<a class="anchor" aria-label="anchor" href="#realestatebr-101"></a></h2><p class="text-muted">CRAN release: 2026-06-05</p>
 <p>CRAN resubmission. Version 1.0.0 was archived on 2026-05-28 because the package and its transitive <code>piggyback</code>/<code>gh</code> dependencies wrote to <code>~/.cache/realestatebr/</code> and <code>~/.cache/R/gh/</code>, violating CRAN’s policy on home-filespace writes. This release removes this: the caching architecture is fully overhauled.</p>
@@ -519,7 +523,7 @@
 </ul></li>
 </ul><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Now returns all categories by default</span></span>
-<span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span><span class="op">)</span>  <span class="co"># → 9,398 rows, 4 categories ✅</span></span>
+<span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span><span class="op">)</span>  <span class="co"># → 9,398 rows, 4 categories</span></span>
 <span></span>
 <span><span class="co"># Specific tables still work correctly</span></span>
 <span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span>, <span class="st">"launch"</span><span class="op">)</span>  <span class="co"># → 780 rows</span></span>
@@ -644,15 +648,6 @@
 </li>
 </ul></div>
 </div>
-<div class="section level4">
-<h4 id="benefits-0-5-0">Benefits<a class="anchor" aria-label="anchor" href="#benefits-0-5-0"></a></h4>
-<ul><li>✅ <strong>CRAN Compliant</strong>: Package size now &lt;5MB (was 25MB)</li>
-<li>✅ <strong>Faster Installation</strong>: Package downloads are much smaller</li>
-<li>✅ <strong>Offline Usage</strong>: Once cached, datasets work offline</li>
-<li>✅ <strong>User Control</strong>: Users manage their own cache</li>
-<li>✅ <strong>Weekly Updates</strong>: GitHub releases updated automatically by CI</li>
-<li>✅ <strong>No Breaking APIs</strong>: <code><a href="../reference/get_dataset.html">get_dataset()</a></code> interface unchanged</li>
-</ul></div>
 <div class="section level4">
 <h4 id="deprecations-0-5-0">Deprecations<a class="anchor" aria-label="anchor" href="#deprecations-0-5-0"></a></h4>
 <ul><li>
@@ -865,20 +860,20 @@
 <div class="section level3">
 <h3 id="major-breaking-changes---api-consolidation-0-4-0">Major Breaking Changes - API Consolidation<a class="anchor" aria-label="anchor" href="#major-breaking-changes---api-consolidation-0-4-0"></a></h3>
 <div class="section level4">
-<h4 id="dart-unified-data-interface-0-4-0">🎯 Unified Data Interface<a class="anchor" aria-label="anchor" href="#dart-unified-data-interface-0-4-0"></a></h4>
+<h4 id="unified-data-interface-0-4-0">Unified Data Interface<a class="anchor" aria-label="anchor" href="#unified-data-interface-0-4-0"></a></h4>
 <p>This release implements a <strong>major breaking change</strong> that consolidates 15+ individual <code>get_*()</code> functions into a single, unified <code><a href="../reference/get_dataset.html">get_dataset()</a></code> interface. This dramatically simplifies the package API while maintaining full functionality.</p>
 <p><strong>BREAKING CHANGE</strong>: All individual <code>get_*()</code> functions have been removed: - <code><a href="../reference/get_abecip_indicators.html">get_abecip_indicators()</a></code>, <code><a href="../reference/get_abrainc_indicators.html">get_abrainc_indicators()</a></code>, <code><a href="../reference/get_rppi.html">get_rppi()</a></code>, <code><a href="../reference/get_bcb_realestate.html">get_bcb_realestate()</a></code>, etc. - <strong>Migration</strong>: Use <code>get_dataset("dataset_name")</code> instead</p>
 </div>
 <div class="section level4">
-<h4 id="wrench-rppi-code-simplification-internal-0-4-0">🔧 RPPI Code Simplification (Internal)<a class="anchor" aria-label="anchor" href="#wrench-rppi-code-simplification-internal-0-4-0"></a></h4>
+<h4 id="rppi-code-simplification-internal-0-4-0">RPPI Code Simplification (Internal)<a class="anchor" aria-label="anchor" href="#rppi-code-simplification-internal-0-4-0"></a></h4>
 <p><strong>Major refactoring</strong> of RPPI functions for better maintainability: - <strong>67% code reduction</strong>: 1579 lines → 519 lines (1060 lines removed) - <strong>Bug fix</strong>: FipeZap national index now correctly standardized to <code>name_muni == "Brazil"</code> - <strong>Shared helpers</strong>: Created <code>rppi-helpers.R</code> with common functions to eliminate duplication - <strong>Removed overhead</strong>: Eliminated unused <code>stack</code> parameter, cli_debug calls, and metadata attributes - <strong>Simplified documentation</strong>: Removed verbose sections (Progress Reporting, Error Handling, Examples) from internal functions - <strong>All functions now <code>@keywords internal</code></strong>: Only <code><a href="../reference/get_dataset.html">get_dataset()</a></code> is user-facing</p>
 <p><strong>Benefits</strong>: - Easier to maintain and debug - Faster execution (less overhead) - Consistent error handling across all indices - Bug fixes apply to all functions automatically</p>
 </div>
 <div class="section level4">
-<h4 id="bar_chart-cbic-dataset---partial-release-cement-only-0-4-0">📊 CBIC Dataset - Partial Release (Cement Only)<a class="anchor" aria-label="anchor" href="#bar_chart-cbic-dataset---partial-release-cement-only-0-4-0"></a></h4>
+<h4 id="cbic-dataset---partial-release-cement-only-0-4-0">CBIC Dataset - Partial Release (Cement Only)<a class="anchor" aria-label="anchor" href="#cbic-dataset---partial-release-cement-only-0-4-0"></a></h4>
 <p><strong>Note</strong>: In v0.4.0, the CBIC dataset is limited to <strong>cement tables only</strong> (validated data). Steel and PIM tables will be added in v0.4.1.</p>
-<p><strong>Available in v0.4.0</strong>: - ✅ <code>cement_monthly_consumption</code> - Monthly cement consumption by state - ✅ <code>cement_annual_consumption</code> - Annual cement consumption by region - ✅ <code>cement_production_exports</code> - Production, consumption, and export data - ✅ <code>cement_monthly_production</code> - Monthly cement production by state - ✅ <code>cement_cub_prices</code> - CUB cement prices by state</p>
-<p><strong>Coming in v0.4.1</strong>: - ⏳ Steel prices and production data - ⏳ PIM industrial production indices</p>
+<p><strong>Available in v0.4.0</strong>: - <code>cement_monthly_consumption</code> - Monthly cement consumption by state - <code>cement_annual_consumption</code> - Annual cement consumption by region - <code>cement_production_exports</code> - Production, consumption, and export data - <code>cement_monthly_production</code> - Monthly cement production by state - <code>cement_cub_prices</code> - CUB cement prices by state</p>
+<p><strong>Coming in v0.4.1</strong>: - Steel prices and production data - PIM industrial production indices</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Works in v0.4.0</span></span>
 <span><span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"cbic"</span><span class="op">)</span>  <span class="co"># Default: cement_monthly_consumption</span></span>
@@ -902,7 +897,7 @@
 </li>
 </ul></div>
 <div class="section level4">
-<h4 id="clipboard-simplified-public-api-0-4-0">📋 Simplified Public API<a class="anchor" aria-label="anchor" href="#clipboard-simplified-public-api-0-4-0"></a></h4>
+<h4 id="simplified-public-api-0-4-0">Simplified Public API<a class="anchor" aria-label="anchor" href="#simplified-public-api-0-4-0"></a></h4>
 <p><strong>New unified interface:</strong></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get data from any dataset</span></span>
@@ -916,7 +911,7 @@
 <p><strong>Removed functions (now internal):</strong> - <code><a href="../reference/get_abecip_indicators.html">get_abecip_indicators()</a></code> → <code>get_dataset("abecip")</code> - <code><a href="../reference/get_abrainc_indicators.html">get_abrainc_indicators()</a></code> → <code>get_dataset("abrainc")</code> - <code><a href="../reference/get_rppi.html">get_rppi()</a></code> → <code>get_dataset("rppi")</code> - <code><a href="../reference/get_bcb_realestate.html">get_bcb_realestate()</a></code> → <code>get_dataset("bcb_realestate")</code> - <code><a href="../reference/get_bcb_series.html">get_bcb_series()</a></code> → <code>get_dataset("bcb_series")</code> - Plus 10 more functions</p>
 </div>
 <div class="section level4">
-<h4 id="wrench-enhanced-data-access-0-4-0">🔧 Enhanced Data Access<a class="anchor" aria-label="anchor" href="#wrench-enhanced-data-access-0-4-0"></a></h4>
+<h4 id="enhanced-data-access-0-4-0">Enhanced Data Access<a class="anchor" aria-label="anchor" href="#enhanced-data-access-0-4-0"></a></h4>
 <ul><li>
 <strong>Smart fallback</strong>: Auto fallback from GitHub cache → fresh download</li>
 <li>
@@ -927,7 +922,7 @@
 <strong>Metadata preservation</strong>: All data includes source tracking and download info</li>
 </ul></div>
 <div class="section level4">
-<h4 id="test_tube-comprehensive-testing-0-4-0">🧪 Comprehensive Testing<a class="anchor" aria-label="anchor" href="#test_tube-comprehensive-testing-0-4-0"></a></h4>
+<h4 id="comprehensive-testing-0-4-0">Comprehensive Testing<a class="anchor" aria-label="anchor" href="#comprehensive-testing-0-4-0"></a></h4>
 <ul><li>
 <strong>New test suite</strong>: <code>test-internal-functions-0.4.0.R</code> with 100 tests</li>
 <li>
@@ -1031,7 +1026,7 @@
 <div class="section level3">
 <h3 id="major-features-and-improvements-0-3-0">Major Features and Improvements<a class="anchor" aria-label="anchor" href="#major-features-and-improvements-0-3-0"></a></h3>
 <div class="section level4">
-<h4 id="dart-phase-data-pipeline-implementation-complete-0-3-0">🎯 Phase 2: Data Pipeline Implementation Complete<a class="anchor" aria-label="anchor" href="#dart-phase-data-pipeline-implementation-complete-0-3-0"></a></h4>
+<h4 id="phase-data-pipeline-implementation-complete-0-3-0">Phase 2: Data Pipeline Implementation Complete<a class="anchor" aria-label="anchor" href="#phase-data-pipeline-implementation-complete-0-3-0"></a></h4>
 <ul><li>
 <strong>{targets} Pipeline Framework</strong>: Implemented comprehensive targets workflow for automated data processing and validation</li>
 <li>
@@ -1042,7 +1037,7 @@
 <strong>Pipeline Performance Monitoring</strong>: Added automated report generation and validation status tracking</li>
 </ul></div>
 <div class="section level4">
-<h4 id="bar_chart-enhanced-data-processing-0-3-0">📊 Enhanced Data Processing<a class="anchor" aria-label="anchor" href="#bar_chart-enhanced-data-processing-0-3-0"></a></h4>
+<h4 id="enhanced-data-processing-0-3-0">Enhanced Data Processing<a class="anchor" aria-label="anchor" href="#enhanced-data-processing-0-3-0"></a></h4>
 <ul><li>
 <strong>Targets Pipeline</strong>: <code>_targets.R</code> workflow with automated dependency management and parallel processing</li>
 <li>
@@ -1053,7 +1048,7 @@
 <strong>Report Generation</strong>: Automated pipeline status reports and data quality summaries</li>
 </ul></div>
 <div class="section level4">
-<h4 id="wrench-improved-function-reliability-0-3-0">🔧 Improved Function Reliability<a class="anchor" aria-label="anchor" href="#wrench-improved-function-reliability-0-3-0"></a></h4>
+<h4 id="improved-function-reliability-0-3-0">Improved Function Reliability<a class="anchor" aria-label="anchor" href="#improved-function-reliability-0-3-0"></a></h4>
 <ul><li>
 <strong>Error Handling</strong>: Enhanced error handling in <code>cache.R</code> with better fallback mechanisms</li>
 <li>
@@ -1064,7 +1059,7 @@
 <strong>Internal Data</strong>: Updated <code>sysdata.rda</code> with latest processed datasets</li>
 </ul></div>
 <div class="section level4">
-<h4 id="rocket-infrastructure-improvements-0-3-0">🚀 Infrastructure Improvements<a class="anchor" aria-label="anchor" href="#rocket-infrastructure-improvements-0-3-0"></a></h4>
+<h4 id="infrastructure-improvements-0-3-0">Infrastructure Improvements<a class="anchor" aria-label="anchor" href="#infrastructure-improvements-0-3-0"></a></h4>
 <ul><li>
 <strong>Workflow Automation</strong>: Replaced single update workflow with focused daily/weekly pipelines</li>
 <li>
@@ -1075,7 +1070,7 @@
 <strong>Dependency Updates</strong>: Added <code>targets</code> and <code>tarchetypes</code> to package dependencies</li>
 </ul></div>
 <div class="section level4">
-<h4 id="chart_with_upwards_trend-new-data-sources-0-3-0">📈 New Data Sources<a class="anchor" aria-label="anchor" href="#chart_with_upwards_trend-new-data-sources-0-3-0"></a></h4>
+<h4 id="new-data-sources-0-3-0">New Data Sources<a class="anchor" aria-label="anchor" href="#new-data-sources-0-3-0"></a></h4>
 <ul><li>
 <strong>B3 Stocks</strong>: Added enhanced B3 stock data processing with standardized formatting</li>
 <li>
@@ -1147,7 +1142,7 @@
 <div class="section level3">
 <h3 id="major-features-and-improvements-0-2-0">Major Features and Improvements<a class="anchor" aria-label="anchor" href="#major-features-and-improvements-0-2-0"></a></h3>
 <div class="section level4">
-<h4 id="dart-phase-modernization-complete-0-2-0">🎯 Phase 1 Modernization Complete<a class="anchor" aria-label="anchor" href="#dart-phase-modernization-complete-0-2-0"></a></h4>
+<h4 id="phase-modernization-complete-0-2-0">Phase 1 Modernization Complete<a class="anchor" aria-label="anchor" href="#phase-modernization-complete-0-2-0"></a></h4>
 <ul><li>
 <strong>Modernized 13 core <code>get_*</code> functions</strong> with consistent APIs, CLI-based error handling, and progress reporting</li>
 <li>
@@ -1158,7 +1153,7 @@
 <strong>Enhanced documentation</strong> with comprehensive examples and <a href="https://github.com/section" class="external-link">@section</a> blocks</li>
 </ul></div>
 <div class="section level4">
-<h4 id="bar_chart-new-unified-data-architecture-0-2-0">📊 New Unified Data Architecture<a class="anchor" aria-label="anchor" href="#bar_chart-new-unified-data-architecture-0-2-0"></a></h4>
+<h4 id="new-unified-data-architecture-0-2-0">New Unified Data Architecture<a class="anchor" aria-label="anchor" href="#new-unified-data-architecture-0-2-0"></a></h4>
 <ul><li>
 <strong><code><a href="../reference/list_datasets.html">list_datasets()</a></code></strong> - Discover available datasets with filtering capabilities</li>
 <li>
@@ -1169,7 +1164,7 @@
 <strong>Improved caching</strong> with standardized cache location and validation</li>
 </ul></div>
 <div class="section level4">
-<h4 id="wrench-api-standardization-0-2-0">🔧 API Standardization<a class="anchor" aria-label="anchor" href="#wrench-api-standardization-0-2-0"></a></h4>
+<h4 id="api-standardization-0-2-0">API Standardization<a class="anchor" aria-label="anchor" href="#api-standardization-0-2-0"></a></h4>
 <ul><li>
 <strong>Introduced <code>table</code> parameter</strong> replacing <code>category</code> across all functions</li>
 <li>
@@ -1181,7 +1176,7 @@
 <strong>Metadata attributes</strong> on all returned data with source tracking and download info</li>
 </ul></div>
 <div class="section level4">
-<h4 id="chart_with_upwards_trend-new-data-sources-0-2-0">📈 New Data Sources<a class="anchor" aria-label="anchor" href="#chart_with_upwards_trend-new-data-sources-0-2-0"></a></h4>
+<h4 id="new-data-sources-0-2-0">New Data Sources<a class="anchor" aria-label="anchor" href="#new-data-sources-0-2-0"></a></h4>
 <ul><li>
 <strong>CBIC construction materials data</strong>:
 <ul><li>
@@ -1197,7 +1192,7 @@
 <strong>Updated B3 stock data</strong> with standardized column names</li>
 </ul></div>
 <div class="section level4">
-<h4 id="rocket-performance-and-reliability-0-2-0">🚀 Performance and Reliability<a class="anchor" aria-label="anchor" href="#rocket-performance-and-reliability-0-2-0"></a></h4>
+<h4 id="performance-and-reliability-0-2-0">Performance and Reliability<a class="anchor" aria-label="anchor" href="#performance-and-reliability-0-2-0"></a></h4>
 <ul><li>
 <strong>Progress reporting</strong> with <code>cli</code> package integration for long-running operations</li>
 <li>
@@ -1208,7 +1203,7 @@
 <strong>Comprehensive input validation</strong> with helpful error messages</li>
 </ul></div>
 <div class="section level4">
-<h4 id="globe_with_meridians-bilingual-support-0-2-0">🌐 Bilingual Support<a class="anchor" aria-label="anchor" href="#globe_with_meridians-bilingual-support-0-2-0"></a></h4>
+<h4 id="bilingual-support-0-2-0">Bilingual Support<a class="anchor" aria-label="anchor" href="#bilingual-support-0-2-0"></a></h4>
 <ul><li>
 <strong>Translation system</strong> for Portuguese/English column names and values</li>
 <li>

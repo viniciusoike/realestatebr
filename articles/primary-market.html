@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,61 +82,130 @@
 
     
     
-<p>The primary market covers newly built homes sold by developers. This
-article tracks the development cycle, from launches to sales and
-deliveries, and the business environment around it using three
-datasets</p>
+<p>This article follows the development cycle, from launches to sales
+and deliveries, and the business environment around it. Three datasets
+do the work.</p>
 <ul>
 <li>
 <code>abrainc</code> for national primary market indicators from the
-ABRAINC-FIPE panel of developers,</li>
+ABRAINC-FIPE panel of developers</li>
 <li>
-<code>secovi</code> for the São Paulo market,</li>
+<code>secovi</code> for the São Paulo market</li>
 <li>
 <code>fgv_ibre</code> for construction costs and business
-sentiment.</li>
+sentiment</li>
 </ul>
+<p>The aim is to show what these datasets hold, not to settle any
+question about the market. Besides the usual <code>dplyr</code> and
+<code>ggplot2</code>, we use the <code>trendseries</code> package to
+estimate trends and cycles.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/viniciusoike/realestatebr" class="external-link">realestatebr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/viniciusoike/trendseries" class="external-link">trendseries</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
-<p>The code below defines a common theme for the plots in this article.
-It is entirely optional and can be omitted.</p>
+<p>The code below defines a common theme for the plots in this article
+and can be omitted.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">color_palette</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">"#1E3A5F"</span>,</span>
-<span>  <span class="st">"#DD6B20"</span>,</span>
-<span>  <span class="st">"#2C7A7B"</span>,</span>
-<span>  <span class="st">"#D69E2E"</span>,</span>
-<span>  <span class="st">"#805AD5"</span>,</span>
-<span>  <span class="st">"#C53030"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">theme_series</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
-<span>      plot.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span>,</span>
-<span>      panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>      panel.grid.major.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>      axis.line.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"gray10"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
-<span>      axis.ticks.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"gray10"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
-<span>      axis.title.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>      legend.position <span class="op">=</span> <span class="st">"bottom"</span>,</span>
-<span>      palette.color.discrete <span class="op">=</span> <span class="va">color_palette</span></span>
-<span>    <span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ekioplot"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">color_palette</span> <span class="op">&lt;-</span> <span class="fu">ekioplot</span><span class="fu">::</span><span class="fu">ekio_pal</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">theme_series</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu">ekioplot</span><span class="fu">::</span><span class="fu">theme_ekio</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
+<span>        palette.color.discrete <span class="op">=</span> <span class="va">color_palette</span></span>
+<span>      <span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="va">color_palette</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"#1E3A5F"</span>,</span>
+<span>    <span class="st">"#DD6B20"</span>,</span>
+<span>    <span class="st">"#2C7A7B"</span>,</span>
+<span>    <span class="st">"#D69E2E"</span>,</span>
+<span>    <span class="st">"#805AD5"</span>,</span>
+<span>    <span class="st">"#C53030"</span></span>
+<span>  <span class="op">)</span></span>
+<span>  <span class="va">theme_series</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
+<span>        legend.position <span class="op">=</span> <span class="st">"bottom"</span>,</span>
+<span>        palette.color.discrete <span class="op">=</span> <span class="va">color_palette</span></span>
+<span>      <span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="construction-costs-and-sentiment">Construction costs and sentiment<a class="anchor" aria-label="anchor" href="#construction-costs-and-sentiment"></a>
+</h2>
+<p>The <code>fgv_ibre</code> dataset gathers indicators from Fundação
+Getulio Vargas (FGV). FGV runs a wide range of surveys, and
+<code>realestatebr</code> collects the ones most relevant to
+construction and real estate. The <code>name_series</code> and
+<code>code_series</code> columns identify each series.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fgv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"fgv_ibre"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">fgv</span>, <span class="va">name_series</span>, <span class="va">name_simplified</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 15 × 3</span></span></span>
+<span><span class="co">#&gt;    name_series                                             name_simplified     n</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> ICST Com ajuste Sazonal - Índice de Confiança da Const… ic_cst            193</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> IE-CST Com ajuste Sazonal - Índice de Expectativas da … ie_cst            193</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> INCC - 1o Decendio                                      incc_1o_decend…   259</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> INCC - 2o Decendio                                      incc_2o_decend…   259</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> INCC - Brasil                                           incc_brasil       361</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> INCC - Brasil - DI                                      incc_brasil_di    360</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> INCC - Brasil-10                                        incc_brasil_10    361</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> INCC - Fechamento Mensal                                incc              361</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> ISA-CST Com ajuste Sazonal - Índice da Situação Atual … isa_cst           193</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Sondagem da Construção – Nível de Utilização da Capaci… nuci              160</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> Índice de Variação de Aluguéis Residenciais (IVAR) - B… ivar_belo_hori…    91</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> Índice de Variação de Aluguéis Residenciais (IVAR) - M… ivar_brazil        91</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> Índice de Variação de Aluguéis Residenciais (IVAR) - P… ivar_porto_ale…    91</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> Índice de Variação de Aluguéis Residenciais (IVAR) - R… ivar_rio_de_ja…    91</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> Índice de Variação de Aluguéis Residenciais (IVAR) - S… ivar_sao_paulo     91</span></span></code></pre></div>
+<p>The plot below shows the confidence indicators of the construction
+sector. ICST is the overall index, which averages the IE-CST
+(expectations) and the ISA-CST (current situation). Although these
+series are already seasonally adjusted, we smooth them with a 12-month
+moving average to make them more stable. As with most confidence
+indicators, the values are normalized: values above 100 indicate a more
+favorable assessment, while values below 100 indicate a less favorable
+assessment.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">confidence</span> <span class="op">&lt;-</span> <span class="va">fgv</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_simplified</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ic_cst"</span>, <span class="st">"ie_cst"</span>, <span class="st">"isa_cst"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://viniciusoike.github.io/trendseries/reference/augment_trends.html" class="external-link">augment_trends</a></span><span class="op">(</span>group_cols <span class="op">=</span> <span class="st">"name_simplified"</span>, methods <span class="op">=</span> <span class="st">"ma"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    indicator <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
+<span>      <span class="va">name_simplified</span> <span class="op">==</span> <span class="st">"ic_cst"</span> <span class="op">~</span> <span class="st">"ICST"</span>,</span>
+<span>      <span class="va">name_simplified</span> <span class="op">==</span> <span class="st">"ie_cst"</span> <span class="op">~</span> <span class="st">"IE-CST (Expectations)"</span>,</span>
+<span>      <span class="va">name_simplified</span> <span class="op">==</span> <span class="st">"isa_cst"</span> <span class="op">~</span> <span class="st">"ISA-CST (Current Situation)"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">confidence</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">trend_ma</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">indicator</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">100</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Confidence Indicators"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Construction sector confidence indicators, 12-month moving average."</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Index"</span>,</span>
+<span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="primary-market_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+</div>
 <div class="section level2">
 <h2 id="launches-and-sales">Launches and sales<a class="anchor" aria-label="anchor" href="#launches-and-sales"></a>
 </h2>
 <p>The <code>indicator</code> table from <code>abrainc</code> reports
 monthly launches, sales, deliveries, cancellations, and supply for a
-panel of large developers. The series are volatile month to month, so
-the plot below uses values accumulated over twelve months.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+panel of large developers. The series are volatile, so the plot below
+uses values accumulated over twelve months.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">abrainc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abrainc"</span>, table <span class="op">=</span> <span class="st">"indicator"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">abrainc</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 3,528</span></span>
+<span><span class="co">#&gt; Rows: 3,552</span></span>
 <span><span class="co">#&gt; Columns: 6</span></span>
 <span><span class="co">#&gt; $ date           <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-0…</span></span>
 <span><span class="co">#&gt; $ year           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2…</span></span>
@@ -144,21 +213,29 @@ the plot below uses values accumulated over twelve months.</p>
 <span><span class="co">#&gt; $ variable       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "total"<span style="color: #949494;">, </span>"market_rate"<span style="color: #949494;">, </span>"social_housing"<span style="color: #949494;">, </span>"other"<span style="color: #949494;">, </span>"tot…</span></span>
 <span><span class="co">#&gt; $ value          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1726.0000<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>4232.0000<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>6409.0000…</span></span>
 <span><span class="co">#&gt; $ variable_label <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Total"<span style="color: #949494;">, </span>"Market-rate Development"<span style="color: #949494;">, </span>"Social Housing (MC…</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cycle</span> <span class="op">&lt;-</span> <span class="va">abrainc</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">abrainc_trends</span> <span class="op">&lt;-</span> <span class="va">abrainc</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">category</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"new_units"</span>, <span class="st">"sold"</span><span class="op">)</span>,</span>
 <span>    <span class="va">variable</span> <span class="op">==</span> <span class="st">"total"</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    units_12m <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/rollmean.html" class="external-link">rollsumr</a></span><span class="op">(</span><span class="va">value</span>, k <span class="op">=</span> <span class="fl">12</span>, fill <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e3</span>,</span>
-<span>    category_label <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html" class="external-link">if_else</a></span><span class="op">(</span><span class="va">category</span> <span class="op">==</span> <span class="st">"new_units"</span>, <span class="st">"Launches"</span>, <span class="st">"Sales"</span><span class="op">)</span>,</span>
-<span>    .by <span class="op">=</span> <span class="va">category</span></span>
+<span>    category_label <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
+<span>      <span class="va">category</span> <span class="op">==</span> <span class="st">"new_units"</span> <span class="op">~</span> <span class="st">"Launches"</span>,</span>
+<span>      <span class="va">category</span> <span class="op">==</span> <span class="st">"sold"</span> <span class="op">~</span> <span class="st">"Sales"</span>,</span>
+<span>      <span class="cn">TRUE</span> <span class="op">~</span> <span class="cn">NA_character_</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">trendseries</span><span class="fu">::</span><span class="fu"><a href="https://viniciusoike.github.io/trendseries/reference/augment_trends.html" class="external-link">augment_trends</a></span><span class="op">(</span></span>
+<span>    value_col <span class="op">=</span> <span class="st">"units_12m"</span>,</span>
+<span>    group_cols <span class="op">=</span> <span class="st">"category_label"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cycle</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">units_12m</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">units_12m</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">category_label</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">abrainc_trends</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">units_12m</span>, color <span class="op">=</span> <span class="va">category_label</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>lwd <span class="op">=</span> <span class="fl">0.5</span>, alpha <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">trend_stl</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">category_label</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>date_breaks <span class="op">=</span> <span class="st">"1 year"</span>, date_labels <span class="op">=</span> <span class="st">"%Y"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
 <span>    title <span class="op">=</span> <span class="st">"Launches and Sales in the Primary Market"</span>,</span>
@@ -167,87 +244,102 @@ the plot below uses values accumulated over twelve months.</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="primary-market_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="primary-market_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="market-segments">Market segments<a class="anchor" aria-label="anchor" href="#market-segments"></a>
 </h2>
-<p>The same indicators are split between market-rate developments and
-social housing (the MCMV program and its successors). Social housing
-accounts for a large and fairly stable share of total sales.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>Brazil has two large segments: (1) social housing production, which
+is financed and subsidized by the “Minha Casa Minha Vida” program
+(usually abbreviated as “MCMV”); and (2) market-rate developments. The
+ABRAINC dataset reports sales and launches for each of these
+markets.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">segments</span> <span class="op">&lt;-</span> <span class="va">abrainc</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">category</span> <span class="op">==</span> <span class="st">"sold"</span>,</span>
 <span>    <span class="va">variable</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"market_rate"</span>, <span class="st">"social_housing"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    units_12m <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/rollmean.html" class="external-link">rollsumr</a></span><span class="op">(</span><span class="va">value</span>, k <span class="op">=</span> <span class="fl">12</span>, fill <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e3</span>,</span>
-<span>    .by <span class="op">=</span> <span class="va">variable</span></span>
-<span>  <span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>    year_total <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">anyNA</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="cn">NA_real_</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e3</span>,</span>
+<span>    .by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variable_label"</span>, <span class="st">"year"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">year_total</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">segments</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">units_12m</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">units_12m</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_area</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">variable_label</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>date_breaks <span class="op">=</span> <span class="st">"1 year"</span>, date_labels <span class="op">=</span> <span class="st">"%Y"</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">segments</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">year</span>, <span class="va">year_total</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">variable_label</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/breaks_pretty.html" class="external-link">breaks_pretty</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">8</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>expand <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expansion.html" class="external-link">expansion</a></span><span class="op">(</span>mult <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
 <span>    title <span class="op">=</span> <span class="st">"Sales by Market Segment"</span>,</span>
-<span>    subtitle <span class="op">=</span> <span class="st">"Units accumulated in 12 months"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Total yearly sales by market segment."</span>,</span>
 <span>    y <span class="op">=</span> <span class="st">"Units (thousand)"</span>,</span>
 <span>    fill <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="primary-market_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="primary-market_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="business-conditions">Business conditions<a class="anchor" aria-label="anchor" href="#business-conditions"></a>
 </h2>
 <p>The <code>radar</code> table condenses the business environment into
-standardized 0-10 scores across four dimensions, macroeconomy, credit,
-demand, and the real estate sector. The plot shows one representative
-indicator from each dimension, smoothed with a six-month moving
-average.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+standardized 0-10 scores across four dimensions: (1) macroeconomy; (2)
+credit; (3) demand; and (4) the real estate sector. The plot shows one
+representative indicator from each dimension, smoothed with a six-month
+moving average. Note that the moving average is already bundled with the
+data in the <code>ma6</code> column.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">radar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abrainc"</span>, table <span class="op">=</span> <span class="st">"radar"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">radar_sel</span> <span class="op">&lt;-</span> <span class="va">radar</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">variable</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"confidence"</span>, <span class="st">"finance_condition"</span>, <span class="st">"employment"</span>, <span class="st">"input_costs"</span><span class="op">)</span>,</span>
+<span>    <span class="va">variable</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"confidence"</span>, <span class="st">"finance_condition"</span>, <span class="st">"employment"</span>, <span class="st">"input_costs"</span><span class="op">)</span>,</span>
 <span>    <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/pkg/zoo/man/yearmon.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2012-01-01"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">radar_sel</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">ma6</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">5</span>, linetype <span class="op">=</span> <span class="fl">2</span>, color <span class="op">=</span> <span class="st">"gray40"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">variable_label</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>date_breaks <span class="op">=</span> <span class="st">"4 years"</span>, date_labels <span class="op">=</span> <span class="st">"%Y"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
 <span>    title <span class="op">=</span> <span class="st">"ABRAINC-FIPE Radar"</span>,</span>
-<span>    subtitle <span class="op">=</span> <span class="st">"Standardized scores (0-10), 6-month moving average"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Standardized scores (0-10), 6-month moving average."</span>,</span>
 <span>    y <span class="op">=</span> <span class="st">"Score"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="primary-market_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="primary-market_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>The radar indicator has been discontinued upstream, so the series
+ends at its last published month. The <a href="https://github.com/viniciusoike/realestatebr/issues/6" class="external-link">GitHub
+issue</a> tracks its status.</p>
 </div>
 <div class="section level2">
-<h2 id="a-leading-indicator">A leading indicator<a class="anchor" aria-label="anchor" href="#a-leading-indicator"></a>
+<h2 id="são-paulo">São Paulo<a class="anchor" aria-label="anchor" href="#s%C3%A3o-paulo"></a>
 </h2>
+<p>São Paulo is Brazil’s largest real estate market, and two sources
+cover it here. The <code>leading</code> table from <code>abrainc</code>
+reports building permits in the city, while <code>secovi</code> reports
+supply and sales for the city and the metropolitan region.</p>
+<div class="section level3">
+<h3 id="a-leading-indicator">A leading indicator<a class="anchor" aria-label="anchor" href="#a-leading-indicator"></a>
+</h3>
 <p>Building permits anticipate construction activity. The
 <code>leading</code> table compiles permits in the city of São Paulo
 into a leading indicator of real estate activity.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">leading</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abrainc"</span>, table <span class="op">=</span> <span class="st">"leading"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">leading_index</span> <span class="op">&lt;-</span> <span class="va">leading</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">variable</span> <span class="op">==</span> <span class="st">"leading_index"</span>,</span>
-<span>    <span class="va">zone</span> <span class="op">==</span> <span class="st">"Total"</span>,</span>
+<span>    <span class="va">zone</span> <span class="op">!=</span> <span class="st">"Total"</span>,</span>
 <span>    <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/pkg/zoo/man/yearmon.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2010-01-01"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">leading_index</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">zone</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>date_breaks <span class="op">=</span> <span class="st">"2 years"</span>, date_labels <span class="op">=</span> <span class="st">"%Y"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
 <span>    title <span class="op">=</span> <span class="st">"Real Estate Leading Indicator"</span>,</span>
@@ -255,42 +347,59 @@ into a leading indicator of real estate activity.</p>
 <span>    y <span class="op">=</span> <span class="st">"Index"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="primary-market_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="primary-market_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
-<div class="section level2">
-<h2 id="são-paulo-in-focus">São Paulo in focus<a class="anchor" aria-label="anchor" href="#s%C3%A3o-paulo-in-focus"></a>
-</h2>
-<p>SECOVI-SP, the housing syndicate of São Paulo, reports complementary
-indicators for the largest market in the country. The
-<code>launch</code> and <code>sale</code> tables track new supply and
-sales in the city.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="supply-and-sales">Supply and sales<a class="anchor" aria-label="anchor" href="#supply-and-sales"></a>
+</h3>
+<p>The <code>launch</code> and <code>sale</code> tables from
+<code>secovi</code> track new supply and sales in the city.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">secovi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"secovi"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">secovi</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 9,608</span></span>
-<span><span class="co">#&gt; Columns: 5</span></span>
-<span><span class="co">#&gt; $ date     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2006-01-01<span style="color: #949494;">, </span>2006-02-01<span style="color: #949494;">, </span>2006-03-01<span style="color: #949494;">, </span>2006-04-01<span style="color: #949494;">, </span>2006-05-01<span style="color: #949494;">, </span>…</span></span>
-<span><span class="co">#&gt; $ category <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "condo"<span style="color: #949494;">, </span>"condo"<span style="color: #949494;">, </span>"condo"<span style="color: #949494;">, </span>"condo"<span style="color: #949494;">, </span>"condo"<span style="color: #949494;">, </span>"condo"<span style="color: #949494;">, </span>"condo"…</span></span>
-<span><span class="co">#&gt; $ variable <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "default_condominio"<span style="color: #949494;">, </span>"default_condominio"<span style="color: #949494;">, </span>"default_condomin…</span></span>
-<span><span class="co">#&gt; $ name     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "acao_por_falta_de_pagamento"<span style="color: #949494;">, </span>"acao_por_falta_de_pagamento"<span style="color: #949494;">,</span>…</span></span>
-<span><span class="co">#&gt; $ value    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1216<span style="color: #949494;">, </span>1249<span style="color: #949494;">, </span>1699<span style="color: #949494;">, </span>1482<span style="color: #949494;">, </span>1562<span style="color: #949494;">, </span>1511<span style="color: #949494;">, </span>1577<span style="color: #949494;">, </span>1720<span style="color: #949494;">, </span>1376<span style="color: #949494;">, </span>1270<span style="color: #949494;">, </span>1…</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">secovi</span>, <span class="va">category</span>, <span class="va">variable</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 3</span></span></span>
+<span><span class="co">#&gt;    category variable               n</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> condo    default_condominio   240</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> condo    icon                <span style="text-decoration: underline;">1</span>746</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> launch   launches             532</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> launch   supply               266</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> rent     acao_locaticia      <span style="text-decoration: underline;">1</span>980</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> rent     rent_price           236</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> rent     tipos_de_garantia    618</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> sale     sales                798</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> sale     sales_1rooms         798</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> sale     sales_2rooms         798</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> sale     sales_3rooms         798</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> sale     sales_4rooms         798</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sp_market</span> <span class="op">&lt;-</span> <span class="va">secovi</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">variable</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"launches"</span>, <span class="st">"sales"</span><span class="op">)</span>,</span>
 <span>    <span class="va">name</span> <span class="op">==</span> <span class="st">"unidades"</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    units_12m <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/rollmean.html" class="external-link">rollsumr</a></span><span class="op">(</span><span class="va">value</span>, k <span class="op">=</span> <span class="fl">12</span>, fill <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e3</span>,</span>
-<span>    variable_label <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html" class="external-link">if_else</a></span><span class="op">(</span><span class="va">variable</span> <span class="op">==</span> <span class="st">"launches"</span>, <span class="st">"Launches"</span>, <span class="st">"Sales"</span><span class="op">)</span>,</span>
-<span>    .by <span class="op">=</span> <span class="va">variable</span></span>
+<span>    units_12m <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/rollmean.html" class="external-link">rollsumr</a></span><span class="op">(</span><span class="va">value</span>, k <span class="op">=</span> <span class="fl">12</span>, fill <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e3</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">trendseries</span><span class="fu">::</span><span class="fu"><a href="https://viniciusoike.github.io/trendseries/reference/augment_trends.html" class="external-link">augment_trends</a></span><span class="op">(</span></span>
+<span>    value_col <span class="op">=</span> <span class="st">"units_12m"</span>,</span>
+<span>    group_cols <span class="op">=</span> <span class="st">"variable"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    variable_label <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html" class="external-link">if_else</a></span><span class="op">(</span><span class="va">variable</span> <span class="op">==</span> <span class="st">"launches"</span>, <span class="st">"Launches"</span>, <span class="st">"Sales"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sp_market</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">units_12m</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">units_12m</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">variable_label</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">sp_market</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">units_12m</span>, color <span class="op">=</span> <span class="va">variable_label</span><span class="op">)</span>,</span>
+<span>    lwd <span class="op">=</span> <span class="fl">0.6</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">0.5</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">trend_stl</span>, color <span class="op">=</span> <span class="va">variable_label</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">variable_label</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>date_breaks <span class="op">=</span> <span class="st">"2 years"</span>, date_labels <span class="op">=</span> <span class="st">"%Y"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
 <span>    title <span class="op">=</span> <span class="st">"Launches and Sales in São Paulo"</span>,</span>
 <span>    subtitle <span class="op">=</span> <span class="st">"Units accumulated in 12 months, SECOVI-SP"</span>,</span>
@@ -298,67 +407,46 @@ sales in the city.</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="primary-market_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-</div>
-<div class="section level2">
-<h2 id="construction-costs-and-sentiment">Construction costs and sentiment<a class="anchor" aria-label="anchor" href="#construction-costs-and-sentiment"></a>
-</h2>
-<p>The <code>fgv_ibre</code> dataset gathers FGV indicators for the
-construction sector. INCC measures construction costs; the IC-CST index
-measures the confidence of construction firms.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fgv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"fgv_ibre"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">fgv</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 3,118</span></span>
-<span><span class="co">#&gt; Columns: 7</span></span>
-<span><span class="co">#&gt; $ date            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 1996-07-01<span style="color: #949494;">, </span>1996-07-01<span style="color: #949494;">, </span>1996-07-01<span style="color: #949494;">, </span>1996-07-01<span style="color: #949494;">, </span>1996-…</span></span>
-<span><span class="co">#&gt; $ name_simplified <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "incc_brasil_di"<span style="color: #949494;">, </span>"incc_brasil_10"<span style="color: #949494;">, </span>"incc_brasil"<span style="color: #949494;">, </span>"in…</span></span>
-<span><span class="co">#&gt; $ value           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 149.095<span style="color: #949494;">, </span>147.979<span style="color: #949494;">, </span>149.224<span style="color: #949494;">, </span>1.520<span style="color: #949494;">, </span>149.445<span style="color: #949494;">, </span>149.044<span style="color: #949494;">, </span>15…</span></span>
-<span><span class="co">#&gt; $ name_series     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "INCC - Brasil - DI"<span style="color: #949494;">, </span>"INCC - Brasil-10"<span style="color: #949494;">, </span>"INCC - Bras…</span></span>
-<span><span class="co">#&gt; $ code_series     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1464783<span style="color: #949494;">, </span>1464331<span style="color: #949494;">, </span>1465235<span style="color: #949494;">, </span>1000370<span style="color: #949494;">, </span>1464783<span style="color: #949494;">, </span>1464331<span style="color: #949494;">, </span>…</span></span>
-<span><span class="co">#&gt; $ unit            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Índice"<span style="color: #949494;">, </span>"Índice"<span style="color: #949494;">, </span>"Índice"<span style="color: #949494;">, </span>"Percentual"<span style="color: #949494;">, </span>"Índice"<span style="color: #949494;">, </span>…</span></span>
-<span><span class="co">#&gt; $ source          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "FGV-INCC"<span style="color: #949494;">, </span>"FGV-INCC"<span style="color: #949494;">, </span>"FGV-INCC"<span style="color: #949494;">, </span>"FGV-INCC"<span style="color: #949494;">, </span>"FGV-I…</span></span></code></pre></div>
-<p>The plot below combines cost pressure and sentiment. Cost shocks,
-such as the one in 2021, typically depress confidence with a lag.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">incc</span> <span class="op">&lt;-</span> <span class="va">fgv</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_simplified</span> <span class="op">==</span> <span class="st">"incc"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<p><img src="primary-market_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>Some series break the totals down further. The plot below shows sales
+by number of rooms.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sp_market_rooms</span> <span class="op">&lt;-</span> <span class="va">secovi</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"sales_[0-9]rooms"</span>, <span class="va">variable</span><span class="op">)</span>,</span>
+<span>    <span class="va">name</span> <span class="op">==</span> <span class="st">"unidades"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">trendseries</span><span class="fu">::</span><span class="fu"><a href="https://viniciusoike.github.io/trendseries/reference/augment_trends.html" class="external-link">augment_trends</a></span><span class="op">(</span>group_cols <span class="op">=</span> <span class="st">"variable"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    acum12m <span class="op">=</span> <span class="op">(</span><span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/rollapply.html" class="external-link">rollapplyr</a></span><span class="op">(</span></span>
-<span>      <span class="fl">1</span> <span class="op">+</span> <span class="va">value</span> <span class="op">/</span> <span class="fl">100</span>, width <span class="op">=</span> <span class="fl">12</span>, FUN <span class="op">=</span> <span class="va">prod</span>, fill <span class="op">=</span> <span class="cn">NA</span></span>
-<span>    <span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>    variable_label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/regmatches.html" class="external-link">regmatches</a></span><span class="op">(</span><span class="va">variable</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">regexpr</a></span><span class="op">(</span><span class="st">"\\d+"</span>, <span class="va">variable</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    variable_label <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html" class="external-link">if_else</a></span><span class="op">(</span></span>
+<span>      <span class="va">variable</span> <span class="op">==</span> <span class="st">"sales_1rooms"</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">variable_label</span>, <span class="st">"room"</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">variable_label</span>, <span class="st">"rooms"</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">confidence</span> <span class="op">&lt;-</span> <span class="va">fgv</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name_simplified</span> <span class="op">==</span> <span class="st">"ic_cst"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">fgv_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="st">"INCC (% accumulated in 12 months)"</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">incc</span>, <span class="va">date</span>, value <span class="op">=</span> <span class="va">acum12m</span><span class="op">)</span>,</span>
-<span>    <span class="st">"Construction confidence (IC-CST)"</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">confidence</span>, <span class="va">date</span>, <span class="va">value</span><span class="op">)</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  .id <span class="op">=</span> <span class="st">"series"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fgv_plot</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">series</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">sp_market_rooms</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">trend_stl</span>, color <span class="op">=</span> <span class="va">variable_label</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">variable_label</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>date_breaks <span class="op">=</span> <span class="st">"2 years"</span>, date_labels <span class="op">=</span> <span class="st">"%Y"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
-<span>    title <span class="op">=</span> <span class="st">"Construction Costs and Sentiment"</span>,</span>
-<span>    y <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Sales in São Paulo"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"STL trends for sales by number of rooms."</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Units (thousand)"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="primary-market_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><img src="primary-market_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
 </h2>
-<p>The column-level documentation of each dataset used here is available
-in the help topics <code><a href="../reference/abrainc.html">?abrainc</a></code>, <code><a href="../reference/secovi.html">?secovi</a></code>, and
-<code><a href="../reference/fgv_ibre.html">?fgv_ibre</a></code>. For housing credit, see the article on housing
-credit; for price indices, see
+<p>The help topics <code><a href="../reference/abrainc.html">?abrainc</a></code>, <code><a href="../reference/secovi.html">?secovi</a></code>, and
+<code><a href="../reference/fgv_ibre.html">?fgv_ibre</a></code> document the columns of each dataset used here.
+For housing credit, see <a href="housing-credit.html">Housing Credit in
+Brazil</a>; for price indices, see
 <code><a href="../articles/working-with-rppi.html">vignette("working-with-rppi")</a></code>.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

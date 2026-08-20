@@ -1,7 +1,6 @@
 # Brazilian Residential Property Price Indices
 
-Comprehensive collection of all Brazilian residential property price
-indices.
+Brazilian residential property price indices from every major publisher.
 
 Retrieve this dataset with
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)

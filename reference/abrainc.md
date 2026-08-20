@@ -1,7 +1,7 @@
 # ABRAINC-FIPE Primary Market Indicators
 
-Primary real estate market indicators including launches, sales, and
-business conditions from 66+ partnered developers.
+Primary real estate market indicators from a panel of large developers,
+covering launches, sales, and business conditions.
 
 Retrieve this dataset with
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)

@@ -2,10 +2,10 @@
 
 ## Introduction
 
-This vignette provides a minimal introduction to the `realestatebr`
-package, showing how to use its core functions. Since `realestatebr`
-returns `tibble` as default values, we recommend using it together with
-the `dplyr` package, though conversion to `data.table` is trivial.
+`realestatebr` gathers Brazilian real estate data from several public
+sources and returns every table as a tidy `tibble`. This vignette covers
+the core functions and works through two examples. Since the package
+returns tibbles, we recommend using it together with `dplyr`.
 
 ``` r
 
@@ -13,9 +13,8 @@ library(realestatebr)
 library(dplyr)
 ```
 
-The code below defines a common theme for all plots in this vignette and
-is required to fully replicate the code in this document. Despite this,
-this code is entirely optional and can be omitted.
+The code below defines an optional common theme for the plots in this
+vignette. It can be omitted.
 
 ``` r
 
@@ -31,11 +30,7 @@ color_palette <- c(
 )
 
 theme_series <- function() {
-  theme_minimal(
-    # swap for other font if needed
-    base_family = "Avenir",
-    base_size = 10
-  ) +
+  theme_minimal(base_size = 10) +
     theme(
       plot.title = element_text(size = 16),
       panel.grid.minor = element_blank(),
@@ -49,22 +44,11 @@ theme_series <- function() {
 }
 ```
 
-`realestatebr` provides a unified interface to Brazilian real estate
-data from multiple public sources. All datasets are returned as tidy
-`tibble` objects.
+## Core interface
 
-## Core Interface
-
-The goal of `realestatebr` is to provide a unified interface to
-Brazilian real estate data from multiple public sources. All datasets
-are returned as tidy `tibble` objects. The package is centered around a
-key function: `get_dataset(name, table)` which retrieves any dataset by
-name. Without a `table` argument it returns the default table; use
-`table` to select a specific sub-table.
-
-- Use
-  [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-  main function to retrieve datasets.
+`get_dataset(name, table)` retrieves any dataset in the package. Without
+a `table` argument it returns the default table; use `table` to select a
+specific sub-table.
 
 ``` r
 
@@ -72,32 +56,21 @@ name. Without a `table` argument it returns the default table; use
 abecip <- get_dataset("abecip")
 
 # Specific table
-sbpe <- get_dataset("abecip", table = "units")
+units <- get_dataset("abecip", table = "units")
 ```
 
-In order to explore which datasets are available, use
+To explore which datasets are available, use
 [`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
 and
 [`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md).
 
 - **[`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)**
-  returns a catalogue of all available datasets and their tables.
+  returns a catalogue of the available datasets and their tables.
 
 ``` r
 
 ds <- list_datasets()
 ```
-
-| name | title | source | available_tables | frequency |
-|:---|:---|:---|:---|:---|
-| abecip | ABECIP Housing Credit Indicators | ABECIP - Associação Brasileira das Entidades de Crédito Imobiliário | sbpe, units, cgi | monthly |
-| abrainc | ABRAINC-FIPE Primary Market Indicators | ABRAINC/FIPE | indicator, radar, leading | quarterly |
-| bcb_realestate | BCB Real Estate Market Data | Banco Central do Brasil | accounting, application, indices, sources, units | monthly |
-| bcb_series | BCB Economic Series | Banco Central do Brasil - SGS | core, primary, secondary, tertiary, full | varies (daily/monthly/quarterly) |
-| fgv_ibre | FGV IBRE Real Estate Indicators | FGV IBRE | (single table) | monthly |
-| rppi | Brazilian Residential Property Price Indices | Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP) | fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp, sale, rent, all | monthly |
-| rppi_bis | BIS Residential Property Price Indices | Bank for International Settlements | selected, detailed_monthly, detailed_quarterly, detailed_annual, detailed_halfyearly | quarterly |
-| secovi | SECOVI-SP Real Estate Market Data | SECOVI-SP - Sindicato da Habitação | condo, rent, launch, sale | monthly |
 
 - **[`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)**
   shows available tables and metadata for a given dataset.
@@ -109,16 +82,16 @@ names(info$categories)
 #> [1] "sbpe"  "units"  "cgi"
 ```
 
-### The `source` Argument
+### The `source` argument
 
-The `source` argument from
+The `source` argument of
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
 controls where data comes from. The default (`"auto"`) reads the
 in-session memo if present, falls back to the package’s GitHub release,
-and finally falls back to a fresh download from the original source.
-Typically the default is fine. Use `"github"` to force the pre-processed
-asset, or `"fresh"` to always pull from the original source (slower but
-guaranteed up-to-date).
+and finally falls back to a fresh download from the original source. The
+default suits most uses. Pass `"github"` to force the pre-processed
+asset, or `"fresh"` to pull from the original source, which is slower
+but current.
 
 ``` r
 
@@ -131,35 +104,18 @@ so fetching the same dataset twice does not re-download. Use
 [`clear_session_cache()`](https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.md)
 to drop the memo without restarting R.
 
-## Example: Housing Credit Cycle
+## Example: housing credit cycle
 
 SBPE (Sistema Brasileiro de Poupança e Empréstimo) is the primary
-funding mechanism for residential mortgages in Brazil. The table `sbpe`
-from `abecip` tracks the deposits and withdrawals from savings accounts,
-which help finance real estate construction and acquisition.
+funding mechanism for residential mortgages in Brazil. The `sbpe` table
+from `abecip` tracks deposits into and withdrawals from savings
+accounts, which finance construction and home purchases.
 
 ``` r
 
 sbpe <- get_dataset("abecip", table = "sbpe")
 
 glimpse(sbpe)
-#> Rows: 540
-#> Columns: 15
-#> $ date              <date> 1982-01-01, 1982-02-01, 1982-03-01, 1982-04-01, 198…
-#> $ sbpe_inflow       <dbl> 238234.1, 224080.0, 247218.8, 264925.0, 227636.3, 31…
-#> $ sbpe_outflow      <dbl> 261523.1, 161176.0, 118662.8, 378395.0, 137201.3, 15…
-#> $ sbpe_netflow      <dbl> -23289, 62904, 128556, -113470, 90435, 164739, -9934…
-#> $ sbpe_netflow_pct  <dbl> -0.009387130, 0.021881448, 0.043761242, -0.037006429…
-#> $ sbpe_yield        <dbl> 417103, 0, 0, 485995, 0, 0, 642432, 0, 0, 957944, 0,…
-#> $ sbpe_stock        <dbl> 2874764, 2937668, 3066224, 3438749, 3529184, 3693923…
-#> $ rural_inflow      <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ rural_outflow     <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ rural_netflow     <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ rural_netflow_pct <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ rural_yield       <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ rural_stock       <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ total_stock       <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ total_netflow     <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
 ```
 
 The plot below shows the annual net savings flow in recent years.
@@ -180,7 +136,7 @@ ggplot(sbpe_annual, aes(year, net_flow)) +
   geom_col(fill = color_palette[1], alpha = 0.9, width = 0.8) +
   geom_text(aes(y = ypos, label = label_num), size = 3) +
   geom_hline(yintercept = 0) +
-  scale_x_continuous(breaks = 2019:2026) +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) +
   labs(
     title = "Annual Net Savings Flow (SBPE)",
     x = NULL,
@@ -189,8 +145,6 @@ ggplot(sbpe_annual, aes(year, net_flow)) +
   theme_series()
 ```
 
-![](getting-started_files/figure-html/unnamed-chunk-10-1.png)
-
 The companion table `"units"` contains monthly counts of financed units.
 
 ``` r
@@ -198,23 +152,14 @@ The companion table `"units"` contains monthly counts of financed units.
 units <- get_dataset("abecip", table = "units")
 
 glimpse(units)
-#> Rows: 293
-#> Columns: 7
-#> $ date                  <date> 2002-01-01, 2002-02-01, 2002-03-01, 2002-04-01,…
-#> $ units_construction    <dbl> 200, 483, 1049, 684, 571, 1109, 216, 506, 1698, …
-#> $ units_acquisition     <dbl> 1455, 1456, 1522, 1723, 1536, 1536, 1706, 1838, …
-#> $ units_total           <dbl> 1655, 1939, 2571, 2407, 2107, 2645, 1922, 2344, …
-#> $ currency_construction <dbl> 13.540470, 32.117295, 62.592800, 44.422429, 23.4…
-#> $ currency_acquisition  <dbl> 83.95237, 96.12279, 101.71222, 108.14803, 98.281…
-#> $ currency_total        <dbl> 97.49284, 128.24008, 164.30502, 152.57046, 121.7…
 ```
 
-The plot shows the amount of units financed per month together with a
-LOESS trend line.
+The plot shows the number of units financed per month, with a LOESS
+trend line.
 
 ``` r
 
-# SBPE units financed per year
+# Monthly SBPE units financed
 units_recent <- units |>
   filter(date >= as.Date("2019-01-01"))
 
@@ -222,7 +167,7 @@ ggplot(units_recent, aes(date, units_total)) +
   geom_point(alpha = 0.5, size = 0.8, color = color_palette[1]) +
   geom_smooth(
     color = color_palette[1],
-    lwd = 0.7,
+    lwd = 0.8,
     se = FALSE,
     method = stats::loess,
     method.args = list(span = 0.4)
@@ -235,18 +180,16 @@ ggplot(units_recent, aes(date, units_total)) +
   theme_series()
 ```
 
-![](getting-started_files/figure-html/unnamed-chunk-12-1.png)
+## Example: real estate credit portfolio
 
-## Example: Real Estate Credit Portfolio
+The `bcb_realestate` dataset holds real estate statistics from the
+Brazilian Central Bank. The dataset is large and exploring it takes some
+patience. Each series is uniquely identified by `date` and
+`series_info`, and the helper columns `v1` through `v5`, `abbrev_state`,
+`category`, and `type` split that identifier into parts you can filter
+on.
 
-The `bcb_realestate` dataset imports all real estate statistics from the
-Brazilian Central Bank. This is a relatively large dataset and exploring
-can be cumbersome. Each series is uniquely identified by `date` and
-`series_info`. Helper functions `v1`, `v2`, …, `v5`, `abbrev_state`,
-`category`, and `type` are provided to simplify the use of the dataset.
-
-The code below shows how to access a specific series and also how to
-fetch a group of related series.
+The code below reads a single series and then a group of related series.
 
 ``` r
 
@@ -256,7 +199,7 @@ bcb <- get_dataset("bcb_realestate")
 sfh_pf <- bcb |>
   filter(series_info == "credito_estoque_carteira_credito_pf_sfh_br")
 
-# Get the all the related series for 'estoque_carteira_credito_pf'
+# Get all related series for 'estoque_carteira_credito_pf'
 credit_stock <- bcb |>
   filter(
     category == "credito",
@@ -283,32 +226,25 @@ The single series shows only the values from SFH (specific credit line).
 ``` r
 
 ggplot(sfh_pf, aes(date, value / 1e9)) +
-  geom_line(lwd = 0.7, color = color_palette[1]) +
+  geom_line(lwd = 0.8, color = color_palette[1]) +
   labs(title = "SFH", y = "R$ (billions)") +
   theme_series()
 ```
-
-![](getting-started_files/figure-html/unnamed-chunk-14-1.png)
 
 The grouped series show the entire household credit stock by credit
 line.
 
 ``` r
 
-credit_labels <- c(
-  "Home Equity" = "home-equity",
-  "Comercial" = "comercial",
-  "Livre" = "livre",
-  "FGTS" = "fgts",
-  "SFH" = "sfh"
-)
-
 credit_stock <- credit_stock |>
   mutate(
-    credit_line_label = factor(
+    credit_line_label = dplyr::recode(
       v4,
-      levels = credit_labels,
-      labels = names(credit_labels)
+      `home-equity` = "Home Equity",
+      comercial = "Commercial",
+      livre = "Market",
+      fgts = "FGTS",
+      sfh = "SFH"
     )
   )
 
@@ -326,28 +262,21 @@ ggplot(credit_stock, aes(date, value / 1e9)) +
   theme_series()
 ```
 
-![](getting-started_files/figure-html/unnamed-chunk-15-1.png)
+One caveat when joining tables: `bcb_realestate` uses end-of-month
+dates, such as `2023-01-31`, while most other datasets use the first day
+of the month. Use `lubridate::floor_date(date, "month")` to align them.
 
-As a final warning, note that the `bcb_realestate` dataset follows the
-`YYYY-MM-DD` format using the last day of the month as default value
-(e.g. `2023-01-31`). This can cause issues when merging with other
-datasets, since the first day of the month is the more common date
-format (e.g. `2023-01-01`).
-
-To avoid this, use `lubridate::floor_date(date, 'month')`. Future
-versions of `realestatebr` might provide this as a default behavior.
-
-## Reference (all datasets)
+## Reference: all datasets
 
 The available datasets are listed below.
 
-| Dataset | Source | Tables | Status |
-|----|----|----|----|
-| `abecip` | ABECIP | `sbpe`, `units`, `cgi` | Active |
-| `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` | Active |
-| `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` | Active |
-| `bcb_series` | Banco Central do Brasil | `core`, `primary`, `secondary`, `tertiary`, `full` | Active |
-| `fgv_ibre` | FGV IBRE | — | Active |
-| `rppi` | FIPE/ZAP, IVGR, IGMI, IQA, IVAR, SECOVI-SP | `sale`, `rent`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` | Active |
-| `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` | Active |
-| `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` | Active |
+| Dataset | Source | Tables |
+|----|----|----|
+| `abecip` | ABECIP | `sbpe`, `units`, `cgi` |
+| `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` |
+| `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` |
+| `bcb_series` | Banco Central do Brasil | `core`, `primary`, `secondary`, `tertiary`, `full` |
+| `fgv_ibre` | FGV IBRE | — |
+| `rppi` | FIPE/ZAP, IVG-R, IGMI-R, IQA, IQAIW, IVAR, SECOVI-SP | `sale`, `rent`, `all`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` |
+| `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` |
+| `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` |
