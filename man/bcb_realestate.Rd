@@ -7,7 +7,7 @@
 Banco Central do Brasil
 }
 \description{
-Comprehensive real estate credit and market data from Brazilian Central
+Detailed real estate credit and market series from the Brazilian Central
 Bank.
 
 Retrieve this dataset with \code{\link[=get_dataset]{get_dataset()}} using the name \code{"bcb_realestate"}.

@@ -7,8 +7,7 @@
 Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP)
 }
 \description{
-Comprehensive collection of all Brazilian residential property price
-indices.
+Brazilian residential property price indices from every major publisher.
 
 Retrieve this dataset with \code{\link[=get_dataset]{get_dataset()}} using the name \code{"rppi"}.
 

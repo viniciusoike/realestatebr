@@ -14,17 +14,18 @@ knitr::opts_chunk$set(
 )
 ```
 
-This article tracks the development cycle, from launches to sales and deliveries, and the business environment around it using three datasets.
+This article follows the development cycle, from launches to sales and
+deliveries, and the business environment around it. Three datasets do the
+work.
 
 - `abrainc` for national primary market indicators from the ABRAINC-FIPE
-  panel of developers,
-- `secovi` for the São Paulo market,
-- `fgv_ibre` for construction costs and business sentiment.
+  panel of developers
+- `secovi` for the São Paulo market
+- `fgv_ibre` for construction costs and business sentiment
 
-As with other articles and vignettes, the goal is not to provide a deep-dive
-analysis but rather to explore the datasets in `realestatebr`. Besides the
-usual `dplyr` and `ggplot2`, we will also use the `trendseries` package to
-quickly estimate trends and cycles.
+The aim is to show what these datasets hold, not to settle any question about
+the market. Besides the usual `dplyr` and `ggplot2`, we use the `trendseries`
+package to estimate trends and cycles.
 
 ```{r}
 library(realestatebr)
@@ -33,8 +34,8 @@ library(dplyr)
 library(ggplot2)
 ```
 
-The code below defines a common theme for the plots in this article. It is
-entirely optional and can be omitted.
+The code below defines a common theme for the plots in this article and can be
+omitted.
 
 ```{r}
 library(ekioplot)
@@ -50,10 +51,9 @@ theme_series <- function() {
 ## Construction costs and sentiment
 
 The `fgv_ibre` dataset gathers indicators from Fundação Getulio Vargas (FGV).
-FGV has a rich series of surveys and indicators, and `realestatebr` collects
-the most relevant ones for the construction and real estate sector. This
-dataset contains 15 series identified by the `name_series`/`code_series`
-columns.
+FGV runs a wide range of surveys, and `realestatebr` collects the ones most
+relevant to construction and real estate. The `name_series` and `code_series`
+columns identify each series.
 
 ```{r}
 fgv <- get_dataset("fgv_ibre")
@@ -203,17 +203,19 @@ ggplot(radar_sel, aes(date, ma6)) +
   theme_series()
 ```
 
-It's important to note that this historical indicator has been discontinued.
-I'm considering replacing it with my own version or recreating it based on the
-publicly available methodology. For more updates, see the [GitHub issue](https://github.com/viniciusoike/realestatebr/issues/6).
+The radar indicator has been discontinued upstream, so the series ends at its
+last published month. The [GitHub
+issue](https://github.com/viniciusoike/realestatebr/issues/6) tracks its
+status.
 
 ## São Paulo
 
-São Paulo is Brazil's largest real estate market. The `secovi` dataset covers
-São Paulo and the São Paulo Metropolitan Region. The ABRAINC dataset includes
-a real estate leading indicator based on building permits in São Paulo.
+São Paulo is Brazil's largest real estate market, and two sources cover it
+here. The `leading` table from `abrainc` reports building permits in the city,
+while `secovi` reports supply and sales for the city and the metropolitan
+region.
 
-## A leading indicator
+### A leading indicator
 
 Building permits anticipate construction activity. The `leading` table
 compiles permits in the city of São Paulo into a leading indicator of real
@@ -242,8 +244,10 @@ ggplot(leading_index, aes(date, value)) +
 ```
 
 
-SECOVI publishes data for São Paulo and the São Paulo Metropolitan Region. The
-`launch` and `sale` tables track new supply and sales in the city.
+### Supply and sales
+
+The `launch` and `sale` tables from `secovi` track new supply and sales in the
+city.
 
 ```{r}
 secovi <- get_dataset("secovi")
@@ -287,8 +291,8 @@ ggplot(sp_market, aes(date)) +
   theme_series()
 ```
 
-Some tables provide more detail, such as `sales`. The plot below shows sales by
-the number of rooms.
+Some series break the totals down further. The plot below shows sales by
+number of rooms.
 
 ```{r}
 sp_market_rooms <- secovi |>
@@ -318,7 +322,7 @@ ggplot(sp_market_rooms, aes(date)) +
 
 ## Learn more
 
-The column-level documentation of each dataset used here is available in the
-help topics `?abrainc`, `?secovi`, and `?fgv_ibre`. For housing credit, see
-the article on housing credit; for price indices, see
+The help topics `?abrainc`, `?secovi`, and `?fgv_ibre` document the columns of
+each dataset used here. For housing credit, see [Housing Credit in
+Brazil](housing-credit.html); for price indices, see
 `vignette("working-with-rppi")`.

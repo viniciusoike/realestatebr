@@ -4,8 +4,7 @@
 #' Brazilian Residential Property Price Indices
 #'
 #' @description
-#' Comprehensive collection of all Brazilian residential property price
-#' indices.
+#' Brazilian residential property price indices from every major publisher.
 #'
 #' Retrieve this dataset with [get_dataset()] using the name `"rppi"`.
 #'
