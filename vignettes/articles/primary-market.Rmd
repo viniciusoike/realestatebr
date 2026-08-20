@@ -38,13 +38,30 @@ The code below defines a common theme for the plots in this article and can be
 omitted.
 
 ```{r}
-library(ekioplot)
-color_palette <- ekio_pal()
-theme_series <- function() {
-  theme_ekio(base_size = 10) +
-    theme(
-      palette.color.discrete = color_palette
-    )
+if (requireNamespace("ekioplot", quietly = TRUE)) {
+  color_palette <- ekioplot::ekio_pal()
+  theme_series <- function() {
+    ekioplot::theme_ekio(base_size = 10) +
+      theme(
+        palette.color.discrete = color_palette
+      )
+  }
+} else {
+  color_palette <- c(
+    "#1E3A5F",
+    "#DD6B20",
+    "#2C7A7B",
+    "#D69E2E",
+    "#805AD5",
+    "#C53030"
+  )
+  theme_series <- function() {
+    theme_minimal(base_size = 10) +
+      theme(
+        legend.position = "bottom",
+        palette.color.discrete = color_palette
+      )
+  }
 }
 ```
 
@@ -296,7 +313,10 @@ number of rooms.
 
 ```{r}
 sp_market_rooms <- secovi |>
-  filter(grepl("sales_[0-9]rooms", variable)) |>
+  filter(
+    grepl("sales_[0-9]rooms", variable),
+    name == "unidades"
+  ) |>
   trendseries::augment_trends(group_cols = "variable") |>
   mutate(
     variable_label = regmatches(variable, regexpr("\\d+", variable)),
