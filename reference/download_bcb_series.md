@@ -8,7 +8,7 @@ after the full map completes.
 ## Usage
 
 ``` r
-download_bcb_series(codes_bcb, date_start, quiet, max_retries, ...)
+download_bcb_series(codes_bcb, quiet, max_retries)
 ```
 
 ## Arguments
@@ -17,10 +17,6 @@ download_bcb_series(codes_bcb, date_start, quiet, max_retries, ...)
 
   Vector of BCB series codes.
 
-- date_start:
-
-  Start date for series.
-
 - quiet:
 
   Logical controlling messages.
@@ -28,11 +24,6 @@ download_bcb_series(codes_bcb, date_start, quiet, max_retries, ...)
 - max_retries:
 
   Maximum number of retry attempts per series.
-
-- ...:
-
-  Additional arguments passed to
-  [`rbcb::get_series`](https://wilsonfreitas.github.io/rbcb/reference/get_series.html).
 
 ## Value
 

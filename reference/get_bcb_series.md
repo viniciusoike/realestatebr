@@ -5,13 +5,7 @@ Download macroeconomic time-series from BCB
 ## Usage
 
 ``` r
-get_bcb_series(
-  table = "core",
-  date_start = as.Date("2010-01-01"),
-  quiet = FALSE,
-  max_retries = 3L,
-  ...
-)
+get_bcb_series(table = "core", quiet = FALSE, max_retries = 3L)
 ```
 
 ## Source
@@ -46,11 +40,6 @@ Brazilian Central Bank (BCB) Time Series Management System (SGS)
 
   :   Equivalent to "tertiary". Returns all available series.
 
-- date_start:
-
-  A `Date` indicating the first period to extract. Defaults to
-  2010-01-01.
-
 - quiet:
 
   Logical. If `TRUE`, suppresses progress messages.
@@ -58,11 +47,6 @@ Brazilian Central Bank (BCB) Time Series Management System (SGS)
 - max_retries:
 
   Integer. Maximum retry attempts for failed API calls. Defaults to 3.
-
-- ...:
-
-  Additional arguments passed to
-  [`rbcb::get_series`](https://wilsonfreitas.github.io/rbcb/reference/get_series.html).
 
 ## Value
 
@@ -77,3 +61,7 @@ relevance to the Brazilian real estate market using a four-level
 hierarchy. The default ("core") returns the 40 most directly relevant
 series covering real estate credit concession, interest rates, and
 delinquency. Use broader levels to include macroeconomic context series.
+
+Each series is downloaded in full, from its first published observation
+to the present. Filter the returned `date` column to restrict the
+window.

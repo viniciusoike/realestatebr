@@ -2,6 +2,30 @@
 
 ## realestatebr 1.0.1.9000
 
+### Breaking changes
+
+- Removed `date_start` and `date_end` from
+  [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md).
+  Filter the `date` column of the returned data instead.
+- Removed `...` from
+  [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md).
+  Unknown arguments now raise an error instead of being passed on or
+  silently dropped.
+
+### Other changes
+
+- Replaced the `rbcb` dependency with `GetBCBData`, which splits long
+  requests into windows the BCB SGS API accepts.
+- `get_dataset("bcb_series")` now returns each series in full, from its
+  first published observation instead of 2010-01-01. Daily series such
+  as SELIC (code 432) were previously dropped, since SGS rejects
+  requests spanning more than ten years.
+- Added `quiet` to
+  [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md).
+- [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
+  now reports the dataset, the table, and the source it came from in a
+  single message. Set `options(realestatebr.debug = TRUE)` for
+  step-by-step progress.
 - Fixed `get_dataset("bcb_series")` failing with
   `object 'bcb_metadata' not found` when the package was not attached
   ([\#23](https://github.com/viniciusoike/realestatebr/issues/23)). The

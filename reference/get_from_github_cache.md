@@ -6,5 +6,5 @@ deserialised object, applying table filtering where applicable.
 ## Usage
 
 ``` r
-get_from_github_cache(name, dataset_info, table)
+get_from_github_cache(name, dataset_info, table, quiet = FALSE)
 ```

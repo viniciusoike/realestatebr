@@ -22,6 +22,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/bcb_metadata.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/bcb_realestate.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/bcb_series.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/bcb_series_first_date.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clean_abecip_sbpe.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clean_abecip_units.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clean_bis_detailed.html</loc></url>
@@ -46,6 +47,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/encoding_utils.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/fallback_to_github_cache.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/fetch_github_release_asset.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/fetch_sgs_series.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_abecip_indicators.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_abrainc_indicators.html</loc></url>

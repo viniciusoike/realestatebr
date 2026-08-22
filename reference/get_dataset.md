@@ -9,14 +9,7 @@ from an in-memory memo to avoid redundant network traffic.
 ## Usage
 
 ``` r
-get_dataset(
-  name,
-  table = NULL,
-  source = "auto",
-  date_start = NULL,
-  date_end = NULL,
-  ...
-)
+get_dataset(name, table = NULL, source = "auto", quiet = FALSE)
 ```
 
 ## Arguments
@@ -64,23 +57,22 @@ get_dataset(
   [`clear_session_cache`](https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.md)
   to drop the in-session memo.
 
-- date_start:
+- quiet:
 
-  Date. Start date for time series filtering (where applicable).
-
-- date_end:
-
-  Date. End date for time series filtering (where applicable).
-
-- ...:
-
-  Additional arguments passed to internal dataset functions.
+  Logical. If `TRUE`, suppresses informational messages. Errors and
+  warnings are still shown.
 
 ## Value
 
 A tibble or named list, depending on the dataset. Use
 [`get_dataset_info`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
 to inspect the expected structure.
+
+## Details
+
+To restrict a time series to a date window, filter the returned `date`
+column with
+[`dplyr::filter()`](https://dplyr.tidyverse.org/reference/filter.html).
 
 ## See also
 
@@ -108,6 +100,8 @@ abecip_data <- get_dataset("abecip")
 
 sbpe_data <- get_dataset("abecip", table = "sbpe")
 
-bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
+bcb_data <- get_dataset("bcb_series", quiet = TRUE)
+
+bcb_recent <- dplyr::filter(bcb_data, date >= as.Date("2020-01-01"))
 }
 ```

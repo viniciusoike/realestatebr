@@ -51,8 +51,22 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.1.9000" id="realestatebr-1019000">realestatebr 1.0.1.9000<a class="anchor" aria-label="anchor" href="#realestatebr-1019000"></a></h2>
-<ul><li>Fixed <code>get_dataset("bcb_series")</code> failing with <code>object 'bcb_metadata' not found</code> when the package was not attached (<a href="https://github.com/viniciusoike/realestatebr/issues/23" class="external-link">#23</a>). The IVAR series in <code>get_dataset("rppi")</code> silently fell back to the GitHub release for the same reason.</li>
+<div class="section level3">
+<h3 id="breaking-changes-1-0-1-9000">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-0-1-9000"></a></h3>
+<ul><li>Removed <code>date_start</code> and <code>date_end</code> from <code><a href="../reference/get_dataset.html">get_dataset()</a></code>. Filter the <code>date</code> column of the returned data instead.</li>
+<li>Removed <code>...</code> from <code><a href="../reference/get_dataset.html">get_dataset()</a></code>. Unknown arguments now raise an error instead of being passed on or silently dropped.</li>
 </ul></div>
+<div class="section level3">
+<h3 id="other-changes-1-0-1-9000">Other changes<a class="anchor" aria-label="anchor" href="#other-changes-1-0-1-9000"></a></h3>
+<ul><li>Replaced the <code>rbcb</code> dependency with <code>GetBCBData</code>, which splits long requests into windows the BCB SGS API accepts.</li>
+<li>
+<code>get_dataset("bcb_series")</code> now returns each series in full, from its first published observation instead of 2010-01-01. Daily series such as SELIC (code 432) were previously dropped, since SGS rejects requests spanning more than ten years.</li>
+<li>Added <code>quiet</code> to <code><a href="../reference/get_dataset.html">get_dataset()</a></code>.</li>
+<li>
+<code><a href="../reference/get_dataset.html">get_dataset()</a></code> now reports the dataset, the table, and the source it came from in a single message. Set <code>options(realestatebr.debug = TRUE)</code> for step-by-step progress.</li>
+<li>Fixed <code>get_dataset("bcb_series")</code> failing with <code>object 'bcb_metadata' not found</code> when the package was not attached (<a href="https://github.com/viniciusoike/realestatebr/issues/23" class="external-link">#23</a>). The IVAR series in <code>get_dataset("rppi")</code> silently fell back to the GitHub release for the same reason.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.1" id="realestatebr-101">realestatebr 1.0.1<a class="anchor" aria-label="anchor" href="#realestatebr-101"></a></h2><p class="text-muted">CRAN release: 2026-06-05</p>
 <p>CRAN resubmission. Version 1.0.0 was archived on 2026-05-28 because the package and its transitive <code>piggyback</code>/<code>gh</code> dependencies wrote to <code>~/.cache/realestatebr/</code> and <code>~/.cache/R/gh/</code>, violating CRAN’s policy on home-filespace writes. This release removes this: the caching architecture is fully overhauled.</p>
