@@ -9,7 +9,8 @@ fetch_github_release_asset(cached_name, quiet = FALSE)
 \arguments{
 \item{cached_name}{Character. Asset stem, e.g. \code{"abecip_sbpe"}.}
 
-\item{quiet}{Logical. Suppress informational messages.}
+\item{quiet}{Logical. Suppress network and parse warnings. Progress
+messages are debug-level (see \code{\link[=is_debug_mode]{is_debug_mode()}}).}
 }
 \value{
 The deserialised dataset, or \code{NULL}.

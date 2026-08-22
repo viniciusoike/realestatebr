@@ -4,7 +4,11 @@
 \alias{get_dataset_with_fallback}
 \title{Get Dataset with Fallback Strategy}
 \usage{
-get_dataset_with_fallback(name, dataset_info, table, date_start, date_end, ...)
+get_dataset_with_fallback(name, dataset_info, table, quiet)
+}
+\value{
+A list with elements \code{data} and \code{tier}, where \code{tier} names the
+source that served the data.
 }
 \description{
 Auto strategy: in-session memo -> GitHub release -> fresh download.

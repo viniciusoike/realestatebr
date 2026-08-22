@@ -61,5 +61,6 @@ Suggests:
     targets,
     tarchetypes,
     testthat,
-    trendseries
+    trendseries,
+    withr
 VignetteBuilder: knitr

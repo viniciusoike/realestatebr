@@ -4,7 +4,7 @@
 \alias{get_from_github_cache}
 \title{Get Data from GitHub Release Cache}
 \usage{
-get_from_github_cache(name, dataset_info, table)
+get_from_github_cache(name, dataset_info, table, quiet = FALSE)
 }
 \description{
 Downloads the appropriate asset into a tempfile and returns the

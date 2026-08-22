@@ -4,9 +4,14 @@
 \alias{show_import_message}
 \title{Show Dataset Import Message}
 \usage{
-show_import_message(name, table_info)
+show_import_message(name, table_info, tier)
+}
+\arguments{
+\item{tier}{Character. One of "memo", "github", or "fresh".}
 }
 \description{
-Show Dataset Import Message
+Reports the dataset, the table served, and the source that answered, in a
+single message. Datasets resolved to their default table also list the
+other tables available.
 }
 \keyword{internal}

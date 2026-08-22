@@ -4,17 +4,11 @@
 \alias{get_from_internal_function}
 \title{Get Data from Internal Function}
 \usage{
-get_from_internal_function(
-  name,
-  dataset_info,
-  table,
-  date_start,
-  date_end,
-  ...
-)
+get_from_internal_function(name, dataset_info, table)
 }
 \description{
 Calls dataset-specific internal functions for a fresh download from the
-original source.
+original source. Their step-by-step progress messages are suppressed
+unless debug mode is on, since \code{get_dataset()} reports the source itself.
 }
 \keyword{internal}

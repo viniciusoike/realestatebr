@@ -24,19 +24,24 @@
 #'     \item{"fresh"}{Fresh download from the original source.}
 #'   }
 #'   Use \code{\link{clear_session_cache}} to drop the in-session memo.
-#' @param date_start Date. Start date for time series filtering (where applicable).
-#' @param date_end Date. End date for time series filtering (where applicable).
-#' @param ... Additional arguments passed to internal dataset functions.
+#' @param quiet Logical. If `TRUE`, suppresses informational messages. Errors
+#'   and warnings are still shown.
 #'
 #' @return A tibble or named list, depending on the dataset. Use
 #'   \code{\link{get_dataset_info}} to inspect the expected structure.
+#'
+#' @details
+#' To restrict a time series to a date window, filter the returned `date`
+#' column with \code{dplyr::filter()}.
 #'
 #' @examplesIf interactive()
 #' abecip_data <- get_dataset("abecip")
 #'
 #' sbpe_data <- get_dataset("abecip", table = "sbpe")
 #'
-#' bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
+#' bcb_data <- get_dataset("bcb_series", quiet = TRUE)
+#'
+#' bcb_recent <- dplyr::filter(bcb_data, date >= as.Date("2020-01-01"))
 #'
 #' @seealso \code{\link{list_datasets}} for available datasets,
 #'   \code{\link{get_dataset_info}} for dataset details,
@@ -51,11 +56,13 @@ get_dataset <- function(
   name,
   table = NULL,
   source = "auto",
-  date_start = NULL,
-  date_end = NULL,
-  ...
+  quiet = FALSE
 ) {
   source <- match.arg(source, choices = c("auto", "github", "fresh"))
+
+  if (!rlang::is_bool(quiet)) {
+    cli::cli_abort("{.arg quiet} must be `TRUE` or `FALSE`.")
+  }
 
   registry <- load_dataset_registry()
   if (!name %in% names(registry$datasets)) {
@@ -77,96 +84,80 @@ get_dataset <- function(
   resolved_table <- table_info$resolved_table
 
   if (source == "auto") {
-    data <- get_dataset_with_fallback(
+    result <- get_dataset_with_fallback(
       name,
       dataset_info,
       resolved_table,
-      date_start,
-      date_end,
-      ...
+      quiet
     )
   } else {
-    data <- get_dataset_from_source(
+    result <- get_dataset_from_source(
       name,
       dataset_info,
       source,
       resolved_table,
-      date_start,
-      date_end,
-      ...
+      quiet
     )
   }
 
-  if (!is.null(data)) {
-    show_import_message(name, table_info)
+  if (!is.null(result$data) && !quiet) {
+    show_import_message(name, table_info, result$tier)
   }
 
-  return(data)
+  return(result$data)
 }
 
 #' Get Dataset with Fallback Strategy
 #'
 #' Auto strategy: in-session memo -> GitHub release -> fresh download.
 #'
+#' @return A list with elements `data` and `tier`, where `tier` names the
+#'   source that served the data.
 #' @keywords internal
 get_dataset_with_fallback <- function(
   name,
   dataset_info,
   table,
-  date_start,
-  date_end,
-  ...
+  quiet
 ) {
   memoed <- memo_get(memo_key(name, table))
   if (!is.null(memoed)) {
-    cli::cli_inform("Loaded {name} from in-session memo")
-    return(memoed)
+    return(list(data = memoed, tier = "memo"))
   }
 
   errors <- list()
 
-  cli::cli_inform("Attempting to load {name} from GitHub releases...")
-  data <- rlang::try_fetch(
-    get_dataset_from_source(
-      name,
-      dataset_info,
-      "github",
-      table,
-      date_start,
-      date_end,
-      ...
-    ),
+  result <- rlang::try_fetch(
+    get_dataset_from_source(name, dataset_info, "github", table, quiet),
     error = function(cnd) {
       errors$github <<- cnd$message
-      cli::cli_warn("GitHub release fetch failed: {cnd$message}")
+      if (!quiet) {
+        cli::cli_warn(
+          "GitHub release unavailable for {name}, downloading from the
+           original source."
+        )
+      }
       NULL
     }
   )
 
-  if (!is.null(data)) {
-    return(data)
+  if (!is.null(result$data)) {
+    return(result)
   }
 
-  cli::cli_inform("Attempting fresh download from original source...")
-  data <- rlang::try_fetch(
-    get_dataset_from_source(
-      name,
-      dataset_info,
-      "fresh",
-      table,
-      date_start,
-      date_end,
-      ...
-    ),
+  result <- rlang::try_fetch(
+    get_dataset_from_source(name, dataset_info, "fresh", table, quiet),
     error = function(cnd) {
       errors$fresh <<- cnd$message
-      cli::cli_warn("Fresh download failed: {cnd$message}")
+      if (!quiet) {
+        cli::cli_warn("Fresh download failed: {cnd$message}")
+      }
       NULL
     }
   )
 
-  if (!is.null(data)) {
-    return(data)
+  if (!is.null(result$data)) {
+    return(result)
   }
 
   cli::cli_abort(paste(
@@ -184,34 +175,26 @@ get_dataset_with_fallback <- function(
 
 #' Get Dataset from Specific Source
 #'
+#' @return A list with elements `data` and `tier`.
 #' @keywords internal
 get_dataset_from_source <- function(
   name,
   dataset_info,
   source,
   table,
-  date_start,
-  date_end,
-  ...
+  quiet
 ) {
   data <- switch(
     source,
-    "github" = get_from_github_cache(name, dataset_info, table),
-    "fresh" = get_from_internal_function(
-      name,
-      dataset_info,
-      table,
-      date_start,
-      date_end,
-      ...
-    )
+    "github" = get_from_github_cache(name, dataset_info, table, quiet),
+    "fresh" = get_from_internal_function(name, dataset_info, table)
   )
 
   if (!is.null(data)) {
     memo_set(memo_key(name, table), data)
   }
 
-  return(data)
+  return(list(data = data, tier = source))
 }
 
 #' Get Data from GitHub Release Cache
@@ -220,14 +203,14 @@ get_dataset_from_source <- function(
 #' deserialised object, applying table filtering where applicable.
 #'
 #' @keywords internal
-get_from_github_cache <- function(name, dataset_info, table) {
+get_from_github_cache <- function(name, dataset_info, table, quiet = FALSE) {
   cached_name <- get_cached_name(name, dataset_info, table)
 
   if (is.null(cached_name)) {
     cli::cli_abort("No GitHub release asset available for dataset '{name}'")
   }
 
-  data <- fetch_github_release_asset(cached_name, quiet = FALSE)
+  data <- fetch_github_release_asset(cached_name, quiet = quiet)
 
   if (is.null(data)) {
     cli::cli_abort(c(
@@ -244,17 +227,11 @@ get_from_github_cache <- function(name, dataset_info, table) {
 #' Get Data from Internal Function
 #'
 #' Calls dataset-specific internal functions for a fresh download from the
-#' original source.
+#' original source. Their step-by-step progress messages are suppressed
+#' unless debug mode is on, since `get_dataset()` reports the source itself.
 #'
 #' @keywords internal
-get_from_internal_function <- function(
-  name,
-  dataset_info,
-  table,
-  date_start,
-  date_end,
-  ...
-) {
+get_from_internal_function <- function(name, dataset_info, table) {
   internal_function <- dataset_info$dataset_function
 
   if (is.null(internal_function) || internal_function == "") {
@@ -263,7 +240,7 @@ get_from_internal_function <- function(
     )
   }
 
-  args <- list(...)
+  args <- list(quiet = !is_debug_mode())
 
   if (internal_function == "get_rppi") {
     args$table <- table %||% "sale"
@@ -271,13 +248,6 @@ get_from_internal_function <- function(
     args$table <- table
   } else if (supports_table_all(internal_function)) {
     args$table <- "all"
-  }
-
-  if (!is.null(date_start)) {
-    args$date_start <- date_start
-  }
-  if (!is.null(date_end)) {
-    args$date_end <- date_end
   }
 
   func <- get(internal_function, mode = "function")
@@ -509,23 +479,42 @@ validate_and_resolve_table <- function(name, dataset_info, table = NULL) {
 
 #' Show Dataset Import Message
 #'
+#' Reports the dataset, the table served, and the source that answered, in a
+#' single message. Datasets resolved to their default table also list the
+#' other tables available.
+#'
+#' @param tier Character. One of "memo", "github", or "fresh".
 #' @keywords internal
-show_import_message <- function(name, table_info) {
-  if (is.null(table_info$available_tables)) {
-    return(invisible())
-  }
+show_import_message <- function(name, table_info, tier) {
+  origin <- switch(
+    tier,
+    "memo" = "the session cache",
+    "github" = "GitHub releases",
+    "fresh" = "the original source"
+  )
 
   imported_table <- table_info$resolved_table
 
-  available_str <- paste(table_info$available_tables, collapse = "', '")
-
-  if (table_info$is_default) {
-    cli::cli_inform(
-      "Retrieved '{imported_table}' from '{name}' (default table). Available tables: '{available_str}'"
-    )
-  } else {
-    cli::cli_inform(
-      "Retrieved '{imported_table}' from '{name}'. Available tables: '{available_str}'"
-    )
+  if (is.null(table_info$available_tables)) {
+    cli::cli_inform("Loaded {name} from {origin}.")
+    return(invisible())
   }
+
+  msg <- "Loaded {name} table {.val {imported_table}} from {origin}."
+
+  if (!table_info$is_default) {
+    cli::cli_inform(msg)
+    return(invisible())
+  }
+
+  other_tables <- setdiff(table_info$available_tables, imported_table)
+
+  if (length(other_tables) == 0) {
+    cli::cli_inform(msg)
+    return(invisible())
+  }
+
+  cli::cli_inform(c(msg, "*" = "Other tables: {.val {other_tables}}."))
+
+  return(invisible())
 }
