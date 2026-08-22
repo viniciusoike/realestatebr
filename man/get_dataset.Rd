@@ -4,14 +4,7 @@
 \alias{get_dataset}
 \title{Get Dataset}
 \usage{
-get_dataset(
-  name,
-  table = NULL,
-  source = "auto",
-  date_start = NULL,
-  date_end = NULL,
-  ...
-)
+get_dataset(name, table = NULL, source = "auto", quiet = FALSE)
 }
 \arguments{
 \item{name}{Character. Dataset name (see \code{\link{list_datasets}} for
@@ -31,11 +24,8 @@ and \link{secovi}.}
 }
 Use \code{\link{clear_session_cache}} to drop the in-session memo.}
 
-\item{date_start}{Date. Start date for time series filtering (where applicable).}
-
-\item{date_end}{Date. End date for time series filtering (where applicable).}
-
-\item{...}{Additional arguments passed to internal dataset functions.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses informational messages. Errors
+and warnings are still shown.}
 }
 \value{
 A tibble or named list, depending on the dataset. Use
@@ -48,13 +38,19 @@ updated weekly by CI) and falls back to a fresh download from the original
 source. Repeated calls within one R session are served from an in-memory
 memo to avoid redundant network traffic.
 }
+\details{
+To restrict a time series to a date window, filter the returned \code{date}
+column with \code{dplyr::filter()}.
+}
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 abecip_data <- get_dataset("abecip")
 
 sbpe_data <- get_dataset("abecip", table = "sbpe")
 
-bcb_recent <- get_dataset("bcb_series", date_start = as.Date("2020-01-01"))
+bcb_data <- get_dataset("bcb_series", quiet = TRUE)
+
+bcb_recent <- dplyr::filter(bcb_data, date >= as.Date("2020-01-01"))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

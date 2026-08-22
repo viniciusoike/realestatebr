@@ -209,8 +209,10 @@ get_rppi <- function(
 get_rppi_ivgr <- function(quiet = FALSE, max_retries = 3L) {
   ivgr <- download_with_retry(
     function() {
-      rbcb::get_series(21340, start_date = as.Date("2001-03-01")) |>
-        dplyr::rename(index = 2)
+      series <- suppressMessages(
+        fetch_sgs_series(21340, as.Date("2001-03-01"))
+      )
+      dplyr::rename(series, index = "value")
     },
     max_retries = max_retries,
     quiet = quiet,

@@ -4,15 +4,10 @@
 \alias{get_dataset_from_source}
 \title{Get Dataset from Specific Source}
 \usage{
-get_dataset_from_source(
-  name,
-  dataset_info,
-  source,
-  table,
-  date_start,
-  date_end,
-  ...
-)
+get_dataset_from_source(name, dataset_info, source, table, quiet)
+}
+\value{
+A list with elements \code{data} and \code{tier}.
 }
 \description{
 Get Dataset from Specific Source

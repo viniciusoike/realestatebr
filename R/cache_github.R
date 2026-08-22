@@ -75,7 +75,8 @@ clear_session_cache <- function() {
 #' release does not exist, or network failure).
 #'
 #' @param cached_name Character. Asset stem, e.g. `"abecip_sbpe"`.
-#' @param quiet Logical. Suppress informational messages.
+#' @param quiet Logical. Suppress network and parse warnings. Progress
+#'   messages are debug-level (see [is_debug_mode()]).
 #'
 #' @return The deserialised dataset, or `NULL`.
 #' @keywords internal
@@ -96,8 +97,9 @@ fetch_github_release_asset <- function(cached_name, quiet = FALSE) {
 #'
 #' Downloads one file to a tempfile and reads it. Returns `NULL` on any
 #' failure (HTTP error, parse error, network down). Network errors are
-#' surfaced via `cli::cli_warn()`; a 404 (asset format absent) is silent so
-#' that callers can fall through to the next extension.
+#' surfaced via `cli::cli_warn()` unless `quiet` is `TRUE`; a 404 (asset
+#' format absent) is silent so that callers can fall through to the next
+#' extension.
 #'
 #' @noRd
 try_release_asset <- function(file_name, ext, quiet) {
@@ -105,9 +107,7 @@ try_release_asset <- function(file_name, ext, quiet) {
   temp_path <- tempfile(fileext = paste0(".", ext))
   on.exit(unlink(temp_path), add = TRUE)
 
-  if (!quiet) {
-    cli::cli_inform("Fetching {file_name} from GitHub releases...")
-  }
+  cli_debug("Fetching {file_name} from GitHub releases...")
 
   response <- rlang::try_fetch(
     httr::GET(
@@ -141,8 +141,8 @@ try_release_asset <- function(file_name, ext, quiet) {
     }
   )
 
-  if (!is.null(data) && !quiet) {
-    cli::cli_inform("Loaded {file_name} from GitHub releases")
+  if (!is.null(data)) {
+    cli_debug("Loaded {file_name} from GitHub releases")
   }
 
   return(data)

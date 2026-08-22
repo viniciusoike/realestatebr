@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Keep per-step download progress in the job log; get_dataset() only
+      # reports the source it resolved to.
+      REALESTATEBR_DEBUG: true
 
     steps:
       - name: Checkout repository

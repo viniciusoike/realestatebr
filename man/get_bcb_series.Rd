@@ -7,13 +7,7 @@
 Brazilian Central Bank (BCB) Time Series Management System (SGS)
 }
 \usage{
-get_bcb_series(
-  table = "core",
-  date_start = as.Date("2010-01-01"),
-  quiet = FALSE,
-  max_retries = 3L,
-  ...
-)
+get_bcb_series(table = "core", quiet = FALSE, max_retries = 3L)
 }
 \arguments{
 \item{table}{Character. Hierarchy level to return:
@@ -25,15 +19,10 @@ get_bcb_series(
 \item{"full"}{Equivalent to "tertiary". Returns all available series.}
 }}
 
-\item{date_start}{A \code{Date} indicating the first period to extract.
-Defaults to 2010-01-01.}
-
 \item{quiet}{Logical. If \code{TRUE}, suppresses progress messages.}
 
 \item{max_retries}{Integer. Maximum retry attempts for failed API calls.
 Defaults to 3.}
-
-\item{...}{Additional arguments passed to \code{rbcb::get_series}.}
 }
 \value{
 A 4-column \code{tibble} with columns \code{date}, \code{code_bcb},
@@ -49,5 +38,8 @@ relevance to the Brazilian real estate market using a four-level hierarchy.
 The default ("core") returns the 40 most directly relevant series covering
 real estate credit concession, interest rates, and delinquency. Use broader
 levels to include macroeconomic context series.
+
+Each series is downloaded in full, from its first published observation to
+the present. Filter the returned \code{date} column to restrict the window.
 }
 \keyword{internal}

@@ -29,11 +29,11 @@ RoxygenNote: 7.3.3
 Imports:
     cli,
     dplyr,
+    GetBCBData,
     httr,
     janitor,
     lubridate,
     purrr,
-    rbcb,
     readr,
     readxl,
     rlang,
@@ -61,5 +61,6 @@ Suggests:
     targets,
     tarchetypes,
     testthat,
-    trendseries
+    trendseries,
+    withr
 VignetteBuilder: knitr
