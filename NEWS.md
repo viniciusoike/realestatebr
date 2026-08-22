@@ -9,6 +9,12 @@
 
 ## Other changes
 
+* Replaced the `rbcb` dependency with `GetBCBData`, which splits long requests
+  into windows the BCB SGS API accepts.
+* `get_dataset("bcb_series")` now returns each series in full, from its first
+  published observation instead of 2010-01-01. Daily series such as SELIC
+  (code 432) were previously dropped, since SGS rejects requests spanning
+  more than ten years.
 * Added `quiet` to `get_dataset()`.
 * `get_dataset()` now reports the dataset, the table, and the source it came
   from in a single message. Set `options(realestatebr.debug = TRUE)` for

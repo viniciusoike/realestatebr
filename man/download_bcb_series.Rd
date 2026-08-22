@@ -4,18 +4,14 @@
 \alias{download_bcb_series}
 \title{Download BCB Series Data}
 \usage{
-download_bcb_series(codes_bcb, date_start, quiet, max_retries, ...)
+download_bcb_series(codes_bcb, quiet, max_retries)
 }
 \arguments{
 \item{codes_bcb}{Vector of BCB series codes.}
 
-\item{date_start}{Start date for series.}
-
 \item{quiet}{Logical controlling messages.}
 
 \item{max_retries}{Maximum number of retry attempts per series.}
-
-\item{...}{Additional arguments passed to \code{rbcb::get_series}.}
 }
 \value{
 A long-format tibble with columns \code{date}, \code{value}, and \code{code_bcb}.
