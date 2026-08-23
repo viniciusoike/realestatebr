@@ -48,7 +48,7 @@ jobs:
         run: Rscript -e 'remotes::install_local(".", dependencies = TRUE)'
 
       # Restore the targets store from the previous run so that tar_cue_age()
-      # and format="file" targets can correctly detect what is stale.
+      # can correctly detect what is stale.
       # Skipped when force_run is true so all targets re-run unconditionally.
       - name: Restore targets store
         if: ${{ github.event.inputs.force_run != 'true' }}
@@ -63,6 +63,7 @@ jobs:
         run: mkdir -p data-raw/cache_output _targets
 
       - name: Run targets pipeline
+        id: pipeline
         run: |
           Rscript -e '
             library(targets)
@@ -77,9 +78,15 @@ jobs:
               for (i in seq_len(nrow(errored))) {
                 cli::cli_alert_danger("  {errored$name[i]}: {errored$error[i]}")
               }
+              writeLines("true", file.path(Sys.getenv("RUNNER_TEMP"), "targets-failed"))
             }
             cli::cli_alert_success("Pipeline run complete")
           '
+          if [ -f "$RUNNER_TEMP/targets-failed" ]; then
+            echo "targets_failed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "targets_failed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       # Always save the updated store, even on failure, so the next run
       # can resume from the correct state.
@@ -198,7 +205,10 @@ jobs:
         if: always()
         run: |
           count="${{ steps.validate.outputs.file_count || '0' }}"
-          if [ "${{ job.status }}" == "success" ]; then
+          if [ "${{ steps.pipeline.outputs.targets_failed }}" == "true" ]; then
+            echo "::error::Pipeline completed with target failures — check logs for details"
+            exit 1
+          elif [ "${{ job.status }}" == "success" ]; then
             if [ "$count" -gt 0 ]; then
               echo "::notice::Pipeline completed — $count dataset(s) updated"
             else

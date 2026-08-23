@@ -133,7 +133,12 @@ download_secovi <- function(table, quiet, max_retries) {
       )
 
       urls <- paste0(url_base, secovi_meta[["code"]])
-      parsed <- purrr::map(urls, rvest::read_html)
+      parsed <- purrr::map(urls, function(url) {
+        response <- httr::GET(url)
+        httr::stop_for_status(response)
+        raw <- httr::content(response, as = "raw")
+        secovi_parse_html(raw)
+      })
 
       safe_html_table <- purrr::possibly(rvest::html_table, otherwise = list())
       tables <- purrr::map(parsed, safe_html_table)
@@ -166,16 +171,101 @@ secovi_metadata <- dplyr::tribble(
      80 , "acao_locaticia"     , "rent"   ,
      18 , "tipos_de_garantia"  , "rent"   ,
      13 , "rent_price"         , "rent"   ,
-     25 , "launches_rmsp"      , "launch" ,
      26 , "supply"             , "launch" ,
      85 , "launches"           , "launch" ,
      86 , "sales_1rooms"       , "sale"   ,
      87 , "sales_2rooms"       , "sale"   ,
      88 , "sales_3rooms"       , "sale"   ,
      89 , "sales_4rooms"       , "sale"   ,
-     90 , "sales"              , "sale"   ,
-    118 , "sales_rmsp"         , "sale"
+     90 , "sales"              , "sale"
 )
+
+
+# HTML parsing ---------------------------------------------------------------
+
+#' Parse a SECOVI HTML response with its undeclared source encoding
+#'
+#' @param raw A raw vector containing a SECOVI HTML response
+#' @return An `xml_document`
+#' @noRd
+secovi_parse_html <- function(raw) {
+  parsed <- rvest::read_html(raw, encoding = "ISO-8859-1")
+  return(parsed)
+}
+
+
+# Freshness validation -------------------------------------------------------
+
+#' Validate that actively published SECOVI series are recent
+#'
+#' @param data A cleaned SECOVI data frame
+#' @param reference_date Date used to calculate freshness
+#' @param max_age_days Maximum acceptable age in days
+#' @return Invisibly returns `TRUE`; otherwise, raises an error
+#' @noRd
+validate_secovi_freshness <- function(
+  data,
+  reference_date = Sys.Date(),
+  max_age_days = 180
+) {
+  required_cols <- c("date", "variable")
+  missing_cols <- setdiff(required_cols, names(data))
+
+  if (length(missing_cols) > 0) {
+    cli::cli_abort(
+      "SECOVI freshness validation requires columns {.field {missing_cols}}."
+    )
+  }
+
+  active_variables <- c(
+    "supply",
+    "launches",
+    "sales_1rooms",
+    "sales_2rooms",
+    "sales_3rooms",
+    "sales_4rooms",
+    "sales"
+  )
+  available_variables <- unique(data[["variable"]])
+  missing_variables <- setdiff(active_variables, available_variables)
+
+  if (length(missing_variables) > 0) {
+    cli::cli_abort(c(
+      "SECOVI data is missing actively published series.",
+      "x" = "Missing series: {.val {missing_variables}}"
+    ))
+  }
+
+  active_data <- dplyr::filter(
+    data,
+    .data[["variable"]] %in% active_variables
+  )
+  latest_dates <- active_data |>
+    dplyr::summarise(
+      latest_date = if (all(is.na(.data[["date"]]))) {
+        as.Date(NA)
+      } else {
+        max(.data[["date"]], na.rm = TRUE)
+      },
+      .by = "variable"
+    )
+
+  cutoff_date <- as.Date(reference_date) - max_age_days
+  stale_variables <- latest_dates[["variable"]][
+    is.na(latest_dates[["latest_date"]]) |
+      latest_dates[["latest_date"]] < cutoff_date
+  ]
+
+  if (length(stale_variables) > 0) {
+    cli::cli_abort(c(
+      "SECOVI data is older than {max_age_days} days.",
+      "x" = "Stale series: {.val {stale_variables}}",
+      "i" = "Fresh data must be dated on or after {as.character(cutoff_date)}."
+    ))
+  }
+
+  return(invisible(TRUE))
+}
 
 
 #' Parse PT-BR formatted number strings to numeric

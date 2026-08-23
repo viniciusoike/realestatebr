@@ -1,5 +1,10 @@
 # realestatebr 1.0.1.9000
 
+## Bug fixes
+
+* The weekly cache pipeline now refreshes age-cued datasets reliably despite schedule jitter, uploads only cache files produced from updated upstream targets, rejects stale SECOVI data, and reports target failures as failed workflow runs.
+* `get_dataset("secovi")` once again downloads current SECOVI-SP data after `xml2` 1.6.0 changed its default HTML encoding. SECOVI responses are now parsed explicitly as ISO-8859-1, and upstream indicators 25 (`launches_rmsp`) and 118 (`sales_rmsp`) are no longer requested because SECOVI has discontinued them.
+
 ## Breaking changes
 
 * Removed `date_start` and `date_end` from `get_dataset()`. Filter the `date`

@@ -164,7 +164,7 @@ The pipeline uses the modern `get_dataset()` interface with three targets per da
 
 After processing, GitHub Actions uploads files from `data-raw/cache_output/` to the "cache-latest" GitHub release.
 
-**Weekly Datasets** (7-day update cycle):
+**Weekly Datasets** (weekly schedule with a 6-day staleness cue):
 - bcb_series, bcb_realestate, fgv_ibre
 - abecip, abrainc, secovi
 - rppi_sale, rppi_rent
