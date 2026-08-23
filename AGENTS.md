@@ -198,8 +198,9 @@ data quality
 After processing, GitHub Actions uploads files from
 `data-raw/cache_output/` to the “cache-latest” GitHub release.
 
-**Weekly Datasets** (7-day update cycle): - bcb_series, bcb_realestate,
-fgv_ibre - abecip, abrainc, secovi - rppi_sale, rppi_rent
+**Weekly Datasets** (weekly schedule with a 6-day staleness cue): -
+bcb_series, bcb_realestate, fgv_ibre - abecip, abrainc, secovi -
+rppi_sale, rppi_rent
 
 **Monthly Datasets** (1st of month trigger): - bis_rppi
 

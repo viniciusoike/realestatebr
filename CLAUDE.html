@@ -272,7 +272,7 @@
 <h4 id="pipeline-architecture">Pipeline Architecture<a class="anchor" aria-label="anchor" href="#pipeline-architecture"></a></h4>
 <p>The pipeline uses the modern <code><a href="reference/get_dataset.html">get_dataset()</a></code> interface with three targets per dataset: 1. <strong><code>{dataset}_data</code></strong>: Fetches fresh data using <code>get_dataset(source="fresh")</code> 2. <strong><code>{dataset}_cache</code></strong>: Saves to <code>data-raw/cache_output/</code> (staging directory for GitHub releases) 3. <strong><code>{dataset}_validation</code></strong>: Validates data quality</p>
 <p>After processing, GitHub Actions uploads files from <code>data-raw/cache_output/</code> to the “cache-latest” GitHub release.</p>
-<p><strong>Weekly Datasets</strong> (7-day update cycle): - bcb_series, bcb_realestate, fgv_ibre - abecip, abrainc, secovi - rppi_sale, rppi_rent</p>
+<p><strong>Weekly Datasets</strong> (weekly schedule with a 6-day staleness cue): - bcb_series, bcb_realestate, fgv_ibre - abecip, abrainc, secovi - rppi_sale, rppi_rent</p>
 <p><strong>Monthly Datasets</strong> (1st of month trigger): - bis_rppi</p>
 </div>
 </div>
