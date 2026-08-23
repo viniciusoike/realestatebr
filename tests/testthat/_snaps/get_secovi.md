@@ -18,4 +18,3 @@
       ✖ Stale series: "supply", "launches", "sales_1rooms", "sales_2rooms",
         "sales_3rooms", "sales_4rooms", and "sales"
       ℹ Fresh data must be dated on or after 2026-02-24.
-
