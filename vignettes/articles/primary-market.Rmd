@@ -344,5 +344,5 @@ ggplot(sp_market_rooms, aes(date)) +
 
 The help topics `?abrainc`, `?secovi`, and `?fgv_ibre` document the columns of
 each dataset used here. For housing credit, see [Housing Credit in
-Brazil](housing-credit.html); for price indices, see
-`vignette("working-with-rppi")`.
+Brazil](housing-credit.html); for price indices, see [Working with Property
+Price Indices](working-with-rppi.html).

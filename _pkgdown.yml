@@ -43,7 +43,7 @@ articles:
     navbar: ~
     contents:
       - getting-started
-      - working-with-rppi
+      - articles/working-with-rppi
   - title: "Market deep dives"
     navbar: Market deep dives
     contents:

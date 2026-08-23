@@ -416,5 +416,5 @@ ggplot(cgi, aes(date, stock_contracts / 1e3)) +
 
 The help topics `?abecip`, `?bcb_series`, and `?bcb_realestate` document the
 columns of each dataset used here. For the primary market, see [The Primary
-Market and the Construction Cycle](primary-market.html); for price indices,
-see `vignette("working-with-rppi")`.
+Market and the Construction Cycle](primary-market.html); for price indices, see
+[Working with Property Price Indices](working-with-rppi.html).

@@ -1,18 +1,11 @@
 ---
 title: "Working with Property Price Indices"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Working with Property Price Indices}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r knitr-setup, include = FALSE}
-NOT_CRAN <- identical(tolower(Sys.getenv("NOT_CRAN")), "true")
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = NOT_CRAN,
   fig.width = 7,
   fig.asp = 0.618,
   fig.align = "center",
@@ -20,11 +13,12 @@ knitr::opts_chunk$set(
   warning = FALSE
 )
 ```
+
 ## Introduction
 
 Brazil has several residential property price indices (RPPIs), each built by a
 different institution and each with its own methodology, geographic coverage,
-and time span. This vignette shows how to reach every one of them through
+and time span. This article shows how to reach every one of them through
 `get_dataset("rppi")`. Since `realestatebr` returns tibbles, we recommend using
 it together with `dplyr`.
 
@@ -33,7 +27,7 @@ library(realestatebr)
 library(dplyr)
 ```
 
-The code below defines an optional common theme for the plots in this vignette.
+The code below defines an optional common theme for the plots in this article.
 It can be omitted.
 
 ```{r setup, message = FALSE}
