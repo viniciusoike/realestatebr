@@ -403,5 +403,5 @@ and
 document the columns of each dataset used here. For housing credit, see
 [Housing Credit in
 Brazil](https://viniciusoike.github.io/realestatebr/articles/housing-credit.md);
-for price indices, see
-[`vignette("working-with-rppi")`](https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.md).
+for price indices, see [Working with Property Price
+Indices](https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.md).

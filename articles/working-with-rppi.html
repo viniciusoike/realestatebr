@@ -76,7 +76,7 @@
       <h1>Working with Property Price Indices</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/viniciusoike/realestatebr/blob/main/vignettes/working-with-rppi.Rmd" class="external-link"><code>vignettes/working-with-rppi.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/viniciusoike/realestatebr/blob/main/vignettes/articles/working-with-rppi.Rmd" class="external-link"><code>vignettes/articles/working-with-rppi.Rmd</code></a></small>
       <div class="d-none name"><code>working-with-rppi.Rmd</code></div>
     </div>
 
@@ -87,7 +87,7 @@
 </h2>
 <p>Brazil has several residential property price indices (RPPIs), each
 built by a different institution and each with its own methodology,
-geographic coverage, and time span. This vignette shows how to reach
+geographic coverage, and time span. This article shows how to reach
 every one of them through <code>get_dataset("rppi")</code>. Since
 <code>realestatebr</code> returns tibbles, we recommend using it
 together with <code>dplyr</code>.</p>
@@ -95,7 +95,7 @@ together with <code>dplyr</code>.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/viniciusoike/realestatebr" class="external-link">realestatebr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 <p>The code below defines an optional common theme for the plots in this
-vignette. It can be omitted.</p>
+article. It can be omitted.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
@@ -169,7 +169,14 @@ smoothed with a 3-month moving average and the HP filter.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ivgr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"ivgr"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">ivgr</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">ivgr</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 304</span></span>
+<span><span class="co">#&gt; Columns: 5</span></span>
+<span><span class="co">#&gt; $ date     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2001-03-01<span style="color: #949494;">, </span>2001-04-01<span style="color: #949494;">, </span>2001-05-01<span style="color: #949494;">, </span>2001-06-01<span style="color: #949494;">, </span>2001-07-01<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ name_geo <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"…</span></span>
+<span><span class="co">#&gt; $ index    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 100.00<span style="color: #949494;">, </span>100.08<span style="color: #949494;">, </span>100.15<span style="color: #949494;">, </span>100.22<span style="color: #949494;">, </span>100.29<span style="color: #949494;">, </span>100.36<span style="color: #949494;">, </span>100.43<span style="color: #949494;">, </span>100.4…</span></span>
+<span><span class="co">#&gt; $ chg      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>0.0008000000<span style="color: #949494;">, </span>0.0006994404<span style="color: #949494;">, </span>0.0006989516<span style="color: #949494;">, </span>0.0006984634<span style="color: #949494;">, </span>0…</span></span>
+<span><span class="co">#&gt; $ acum12m  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>0.00980000<span style="color: #949494;">, </span>0…</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">ivgr</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">index</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, linewidth <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
@@ -179,6 +186,7 @@ smoothed with a 3-month moving average and the HP filter.</p>
 <span>    y <span class="op">=</span> <span class="st">"Index"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/ivgr-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="igmi-r">IGMI-R<a class="anchor" aria-label="anchor" href="#igmi-r"></a>
@@ -190,7 +198,14 @@ spans major Brazilian cities from 2014.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">igmi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"igmi"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">igmi</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">igmi</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 1,639</span></span>
+<span><span class="co">#&gt; Columns: 5</span></span>
+<span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ name_muni <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "São Paulo"<span style="color: #949494;">, </span>"Rio De Janeiro"<span style="color: #949494;">, </span>"Belo Horizonte"<span style="color: #949494;">, </span>"Fortaleza"…</span></span>
+<span><span class="co">#&gt; $ index     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 100.00000<span style="color: #949494;">, </span>100.00000<span style="color: #949494;">, </span>100.00000<span style="color: #949494;">, </span>100.00000<span style="color: #949494;">, </span>100.00000<span style="color: #949494;">, </span>100.0…</span></span>
+<span><span class="co">#&gt; $ chg       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>0.0003654000<span style="color: #949494;">, </span>0.…</span></span>
+<span><span class="co">#&gt; $ acum12m   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>…</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">main_cities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"São Paulo"</span>, <span class="st">"Rio De Janeiro"</span>, <span class="st">"Belo Horizonte"</span>, <span class="st">"Brasília"</span><span class="op">)</span></span>
 <span></span>
@@ -206,6 +221,7 @@ spans major Brazilian cities from 2014.</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/igmi-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="fipezap-sale">FipeZap (sale)<a class="anchor" aria-label="anchor" href="#fipezap-sale"></a>
@@ -230,7 +246,16 @@ final series is smoothed with a 3-month moving average.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"fipezap"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">fz</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">fz</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 686,394</span></span>
+<span><span class="co">#&gt; Columns: 7</span></span>
+<span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ name_muni <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ market    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "residential"<span style="color: #949494;">, </span>"residential"<span style="color: #949494;">, </span>"residential"<span style="color: #949494;">, </span>"residential"<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ rent_sale <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sal…</span></span>
+<span><span class="co">#&gt; $ variable  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "index"<span style="color: #949494;">, </span>"index"<span style="color: #949494;">, </span>"index"<span style="color: #949494;">, </span>"index"<span style="color: #949494;">, </span>"index"<span style="color: #949494;">, </span>"chg"<span style="color: #949494;">, </span>"chg"<span style="color: #949494;">, </span>"…</span></span>
+<span><span class="co">#&gt; $ rooms     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "total"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"2"<span style="color: #949494;">, </span>"3"<span style="color: #949494;">, </span>"4"<span style="color: #949494;">, </span>"total"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"2"<span style="color: #949494;">, </span>"3"<span style="color: #949494;">, </span>"4"<span style="color: #949494;">, </span>"t…</span></span>
+<span><span class="co">#&gt; $ value     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 41.81107<span style="color: #949494;">, </span>39.46609<span style="color: #949494;">, </span>40.45048<span style="color: #949494;">, </span>43.47948<span style="color: #949494;">, </span>47.09432<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span>…</span></span></code></pre></div>
 <p>Working with this dataset requires more filtering than the others.
 For most uses the three choices that matter are <code>market</code>
 (‘residential’ or ‘commercial’), <code>rent_sale</code> (‘sale’ or
@@ -254,6 +279,7 @@ For most uses the three choices that matter are <code>market</code>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/fipezap-sale-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="comparing-sale-indices">Comparing sale indices<a class="anchor" aria-label="anchor" href="#comparing-sale-indices"></a>
@@ -264,7 +290,15 @@ which stacks the available sale indices into a single
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sale_indices</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"sale"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">sale_indices</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">sale_indices</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 14,653</span></span>
+<span><span class="co">#&gt; Columns: 6</span></span>
+<span><span class="co">#&gt; $ source    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "IGMI-R"<span style="color: #949494;">, </span>"IGMI-R"<span style="color: #949494;">, </span>"IGMI-R"<span style="color: #949494;">, </span>"IGMI-R"<span style="color: #949494;">, </span>"IGMI-R"<span style="color: #949494;">, </span>"IGMI-R"<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ name_muni <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "São Paulo"<span style="color: #949494;">, </span>"Rio De Janeiro"<span style="color: #949494;">, </span>"Belo Horizonte"<span style="color: #949494;">, </span>"Fortaleza"…</span></span>
+<span><span class="co">#&gt; $ index     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 100.00000<span style="color: #949494;">, </span>100.00000<span style="color: #949494;">, </span>100.00000<span style="color: #949494;">, </span>100.00000<span style="color: #949494;">, </span>100.00000<span style="color: #949494;">, </span>100.0…</span></span>
+<span><span class="co">#&gt; $ chg       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>0.0003654000<span style="color: #949494;">, </span>0.…</span></span>
+<span><span class="co">#&gt; $ acum12m   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>…</span></span></code></pre></div>
 <p>The stacked table keeps only <code>rooms == "total"</code> for
 FipeZap, and the nationwide index appears under
 <code>name_muni == "Brazil"</code> rather than a city name.</p>
@@ -284,6 +318,7 @@ widens.</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/sale-stacked-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level2">
@@ -300,7 +335,14 @@ making it rather volatile.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ivar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"ivar"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">ivar</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">ivar</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 455</span></span>
+<span><span class="co">#&gt; Columns: 5</span></span>
+<span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2018-12-01<span style="color: #949494;">, </span>2018-12-01<span style="color: #949494;">, </span>2018-12-01<span style="color: #949494;">, </span>2018-12-01<span style="color: #949494;">, </span>2018-12-01<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ name_muni <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>"São Paulo"<span style="color: #949494;">, </span>"Rio De Janeiro"<span style="color: #949494;">, </span>"Belo Horizonte"<span style="color: #949494;">, </span>"Porto …</span></span>
+<span><span class="co">#&gt; $ index     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 100.000<span style="color: #949494;">, </span>100.000<span style="color: #949494;">, </span>100.000<span style="color: #949494;">, </span>100.000<span style="color: #949494;">, </span>100.000<span style="color: #949494;">, </span>99.852<span style="color: #949494;">, </span>99.731<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ chg       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>-1.480000e-03<span style="color: #949494;">, </span>-2.690000e-03<span style="color: #949494;">, </span>8.310000e-…</span></span>
+<span><span class="co">#&gt; $ acum12m   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>…</span></span></code></pre></div>
 <p>The series is noisy, so the plot adds a 5-month moving average from
 the <code>trendseries</code> package.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -327,6 +369,7 @@ the <code>trendseries</code> package.</p>
 <span>    y <span class="op">=</span> <span class="st">"Index"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/ivar-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="iqa-and-iqaiw">IQA and IQAIW<a class="anchor" aria-label="anchor" href="#iqa-and-iqaiw"></a>
@@ -349,7 +392,15 @@ available observation.</p>
 <code class="sourceCode R"><span><span class="va">iqa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"iqa"</span><span class="op">)</span></span>
 <span><span class="va">iqaiw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"iqaiw"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">iqaiw</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">iqaiw</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 1,660</span></span>
+<span><span class="co">#&gt; Columns: 6</span></span>
+<span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2021-05-01<span style="color: #949494;">, </span>2021-06-01<span style="color: #949494;">, </span>2021-07-01<span style="color: #949494;">, </span>2021-08-01<span style="color: #949494;">, </span>2021-09-01<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ name_muni <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Belo Horizonte"<span style="color: #949494;">, </span>"Belo Horizonte"<span style="color: #949494;">, </span>"Belo Horizonte"<span style="color: #949494;">, </span>"Belo …</span></span>
+<span><span class="co">#&gt; $ rooms     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ index     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 100.00000<span style="color: #949494;">, </span>100.00508<span style="color: #949494;">, </span>99.51814<span style="color: #949494;">, </span>99.17578<span style="color: #949494;">, </span>99.24295<span style="color: #949494;">, </span>99.99587…</span></span>
+<span><span class="co">#&gt; $ chg       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>5.084921e-05<span style="color: #949494;">, </span>-4.869240e-03<span style="color: #949494;">, </span>-3.440099e-03<span style="color: #949494;">, </span>6.772126e-04…</span></span>
+<span><span class="co">#&gt; $ acum12m   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>0.1598557<span style="color: #949494;">, </span>0…</span></span></code></pre></div>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">iqa</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">index</span>, color <span class="op">=</span> <span class="va">name_muni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
@@ -362,6 +413,7 @@ available observation.</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/iqa-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>The newer IQAIW index covers more cities and, like FipeZap, breaks
 results down by number of bedrooms (<code>rooms</code>).</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
@@ -378,6 +430,7 @@ results down by number of bedrooms (<code>rooms</code>).</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/iqaiw-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>The package keeps the discontinued IQA for its history. Plotting both
 series together shows where the methodology break falls.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
@@ -404,6 +457,7 @@ series together shows where the methodology break falls.</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/quintoandar-compare-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="fipezap-rent">FipeZap (rent)<a class="anchor" aria-label="anchor" href="#fipezap-rent"></a>
@@ -415,7 +469,16 @@ data from 2021.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"fipezap"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">fz</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">fz</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 686,394</span></span>
+<span><span class="co">#&gt; Columns: 7</span></span>
+<span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ name_muni <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ market    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "residential"<span style="color: #949494;">, </span>"residential"<span style="color: #949494;">, </span>"residential"<span style="color: #949494;">, </span>"residential"<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ rent_sale <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sale"<span style="color: #949494;">, </span>"sal…</span></span>
+<span><span class="co">#&gt; $ variable  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "index"<span style="color: #949494;">, </span>"index"<span style="color: #949494;">, </span>"index"<span style="color: #949494;">, </span>"index"<span style="color: #949494;">, </span>"index"<span style="color: #949494;">, </span>"chg"<span style="color: #949494;">, </span>"chg"<span style="color: #949494;">, </span>"…</span></span>
+<span><span class="co">#&gt; $ rooms     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "total"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"2"<span style="color: #949494;">, </span>"3"<span style="color: #949494;">, </span>"4"<span style="color: #949494;">, </span>"total"<span style="color: #949494;">, </span>"1"<span style="color: #949494;">, </span>"2"<span style="color: #949494;">, </span>"3"<span style="color: #949494;">, </span>"4"<span style="color: #949494;">, </span>"t…</span></span>
+<span><span class="co">#&gt; $ value     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 41.81107<span style="color: #949494;">, </span>39.46609<span style="color: #949494;">, </span>40.45048<span style="color: #949494;">, </span>43.47948<span style="color: #949494;">, </span>47.09432<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span>…</span></span></code></pre></div>
 <p>This is the same table used in the sale example above; only the
 <code>rent_sale</code> filter changes.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
@@ -444,6 +507,7 @@ which shows how far FipeZap’s geographic coverage reaches.</p>
 <span>    y <span class="op">=</span> <span class="st">"Accumulated 12-month change (%)"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/fipezap-rent-plot-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="secovi-sp">SECOVI-SP<a class="anchor" aria-label="anchor" href="#secovi-sp"></a>
@@ -455,7 +519,14 @@ single Brazilian city.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">secovi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"secovi_sp"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">secovi</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">secovi</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 236</span></span>
+<span><span class="co">#&gt; Columns: 5</span></span>
+<span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2004-12-01<span style="color: #949494;">, </span>2005-01-01<span style="color: #949494;">, </span>2005-02-01<span style="color: #949494;">, </span>2005-03-01<span style="color: #949494;">, </span>2005-04-01<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ name_muni <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "São Paulo"<span style="color: #949494;">, </span>"São Paulo"<span style="color: #949494;">, </span>"São Paulo"<span style="color: #949494;">, </span>"São Paulo"<span style="color: #949494;">, </span>"São Pau…</span></span>
+<span><span class="co">#&gt; $ index     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 100.000<span style="color: #949494;">, </span>100.500<span style="color: #949494;">, </span>100.802<span style="color: #949494;">, </span>101.003<span style="color: #949494;">, </span>101.104<span style="color: #949494;">, </span>101.306<span style="color: #949494;">, </span>101.71…</span></span>
+<span><span class="co">#&gt; $ chg       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>0.0050000000<span style="color: #949494;">, </span>0.0030049751<span style="color: #949494;">, </span>0.0019940081<span style="color: #949494;">, </span>0.0009999703<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ acum12m   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>0.04176000<span style="color: #949494;">, </span>…</span></span></code></pre></div>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">secovi</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">acum12m</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, linewidth <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
@@ -468,6 +539,7 @@ single Brazilian city.</p>
 <span>    y <span class="op">=</span> <span class="st">"%"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/secovi-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level2">
@@ -500,6 +572,7 @@ comparisons straightforward.</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/rent-stacked-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="normalizing-to-a-common-base">Normalizing to a common base<a class="anchor" aria-label="anchor" href="#normalizing-to-a-common-base"></a>
@@ -556,6 +629,7 @@ indices to January 2018 = 100.</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/sale-rebased-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level2">
@@ -585,6 +659,7 @@ for 60+ countries, so you can compare Brazil against other markets.</p>
 <span>    color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="working-with-rppi_files/figure-html/bis-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="index-reference">Index reference<a class="anchor" aria-label="anchor" href="#index-reference"></a>

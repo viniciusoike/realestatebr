@@ -69,7 +69,7 @@
 
 
 
-
+<script src="getting-started_files/kePrint-0.0.1/kePrint.js"></script><link href="getting-started_files/lightable-0.0.1/lightable.css" rel="stylesheet">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
@@ -142,6 +142,166 @@ the available datasets and their tables.</li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_datasets.html">list_datasets</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; overflow-x: scroll; width:100%; ">
+<table class="table table table-striped" style="margin-left: auto; margin-right: auto;">
+<thead><tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+name
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+title
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+source
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+available_tables
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+frequency
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+abecip
+</td>
+<td style="text-align:left;">
+ABECIP Housing Credit Indicators
+</td>
+<td style="text-align:left;">
+ABECIP - Associação Brasileira das Entidades de Crédito Imobiliário
+</td>
+<td style="text-align:left;">
+sbpe, units, cgi
+</td>
+<td style="text-align:left;">
+monthly
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+abrainc
+</td>
+<td style="text-align:left;">
+ABRAINC-FIPE Primary Market Indicators
+</td>
+<td style="text-align:left;">
+ABRAINC/FIPE
+</td>
+<td style="text-align:left;">
+indicator, radar, leading
+</td>
+<td style="text-align:left;">
+quarterly
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+bcb_realestate
+</td>
+<td style="text-align:left;">
+BCB Real Estate Market Data
+</td>
+<td style="text-align:left;">
+Banco Central do Brasil
+</td>
+<td style="text-align:left;">
+accounting, application, indices, sources, units
+</td>
+<td style="text-align:left;">
+monthly
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+bcb_series
+</td>
+<td style="text-align:left;">
+BCB Economic Series
+</td>
+<td style="text-align:left;">
+Banco Central do Brasil - SGS
+</td>
+<td style="text-align:left;">
+core, primary, secondary, tertiary, full
+</td>
+<td style="text-align:left;">
+varies (daily/monthly/quarterly)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+fgv_ibre
+</td>
+<td style="text-align:left;">
+FGV IBRE Real Estate Indicators
+</td>
+<td style="text-align:left;">
+FGV IBRE
+</td>
+<td style="text-align:left;">
+(single table)
+</td>
+<td style="text-align:left;">
+monthly
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rppi
+</td>
+<td style="text-align:left;">
+Brazilian Residential Property Price Indices
+</td>
+<td style="text-align:left;">
+Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP)
+</td>
+<td style="text-align:left;">
+fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp, sale, rent, all
+</td>
+<td style="text-align:left;">
+monthly
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rppi_bis
+</td>
+<td style="text-align:left;">
+BIS Residential Property Price Indices
+</td>
+<td style="text-align:left;">
+Bank for International Settlements
+</td>
+<td style="text-align:left;">
+selected, detailed_monthly, detailed_quarterly, detailed_annual,
+detailed_halfyearly
+</td>
+<td style="text-align:left;">
+quarterly
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+secovi
+</td>
+<td style="text-align:left;">
+SECOVI-SP Real Estate Market Data
+</td>
+<td style="text-align:left;">
+SECOVI-SP - Sindicato da Habitação
+</td>
+<td style="text-align:left;">
+condo, rent, launch, sale
+</td>
+<td style="text-align:left;">
+monthly
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <ul>
 <li>
 <strong><code><a href="../reference/get_dataset_info.html">get_dataset_info()</a></code></strong> shows available
@@ -181,7 +341,24 @@ home purchases.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sbpe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">sbpe</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">sbpe</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 540</span></span>
+<span><span class="co">#&gt; Columns: 15</span></span>
+<span><span class="co">#&gt; $ date              <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 1982-01-01<span style="color: #949494;">, </span>1982-02-01<span style="color: #949494;">, </span>1982-03-01<span style="color: #949494;">, </span>1982-04-01<span style="color: #949494;">, </span>198…</span></span>
+<span><span class="co">#&gt; $ sbpe_inflow       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 238234.1<span style="color: #949494;">, </span>224080.0<span style="color: #949494;">, </span>247218.8<span style="color: #949494;">, </span>264925.0<span style="color: #949494;">, </span>227636.3<span style="color: #949494;">, </span>31…</span></span>
+<span><span class="co">#&gt; $ sbpe_outflow      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 261523.1<span style="color: #949494;">, </span>161176.0<span style="color: #949494;">, </span>118662.8<span style="color: #949494;">, </span>378395.0<span style="color: #949494;">, </span>137201.3<span style="color: #949494;">, </span>15…</span></span>
+<span><span class="co">#&gt; $ sbpe_netflow      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> -23289<span style="color: #949494;">, </span>62904<span style="color: #949494;">, </span>128556<span style="color: #949494;">, </span>-113470<span style="color: #949494;">, </span>90435<span style="color: #949494;">, </span>164739<span style="color: #949494;">, </span>-9934…</span></span>
+<span><span class="co">#&gt; $ sbpe_netflow_pct  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> -0.009387130<span style="color: #949494;">, </span>0.021881448<span style="color: #949494;">, </span>0.043761242<span style="color: #949494;">, </span>-0.037006429…</span></span>
+<span><span class="co">#&gt; $ sbpe_yield        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 417103<span style="color: #949494;">, </span>0<span style="color: #949494;">, </span>0<span style="color: #949494;">, </span>485995<span style="color: #949494;">, </span>0<span style="color: #949494;">, </span>0<span style="color: #949494;">, </span>642432<span style="color: #949494;">, </span>0<span style="color: #949494;">, </span>0<span style="color: #949494;">, </span>957944<span style="color: #949494;">, </span>0<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ sbpe_stock        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 2874764<span style="color: #949494;">, </span>2937668<span style="color: #949494;">, </span>3066224<span style="color: #949494;">, </span>3438749<span style="color: #949494;">, </span>3529184<span style="color: #949494;">, </span>3693923…</span></span>
+<span><span class="co">#&gt; $ rural_inflow      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ rural_outflow     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ rural_netflow     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ rural_netflow_pct <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ rural_yield       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ rural_stock       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ total_stock       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ total_netflow     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>…</span></span></code></pre></div>
 <p>The plot below shows the annual net savings flow in recent years.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Annual net credit flow</span></span>
@@ -205,12 +382,22 @@ home purchases.</p>
 <span>    y <span class="op">=</span> <span class="st">"R$ billions"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>The companion table <code>"units"</code> contains monthly counts of
 financed units.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">units</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"units"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">units</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">units</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 294</span></span>
+<span><span class="co">#&gt; Columns: 7</span></span>
+<span><span class="co">#&gt; $ date                  <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2002-01-01<span style="color: #949494;">, </span>2002-02-01<span style="color: #949494;">, </span>2002-03-01<span style="color: #949494;">, </span>2002-04-01<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ units_construction    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 200<span style="color: #949494;">, </span>483<span style="color: #949494;">, </span>1049<span style="color: #949494;">, </span>684<span style="color: #949494;">, </span>571<span style="color: #949494;">, </span>1109<span style="color: #949494;">, </span>216<span style="color: #949494;">, </span>506<span style="color: #949494;">, </span>1698<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ units_acquisition     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1455<span style="color: #949494;">, </span>1456<span style="color: #949494;">, </span>1522<span style="color: #949494;">, </span>1723<span style="color: #949494;">, </span>1536<span style="color: #949494;">, </span>1536<span style="color: #949494;">, </span>1706<span style="color: #949494;">, </span>1838<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ units_total           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1655<span style="color: #949494;">, </span>1939<span style="color: #949494;">, </span>2571<span style="color: #949494;">, </span>2407<span style="color: #949494;">, </span>2107<span style="color: #949494;">, </span>2645<span style="color: #949494;">, </span>1922<span style="color: #949494;">, </span>2344<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ currency_construction <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 13.540470<span style="color: #949494;">, </span>32.117295<span style="color: #949494;">, </span>62.592800<span style="color: #949494;">, </span>44.422429<span style="color: #949494;">, </span>23.4…</span></span>
+<span><span class="co">#&gt; $ currency_acquisition  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 83.95237<span style="color: #949494;">, </span>96.12279<span style="color: #949494;">, </span>101.71222<span style="color: #949494;">, </span>108.14803<span style="color: #949494;">, </span>98.281…</span></span>
+<span><span class="co">#&gt; $ currency_total        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 97.49284<span style="color: #949494;">, </span>128.24008<span style="color: #949494;">, </span>164.30502<span style="color: #949494;">, </span>152.57046<span style="color: #949494;">, </span>121.7…</span></span></code></pre></div>
 <p>The plot shows the number of units financed per month, with a LOESS
 trend line.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
@@ -233,6 +420,7 @@ trend line.</p>
 <span>    y <span class="op">=</span> <span class="st">"Units"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="example-real-estate-credit-portfolio">Example: real estate credit portfolio<a class="anchor" aria-label="anchor" href="#example-real-estate-credit-portfolio"></a>
@@ -280,6 +468,7 @@ line).</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>lwd <span class="op">=</span> <span class="fl">0.8</span>, color <span class="op">=</span> <span class="va">color_palette</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"SFH"</span>, y <span class="op">=</span> <span class="st">"R$ (billions)"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>The grouped series show the entire household credit stock by credit
 line.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -307,6 +496,7 @@ line.</p>
 <span>    fill <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_series</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>One caveat when joining tables: <code>bcb_realestate</code> uses
 end-of-month dates, such as <code>2023-01-31</code>, while most other
 datasets use the first day of the month. Use
