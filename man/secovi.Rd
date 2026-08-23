@@ -26,7 +26,9 @@ secovi_condo <- get_dataset("secovi", table = "condo")
 \item \strong{Tables}: \code{"condo"}, \code{"rent"}, \code{"launch"}, \code{"sale"} (default: \code{"all"})
 }
 
-Regional classifications specific to São Paulo metropolitan area.
+Regional classifications are specific to the São Paulo metropolitan area.
+SECOVI no longer publishes indicators 25 (\code{launches_rmsp}) and 118
+(\code{sales_rmsp}), so they are not returned.
 }
 \section{Columns}{
 

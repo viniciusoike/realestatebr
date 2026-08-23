@@ -22,7 +22,9 @@
 #' * **Coverage**: 2004-present (varies by category)
 #' * **Tables**: `"condo"`, `"rent"`, `"launch"`, `"sale"` (default: `"all"`)
 #'
-#' Regional classifications specific to São Paulo metropolitan area.
+#' Regional classifications are specific to the São Paulo metropolitan area.
+#' SECOVI no longer publishes indicators 25 (`launches_rmsp`) and 118
+#' (`sales_rmsp`), so they are not returned.
 #'
 #' @section Columns:
 #' All tables share the structure below; the `table` argument filters which

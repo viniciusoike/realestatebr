@@ -208,7 +208,7 @@ datasets:
     data_type: "tibble"
     cached_file: "secovi_sp.rds"
     default_table: "all"
-    translation_notes: "Regional classifications specific to São Paulo metropolitan area"
+    translation_notes: "Regional classifications are specific to the São Paulo metropolitan area. SECOVI no longer publishes indicators 25 (`launches_rmsp`) and 118 (`sales_rmsp`), so they are not returned."
     
   rppi_bis:
     name: "BIS Residential Property Price Indices"
@@ -511,5 +511,4 @@ datasets:
     update_notes: "No public API available; requires manual download and processing"
     update_schedule: "weekly"
     warn_after_days: 14
-
 

@@ -93,13 +93,12 @@ list(
     command = fetch_dataset("bcb_series", table = "full"),
     cue = tar_cue_age(
       name = bcb_series_data,
-      age = as.difftime(7, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
     name = bcb_series_cache,
-    command = save_to_cache(bcb_series_data, "bcb_series"),
-    format = "file"
+    command = save_to_cache(bcb_series_data, "bcb_series")
   ),
   tar_target(
     name = bcb_series_validation,
@@ -112,13 +111,12 @@ list(
     command = fetch_dataset("bcb_realestate"),
     cue = tar_cue_age(
       name = bcb_realestate_data,
-      age = as.difftime(7, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
     name = bcb_realestate_cache,
-    command = save_to_cache(bcb_realestate_data, "bcb_realestate"),
-    format = "file"
+    command = save_to_cache(bcb_realestate_data, "bcb_realestate")
   ),
   tar_target(
     name = bcb_realestate_validation,
@@ -140,8 +138,7 @@ list(
   ),
   tar_target(
     name = fgv_ibre_cache,
-    command = save_to_cache(fgv_ibre_data, "fgv_ibre"),
-    format = "file"
+    command = save_to_cache(fgv_ibre_data, "fgv_ibre")
   ),
   tar_target(
     name = fgv_ibre_validation,
@@ -154,26 +151,24 @@ list(
     command = fetch_dataset("abecip", table = "sbpe"),
     cue = tar_cue_age(
       name = abecip_sbpe_data,
-      age = as.difftime(7, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
     name = abecip_sbpe_cache,
-    command = save_to_cache(abecip_sbpe_data, "abecip_sbpe"),
-    format = "file"
+    command = save_to_cache(abecip_sbpe_data, "abecip_sbpe")
   ),
   tar_target(
     name = abecip_units_data,
     command = fetch_dataset("abecip", table = "units"),
     cue = tar_cue_age(
       name = abecip_units_data,
-      age = as.difftime(7, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
     name = abecip_units_cache,
-    command = save_to_cache(abecip_units_data, "abecip_units"),
-    format = "file"
+    command = save_to_cache(abecip_units_data, "abecip_units")
   ),
   # NOTE: CGI data has no public API and requires manual updates.
   # Download the updated Excel from ABECIP, replace inst/extdata/abecip_cgi.xlsx,
@@ -189,8 +184,7 @@ list(
   ),
   tar_target(
     name = abecip_cgi_cache,
-    command = save_to_cache(abecip_cgi_data, "abecip_cgi"),
-    format = "file"
+    command = save_to_cache(abecip_cgi_data, "abecip_cgi")
   ),
   tar_target(
     name = abecip_cgi_validation,
@@ -211,43 +205,44 @@ list(
     command = fetch_dataset("abrainc", table = "indicator"),
     cue = tar_cue_age(
       name = abrainc_indicator_data,
-      age = as.difftime(7, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
     name = abrainc_indicator_cache,
-    command = save_to_cache(abrainc_indicator_data, "abrainc_indicator"),
-    format = "file"
+    command = save_to_cache(abrainc_indicator_data, "abrainc_indicator")
   ),
   tar_target(
     name = abrainc_radar_data,
     command = fetch_dataset("abrainc", table = "radar"),
     cue = tar_cue_age(
       name = abrainc_radar_data,
-      age = as.difftime(7, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
     name = abrainc_radar_cache,
-    command = save_to_cache(abrainc_radar_data, "abrainc_radar"),
-    format = "file"
+    command = save_to_cache(abrainc_radar_data, "abrainc_radar")
   ),
   tar_target(
     name = abrainc_leading_data,
     command = fetch_dataset("abrainc", table = "leading"),
     cue = tar_cue_age(
       name = abrainc_leading_data,
-      age = as.difftime(7, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
     name = abrainc_leading_cache,
-    command = save_to_cache(abrainc_leading_data, "abrainc_leading"),
-    format = "file"
+    command = save_to_cache(abrainc_leading_data, "abrainc_leading")
   ),
   tar_target(
     name = abrainc_cache,
-    command = c(abrainc_indicator_cache, abrainc_radar_cache, abrainc_leading_cache)
+    command = c(
+      abrainc_indicator_cache,
+      abrainc_radar_cache,
+      abrainc_leading_cache
+    )
   ),
   tar_target(
     name = abrainc_validation,
@@ -260,13 +255,15 @@ list(
     command = fetch_dataset("secovi"),
     cue = tar_cue_age(
       name = secovi_data,
-      age = as.difftime(7, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
     name = secovi_cache,
-    command = save_to_cache(secovi_data, "secovi_sp"),
-    format = "file"
+    command = {
+      realestatebr:::validate_secovi_freshness(secovi_data)
+      save_to_cache(secovi_data, "secovi_sp")
+    }
   ),
   tar_target(
     name = secovi_validation,
@@ -279,13 +276,12 @@ list(
     command = fetch_dataset("rppi", table = "sale"),
     cue = tar_cue_age(
       name = rppi_sale_data,
-      age = as.difftime(7, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
     name = rppi_sale_cache,
-    command = save_to_cache(rppi_sale_data, "rppi_sale"),
-    format = "file"
+    command = save_to_cache(rppi_sale_data, "rppi_sale")
   ),
   tar_target(
     name = rppi_sale_validation,
@@ -298,13 +294,12 @@ list(
     command = fetch_dataset("rppi", table = "rent"),
     cue = tar_cue_age(
       name = rppi_rent_data,
-      age = as.difftime(7, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
     name = rppi_rent_cache,
-    command = save_to_cache(rppi_rent_data, "rppi_rent"),
-    format = "file"
+    command = save_to_cache(rppi_rent_data, "rppi_rent")
   ),
   tar_target(
     name = rppi_rent_validation,
@@ -326,8 +321,7 @@ list(
   ),
   tar_target(
     name = bis_rppi_cache,
-    command = save_to_cache(bis_rppi_data, "bis_selected"),
-    format = "file"
+    command = save_to_cache(bis_rppi_data, "bis_selected")
   ),
   tar_target(
     name = bis_rppi_validation,
