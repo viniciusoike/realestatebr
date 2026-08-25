@@ -25,45 +25,60 @@ cells <- map2_dfr(
   }
 )
 
-# Kandinsky palette — assign per cell, leave some NA (empty)
-kandinsky_colors <- c(
-  "#1a1a2e",
+library(ekioplot)
+
+ekio_pal("full")
+
+ekio_colors <- c(
+  ekio_pal("blue")[9],
   "#c0392b",
-  "#e8c547",
-  "#2980b9",
-  "#8e44ad",
-  "#e67e22",
-  "#27ae60"
+  ekio_pal("gold")[1],
+  ekio_pal("blue")[5],
+  ekio_pal("full")[3],
+  ekio_pal("full")[2],
+  ekio_pal("full")[6]
 )
+
+
+# Kandinsky palette — assign per cell, leave some NA (empty)
+# ekio_colors <- c(
+#   "#1a1a2e",
+#   "#c0392b",
+#   "#e8c547",
+#   "#2980b9",
+#   "#8e44ad",
+#   "#e67e22",
+#   "#27ae60"
+# )
 
 cell_groups <- tibble(cell = 1:25) |>
   mutate(
     fill_color = case_when(
-      cell == 1 ~ kandinsky_colors[1],
-      cell == 2 ~ kandinsky_colors[3],
+      cell == 1 ~ ekio_colors[1],
+      cell == 2 ~ ekio_colors[3],
       cell == 3 ~ NA_character_, # empty
-      cell == 4 ~ kandinsky_colors[5],
-      cell == 5 ~ kandinsky_colors[2],
+      cell == 4 ~ ekio_colors[5],
+      cell == 5 ~ ekio_colors[2],
       cell == 6 ~ NA_character_,
-      cell == 7 ~ kandinsky_colors[4],
-      cell == 8 ~ kandinsky_colors[3],
+      cell == 7 ~ ekio_colors[4],
+      cell == 8 ~ ekio_colors[3],
       cell == 9 ~ NA_character_,
-      cell == 10 ~ kandinsky_colors[6],
-      cell == 11 ~ kandinsky_colors[1],
+      cell == 10 ~ ekio_colors[6],
+      cell == 11 ~ ekio_colors[1],
       cell == 12 ~ NA_character_,
-      cell == 13 ~ kandinsky_colors[4],
-      cell == 14 ~ kandinsky_colors[2],
-      cell == 15 ~ kandinsky_colors[7],
-      cell == 16 ~ kandinsky_colors[3],
-      cell == 17 ~ kandinsky_colors[4],
-      cell == 18 ~ kandinsky_colors[2],
-      cell == 19 ~ kandinsky_colors[7],
-      cell == 20 ~ kandinsky_colors[3],
+      cell == 13 ~ ekio_colors[4],
+      cell == 14 ~ ekio_colors[2],
+      cell == 15 ~ ekio_colors[7],
+      cell == 16 ~ ekio_colors[3],
+      cell == 17 ~ ekio_colors[4],
+      cell == 18 ~ ekio_colors[2],
+      cell == 19 ~ ekio_colors[7],
+      cell == 20 ~ ekio_colors[3],
       cell == 21 ~ NA_character_,
-      cell == 22 ~ kandinsky_colors[6],
-      cell == 23 ~ kandinsky_colors[1],
+      cell == 22 ~ ekio_colors[6],
+      cell == 23 ~ ekio_colors[1],
       cell == 24 ~ NA_character_,
-      cell == 25 ~ kandinsky_colors[4]
+      cell == 25 ~ ekio_colors[4]
     )
   )
 
