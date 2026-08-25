@@ -444,7 +444,7 @@ rent_indices <- get_dataset("rppi", "rent")
 ```{r rent-stacked-filter}
 rent_indices_comp <- rent_indices |>
   filter(
-    name_muni %in% c("São Paulo", "Rio de Janeiro"),
+    name_muni %in% c("São Paulo", "Rio De Janeiro"),
     date >= as.Date("2019-01-01")
   )
 ```
