@@ -239,7 +239,7 @@ sale indices into a single `tibble`.
 sale_indices <- get_dataset("rppi", "sale")
 
 glimpse(sale_indices)
-#> Rows: 14,653
+#> Rows: 14,654
 #> Columns: 6
 #> $ source    <chr> "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", "IGMI-R", …
 #> $ date      <date> 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01,…

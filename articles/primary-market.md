@@ -307,16 +307,16 @@ count(secovi, category, variable)
 #>    <chr>    <chr>              <int>
 #>  1 condo    default_condominio   240
 #>  2 condo    icon                1746
-#>  3 launch   launches             532
-#>  4 launch   supply               266
+#>  3 launch   launches             538
+#>  4 launch   supply               269
 #>  5 rent     acao_locaticia      1980
 #>  6 rent     rent_price           236
 #>  7 rent     tipos_de_garantia    618
-#>  8 sale     sales                798
-#>  9 sale     sales_1rooms         798
-#> 10 sale     sales_2rooms         798
-#> 11 sale     sales_3rooms         798
-#> 12 sale     sales_4rooms         798
+#>  8 sale     sales                807
+#>  9 sale     sales_1rooms         807
+#> 10 sale     sales_2rooms         807
+#> 11 sale     sales_3rooms         807
+#> 12 sale     sales_4rooms         807
 ```
 
 ``` r
