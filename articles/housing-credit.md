@@ -28,30 +28,13 @@ can be omitted.
 
 ``` r
 
-if (requireNamespace("ekioplot", quietly = TRUE)) {
-  color_palette <- ekioplot::ekio_pal()
-  theme_series <- function() {
-    ekioplot::theme_ekio(base_size = 10) +
-      theme(
-        palette.color.discrete = color_palette
-      )
-  }
-} else {
-  color_palette <- c(
-    "#1E3A5F",
-    "#DD6B20",
-    "#2C7A7B",
-    "#D69E2E",
-    "#805AD5",
-    "#C53030"
-  )
-  theme_series <- function() {
-    theme_minimal(base_size = 10) +
-      theme(
-        legend.position = "bottom",
-        palette.color.discrete = color_palette
-      )
-  }
+library(ekioplot)
+color_palette <- ekioplot::ekio_pal()
+theme_series <- function() {
+  ekioplot::theme_ekio(base_size = 10) +
+    theme(
+      palette.color.discrete = color_palette
+    )
 }
 ```
 
@@ -101,7 +84,11 @@ sbpe_flows <- sbpe |>
 ggplot(sbpe_flows, aes(date, netflow_12m)) +
   geom_area(fill = color_palette[1], alpha = 0.9) +
   geom_hline(yintercept = 0) +
-  scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+  scale_x_date(
+    date_breaks = "2 year",
+    date_labels = "%Y",
+    expand = expansion(mult = c(0))
+  ) +
   labs(
     title = "SBPE Net Savings Flow",
     subtitle = "Accumulated net flow in 12 months",
@@ -132,7 +119,11 @@ bcb_funding <- bcb_re |>
 ggplot(bcb_funding, aes(date, value_bln)) +
   geom_area(aes(fill = funding_source)) +
   scale_fill_manual(values = color_palette, labels = \(x) toupper(x)) +
-  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_x_date(
+    date_breaks = "1 year",
+    date_labels = "%Y",
+    expand = expansion(mult = c(0))
+  ) +
   scale_y_continuous(expand = expansion(c(0, 0.05))) +
   labs(
     title = "Market Funding Sources",
@@ -379,7 +370,11 @@ sfh_risk_stock <- bcb_re |>
 ggplot(sfh_risk_stock, aes(date, value)) +
   geom_area(aes(fill = credit_risk)) +
   scale_fill_manual(values = color_palette) +
-  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_x_date(
+    date_breaks = "1 year",
+    date_labels = "%Y",
+    expand = expansion(mult = c(0))
+  ) +
   scale_y_continuous(expand = expansion(c(0, 0.05))) +
   labs(
     title = "Risk Classification of SFH Loans",
