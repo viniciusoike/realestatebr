@@ -11,7 +11,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# realestatebr: Brazilian Real Estate Data in R <img src="man/figures/hexlogo.png" align="right" height="139" />
+# realestatebr: Brazilian Real Estate Data in R <img src="man/figures/hexlogo.png" align="right" style="height: 139px; width: auto;" />
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/realestatebr)](https://CRAN.R-project.org/package=realestatebr)
