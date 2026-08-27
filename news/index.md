@@ -213,9 +213,7 @@ CRAN release: 2026-05-27
 - Added `URL` field to DESCRIPTION
 - Fixed incomplete `@source` tag for `dim_city` dataset documentation
 - Fixed typo in `b3_real_estate` documentation (“mian” -\> “main”)
-- Removed local
-  [`skip_on_cran()`](https://testthat.r-lib.org/reference/skip.html)
-  definition that shadowed `testthat`
+- Removed local `skip_on_cran()` definition that shadowed `testthat`
 - Updated stale description for CBIC dataset in registry
 
 ## realestatebr 0.6.0 (2025-11-09)
