@@ -38,3 +38,28 @@ test_that("get_dataset is silent when quiet is TRUE", {
 
   expect_silent(get_dataset("abecip", table = "sbpe", quiet = TRUE))
 })
+
+test_that("every RPPI table maps to a release asset", {
+  registry <- load_dataset_registry()
+  rppi_info <- registry$datasets$rppi
+  expected <- c(
+    sale = "rppi_sale",
+    rent = "rppi_rent",
+    all = "rppi_all",
+    fipezap = "rppi_fipe",
+    ivgr = "rppi_ivgr",
+    igmi = "rppi_igmi",
+    iqa = "rppi_iqa",
+    iqaiw = "rppi_iqaiw",
+    ivar = "rppi_ivar",
+    secovi_sp = "rppi_secovi_sp"
+  )
+
+  actual <- vapply(
+    names(expected),
+    \(table) get_cached_name("rppi", rppi_info, table),
+    character(1)
+  )
+
+  expect_equal(actual, expected)
+})
