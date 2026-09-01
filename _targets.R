@@ -305,6 +305,49 @@ list(
     name = rppi_rent_validation,
     command = validate_dataset(rppi_rent_data, "rppi_rent")
   ),
+  tar_target(
+    name = rppi_all_data,
+    command = dplyr::bind_rows(
+      sale = rppi_sale_data,
+      rent = rppi_rent_data,
+      .id = "transaction_type"
+    )
+  ),
+  tar_target(
+    name = rppi_all_cache,
+    command = save_to_cache(rppi_all_data, "rppi_all")
+  ),
+  tar_target(
+    name = rppi_all_validation,
+    command = validate_dataset(rppi_all_data, "rppi_all")
+  ),
+
+  # ---- RPPI Individual Indices ----
+  tar_map(
+    values = tibble::tribble(
+      ~table      , ~cache_name      ,
+      "fipezap"   , "rppi_fipe"      ,
+      "ivgr"      , "rppi_ivgr"      ,
+      "igmi"      , "rppi_igmi"      ,
+      "iqa"       , "rppi_iqa"       ,
+      "iqaiw"     , "rppi_iqaiw"     ,
+      "ivar"      , "rppi_ivar"      ,
+      "secovi_sp" , "rppi_secovi_sp"
+    ),
+    names = table,
+    tar_target(
+      name = rppi_data,
+      command = fetch_dataset("rppi", table = table),
+      cue = tar_cue_age(
+        name = rppi_data,
+        age = as.difftime(6, units = "days")
+      )
+    ),
+    tar_target(
+      name = rppi_cache,
+      command = save_to_cache(rppi_data, cache_name)
+    )
+  ),
 
   # ========================================================================
   # MONTHLY UPDATES - Lower-priority datasets updated less frequently
@@ -345,6 +388,14 @@ list(
         secovi_cache,
         rppi_sale_cache,
         rppi_rent_cache,
+        rppi_all_cache,
+        rppi_cache_fipezap,
+        rppi_cache_ivgr,
+        rppi_cache_igmi,
+        rppi_cache_iqa,
+        rppi_cache_iqaiw,
+        rppi_cache_ivar,
+        rppi_cache_secovi_sp,
         bis_rppi_cache
       )
 
@@ -359,6 +410,7 @@ list(
         secovi = secovi_validation,
         rppi_sale = rppi_sale_validation,
         rppi_rent = rppi_rent_validation,
+        rppi_all = rppi_all_validation,
         bis_rppi = bis_rppi_validation
       )
 
@@ -374,6 +426,14 @@ list(
           "secovi",
           "rppi_sale",
           "rppi_rent",
+          "rppi_all",
+          "rppi_fipezap",
+          "rppi_ivgr",
+          "rppi_igmi",
+          "rppi_iqa",
+          "rppi_iqaiw",
+          "rppi_ivar",
+          "rppi_secovi_sp",
           "bis_rppi"
         ),
         weekly_datasets = c(
@@ -384,7 +444,15 @@ list(
           "abrainc",
           "secovi",
           "rppi_sale",
-          "rppi_rent"
+          "rppi_rent",
+          "rppi_all",
+          "rppi_fipezap",
+          "rppi_ivgr",
+          "rppi_igmi",
+          "rppi_iqa",
+          "rppi_iqaiw",
+          "rppi_ivar",
+          "rppi_secovi_sp"
         ),
         manual_datasets = c(
           "fgv_ibre",

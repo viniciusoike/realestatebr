@@ -13,6 +13,7 @@ datasets:
     coverage: "1982-present (varies by category)"
     update_schedule: "weekly"
     warn_after_days: 14
+
     categories:
       sbpe:
         name: "SBPE Monetary Flows"
@@ -435,13 +436,14 @@ datasets:
     cached_file:
       sale: "rppi_sale.rds"
       rent: "rppi_rent.rds"
-      fipezap: "rppi_fipe.csv.gz"
-      ivgr: "rppi_ivgr.csv.gz"
-      igmi: "rppi_igmi.csv.gz"
-      iqa: "rppi_iqa.csv.gz"
-      iqaiw: "rppi_iqaiw.csv.gz"
-      ivar: "rppi_ivar.csv.gz"
-      secovi_sp: "rppi_secovi_sp.csv.gz"
+      all: "rppi_all.rds"
+      fipezap: "rppi_fipe.rds"
+      ivgr: "rppi_ivgr.rds"
+      igmi: "rppi_igmi.rds"
+      iqa: "rppi_iqa.rds"
+      iqaiw: "rppi_iqaiw.rds"
+      ivar: "rppi_ivar.rds"
+      secovi_sp: "rppi_secovi_sp.rds"
     translation_notes: "Index methodologies vary by source; base periods normalized where possible"
 
   bcb_series:
@@ -511,4 +513,3 @@ datasets:
     update_notes: "No public API available; requires manual download and processing"
     update_schedule: "weekly"
     warn_after_days: 14
-
