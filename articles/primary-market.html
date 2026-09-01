@@ -188,7 +188,7 @@ uses values accumulated over twelve months.</p>
 <code class="sourceCode R"><span><span class="va">abrainc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"abrainc"</span>, table <span class="op">=</span> <span class="st">"indicator"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">abrainc</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 3,552</span></span>
+<span><span class="co">#&gt; Rows: 3,576</span></span>
 <span><span class="co">#&gt; Columns: 6</span></span>
 <span><span class="co">#&gt; $ date           <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-0…</span></span>
 <span><span class="co">#&gt; $ year           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2014<span style="color: #949494;">, </span>2…</span></span>
@@ -345,17 +345,17 @@ into a leading indicator of real estate activity.</p>
 <span><span class="co">#&gt;    category variable               n</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> condo    default_condominio   240</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> condo    icon                <span style="text-decoration: underline;">1</span>746</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> launch   launches             538</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> launch   supply               269</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> condo    icon                <span style="text-decoration: underline;">1</span>770</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> launch   launches             540</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> launch   supply               270</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> rent     acao_locaticia      <span style="text-decoration: underline;">1</span>980</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> rent     rent_price           236</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> rent     tipos_de_garantia    618</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> sale     sales                807</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> sale     sales_1rooms         807</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> sale     sales_2rooms         807</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> sale     sales_3rooms         807</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> sale     sales_4rooms         807</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> sale     sales                810</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> sale     sales_1rooms         810</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> sale     sales_2rooms         810</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> sale     sales_3rooms         810</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> sale     sales_4rooms         810</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sp_market</span> <span class="op">&lt;-</span> <span class="va">secovi</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>

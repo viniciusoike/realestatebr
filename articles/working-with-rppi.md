@@ -171,7 +171,7 @@ Four columns are specific to FipeZap.
 fz <- get_dataset("rppi", table = "fipezap")
 
 glimpse(fz)
-#> Rows: 686,394
+#> Rows: 689,472
 #> Columns: 7
 #> $ date      <date> 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01,…
 #> $ name_muni <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", …
@@ -443,7 +443,7 @@ data from 2021.
 fz <- get_dataset("rppi", table = "fipezap")
 
 glimpse(fz)
-#> Rows: 686,394
+#> Rows: 689,472
 #> Columns: 7
 #> $ date      <date> 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01,…
 #> $ name_muni <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", …

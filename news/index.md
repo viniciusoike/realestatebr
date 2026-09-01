@@ -4,6 +4,9 @@
 
 ### Bug fixes
 
+- `get_dataset("rppi", source = "github")` now supports the combined
+  `all` table and every individual RPPI table through the dataset
+  release cache.
 - The weekly cache pipeline now refreshes age-cued datasets reliably
   despite schedule jitter, uploads only cache files produced from
   updated upstream targets, rejects stale SECOVI data, and reports

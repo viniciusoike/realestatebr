@@ -53,7 +53,9 @@
 <h2 class="pkg-version" data-toc-text="1.0.1.9000" id="realestatebr-1019000">realestatebr 1.0.1.9000<a class="anchor" aria-label="anchor" href="#realestatebr-1019000"></a></h2>
 <div class="section level3">
 <h3 id="bug-fixes-1-0-1-9000">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-0-1-9000"></a></h3>
-<ul><li>The weekly cache pipeline now refreshes age-cued datasets reliably despite schedule jitter, uploads only cache files produced from updated upstream targets, rejects stale SECOVI data, and reports target failures as failed workflow runs.</li>
+<ul><li>
+<code>get_dataset("rppi", source = "github")</code> now supports the combined <code>all</code> table and every individual RPPI table through the dataset release cache.</li>
+<li>The weekly cache pipeline now refreshes age-cued datasets reliably despite schedule jitter, uploads only cache files produced from updated upstream targets, rejects stale SECOVI data, and reports target failures as failed workflow runs.</li>
 <li>
 <code>get_dataset("secovi")</code> once again downloads current SECOVI-SP data after <code>xml2</code> 1.6.0 changed its default HTML encoding. SECOVI responses are now parsed explicitly as ISO-8859-1, and upstream indicators 25 (<code>launches_rmsp</code>) and 118 (<code>sales_rmsp</code>) are no longer requested because SECOVI has discontinued them.</li>
 </ul></div>
