@@ -11,6 +11,54 @@ test_that("SECOVI HTML is parsed as ISO-8859-1", {
   expect_identical(names(cleaned)[[1]], "mes")
 })
 
+test_that("download_secovi drops indicators whose page fails", {
+  local_edition(3)
+  local_mocked_bindings(
+    secovi_read_page = function(url) {
+      if (grepl("idindicador=14$", url)) {
+        cli::cli_abort("HTTP 500")
+      }
+      list(data.frame(x = 1))
+    }
+  )
+
+  expect_snapshot(
+    tables <- download_secovi(
+      table = "condo",
+      quiet = TRUE,
+      max_retries = 0,
+      delay = 0
+    )
+  )
+  expect_named(tables, "icon")
+})
+
+test_that("download_secovi errors when no indicator page can be read", {
+  local_edition(3)
+  local_mocked_bindings(
+    secovi_read_page = function(url) cli::cli_abort("HTTP 503")
+  )
+
+  expect_snapshot(
+    download_secovi(table = "condo", quiet = TRUE, max_retries = 0, delay = 0),
+    error = TRUE
+  )
+})
+
+test_that("get_secovi does not fall back to the GitHub release", {
+  local_mocked_bindings(
+    download_secovi = function(...) cli::cli_abort("SECOVI is down"),
+    fetch_github_release_asset = function(...) {
+      stop("GitHub release should not be used")
+    }
+  )
+
+  expect_error(
+    get_secovi(table = "condo", quiet = TRUE),
+    "SECOVI is down"
+  )
+})
+
 test_that("SECOVI metadata excludes discontinued indicators", {
   expect_setequal(
     secovi_metadata[["code"]],

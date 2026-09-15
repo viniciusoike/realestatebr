@@ -19,11 +19,14 @@ download_with_retry <- function(
   quiet = FALSE,
   desc = "Download"
 ) {
+  last_error <- NULL
+
   for (i in seq_len(max_retries + 1)) {
     result <- rlang::try_fetch(fn(), error = function(cnd) {
+      last_error <<- cnd
       if (i <= max_retries && !quiet) {
         cli::cli_warn(
-          "{desc} attempt {i}/{max_retries + 1} failed: {cnd$message}"
+          "{desc} attempt {i}/{max_retries + 1} failed: {root_cause_message(cnd)}"
         )
       }
       NULL
@@ -33,7 +36,28 @@ download_with_retry <- function(
     }
     if (i <= max_retries) Sys.sleep(min(i * 0.5, 3))
   }
-  cli::cli_abort("{desc} failed after {max_retries + 1} attempts")
+  cli::cli_abort(
+    "{desc} failed after {max_retries + 1} attempt{?s}.",
+    parent = last_error
+  )
+}
+
+#' Get the message of the innermost error in a condition chain
+#'
+#' Wrappers such as `purrr::map()` replace the message with a generic header
+#' ("In index: 1."), so the useful message lives in the deepest parent.
+#'
+#' @param cnd A condition object
+#' @return A single string
+#' @noRd
+root_cause_message <- function(cnd) {
+  while (inherits(cnd$parent, "condition")) {
+    cnd <- cnd$parent
+  }
+  message <- paste(conditionMessage(cnd), collapse = " ")
+  message <- gsub("\\s*\n\\s*", " ", message)
+
+  return(message)
 }
 
 # Excel download -------------------------------------------------------------
@@ -96,7 +120,10 @@ download_excel <- function(
         sheets <- rlang::try_fetch(
           readxl::excel_sheets(temp_path),
           error = function(cnd) {
-            rlang::abort("Downloaded file is not a valid Excel file", parent = cnd)
+            rlang::abort(
+              "Downloaded file is not a valid Excel file",
+              parent = cnd
+            )
           }
         )
 
@@ -153,7 +180,12 @@ download_csv <- function(
 
       # Download using utils::download.file for CSV (more robust for text files)
       rlang::try_fetch(
-        utils::download.file(url = url, destfile = temp_path, mode = "wb", quiet = TRUE),
+        utils::download.file(
+          url = url,
+          destfile = temp_path,
+          mode = "wb",
+          quiet = TRUE
+        ),
         error = function(cnd) rlang::abort("Download failed", parent = cnd)
       )
 
@@ -214,7 +246,12 @@ download_zip <- function(
       on.exit(unlink(temp_zip), add = TRUE)
 
       rlang::try_fetch(
-        utils::download.file(url = url, destfile = temp_zip, mode = "wb", quiet = TRUE),
+        utils::download.file(
+          url = url,
+          destfile = temp_zip,
+          mode = "wb",
+          quiet = TRUE
+        ),
         error = function(cnd) rlang::abort("ZIP download failed", parent = cnd)
       )
 
@@ -293,7 +330,9 @@ download_zip <- function(
 #' @keywords internal
 fallback_to_github_cache <- function(dataset_name, quiet = FALSE) {
   if (!quiet) {
-    cli::cli_inform(c("i" = "Trying GitHub release for {.val {dataset_name}}..."))
+    cli::cli_inform(c(
+      "i" = "Trying GitHub release for {.val {dataset_name}}..."
+    ))
   }
 
   data <- fetch_github_release_asset(dataset_name, quiet = quiet)

@@ -18,6 +18,51 @@ save_dataset_to_cache <- function(data, name) {
   return(file_path)
 }
 
+#' Fill series missing from a fresh download with the published cache
+#'
+#' A series can disappear from a fresh download when its source page fails or
+#' is removed. Instead of publishing a dataset without that series, the rows
+#' from the most recent `cache-latest` asset are kept and a warning names the
+#' series. Series that are present but no longer updated are left untouched.
+#'
+#' @param fresh Freshly downloaded data frame
+#' @param cache_name Release asset stem (e.g., `"secovi_sp"`)
+#' @param key_cols Columns that identify a series
+#' @return `fresh`, with rows for missing series appended from the cache
+fill_missing_series <- function(fresh, cache_name, key_cols) {
+  cached <- realestatebr:::fetch_github_release_asset(cache_name, quiet = TRUE)
+
+  if (!is.data.frame(cached) || nrow(cached) == 0) {
+    cli::cli_abort(c(
+      "Cannot compare {cache_name} with the published cache.",
+      "x" = "The {.val {cache_name}} release asset could not be loaded.",
+      "i" = "The current release asset is kept until the next run."
+    ))
+  }
+
+  missing_keys <- dplyr::anti_join(
+    dplyr::distinct(cached, dplyr::across(dplyr::all_of(key_cols))),
+    dplyr::distinct(fresh, dplyr::across(dplyr::all_of(key_cols))),
+    by = key_cols
+  )
+
+  if (nrow(missing_keys) == 0) {
+    return(fresh)
+  }
+
+  missing_labels <- do.call(paste, c(missing_keys, sep = "/"))
+  cli::cli_warn(c(
+    "{cache_name}: {length(missing_labels)} series missing from the fresh download.",
+    "i" = "Kept from the published cache: {.val {missing_labels}}.",
+    "!" = "Check whether the source stopped publishing these series."
+  ))
+
+  cached_rows <- dplyr::semi_join(cached, missing_keys, by = key_cols)
+  filled <- dplyr::bind_rows(fresh, cached_rows[names(fresh)])
+
+  return(filled)
+}
+
 #' Get Cache Summary
 #'
 #' Generate summary information about cached datasets

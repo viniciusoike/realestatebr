@@ -80,6 +80,18 @@ jobs:
               }
               writeLines("true", file.path(Sys.getenv("RUNNER_TEMP"), "targets-failed"))
             }
+
+            # Annotate warnings from targets that ran in this session, such as
+            # series kept from the published cache
+            ran <- tar_progress()
+            ran <- ran$name[ran$progress != "skipped"]
+            warned <- tar_meta(fields = "warnings")
+            warned <- warned[!is.na(warned$warnings) & warned$name %in% ran, ]
+            for (i in seq_len(nrow(warned))) {
+              message_text <- gsub("[\r\n]+", " ", warned$warnings[i])
+              cat("::warning title=", warned$name[i], "::", message_text, "\n", sep = "")
+            }
+
             cli::cli_alert_success("Pipeline run complete")
           '
           if [ -f "$RUNNER_TEMP/targets-failed" ]; then

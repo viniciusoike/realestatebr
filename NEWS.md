@@ -5,6 +5,10 @@
 
 ## Bug fixes
 
+* `get_dataset("secovi", source = "fresh")` and `get_dataset("bcb_realestate", source = "fresh")` now raise an error when the original source is unavailable instead of silently returning the GitHub release cache.
+* `get_dataset("secovi")` now downloads each indicator page separately with a timeout and user agent, and warns about indicators it could not read.
+* Download retry warnings and errors now show the underlying cause instead of a generic "In index: 1." message.
+* The weekly cache pipeline keeps SECOVI series from the published cache when they are missing from a fresh download, and reports target warnings as workflow annotations.
 * `get_dataset("rppi", source = "github")` now supports the combined `all` table and every individual RPPI table through the dataset release cache.
 * The weekly cache pipeline now refreshes age-cued datasets reliably despite schedule jitter, uploads only cache files produced from updated upstream targets, rejects stale SECOVI data, and reports target failures as failed workflow runs.
 * `get_dataset("secovi")` once again downloads current SECOVI-SP data after `xml2` 1.6.0 changed its default HTML encoding. SECOVI responses are now parsed explicitly as ISO-8859-1, and upstream indicators 25 (`launches_rmsp`) and 118 (`sales_rmsp`) are no longer requested because SECOVI has discontinued them.

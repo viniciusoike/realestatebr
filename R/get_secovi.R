@@ -38,35 +38,11 @@ get_secovi <- function(
 
   cli_user("Downloading SECOVI-SP data from website", quiet = quiet)
 
-  scrape <- rlang::try_fetch(
-    download_secovi(table = table, quiet = quiet, max_retries = max_retries),
-    error = function(cnd) {
-      if (!quiet) {
-        cli::cli_warn("Web scraping failed: {cnd$message}")
-      }
-      NULL
-    }
+  scrape <- download_secovi(
+    table = table,
+    quiet = quiet,
+    max_retries = max_retries
   )
-
-  if (is.null(scrape) || length(scrape) == 0) {
-    data <- fallback_to_github_cache("secovi_sp", quiet = quiet)
-    if (!is.null(data)) {
-      if (table != "all") {
-        data <- dplyr::filter(data, category == !!table)
-      }
-      data <- attach_dataset_metadata(
-        data,
-        source = "github",
-        category = table
-      )
-      return(data)
-    }
-    cli::cli_abort(c(
-      "Failed to retrieve SECOVI-SP data",
-      "x" = "Web scraping returned empty and GitHub release is unavailable",
-      "i" = "The SECOVI-SP website may be blocking automated requests"
-    ))
-  }
 
   cli_debug("Processing {length(scrape)} data table{?s}...")
 
@@ -110,13 +86,18 @@ get_secovi <- function(
 
 #' Download raw SECOVI-SP indicator tables
 #'
+#' Pages are requested one at a time with a short pause between them, and each
+#' page is retried on its own. Indicators whose page cannot be read are dropped
+#' with a warning; an error is raised only when no page can be read.
+#'
 #' @param table Data table to import
 #' @param quiet Logical controlling messages
 #' @param max_retries Maximum number of retry attempts
+#' @param delay Seconds to wait between page requests
 #'
 #' @return Named list of scraped data tables
 #' @keywords internal
-download_secovi <- function(table, quiet, max_retries) {
+download_secovi <- function(table, quiet, max_retries, delay = 0.5) {
   url_base <- "https://indiceseconomicos.secovi.com.br/indicadormensal.php?idindicador="
 
   secovi_meta <- if (table != "all") {
@@ -125,42 +106,83 @@ download_secovi <- function(table, quiet, max_retries) {
     secovi_metadata
   }
 
-  download_with_retry(
-    fn = function() {
-      cli_user(
-        "Scraping data from https://indiceseconomicos.secovi.com.br/",
-        quiet = quiet
-      )
-
-      urls <- paste0(url_base, secovi_meta[["code"]])
-      parsed <- purrr::map(urls, function(url) {
-        response <- httr::GET(url)
-        httr::stop_for_status(response)
-        raw <- httr::content(response, as = "raw")
-        secovi_parse_html(raw)
-      })
-
-      safe_html_table <- purrr::possibly(rvest::html_table, otherwise = list())
-      tables <- purrr::map(parsed, safe_html_table)
-      names(tables) <- secovi_meta[["label"]]
-
-      missing_mask <- purrr::map_lgl(tables, ~ length(.x) == 0)
-      if (any(missing_mask)) {
-        missing_tables <- names(tables)[missing_mask]
-        cli::cli_warn("Failed to import data for: {.val {missing_tables}}")
-        tables <- tables[!missing_mask]
-      }
-
-      if (length(tables) == 0) {
-        stop("No data returned from SECOVI website")
-      }
-
-      return(tables)
-    },
-    max_retries = max_retries,
-    quiet = quiet,
-    desc = "Scrape SECOVI data"
+  cli_user(
+    "Scraping data from https://indiceseconomicos.secovi.com.br/",
+    quiet = quiet
   )
+
+  labels <- secovi_meta[["label"]]
+  urls <- paste0(url_base, secovi_meta[["code"]])
+  tables <- list()
+  errors <- list()
+
+  for (i in seq_along(urls)) {
+    if (i > 1) {
+      Sys.sleep(delay)
+    }
+
+    page <- rlang::try_fetch(
+      download_with_retry(
+        fn = function() secovi_read_page(urls[[i]]),
+        max_retries = max_retries,
+        quiet = quiet,
+        desc = paste0("Scrape SECOVI indicator ", labels[[i]])
+      ),
+      error = function(cnd) {
+        errors[[labels[[i]]]] <<- cnd
+        NULL
+      }
+    )
+
+    if (!is.null(page)) {
+      tables[[labels[[i]]]] <- page
+    }
+  }
+
+  if (length(errors) == length(urls)) {
+    cli::cli_abort(
+      c(
+        "Failed to download SECOVI-SP data.",
+        "x" = "No indicator page could be read.",
+        "i" = "The SECOVI-SP website may be down or blocking automated requests."
+      ),
+      parent = errors[[length(errors)]]
+    )
+  }
+
+  if (length(errors) > 0) {
+    cli::cli_warn(c(
+      "Failed to import SECOVI-SP data for {.val {names(errors)}}.",
+      "i" = "These indicators are missing from the result."
+    ))
+  }
+
+  return(tables)
+}
+
+
+#' Download one SECOVI indicator page and extract its HTML tables
+#'
+#' @param url Indicator page URL
+#' @param timeout Request timeout in seconds
+#' @return A list of data frames from `rvest::html_table()`
+#' @noRd
+secovi_read_page <- function(url, timeout = 60) {
+  response <- httr::GET(
+    url,
+    httr::user_agent("realestatebr R package"),
+    httr::timeout(timeout)
+  )
+  httr::stop_for_status(response)
+
+  raw <- httr::content(response, as = "raw")
+  tables <- rvest::html_table(secovi_parse_html(raw))
+
+  if (length(tables) == 0) {
+    cli::cli_abort("SECOVI-SP page {.url {url}} has no data tables.")
+  }
+
+  return(tables)
 }
 
 

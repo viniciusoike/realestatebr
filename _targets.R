@@ -258,16 +258,27 @@ list(
       age = as.difftime(6, units = "days")
     )
   ),
+  # If the whole download fails, secovi_data errors and the current release
+  # asset stays published. Series missing from a partial download are kept
+  # from the release asset.
+  tar_target(
+    name = secovi_publish,
+    command = fill_missing_series(
+      secovi_data,
+      cache_name = "secovi_sp",
+      key_cols = c("variable", "name")
+    )
+  ),
   tar_target(
     name = secovi_cache,
     command = {
-      realestatebr:::validate_secovi_freshness(secovi_data)
-      save_to_cache(secovi_data, "secovi_sp")
+      realestatebr:::validate_secovi_freshness(secovi_publish)
+      save_to_cache(secovi_publish, "secovi_sp")
     }
   ),
   tar_target(
     name = secovi_validation,
-    command = validate_dataset(secovi_data, "secovi")
+    command = validate_dataset(secovi_publish, "secovi")
   ),
 
   # ---- RPPI Sale - Residential Property Price Index (Sale) ----

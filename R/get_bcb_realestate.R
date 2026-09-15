@@ -31,31 +31,9 @@ get_bcb_realestate <- function(
 
   cli_user("Downloading real estate data from BCB API", quiet = quiet)
 
-  bcb <- rlang::try_fetch(
-    download_bcb_realestate(quiet = quiet, max_retries = max_retries),
-    error = function(cnd) {
-      if (!quiet) {
-        cli::cli_warn("BCB API download failed: {cnd$message}")
-      }
-      NULL
-    }
-  )
-
-  if (is.null(bcb)) {
-    data <- fallback_to_github_cache("bcb_realestate", quiet = quiet)
-    if (!is.null(data)) {
-      clean_bcb <- attach_dataset_metadata(data, source = "github")
-    } else {
-      cli::cli_abort(c(
-        "BCB API failed after {max_retries} attempts",
-        "x" = "GitHub release is also unavailable",
-        "i" = "The BCB API may be temporarily down"
-      ))
-    }
-  } else {
-    clean_bcb <- clean_bcb_realestate(bcb, quiet = quiet)
-    clean_bcb <- attach_dataset_metadata(clean_bcb, source = "web")
-  }
+  bcb <- download_bcb_realestate(quiet = quiet, max_retries = max_retries)
+  clean_bcb <- clean_bcb_realestate(bcb, quiet = quiet)
+  clean_bcb <- attach_dataset_metadata(clean_bcb, source = "web")
 
   # Return full cleaned table ----
   if (table == "all") {
@@ -103,14 +81,9 @@ get_bcb_realestate <- function(
     tidyr::unnest(cols = tab) |>
     dplyr::select(-category_label, -cat, -id_cols, -names_from)
 
-  source_val <- attr(clean_bcb, "source", exact = TRUE)
-  if (is.null(source_val)) {
-    source_val <- "web"
-  }
-
   tbl_bcb <- attach_dataset_metadata(
     tbl_bcb,
-    source = source_val,
+    source = "web",
     category = table
   )
 

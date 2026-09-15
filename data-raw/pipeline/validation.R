@@ -71,7 +71,10 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
     }
 
     # ---- NUMERIC VALIDATION ----
+    # Long-format datasets mix units in one value column, so column-wide
+    # outlier and range checks do not apply; they get dataset-specific checks.
     numeric_columns <- names(data)[sapply(data, is.numeric)]
+    numeric_columns <- setdiff(numeric_columns, get_mixed_unit_columns(dataset_name))
     if (length(numeric_columns) > 0) {
       for (num_col in numeric_columns) {
         col_values <- data[[num_col]][!is.na(data[[num_col]])]
@@ -166,7 +169,7 @@ get_required_columns <- function(dataset_name) {
     "bcb_realestate" = c("date", "series_code", "series_name", "value"),
     "b3_stocks" = c("date", "ticker", "close_price"),
     "fgv_indicators" = c("date", "indicator", "value"),
-    "secovi_sp" = c("date", "region", "indicator", "value"),
+    "secovi" = c("date", "category", "variable", "name", "value"),
     "bis_selected" = c("date", "country", "value"),
     "cbic" = c("date", "indicator", "value"),
     "property_records" = c("date", "state", "transactions"),
@@ -174,6 +177,19 @@ get_required_columns <- function(dataset_name) {
   )
 
   return(required_columns[[dataset_name]])
+}
+
+#' Get Mixed-Unit Columns for Dataset
+#'
+#' Numeric columns that hold several units at once and are skipped by the
+#' generic outlier and range checks
+#'
+get_mixed_unit_columns <- function(dataset_name) {
+  mixed_unit_columns <- list(
+    "secovi" = "value"
+  )
+
+  return(mixed_unit_columns[[dataset_name]])
 }
 
 #' Check Variable Ranges
@@ -240,6 +256,24 @@ validate_dataset_specific <- function(data, dataset_name) {
       tickers <- unique(data$ticker)
       specific_checks$valid_tickers <- all(nchar(as.character(tickers)) >= 4)  # Brazilian tickers are usually 4+ chars
     }
+
+  } else if (dataset_name == "secovi") {
+    # Every registered indicator is published, once per series and month
+    expected_variables <- realestatebr:::secovi_metadata[["label"]]
+    specific_checks$all_variables_present <- all(
+      expected_variables %in% data$variable
+    )
+    specific_checks$unique_series_dates <- !anyDuplicated(
+      data[c("date", "variable", "name")]
+    )
+
+    # Each series should be mostly non-missing
+    missing_by_series <- tapply(
+      is.na(data$value),
+      paste(data$variable, data$name),
+      mean
+    )
+    specific_checks$series_mostly_complete <- all(missing_by_series < 0.05)
 
   } else if (dataset_name == "rppi_sale" || dataset_name == "rppi_rent") {
     # RPPI data should have reasonable geographic coverage
