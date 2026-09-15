@@ -1,11 +1,14 @@
 # Download raw SECOVI-SP indicator tables
 
-Download raw SECOVI-SP indicator tables
+Pages are requested one at a time with a short pause between them, and
+each page is retried on its own. Indicators whose page cannot be read
+are dropped with a warning; an error is raised only when no page can be
+read.
 
 ## Usage
 
 ``` r
-download_secovi(table, quiet, max_retries)
+download_secovi(table, quiet, max_retries, delay = 0.5)
 ```
 
 ## Arguments
@@ -21,6 +24,10 @@ download_secovi(table, quiet, max_retries)
 - max_retries:
 
   Maximum number of retry attempts
+
+- delay:
+
+  Seconds to wait between page requests
 
 ## Value
 

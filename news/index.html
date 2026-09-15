@@ -59,6 +59,12 @@
 </ul><div class="section level3">
 <h3 id="bug-fixes-1-0-1-9000">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-0-1-9000"></a></h3>
 <ul><li>
+<code>get_dataset("secovi", source = "fresh")</code> and <code>get_dataset("bcb_realestate", source = "fresh")</code> now raise an error when the original source is unavailable instead of silently returning the GitHub release cache.</li>
+<li>
+<code>get_dataset("secovi")</code> now downloads each indicator page separately with a timeout and user agent, and warns about indicators it could not read.</li>
+<li>Download retry warnings and errors now show the underlying cause instead of a generic “In index: 1.” message.</li>
+<li>The weekly cache pipeline keeps SECOVI series from the published cache when they are missing from a fresh download, and reports target warnings as workflow annotations.</li>
+<li>
 <code>get_dataset("rppi", source = "github")</code> now supports the combined <code>all</code> table and every individual RPPI table through the dataset release cache.</li>
 <li>The weekly cache pipeline now refreshes age-cued datasets reliably despite schedule jitter, uploads only cache files produced from updated upstream targets, rejects stale SECOVI data, and reports target failures as failed workflow runs.</li>
 <li>

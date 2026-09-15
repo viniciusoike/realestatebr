@@ -11,6 +11,18 @@
 
 ### Bug fixes
 
+- `get_dataset("secovi", source = "fresh")` and
+  `get_dataset("bcb_realestate", source = "fresh")` now raise an error
+  when the original source is unavailable instead of silently returning
+  the GitHub release cache.
+- `get_dataset("secovi")` now downloads each indicator page separately
+  with a timeout and user agent, and warns about indicators it could not
+  read.
+- Download retry warnings and errors now show the underlying cause
+  instead of a generic “In index: 1.” message.
+- The weekly cache pipeline keeps SECOVI series from the published cache
+  when they are missing from a fresh download, and reports target
+  warnings as workflow annotations.
 - `get_dataset("rppi", source = "github")` now supports the combined
   `all` table and every individual RPPI table through the dataset
   release cache.
