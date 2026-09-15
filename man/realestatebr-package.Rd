@@ -6,7 +6,7 @@
 \alias{realestatebr-package}
 \title{realestatebr: Import Brazilian Real Estate Data into R}
 \description{
-Provides access to Brazilian real estate market data from multiple official sources: the Central Bank of Brazil (BCB) \url{https://www.bcb.gov.br/}, the Brazilian Association of Real Estate Developers (ABRAINC) \url{https://abrainc.org.br/}, the Brazilian Association of Real Estate Credit and Savings Entities (ABECIP) \url{https://www.abecip.org.br/}, the Getulio Vargas Foundation (FGV) \url{https://portalibre.fgv.br/}, and the Bank for International Settlements (BIS) \url{https://www.bis.org/}.
+Provides access to Brazilian real estate market data from multiple official sources: the Central Bank of Brazil (BCB) \url{https://www.bcb.gov.br/}, the Brazilian Association of Real Estate Developers (ABRAINC) \url{https://abrainc.org.br/}, the Brazilian Association of Real Estate Credit and Savings Entities (ABECIP) \url{https://www.abecip.org.br/}, the Getulio Vargas Foundation (FGV) \url{https://portalibre.fgv.br/}, and the Bank for International Settlements (BIS) \url{https://www.bis.org/}, as well as Brazil's Federal Revenue Service \url{https://www.gov.br/receitafederal/}.
 }
 \seealso{
 Useful links:

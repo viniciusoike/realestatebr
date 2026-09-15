@@ -21,6 +21,7 @@ rppi_ivgr <- get_dataset("rppi", table = "ivgr")
 \item \strong{Geography}: Brazil
 \item \strong{Frequency}: monthly
 \item \strong{Coverage}: varies by index
+\item \strong{Access mode}: \code{materialized}
 \item \strong{Tables}: \code{"fipezap"}, \code{"ivgr"}, \code{"igmi"}, \code{"iqa"}, \code{"iqaiw"}, \code{"ivar"}, \code{"secovi_sp"}, \code{"sale"}, \code{"rent"}, \code{"all"} (default: \code{"fipezap"})
 }
 
@@ -171,13 +172,14 @@ Complete stacked dataset with transaction_type indicator.
 }
 
 \seealso{
-\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
+\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
 Other datasets: 
 \code{\link{abecip}},
 \code{\link{abrainc}},
 \code{\link{bcb_realestate}},
 \code{\link{bcb_series}},
+\code{\link{cno}},
 \code{\link{fgv_ibre}},
 \code{\link{rppi_bis}},
 \code{\link{secovi}}

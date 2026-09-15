@@ -20,6 +20,7 @@
 #' * **Geography**: Brazil
 #' * **Frequency**: varies (daily/monthly/quarterly)
 #' * **Coverage**: varies by series
+#' * **Access mode**: `materialized`
 #' * **Tables**: `"core"`, `"primary"`, `"secondary"`, `"tertiary"`, `"full"` (default: `"core"`)
 #'
 #' Metadata available in both Portuguese and English.
@@ -36,7 +37,7 @@
 #' }
 #'
 #' @source Banco Central do Brasil - SGS
-#' @seealso [get_dataset()], [list_datasets()], [get_dataset_info()]
+#' @seealso [get_dataset()], [query_dataset()], [list_datasets()], [get_dataset_info()]
 #' @family datasets
 #' @keywords datasets
 #' @name bcb_series

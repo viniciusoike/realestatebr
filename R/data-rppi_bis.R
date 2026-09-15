@@ -20,6 +20,7 @@
 #' * **Geography**: International (60+ countries including Brazil)
 #' * **Frequency**: quarterly
 #' * **Coverage**: 1970-present (varies by country)
+#' * **Access mode**: `materialized`
 #' * **Tables**: `"selected"`, `"detailed_monthly"`, `"detailed_quarterly"`, `"detailed_annual"`, `"detailed_halfyearly"` (default: `"selected"`)
 #'
 #' International data; minimal translation needed.
@@ -154,7 +155,7 @@
 #' }
 #'
 #' @source Bank for International Settlements
-#' @seealso [get_dataset()], [list_datasets()], [get_dataset_info()]
+#' @seealso [get_dataset()], [query_dataset()], [list_datasets()], [get_dataset_info()]
 #' @family datasets
 #' @keywords datasets
 #' @name rppi_bis

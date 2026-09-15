@@ -23,6 +23,7 @@ abrainc_radar <- get_dataset("abrainc", table = "radar")
 \item \strong{Geography}: Brazil (major cities)
 \item \strong{Frequency}: quarterly
 \item \strong{Coverage}: 2014-present
+\item \strong{Access mode}: \code{materialized}
 \item \strong{Tables}: \code{"indicator"}, \code{"radar"}, \code{"leading"} (default: \code{"indicator"})
 }
 
@@ -79,12 +80,13 @@ Building permits in São Paulo as real estate leading indicator.
 }
 
 \seealso{
-\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
+\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
 Other datasets: 
 \code{\link{abecip}},
 \code{\link{bcb_realestate}},
 \code{\link{bcb_series}},
+\code{\link{cno}},
 \code{\link{fgv_ibre}},
 \code{\link{rppi}},
 \code{\link{rppi_bis}},

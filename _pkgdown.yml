@@ -17,6 +17,7 @@ reference:
     desc: "Discover and retrieve datasets"
     contents:
       - get_dataset
+      - query_dataset
       - list_datasets
       - get_dataset_info
       - clear_session_cache
@@ -52,6 +53,7 @@ articles:
   - title: internal
     contents:
       - articles/realestatebr-1-0-1
+      - articles/working-with-cno
 
 news:
   releases:

@@ -20,6 +20,7 @@
 #' * **Geography**: Brazil (by state)
 #' * **Frequency**: monthly
 #' * **Coverage**: 2001-present (varies by category)
+#' * **Access mode**: `materialized`
 #' * **Tables**: `"accounting"`, `"application"`, `"indices"`, `"sources"`, `"units"` (default: `"all"`)
 #'
 #' Complex multi-level series structure; v1-v5 columns contain series
@@ -46,7 +47,7 @@
 #' }
 #'
 #' @source Banco Central do Brasil
-#' @seealso [get_dataset()], [list_datasets()], [get_dataset_info()]
+#' @seealso [get_dataset()], [query_dataset()], [list_datasets()], [get_dataset_info()]
 #' @family datasets
 #' @keywords datasets
 #' @name bcb_realestate

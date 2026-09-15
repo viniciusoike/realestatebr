@@ -12,7 +12,8 @@
 #'
 #' @return A tibble with one row per dataset and the following columns:
 #'   \describe{
-#'     \item{name}{Dataset identifier used with \code{\link{get_dataset}}.}
+#'     \item{name}{Dataset identifier used with [get_dataset()] or
+#'       [query_dataset()], according to `access_mode`.}
 #'     \item{title}{English dataset name.}
 #'     \item{title_pt}{Portuguese dataset name.}
 #'     \item{description}{Brief description.}
@@ -20,6 +21,7 @@
 #'     \item{geography}{Geographic coverage.}
 #'     \item{frequency}{Update frequency.}
 #'     \item{coverage}{Time period covered.}
+#'     \item{access_mode}{Either `"materialized"` or `"query"`.}
 #'     \item{available_tables}{Comma-separated table names for multi-table datasets.}
 #'   }
 #'
@@ -28,8 +30,8 @@
 #'
 #' list_datasets(source = "BCB")
 #'
-#' @seealso \code{\link{get_dataset}} for retrieving data,
-#'   \code{\link{get_dataset_info}} for detailed metadata on a single dataset.
+#' @seealso [get_dataset()] and [query_dataset()] for retrieving data,
+#'   [get_dataset_info()] for detailed metadata on a single dataset.
 #'
 #' @export
 list_datasets <- function(
@@ -69,7 +71,11 @@ list_datasets <- function(
   # Add helpful message about usage
   if (nrow(datasets_df) > 0) {
     cli::cli_inform(
-      "Found {nrow(datasets_df)} dataset{?s}. Use get_dataset(name) to retrieve data."
+      paste(
+        "Found {nrow(datasets_df)} dataset{?s}.",
+        "Use {.code get_dataset()} for {.val materialized} entries and",
+        "{.code query_dataset()} for {.val query} entries."
+      )
     )
   } else {
     cli::cli_warn("No datasets found matching the specified criteria.")
@@ -122,6 +128,12 @@ load_dataset_registry <- function() {
 #' @keywords internal
 registry_to_tibble <- function(registry) {
   datasets <- registry$datasets
+  visible <- vapply(
+    datasets,
+    \(dataset) !identical(dataset$status, "hidden"),
+    logical(1)
+  )
+  datasets <- datasets[visible]
 
   # Extract information for each dataset
   dataset_info <- purrr::map_dfr(names(datasets), function(name) {
@@ -140,6 +152,7 @@ registry_to_tibble <- function(registry) {
     tibble::tibble(
       name = name,
       title = dataset$name %||% name,
+      access_mode = dataset$access_mode %||% "materialized",
       available_tables = available_tables,
       description = dataset$description %||% "",
       geography = dataset$geography %||% "",
@@ -166,7 +179,8 @@ registry_to_tibble <- function(registry) {
 #'     \item{metadata}{Title, description, geography, frequency, and coverage.}
 #'     \item{categories}{Available tables/subtables and their descriptions.}
 #'     \item{source_info}{Source organization and URL.}
-#'     \item{technical_info}{Cached file names and translation notes.}
+#'     \item{technical_info}{Access mode, cache or query-manifest metadata,
+#'       and translation notes.}
 #'   }
 #'
 #' @examples
@@ -205,7 +219,9 @@ get_dataset_info <- function(name) {
       url = dataset$url
     ),
     technical_info = list(
+      access_mode = dataset$access_mode %||% "materialized",
       cached_file = dataset$cached_file,
+      query_manifest = dataset$query_manifest,
       metadata_table = dataset$metadata_table,
       translation_notes = dataset$translation_notes
     )

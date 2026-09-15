@@ -43,7 +43,8 @@
 #'
 #' bcb_recent <- dplyr::filter(bcb_data, date >= as.Date("2020-01-01"))
 #'
-#' @seealso \code{\link{list_datasets}} for available datasets,
+#' @seealso [query_dataset()] for large relational datasets,
+#'   \code{\link{list_datasets}} for available datasets,
 #'   \code{\link{get_dataset_info}} for dataset details,
 #'   \code{\link{clear_session_cache}} to drop the in-session memo.
 #'   For table and column documentation of each dataset, see the dataset
@@ -74,9 +75,16 @@ get_dataset <- function(
 
   if (!is.null(dataset_info$status) && dataset_info$status == "hidden") {
     cli::cli_abort(c(
-      "Dataset '{name}' is not available in this version",
-      "i" = "This dataset is under development",
-      "i" = "Planned for future release"
+      "Dataset {.val {name}} is not available in this version.",
+      "i" = "The remote data snapshot has not been published."
+    ))
+  }
+
+  access_mode <- dataset_info$access_mode %||% "materialized"
+  if (access_mode != "materialized") {
+    cli::cli_abort(c(
+      "Dataset {.val {name}} uses lazy query access.",
+      "i" = "Use {.code query_dataset(\"{name}\")} instead."
     ))
   }
 

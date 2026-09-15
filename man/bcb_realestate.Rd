@@ -23,6 +23,7 @@ bcb_realestate_accounting <- get_dataset("bcb_realestate", table = "accounting")
 \item \strong{Geography}: Brazil (by state)
 \item \strong{Frequency}: monthly
 \item \strong{Coverage}: 2001-present (varies by category)
+\item \strong{Access mode}: \code{materialized}
 \item \strong{Tables}: \code{"accounting"}, \code{"application"}, \code{"indices"}, \code{"sources"}, \code{"units"} (default: \code{"all"})
 }
 
@@ -52,12 +53,13 @@ series are returned.
 }
 
 \seealso{
-\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
+\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
 Other datasets: 
 \code{\link{abecip}},
 \code{\link{abrainc}},
 \code{\link{bcb_series}},
+\code{\link{cno}},
 \code{\link{fgv_ibre}},
 \code{\link{rppi}},
 \code{\link{rppi_bis}},

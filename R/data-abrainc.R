@@ -20,6 +20,7 @@
 #' * **Geography**: Brazil (major cities)
 #' * **Frequency**: quarterly
 #' * **Coverage**: 2014-present
+#' * **Access mode**: `materialized`
 #' * **Tables**: `"indicator"`, `"radar"`, `"leading"` (default: `"indicator"`)
 #'
 #' Social Housing (MCMV) refers to Minha Casa Minha Vida and Casa Verde
@@ -69,7 +70,7 @@
 #' }
 #'
 #' @source ABRAINC/FIPE
-#' @seealso [get_dataset()], [list_datasets()], [get_dataset_info()]
+#' @seealso [get_dataset()], [query_dataset()], [list_datasets()], [get_dataset_info()]
 #' @family datasets
 #' @keywords datasets
 #' @name abrainc

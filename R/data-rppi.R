@@ -18,6 +18,7 @@
 #' * **Geography**: Brazil
 #' * **Frequency**: monthly
 #' * **Coverage**: varies by index
+#' * **Access mode**: `materialized`
 #' * **Tables**: `"fipezap"`, `"ivgr"`, `"igmi"`, `"iqa"`, `"iqaiw"`, `"ivar"`, `"secovi_sp"`, `"sale"`, `"rent"`, `"all"` (default: `"fipezap"`)
 #'
 #' Index methodologies vary by source; base periods normalized where possible.
@@ -147,7 +148,7 @@
 #' }
 #'
 #' @source Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP)
-#' @seealso [get_dataset()], [list_datasets()], [get_dataset_info()]
+#' @seealso [get_dataset()], [query_dataset()], [list_datasets()], [get_dataset_info()]
 #' @family datasets
 #' @keywords datasets
 #' @name rppi

@@ -513,3 +513,135 @@ datasets:
     update_notes: "No public API available; requires manual download and processing"
     update_schedule: "weekly"
     warn_after_days: 14
+
+  cno:
+    name: "National Registry of Construction Works"
+    name_pt: "Cadastro Nacional de Obras"
+    description: "Registration, area, economic activity, and responsibility records for Brazilian construction works"
+    source: "Receita Federal do Brasil - Cadastro Nacional de Obras"
+    url: "https://dados.gov.br/dados/conjuntos-dados/cadastro-nacional-de-obras-cno"
+    geography: "Brazil"
+    frequency: "daily source snapshots"
+    coverage: "November 2018-present, including migrated CEI records with earlier start dates"
+    update_schedule: "weekly"
+    status: "hidden"
+    access_mode: "query"
+    data_type: "lazy relational tables"
+    query_manifest:
+      latest_url: ~
+      version_url_template: ~
+      schema_sha256: "56d5bb0cff208e3817cf763fefc7490fa81edbf293066dfecb180b178a196faf"
+    categories:
+      works:
+        name: "Construction Works"
+        description: "One row per CNO registration"
+        grain: "one row per cno"
+        primary_key: ["cno"]
+        columns:
+          cno: "Twelve-digit CNO registration identifier. Stored as character to preserve leading zeroes."
+          country_code: "Three-digit country code published by Receita Federal."
+          country_name: "Country name published by Receita Federal."
+          start_date: "Declared start date of the construction work. Historical sentinel values are retained."
+          responsibility_start_date: "Start date of the current responsibility period."
+          registration_date: "Date on which the work was registered in CNO."
+          linked_cno: "Linked CNO registration when supplied by Receita Federal."
+          postal_code: "Postal code for works in Brazil. Stored as character."
+          responsible_tax_id: "Fourteen-digit identifier of the responsible legal person. Receita Federal suppresses CPF values."
+          responsible_role_code: "Four-digit code for the responsible party's role."
+          work_name: "Name assigned to the construction work, not the responsible party's name."
+          municipality_tom_code: "Four-digit Receita Federal TOM municipality code, not an IBGE municipality code."
+          municipality_name: "Municipality name published by Receita Federal."
+          street_type: "Street type."
+          street_name: "Street name."
+          street_number: "Street number or other source value such as S/N."
+          neighborhood: "Neighborhood name."
+          state: "State field as published. Usually a two-letter UF abbreviation; source anomalies are retained."
+          postal_box: "Postal box for works outside Brazil."
+          address_complement: "Additional address information."
+          measurement_unit: "Unit used to measure the work."
+          total_area: "Total measurement reported for the work, expressed in measurement_unit. Source outliers are retained."
+          status_code: "Two-digit CNO status code."
+          status_date: "Date associated with the current status."
+          responsible_legal_name: "Legal name of the responsible legal person when published."
+          plus_code: "Location code published by Receita Federal. Invalid and sentinel source values are retained."
+        source_columns:
+          CNO: {name: "cno", type: "VARCHAR"}
+          Código do Pais: {name: "country_code", type: "VARCHAR"}
+          Nome do pais: {name: "country_name", type: "VARCHAR"}
+          Data de início: {name: "start_date", type: "DATE"}
+          Data de inicio da responsabilidade: {name: "responsibility_start_date", type: "DATE"}
+          Data de registro: {name: "registration_date", type: "DATE"}
+          CNO vinculado: {name: "linked_cno", type: "VARCHAR"}
+          CEP: {name: "postal_code", type: "VARCHAR"}
+          NI do responsável: {name: "responsible_tax_id", type: "VARCHAR"}
+          Qualificação do responsavel: {name: "responsible_role_code", type: "VARCHAR"}
+          Nome: {name: "work_name", type: "VARCHAR"}
+          Código do municipio: {name: "municipality_tom_code", type: "VARCHAR"}
+          Nome do município: {name: "municipality_name", type: "VARCHAR"}
+          Tipo de logradouro: {name: "street_type", type: "VARCHAR"}
+          Logradouro: {name: "street_name", type: "VARCHAR"}
+          Número do logradouro: {name: "street_number", type: "VARCHAR"}
+          Bairro: {name: "neighborhood", type: "VARCHAR"}
+          Estado: {name: "state", type: "VARCHAR"}
+          Caixa Postal: {name: "postal_box", type: "VARCHAR"}
+          Complemento: {name: "address_complement", type: "VARCHAR"}
+          Unidade de medida: {name: "measurement_unit", type: "VARCHAR"}
+          Área total: {name: "total_area", type: "DECIMAL(24,2)"}
+          Situação: {name: "status_code", type: "VARCHAR"}
+          Data da situação: {name: "status_date", type: "DATE"}
+          Nome empresarial: {name: "responsible_legal_name", type: "VARCHAR"}
+          Código de localização: {name: "plus_code", type: "VARCHAR"}
+      areas:
+        name: "Construction Areas"
+        description: "Area records classified by category, destination, structure, and area type"
+        grain: "one row per cno and reported area classification"
+        foreign_key: ["cno"]
+        columns:
+          cno: "CNO registration identifier joining to works.cno."
+          work_category: "Category reported for the work area."
+          destination: "Intended use reported for the work area."
+          structure_type: "Construction structure type."
+          area_type: "Principal or complementary area."
+          complementary_area_type: "Complementary-area classification, when applicable."
+          area: "Reported area in square metres. Source duplicates and outliers are retained."
+        source_columns:
+          CNO: {name: "cno", type: "VARCHAR"}
+          Categoria: {name: "work_category", type: "VARCHAR"}
+          Destinação: {name: "destination", type: "VARCHAR"}
+          Tipo de obra: {name: "structure_type", type: "VARCHAR"}
+          Tipo de Área: {name: "area_type", type: "VARCHAR"}
+          Tipo de Área Complementar: {name: "complementary_area_type", type: "VARCHAR"}
+          Metragem: {name: "area", type: "DECIMAL(24,2)"}
+      cnaes:
+        name: "Economic Activities"
+        description: "CNAE economic activities associated with each construction work"
+        grain: "one row per cno and cnae registration"
+        foreign_key: ["cno"]
+        columns:
+          cno: "CNO registration identifier joining to works.cno."
+          cnae: "Seven-digit CNAE activity code. Stored as character."
+          registration_date: "Date on which the activity was registered."
+        source_columns:
+          CNO: {name: "cno", type: "VARCHAR"}
+          CNAE: {name: "cnae", type: "VARCHAR"}
+          Data de registro: {name: "registration_date", type: "DATE"}
+      responsibilities:
+        name: "Responsibility Periods"
+        description: "Responsible-party roles and their periods for each construction work"
+        grain: "one row per cno and responsibility period"
+        foreign_key: ["cno"]
+        columns:
+          cno: "CNO registration identifier joining to works.cno."
+          start_date: "Start date of the responsibility period."
+          end_date: "End date of the responsibility period, when applicable."
+          registration_date: "Date on which the responsibility was registered."
+          responsible_role_code: "Four-digit code for the responsible party's role."
+          responsible_tax_id: "Fourteen-digit identifier of the responsible legal person. Receita Federal suppresses CPF values."
+        source_columns:
+          CNO: {name: "cno", type: "VARCHAR"}
+          Data de início: {name: "start_date", type: "DATE"}
+          Data de fim: {name: "end_date", type: "DATE"}
+          Data de registro: {name: "registration_date", type: "DATE"}
+          Qualificação do contribuinte: {name: "responsible_role_code", type: "VARCHAR"}
+          NI do responsável: {name: "responsible_tax_id", type: "VARCHAR"}
+    translation_notes: "Column names are normalized to English, while source labels and anomalous values are retained without analytical cleaning"
