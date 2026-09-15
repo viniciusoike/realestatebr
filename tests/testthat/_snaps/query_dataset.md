@@ -1,19 +1,29 @@
-# query_dataset rejects manifest columns outside the registry
+# query_dataset rejects the former CNO table name
 
     Code
       query_dataset("cno", table = "works", quiet = TRUE)
     Condition
+      Error in `query_dataset()`:
+      ! Table "works" is not available for dataset "cno".
+      ℹ Available tables: "constructions", "areas", "cnaes", and "responsibilities".
+
+# query_dataset rejects manifest columns outside the registry
+
+    Code
+      query_dataset("cno", table = "constructions", quiet = TRUE)
+    Condition
       Error in `validate_query_manifest()`:
-      ! Manifest schema does not match the package registry for table "works".
+      ! Manifest schema does not match the package registry for table
+        "constructions".
 
 # query_dataset rejects Parquet whose schema differs from registry
 
     Code
-      query_dataset("cno", table = "works", quiet = TRUE)
+      query_dataset("cno", table = "constructions", quiet = TRUE)
     Condition
       Error in `value[[3L]]()`:
       ! Could not open lazy dataset tables: Parquet schema does not match the
-        package registry for table "works".
+        package registry for table "constructions".
 
 # query_dataset pins an explicit version
 

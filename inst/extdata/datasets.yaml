@@ -527,12 +527,12 @@ datasets:
     access_mode: "query"
     data_type: "lazy relational tables"
     query_manifest:
-      latest_url: "https://github.com/viniciusoike/realestatebr/releases/download/cno-latest/latest.json"
+      latest_url: "https://github.com/viniciusoike/realestatebr/releases/download/cno-v2-latest/latest.json"
       version_url_template: "https://github.com/viniciusoike/realestatebr/releases/download/cno-{version}/manifest.json"
-      schema_sha256: "56d5bb0cff208e3817cf763fefc7490fa81edbf293066dfecb180b178a196faf"
+      schema_sha256: "dfdd670146c4f427e671023aed64192d06d9254655ab740099a7d0757ef90545"
     categories:
-      works:
-        name: "Construction Works"
+      constructions:
+        name: "Constructions"
         description: "One row per CNO registration"
         grain: "one row per cno"
         primary_key: ["cno"]
@@ -547,7 +547,7 @@ datasets:
           postal_code: "Postal code for works in Brazil. Stored as character."
           responsible_tax_id: "Fourteen-digit identifier of the responsible legal person. Receita Federal suppresses CPF values."
           responsible_role_code: "Four-digit code for the responsible party's role."
-          work_name: "Name assigned to the construction work, not the responsible party's name."
+          construction_name: "Name assigned to the construction, not the responsible party's name."
           municipality_tom_code: "Four-digit Receita Federal TOM municipality code, not an IBGE municipality code."
           municipality_name: "Municipality name published by Receita Federal."
           street_type: "Street type."
@@ -574,7 +574,7 @@ datasets:
           CEP: {name: "postal_code", type: "VARCHAR"}
           NI do responsável: {name: "responsible_tax_id", type: "VARCHAR"}
           Qualificação do responsavel: {name: "responsible_role_code", type: "VARCHAR"}
-          Nome: {name: "work_name", type: "VARCHAR"}
+          Nome: {name: "construction_name", type: "VARCHAR"}
           Código do municipio: {name: "municipality_tom_code", type: "VARCHAR"}
           Nome do município: {name: "municipality_name", type: "VARCHAR"}
           Tipo de logradouro: {name: "street_type", type: "VARCHAR"}
@@ -596,8 +596,8 @@ datasets:
         grain: "one row per cno and reported area classification"
         foreign_key: ["cno"]
         columns:
-          cno: "CNO registration identifier joining to works.cno."
-          work_category: "Category reported for the work area."
+          cno: "CNO registration identifier joining to constructions.cno."
+          construction_category: "Category reported for the construction area."
           destination: "Intended use reported for the work area."
           structure_type: "Construction structure type."
           area_type: "Principal or complementary area."
@@ -605,7 +605,7 @@ datasets:
           area: "Reported area in square metres. Source duplicates and outliers are retained."
         source_columns:
           CNO: {name: "cno", type: "VARCHAR"}
-          Categoria: {name: "work_category", type: "VARCHAR"}
+          Categoria: {name: "construction_category", type: "VARCHAR"}
           Destinação: {name: "destination", type: "VARCHAR"}
           Tipo de obra: {name: "structure_type", type: "VARCHAR"}
           Tipo de Área: {name: "area_type", type: "VARCHAR"}
@@ -617,7 +617,7 @@ datasets:
         grain: "one row per cno and cnae registration"
         foreign_key: ["cno"]
         columns:
-          cno: "CNO registration identifier joining to works.cno."
+          cno: "CNO registration identifier joining to constructions.cno."
           cnae: "Seven-digit CNAE activity code. Stored as character."
           registration_date: "Date on which the activity was registered."
         source_columns:
@@ -630,7 +630,7 @@ datasets:
         grain: "one row per cno and responsibility period"
         foreign_key: ["cno"]
         columns:
-          cno: "CNO registration identifier joining to works.cno."
+          cno: "CNO registration identifier joining to constructions.cno."
           start_date: "Start date of the responsibility period."
           end_date: "End date of the responsibility period, when applicable."
           registration_date: "Date on which the responsibility was registered."

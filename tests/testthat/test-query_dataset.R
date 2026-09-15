@@ -11,7 +11,7 @@ make_cno_query_fixture <- function() {
   withr::defer(DBI::dbDisconnect(con, shutdown = TRUE))
 
   tables <- list(
-    works = data.frame(
+    constructions = data.frame(
       cno = c("000000000001", "000000000002"),
       country_code = "105",
       country_name = "BRASIL",
@@ -22,7 +22,7 @@ make_cno_query_fixture <- function() {
       postal_code = "00000000",
       responsible_tax_id = "00000000000000",
       responsible_role_code = "0053",
-      work_name = c("Obra A", "Obra B"),
+      construction_name = c("Obra A", "Obra B"),
       municipality_tom_code = "7107",
       municipality_name = c("SAO PAULO", "RIO DE JANEIRO"),
       street_type = "RUA",
@@ -41,7 +41,7 @@ make_cno_query_fixture <- function() {
     ),
     areas = data.frame(
       cno = c("000000000001", "000000000001", "000000000002"),
-      work_category = "Obra Nova",
+      construction_category = "Obra Nova",
       destination = c(
         "Residencial unifamiliar",
         "Comercial salas e lojas",
@@ -67,7 +67,7 @@ make_cno_query_fixture <- function() {
     )
   )
   field_types <- list(
-    works = c(total_area = "DECIMAL(24,2)"),
+    constructions = c(total_area = "DECIMAL(24,2)"),
     areas = c(area = "DECIMAL(24,2)"),
     cnaes = NULL,
     responsibilities = NULL
@@ -117,7 +117,7 @@ make_cno_query_fixture <- function() {
     dataset = "cno",
     version = "2026-01-02",
     schema_version = 1,
-    schema_sha256 = "56d5bb0cff208e3817cf763fefc7490fa81edbf293066dfecb180b178a196faf",
+    schema_sha256 = "dfdd670146c4f427e671023aed64192d06d9254655ab740099a7d0757ef90545",
     retrieved_at = "2026-01-03T12:00:00Z",
     tables = table_entries
   )
@@ -143,15 +143,20 @@ test_that("query_dataset returns a joinable CNO catalog", {
   withr::defer(close(cno))
 
   expect_s3_class(cno, "realestatebr_query_dataset")
-  expect_named(cno, c("works", "areas", "cnaes", "responsibilities"))
+  expect_named(
+    cno,
+    c("constructions", "areas", "cnaes", "responsibilities")
+  )
 
-  joined <- cno$works |>
+  joined <- cno$constructions |>
     dplyr::inner_join(cno$areas, by = "cno") |>
     dplyr::filter(.data$state == "SP") |>
     dplyr::collect()
 
   expect_equal(nrow(joined), 2L)
   expect_identical(unique(joined$cno), "000000000001")
+  expect_identical(joined$construction_name, c("Obra A", "Obra A"))
+  expect_identical(unique(joined$construction_category), "Obra Nova")
 })
 
 test_that("query_dataset can return one CNO table", {
@@ -161,17 +166,30 @@ test_that("query_dataset can return one CNO table", {
     realestatebr.query_manifest_urls = c(cno = manifest_path)
   )
 
-  works <- query_dataset("cno", table = "works", quiet = TRUE)
-  result <- works |>
+  constructions <- query_dataset(
+    "cno",
+    table = "constructions",
+    quiet = TRUE
+  )
+  result <- constructions |>
     dplyr::filter(.data$state == "RJ") |>
     dplyr::collect()
 
-  expect_s3_class(works, "tbl_lazy")
+  expect_s3_class(constructions, "tbl_lazy")
   expect_identical(result$cno, "000000000002")
 
-  owner <- attr(works, "connection_owner")
-  close(works)
+  owner <- attr(constructions, "connection_owner")
+  close(constructions)
   expect_identical(DBI::dbIsValid(owner$connection), FALSE)
+})
+
+test_that("query_dataset rejects the former CNO table name", {
+  local_edition(3)
+
+  expect_snapshot(
+    error = TRUE,
+    query_dataset("cno", table = "works", quiet = TRUE)
+  )
 })
 
 test_that("query_dataset rejects manifest columns outside the registry", {
@@ -183,12 +201,12 @@ test_that("query_dataset rejects manifest columns outside the registry", {
   )
 
   manifest <- jsonlite::read_json(manifest_path, simplifyVector = FALSE)
-  manifest$tables$works$columns[[1]]$type <- "BIGINT"
+  manifest$tables$constructions$columns[[1]]$type <- "BIGINT"
   jsonlite::write_json(manifest, manifest_path, auto_unbox = TRUE)
 
   expect_snapshot(
     error = TRUE,
-    query_dataset("cno", table = "works", quiet = TRUE)
+    query_dataset("cno", table = "constructions", quiet = TRUE)
   )
 })
 
@@ -205,24 +223,24 @@ test_that("query_dataset rejects Parquet whose schema differs from registry", {
     duckdb::duckdb(dbdir = ":memory:", shared_home = FALSE)
   )
   withr::defer(DBI::dbDisconnect(connection, shutdown = TRUE))
-  works_path <- file.path(fixture_dir, "works.parquet")
-  altered_path <- file.path(fixture_dir, "works-altered.parquet")
+  constructions_path <- file.path(fixture_dir, "constructions.parquet")
+  altered_path <- file.path(fixture_dir, "constructions-altered.parquet")
   DBI::dbExecute(
     connection,
     paste0(
       "COPY (SELECT CAST(cno AS BIGINT) AS cno, * EXCLUDE (cno) ",
       "FROM read_parquet(",
-      DBI::dbQuoteString(connection, works_path),
+      DBI::dbQuoteString(connection, constructions_path),
       ")) TO ",
       DBI::dbQuoteString(connection, altered_path),
       " (FORMAT PARQUET)"
     )
   )
-  file.copy(altered_path, works_path, overwrite = TRUE)
+  file.copy(altered_path, constructions_path, overwrite = TRUE)
 
   expect_snapshot(
     error = TRUE,
-    query_dataset("cno", table = "works", quiet = TRUE)
+    query_dataset("cno", table = "constructions", quiet = TRUE)
   )
 })
 
@@ -237,7 +255,7 @@ test_that("latest manifest pointers resolve snapshot-relative files", {
     file.path(
       fixture_dir,
       paste0(
-        c("works", "areas", "cnaes", "responsibilities"),
+        c("constructions", "areas", "cnaes", "responsibilities"),
         ".parquet"
       )
     )
@@ -258,7 +276,7 @@ test_that("latest manifest pointers resolve snapshot-relative files", {
   cno <- query_dataset("cno", quiet = TRUE)
   withr::defer(close(cno))
 
-  expect_equal(dplyr::collect(cno$works) |> nrow(), 2L)
+  expect_equal(dplyr::collect(cno$constructions) |> nrow(), 2L)
 })
 
 test_that("query_dataset pins an explicit version", {
@@ -327,7 +345,7 @@ test_that("CNO registry points to versioned GitHub releases", {
     info$latest_url,
     paste0(
       "https://github.com/viniciusoike/realestatebr/releases/",
-      "download/cno-latest/latest.json"
+      "download/cno-v2-latest/latest.json"
     )
   )
   expect_identical(
