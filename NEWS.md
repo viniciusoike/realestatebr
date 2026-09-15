@@ -5,6 +5,8 @@
 
 ## Bug fixes
 
+* Unknown-dataset errors from `get_dataset()` now list only materialized
+  datasets in alphabetical order.
 * `get_dataset("secovi", source = "fresh")` and `get_dataset("bcb_realestate", source = "fresh")` now raise an error when the original source is unavailable instead of silently returning the GitHub release cache.
 * `get_dataset("secovi")` now downloads each indicator page separately with a timeout and user agent, and warns about indicators it could not read.
 * Download retry warnings and errors now show the underlying cause instead of a generic "In index: 1." message.

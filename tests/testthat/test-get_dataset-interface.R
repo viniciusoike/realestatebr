@@ -10,6 +10,21 @@ test_that("get_dataset rejects unknown arguments", {
   expect_error(get_dataset("abecip", quiet = "yes"), "must be")
 })
 
+test_that("get_dataset lists materialized datasets alphabetically", {
+  error <- rlang::catch_cnd(
+    get_dataset("aaa", quiet = TRUE),
+    classes = "error"
+  )
+
+  expected <- paste(
+    "Dataset 'aaa' not found. Available:",
+    "abecip, abrainc, bcb_realestate, bcb_series, fgv_ibre,",
+    "rppi, rppi_bis, secovi"
+  )
+  expect_match(error$message, expected, fixed = TRUE)
+  expect_false(grepl("cno", error$message, fixed = TRUE))
+})
+
 test_that("get_dataset reports the source in a single message", {
   withr::defer(clear_session_cache())
   memo_set(memo_key("abecip", "sbpe"), tibble::tibble(date = Sys.Date()))
