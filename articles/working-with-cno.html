@@ -155,8 +155,9 @@ reading unused Parquet columns over the network.</p>
 <div class="section level2">
 <h2 id="join-constructions-and-areas">Join constructions and areas<a class="anchor" aria-label="anchor" href="#join-constructions-and-areas"></a>
 </h2>
-<p>Each work can have several area rows. The following query returns
-residential area records for works in São Paulo.</p>
+<p>Each construction can have several area rows. The following query
+returns residential area records for construction works in São
+Paulo.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">residential_areas</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">areas</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">destination</span> <span class="op">==</span> <span class="st">"Residencial unifamiliar"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -170,6 +171,69 @@ classifications, and it contains extreme area values. The package
 preserves these source records. Do not assume that summing every
 <code>areas$area</code> row produces an unbiased measure of built
 area.</p>
+<p>Let’s look at CNO <code>"900143355070"</code>. This case shows how
+exact duplicate rows affect a join between the
+<code>constructions</code> and <code>areas</code> tables.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">construction_case</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">constructions</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cno</span> <span class="op">==</span> <span class="st">"900143355070"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">cno</span>, <span class="va">municipality_name</span>, <span class="va">state</span>, <span class="va">total_area</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">area_case</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">areas</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cno</span> <span class="op">==</span> <span class="st">"900143355070"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">case</span> <span class="op">&lt;-</span> <span class="va">construction_case</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span><span class="va">area_case</span>, by <span class="op">=</span> <span class="st">"cno"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">case</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span></span>
+<span>    <span class="va">cno</span>,</span>
+<span>    <span class="va">municipality_name</span>,</span>
+<span>    <span class="va">total_area</span>,</span>
+<span>    <span class="va">destination</span>,</span>
+<span>    <span class="va">area_type</span>,</span>
+<span>    <span class="va">complementary_area_type</span>,</span>
+<span>    <span class="va">area</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># A tibble: 8 × 7</span></span>
+<span><span class="co">#   cno          municipality_name total_area destination               area_type    complementary_area_type            area</span></span>
+<span><span class="co">#   &lt;chr&gt;        &lt;chr&gt;                  &lt;dbl&gt; &lt;chr&gt;                     &lt;chr&gt;        &lt;chr&gt;                             &lt;dbl&gt;</span></span>
+<span><span class="co"># 1 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Quadra Esportiva e Poliesportiva   160</span></span>
+<span><span class="co"># 2 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Estacionamento Térreo             3076.</span></span>
+<span><span class="co"># 3 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Piscina                            136.</span></span>
+<span><span class="co"># 4 900143355070 LONDRINA              18719. Residencial multifamiliar Principal    NA                               15347.</span></span>
+<span><span class="co"># 5 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Quadra Esportiva e Poliesportiva   160</span></span>
+<span><span class="co"># 6 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Estacionamento Térreo             3076.</span></span>
+<span><span class="co"># 7 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Piscina                            136.</span></span>
+<span><span class="co"># 8 900143355070 LONDRINA              18719. Residencial multifamiliar Principal    NA                               15347.</span></span></code></pre></div>
+<p>These duplicates are present in the original CNO <code>areas</code>
+dataset. <code>realestatebr</code> currently reproduces them exactly.
+For most use cases, these duplicate rows will lead to errors, so we
+advise removing them using, for instance,
+<code><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">dplyr::distinct()</a></code>.</p>
+<p>Removing the duplicate rows, in this case, would also make the sum of
+the individual <code>area</code> column from <code>areas</code> coincide
+with <code>total_area</code> from <code>constructions</code>. This will
+not always be the case.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">construction_case</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">constructions</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cno</span> <span class="op">==</span> <span class="st">"900143355070"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">cno</span>, <span class="va">municipality_name</span>, <span class="va">state</span>, <span class="va">total_area</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">area_case</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">areas</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cno</span> <span class="op">==</span> <span class="st">"900143355070"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">case</span> <span class="op">&lt;-</span> <span class="va">construction_case</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span><span class="va">area_case</span>, by <span class="op">=</span> <span class="st">"cno"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">case</span><span class="op">$</span><span class="va">total_area</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">case</span><span class="op">$</span><span class="va">area</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>Future versions of <code>realestatebr</code> may add validation steps
+that remove exact duplicate rows and other noise from these tables.</p>
 </div>
 <div class="section level2">
 <h2 id="combine-several-child-tables-safely">Combine several child tables safely<a class="anchor" aria-label="anchor" href="#combine-several-child-tables-safely"></a>
@@ -178,12 +242,12 @@ area.</p>
 multiply rows. A work with two area rows and three CNAE rows produces
 six joined rows. Aggregate each child table to one row per CNO before
 combining them when the analysis needs one row per work.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">area_summary</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">areas</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">cno</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
 <span>    area_records <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    reported_area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">area</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    reported_area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">area</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
@@ -200,7 +264,7 @@ combining them when the analysis needs one row per work.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cnae_summary</span>, by <span class="op">=</span> <span class="st">"cno"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>The appropriate area aggregation depends on the research question.
-<code><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max()</a></code> above demonstrates the relational pattern; it is not
+<code><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum()</a></code> above demonstrates the relational pattern; it is not
 a general cleaning rule.</p>
 </div>
 <div class="section level2">
@@ -222,12 +286,12 @@ and reported category labels.</p>
 and pins that immutable snapshot while the catalog remains open. Supply
 a published version explicitly when an analysis must be
 reproducible.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cno_2026_09_13</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_dataset.html">query_dataset</a></span><span class="op">(</span><span class="st">"cno"</span>, version <span class="op">=</span> <span class="st">"2026-09-13"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">close</a></span><span class="op">(</span><span class="va">cno_2026_09_13</span><span class="op">)</span></span></code></pre></div>
 <p>Close the catalog after the final query. Any lazy tables obtained
 from it become invalid after <code><a href="https://rdrr.io/r/base/connections.html" class="external-link">close()</a></code>.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">close</a></span><span class="op">(</span><span class="va">cno</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
