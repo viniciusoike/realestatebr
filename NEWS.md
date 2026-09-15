@@ -1,6 +1,7 @@
 # realestatebr 1.0.1.9000
 
 * `query_dataset()` now provides lazy, joinable DuckDB access to annual CNO snapshots published as Parquet files on GitHub Releases.
+* `query_dataset()` now loads DuckDB's `httpfs` extension when accessing remote Parquet snapshots.
 
 ## Bug fixes
 
