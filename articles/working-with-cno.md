@@ -31,7 +31,7 @@ The catalog contains four lazy tables.
 
 | Table              | Grain                                    |
 |--------------------|------------------------------------------|
-| `works`            | One row per CNO registration             |
+| `constructions`    | One row per CNO registration             |
 | `areas`            | One row per reported area classification |
 | `cnaes`            | One row per CNAE registration            |
 | `responsibilities` | One row per responsibility period        |
@@ -48,23 +48,23 @@ executes the query and returns its result as an in-memory tibble.
 
 ``` r
 
-works_sp <- cno$works |>
+constructions_sp <- cno$constructions |>
   filter(
     state == "SP",
     registration_date >= as.Date("2025-01-01")
   ) |>
   select(cno, municipality_name, registration_date, status_code)
 
-works_sp
+constructions_sp
 
-works_sp |>
+constructions_sp |>
   collect()
 ```
 
 Select only the columns needed by the analysis. DuckDB can then avoid
 reading unused Parquet columns over the network.
 
-## Join works and areas
+## Join constructions and areas
 
 Each work can have several area rows. The following query returns
 residential area records for works in São Paulo.
@@ -73,9 +73,9 @@ residential area records for works in São Paulo.
 
 residential_areas <- cno$areas |>
   filter(destination == "Residencial unifamiliar") |>
-  select(cno, work_category, structure_type, area_type, area)
+  select(cno, construction_category, structure_type, area_type, area)
 
-sp_residential <- works_sp |>
+sp_residential <- constructions_sp |>
   inner_join(residential_areas, by = "cno") |>
   collect()
 ```
@@ -109,7 +109,7 @@ cnae_summary <- cno$cnaes |>
     .groups = "drop"
   )
 
-work_summary <- cno$works |>
+construction_summary <- cno$constructions |>
   filter(state == "SP") |>
   left_join(area_summary, by = "cno") |>
   left_join(cnae_summary, by = "cno") |>

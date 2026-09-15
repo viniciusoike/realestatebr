@@ -52,7 +52,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.1.9000" id="realestatebr-1019000">realestatebr 1.0.1.9000<a class="anchor" aria-label="anchor" href="#realestatebr-1019000"></a></h2>
-<ul><li>
+<ul><li>The CNO main table is now named <code>constructions</code> instead of <code>works</code>; its <code>work_name</code> and <code>work_category</code> columns are now <code>construction_name</code> and <code>construction_category</code>.</li>
+<li>
 <code><a href="../reference/query_dataset.html">query_dataset()</a></code> now provides lazy, joinable DuckDB access to annual CNO snapshots published as Parquet files on GitHub Releases.</li>
 <li>
 <code><a href="../reference/query_dataset.html">query_dataset()</a></code> now loads DuckDB’s <code>httpfs</code> extension when accessing remote Parquet snapshots.</li>

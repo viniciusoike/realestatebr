@@ -54,10 +54,10 @@ if (FALSE) { # interactive()
 cno <- query_dataset("cno")
 on.exit(close(cno))
 
-works_sp <- cno$works |>
+constructions_sp <- cno$constructions |>
   dplyr::filter(.data$state == "SP")
 
-result <- works_sp |>
+result <- constructions_sp |>
   dplyr::inner_join(cno$areas, by = "cno") |>
   dplyr::collect()
 }

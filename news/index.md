@@ -2,6 +2,9 @@
 
 ## realestatebr 1.0.1.9000
 
+- The CNO main table is now named `constructions` instead of `works`;
+  its `work_name` and `work_category` columns are now
+  `construction_name` and `construction_category`.
 - [`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md)
   now provides lazy, joinable DuckDB access to annual CNO snapshots
   published as Parquet files on GitHub Releases.

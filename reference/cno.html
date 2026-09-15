@@ -3,12 +3,12 @@
 Brazilian construction works.
 Retrieve this dataset with query_dataset() using the name "cno".
 cno &amp;lt;- query_dataset("cno")
-cno$works
+cno$constructions
 '><meta property="og:description" content='Registration, area, economic activity, and responsibility records for
 Brazilian construction works.
 Retrieve this dataset with query_dataset() using the name "cno".
 cno &amp;lt;- query_dataset("cno")
-cno$works
+cno$constructions
 '></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -66,7 +66,7 @@ cno$works
 Brazilian construction works.</p>
 <p>Retrieve this dataset with <code><a href="query_dataset.html">query_dataset()</a></code> using the name <code>"cno"</code>.</p>
 <p></p><div class="sourceCode r"><pre><code><span><span class="va">cno</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_dataset.html">query_dataset</a></span><span class="op">(</span><span class="st">"cno"</span><span class="op">)</span></span>
-<span><span class="va">cno</span><span class="op">$</span><span class="va">works</span></span></code></pre><p></p></div>
+<span><span class="va">cno</span><span class="op">$</span><span class="va">constructions</span></span></code></pre><p></p></div>
     </div>
 
 
@@ -83,12 +83,12 @@ Brazilian construction works.</p>
 <li><p><strong>Frequency</strong>: annual snapshots</p></li>
 <li><p><strong>Coverage</strong>: November 2018-present, including migrated CEI records with earlier start dates</p></li>
 <li><p><strong>Access mode</strong>: <code>query</code></p></li>
-<li><p><strong>Tables</strong>: <code>"works"</code>, <code>"areas"</code>, <code>"cnaes"</code>, <code>"responsibilities"</code></p></li>
+<li><p><strong>Tables</strong>: <code>"constructions"</code>, <code>"areas"</code>, <code>"cnaes"</code>, <code>"responsibilities"</code></p></li>
 </ul><p>Column names are normalized to English, while source labels and anomalous
 values are retained without analytical cleaning.</p>
     </div>
     <div class="section level2">
-    <h2 id="table-works-construction-works-">Table "works" (Construction Works)<a class="anchor" aria-label="anchor" href="#table-works-construction-works-"></a></h2>
+    <h2 id="table-constructions-constructions-">Table "constructions" (Constructions)<a class="anchor" aria-label="anchor" href="#table-constructions-constructions-"></a></h2>
 
 
 <p>One row per CNO registration.</p>
@@ -122,8 +122,8 @@ values are retained without analytical cleaning.</p>
 <dt>responsible_role_code</dt>
 <dd><p>Four-digit code for the responsible party's role.</p></dd>
 
-<dt>work_name</dt>
-<dd><p>Name assigned to the construction work, not the responsible party's name.</p></dd>
+<dt>construction_name</dt>
+<dd><p>Name assigned to the construction, not the responsible party's name.</p></dd>
 
 <dt>municipality_tom_code</dt>
 <dd><p>Four-digit Receita Federal TOM municipality code, not an IBGE municipality code.</p></dd>
@@ -178,10 +178,10 @@ values are retained without analytical cleaning.</p>
 
 <p>Area records classified by category, destination, structure, and area type.</p>
 <dl><dt>cno</dt>
-<dd><p>CNO registration identifier joining to works.cno.</p></dd>
+<dd><p>CNO registration identifier joining to constructions.cno.</p></dd>
 
-<dt>work_category</dt>
-<dd><p>Category reported for the work area.</p></dd>
+<dt>construction_category</dt>
+<dd><p>Category reported for the construction area.</p></dd>
 
 <dt>destination</dt>
 <dd><p>Intended use reported for the work area.</p></dd>
@@ -206,7 +206,7 @@ values are retained without analytical cleaning.</p>
 
 <p>CNAE economic activities associated with each construction work.</p>
 <dl><dt>cno</dt>
-<dd><p>CNO registration identifier joining to works.cno.</p></dd>
+<dd><p>CNO registration identifier joining to constructions.cno.</p></dd>
 
 <dt>cnae</dt>
 <dd><p>Seven-digit CNAE activity code. Stored as character.</p></dd>
@@ -222,7 +222,7 @@ values are retained without analytical cleaning.</p>
 
 <p>Responsible-party roles and their periods for each construction work.</p>
 <dl><dt>cno</dt>
-<dd><p>CNO registration identifier joining to works.cno.</p></dd>
+<dd><p>CNO registration identifier joining to constructions.cno.</p></dd>
 
 <dt>start_date</dt>
 <dd><p>Start date of the responsibility period.</p></dd>

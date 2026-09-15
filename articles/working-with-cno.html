@@ -110,7 +110,7 @@ filtering and aggregation happen before data enter R memory.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>works</code></td>
+<td><code>constructions</code></td>
 <td>One row per CNO registration</td>
 </tr>
 <tr class="even">
@@ -138,31 +138,31 @@ catalog ensures that joins run inside one DuckDB connection.</p>
 <code><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect()</a></code> executes the query and returns its result as an
 in-memory tibble.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">works_sp</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">works</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="va">constructions_sp</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">constructions</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">state</span> <span class="op">==</span> <span class="st">"SP"</span>,</span>
 <span>    <span class="va">registration_date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2025-01-01"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">cno</span>, <span class="va">municipality_name</span>, <span class="va">registration_date</span>, <span class="va">status_code</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">works_sp</span></span>
+<span><span class="va">constructions_sp</span></span>
 <span></span>
-<span><span class="va">works_sp</span> <span class="op">|&gt;</span></span>
+<span><span class="va">constructions_sp</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Select only the columns needed by the analysis. DuckDB can then avoid
 reading unused Parquet columns over the network.</p>
 </div>
 <div class="section level2">
-<h2 id="join-works-and-areas">Join works and areas<a class="anchor" aria-label="anchor" href="#join-works-and-areas"></a>
+<h2 id="join-constructions-and-areas">Join constructions and areas<a class="anchor" aria-label="anchor" href="#join-constructions-and-areas"></a>
 </h2>
 <p>Each work can have several area rows. The following query returns
 residential area records for works in São Paulo.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">residential_areas</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">areas</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">destination</span> <span class="op">==</span> <span class="st">"Residencial unifamiliar"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">cno</span>, <span class="va">work_category</span>, <span class="va">structure_type</span>, <span class="va">area_type</span>, <span class="va">area</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">cno</span>, <span class="va">construction_category</span>, <span class="va">structure_type</span>, <span class="va">area_type</span>, <span class="va">area</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sp_residential</span> <span class="op">&lt;-</span> <span class="va">works_sp</span> <span class="op">|&gt;</span></span>
+<span><span class="va">sp_residential</span> <span class="op">&lt;-</span> <span class="va">constructions_sp</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span><span class="va">residential_areas</span>, by <span class="op">=</span> <span class="st">"cno"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>The source may repeat a work’s total area across several
@@ -194,7 +194,7 @@ combining them when the analysis needs one row per work.</p>
 <span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">work_summary</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">works</span> <span class="op">|&gt;</span></span>
+<span><span class="va">construction_summary</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">constructions</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">state</span> <span class="op">==</span> <span class="st">"SP"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">area_summary</span>, by <span class="op">=</span> <span class="st">"cno"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cnae_summary</span>, by <span class="op">=</span> <span class="st">"cno"</span><span class="op">)</span> <span class="op">|&gt;</span></span>

@@ -8,7 +8,7 @@ Retrieve this dataset with
 using the name `"cno"`.
 
     cno <- query_dataset("cno")
-    cno$works
+    cno$constructions
 
 ## Source
 
@@ -30,12 +30,13 @@ Receita Federal do Brasil - Cadastro Nacional de Obras
 
 - **Access mode**: `query`
 
-- **Tables**: `"works"`, `"areas"`, `"cnaes"`, `"responsibilities"`
+- **Tables**: `"constructions"`, `"areas"`, `"cnaes"`,
+  `"responsibilities"`
 
 Column names are normalized to English, while source labels and
 anomalous values are retained without analytical cleaning.
 
-## Table "works" (Construction Works)
+## Table "constructions" (Constructions)
 
 One row per CNO registration.
 
@@ -82,10 +83,9 @@ One row per CNO registration.
 
   Four-digit code for the responsible party's role.
 
-- work_name:
+- construction_name:
 
-  Name assigned to the construction work, not the responsible party's
-  name.
+  Name assigned to the construction, not the responsible party's name.
 
 - municipality_tom_code:
 
@@ -158,11 +158,11 @@ type.
 
 - cno:
 
-  CNO registration identifier joining to works.cno.
+  CNO registration identifier joining to constructions.cno.
 
-- work_category:
+- construction_category:
 
-  Category reported for the work area.
+  Category reported for the construction area.
 
 - destination:
 
@@ -191,7 +191,7 @@ CNAE economic activities associated with each construction work.
 
 - cno:
 
-  CNO registration identifier joining to works.cno.
+  CNO registration identifier joining to constructions.cno.
 
 - cnae:
 
@@ -207,7 +207,7 @@ Responsible-party roles and their periods for each construction work.
 
 - cno:
 
-  CNO registration identifier joining to works.cno.
+  CNO registration identifier joining to constructions.cno.
 
 - start_date:
 
