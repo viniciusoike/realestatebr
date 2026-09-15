@@ -1,6 +1,6 @@
 # realestatebr 1.0.1.9000
 
-* Added infrastructure for lazy, joinable access to large relational datasets. CNO publication tooling remains under development and is not yet exposed as an available dataset.
+* `query_dataset()` now provides lazy, joinable DuckDB access to annual CNO snapshots published as Parquet files on GitHub Releases.
 
 ## Bug fixes
 

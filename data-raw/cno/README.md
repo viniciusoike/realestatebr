@@ -32,6 +32,9 @@ files. Published Parquet files are UTF-8 and do not require that extension
 when users query them.
 
 The manual `Build CNO Snapshot` GitHub Actions workflow accepts the current
-source archive URL and a version. It uploads the validated snapshot as a
-short-lived workflow artifact. It does not publish `latest.json` or modify an
-external object store.
+source archive URL and a version. Every run uploads a short-lived validation
+artifact. With `publish = true`, it also creates an immutable
+`cno-<version>` GitHub Release containing the manifest and Parquet files, then
+updates `latest.json` in the `cno-latest` release. Reusing a version is allowed
+only when the regenerated manifest matches the existing release, apart from
+its retrieval timestamp, and all expected assets are present.

@@ -521,15 +521,14 @@ datasets:
     source: "Receita Federal do Brasil - Cadastro Nacional de Obras"
     url: "https://dados.gov.br/dados/conjuntos-dados/cadastro-nacional-de-obras-cno"
     geography: "Brazil"
-    frequency: "daily source snapshots"
+    frequency: "annual snapshots"
     coverage: "November 2018-present, including migrated CEI records with earlier start dates"
-    update_schedule: "weekly"
-    status: "hidden"
+    update_schedule: "annual"
     access_mode: "query"
     data_type: "lazy relational tables"
     query_manifest:
-      latest_url: ~
-      version_url_template: ~
+      latest_url: "https://github.com/viniciusoike/realestatebr/releases/download/cno-latest/latest.json"
+      version_url_template: "https://github.com/viniciusoike/realestatebr/releases/download/cno-{version}/manifest.json"
       schema_sha256: "56d5bb0cff208e3817cf763fefc7490fa81edbf293066dfecb180b178a196faf"
     categories:
       works:

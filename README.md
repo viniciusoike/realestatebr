@@ -34,10 +34,9 @@ remotes::install_github("viniciusoike/realestatebr")
 
 ## Quick Start
 
-`list_datasets()` lists the available datasets and `get_dataset()`
-retrieves them. The development version also includes infrastructure for
-querying large relational datasets lazily after their remote snapshots
-are published.
+`list_datasets()` lists available datasets and their access modes.
+`get_dataset()` retrieves materialized datasets, while `query_dataset()`
+opens large relational datasets as lazy DuckDB tables.
 
 ``` r
 library(realestatebr)
@@ -50,12 +49,16 @@ sbpe <- get_dataset(name = "abecip", table = "sbpe")
 
 # Get property price indices
 fipezap <- get_dataset("rppi", "fipezap")
+
+# Open related CNO tables lazily
+cno <- query_dataset("cno")
+cno$works
 ```
 
 ## Available Datasets
 
 The package wraps public data sources and returns each table in a tidy
-format. Datasets are updated weekly or monthly, depending on the source.
+format. Update schedules vary by source.
 
 | Dataset | Source | Tables |
 |----|----|----|
@@ -63,13 +66,14 @@ format. Datasets are updated weekly or monthly, depending on the source.
 | `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` |
 | `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` |
 | `bcb_series` | Banco Central do Brasil | `core`, `primary`, `secondary`, `tertiary`, `full` |
+| `cno` | Receita Federal | `works`, `areas`, `cnaes`, `responsibilities` |
 | `fgv_ibre` | FGV IBRE | — |
 | `rppi` | FIPE/ZAP, IVG-R, IGMI-R, IQA, IQAIW, IVAR, SECOVI-SP | `sale`, `rent`, `all`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` |
 | `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` |
 | `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` |
 
-The currently published datasets use `get_dataset()` and return data in
-memory.
+`cno` uses `query_dataset()` and returns related lazy tables. The
+remaining datasets use `get_dataset()` and return data in memory.
 
 ### Data Sources
 
@@ -174,6 +178,8 @@ ggplot(bis_compare, aes(x = date, y = value, color = ref_area_name)) +
   started](https://viniciusoike.github.io/realestatebr/articles/getting-started.html)
 - [Working with property price
   indices](https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.html)
+- [Working with
+  CNO](https://viniciusoike.github.io/realestatebr/articles/working-with-cno.html)
 - [Housing credit in
   Brazil](https://viniciusoike.github.io/realestatebr/articles/housing-credit.html)
 - [The primary market and the construction

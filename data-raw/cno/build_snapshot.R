@@ -229,7 +229,12 @@ validate_cno_build_arguments <- function(
   if (!dir.exists(source_dir)) {
     cli::cli_abort("{.arg source_dir} does not exist: {.path {source_dir}}.")
   }
-  if (!grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", version)) {
+  valid_version <- is.character(version) &&
+    length(version) == 1L &&
+    !is.na(version) &&
+    grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", version) &&
+    !is.na(as.Date(version, format = "%Y-%m-%d"))
+  if (!valid_version) {
     cli::cli_abort("{.arg version} must use the YYYY-MM-DD format.")
   }
   if (!file.exists(registry_path)) {
