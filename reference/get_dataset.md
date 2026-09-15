@@ -76,6 +76,8 @@ column with
 
 ## See also
 
+[`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md)
+for large relational datasets,
 [`list_datasets`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
 for available datasets,
 [`get_dataset_info`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)

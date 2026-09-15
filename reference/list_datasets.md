@@ -34,7 +34,10 @@ A tibble with one row per dataset and the following columns:
 - name:
 
   Dataset identifier used with
-  [`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md).
+  [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
+  or
+  [`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md),
+  according to `access_mode`.
 
 - title:
 
@@ -64,39 +67,46 @@ A tibble with one row per dataset and the following columns:
 
   Time period covered.
 
+- access_mode:
+
+  Either `"materialized"` or `"query"`.
+
 - available_tables:
 
   Comma-separated table names for multi-table datasets.
 
 ## See also
 
-[`get_dataset`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
+[`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
+and
+[`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md)
 for retrieving data,
-[`get_dataset_info`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
+[`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
 for detailed metadata on a single dataset.
 
 ## Examples
 
 ``` r
 list_datasets()
-#> Found 8 datasets. Use get_dataset(name) to retrieve data.
-#> # A tibble: 8 × 10
-#>   name  title available_tables description geography coverage frequency title_pt
-#>   <chr> <chr> <chr>            <chr>       <chr>     <chr>    <chr>     <chr>   
-#> 1 abec… ABEC… sbpe, units, cgi Housing cr… Brazil    1982-pr… monthly   Indicad…
-#> 2 abra… ABRA… indicator, rada… Primary re… Brazil (… 2014-pr… quarterly Indicad…
-#> 3 bcb_… BCB … accounting, app… Detailed r… Brazil (… 2001-pr… monthly   Dados d…
-#> 4 bcb_… BCB … core, primary, … General ec… Brazil    varies … varies (… Séries …
-#> 5 fgv_… FGV … (single table)   Real estat… Brazil    2010-pr… monthly   Indicad…
-#> 6 rppi  Braz… fipezap, ivgr, … Brazilian … Brazil    varies … monthly   Índices…
-#> 7 rppi… BIS … selected, detai… Internatio… Internat… 1970-pr… quarterly Índices…
-#> 8 seco… SECO… condo, rent, la… São Paulo … São Paulo 2004-pr… monthly   Dados d…
-#> # ℹ 2 more variables: source <chr>, url <chr>
+#> Found 8 datasets. Use `get_dataset()` for "materialized" entries and
+#> `query_dataset()` for "query" entries.
+#> # A tibble: 8 × 11
+#>   name         title access_mode available_tables description geography coverage
+#>   <chr>        <chr> <chr>       <chr>            <chr>       <chr>     <chr>   
+#> 1 abecip       ABEC… materializ… sbpe, units, cgi Housing cr… Brazil    1982-pr…
+#> 2 abrainc      ABRA… materializ… indicator, rada… Primary re… Brazil (… 2014-pr…
+#> 3 bcb_realest… BCB … materializ… accounting, app… Detailed r… Brazil (… 2001-pr…
+#> 4 bcb_series   BCB … materializ… core, primary, … General ec… Brazil    varies …
+#> 5 fgv_ibre     FGV … materializ… (single table)   Real estat… Brazil    2010-pr…
+#> 6 rppi         Braz… materializ… fipezap, ivgr, … Brazilian … Brazil    varies …
+#> 7 rppi_bis     BIS … materializ… selected, detai… Internatio… Internat… 1970-pr…
+#> 8 secovi       SECO… materializ… condo, rent, la… São Paulo … São Paulo 2004-pr…
+#> # ℹ 4 more variables: frequency <chr>, title_pt <chr>, source <chr>, url <chr>
 
 list_datasets(source = "BCB")
 #> Warning: No datasets found matching the specified criteria.
-#> # A tibble: 0 × 10
-#> # ℹ 10 variables: name <chr>, title <chr>, available_tables <chr>,
-#> #   description <chr>, geography <chr>, coverage <chr>, frequency <chr>,
-#> #   title_pt <chr>, source <chr>, url <chr>
+#> # A tibble: 0 × 11
+#> # ℹ 11 variables: name <chr>, title <chr>, access_mode <chr>,
+#> #   available_tables <chr>, description <chr>, geography <chr>, coverage <chr>,
+#> #   frequency <chr>, title_pt <chr>, source <chr>, url <chr>
 ```

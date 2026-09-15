@@ -26,6 +26,8 @@ Banco Central do Brasil - SGS
 
 - **Coverage**: varies by series
 
+- **Access mode**: `materialized`
+
 - **Tables**: `"core"`, `"primary"`, `"secondary"`, `"tertiary"`,
   `"full"` (default: `"core"`)
 
@@ -56,6 +58,7 @@ series are returned.
 ## See also
 
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md),
+[`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md),
 [`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md),
 [`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
 
@@ -63,6 +66,7 @@ Other datasets:
 [`abecip`](https://viniciusoike.github.io/realestatebr/reference/abecip.md),
 [`abrainc`](https://viniciusoike.github.io/realestatebr/reference/abrainc.md),
 [`bcb_realestate`](https://viniciusoike.github.io/realestatebr/reference/bcb_realestate.md),
+[`cno`](https://viniciusoike.github.io/realestatebr/reference/cno.md),
 [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md),
 [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md),
 [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md),

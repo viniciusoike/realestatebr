@@ -82,7 +82,8 @@ and source information.</p>
 <dd><p>Source organization and URL.</p></dd>
 
 <dt>technical_info</dt>
-<dd><p>Cached file names and translation notes.</p></dd>
+<dd><p>Access mode, cache or query-manifest metadata,
+and translation notes.</p></dd>
 
 
 </dl></div>
@@ -149,11 +150,13 @@ and source information.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ source_info   :List of 2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ source: chr "ABECIP - Associação Brasileira das Entidades de Crédito Imobiliário"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ url   : chr "https://www.abecip.org.br"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ technical_info:List of 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ technical_info:List of 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ access_mode      : chr "materialized"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ cached_file      :List of 3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ sbpe : chr "abecip_sbpe.rds"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ units: chr "abecip_units.rds"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .. ..$ cgi  : chr "abecip_cgi.rds"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ query_manifest   : NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ metadata_table   : NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ translation_notes: chr "Column names translated from Portuguese to English following standard patterns"</span>
 <span class="r-in"><span></span></span>

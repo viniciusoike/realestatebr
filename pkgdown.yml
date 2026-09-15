@@ -6,8 +6,9 @@ articles:
   articles/housing-credit: housing-credit.html
   articles/primary-market: primary-market.html
   articles/realestatebr-1-0-1: realestatebr-1-0-1.html
+  articles/working-with-cno: working-with-cno.html
   articles/working-with-rppi: working-with-rppi.html
-last_built: 2026-09-01T14:56Z
+last_built: 2026-09-15T12:39Z
 urls:
   reference: https://viniciusoike.github.io/realestatebr/reference
   article: https://viniciusoike.github.io/realestatebr/articles

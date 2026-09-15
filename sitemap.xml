@@ -9,6 +9,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/articles/index.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/articles/primary-market.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/articles/realestatebr-1-0-1.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/articles/working-with-cno.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/authors.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/index.html</loc></url>
@@ -30,6 +31,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/cli_debug.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/cli_user.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/cno.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/dim_city.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/dot-ENCODING_MAP.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/download_abecip_file.html</loc></url>
@@ -79,6 +81,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/load_abecip_cgi.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/load_dataset_registry.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/memo_key.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/query_dataset.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/realestatebr-package.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/registry_to_tibble.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/resolve_bcb_hierarchy.html</loc></url>

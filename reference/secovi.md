@@ -26,6 +26,8 @@ SECOVI-SP - Sindicato da Habitação
 
 - **Coverage**: 2004-present (varies by category)
 
+- **Access mode**: `materialized`
+
 - **Tables**: `"condo"`, `"rent"`, `"launch"`, `"sale"` (default:
   `"all"`)
 
@@ -63,6 +65,7 @@ series are returned.
 ## See also
 
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md),
+[`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md),
 [`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md),
 [`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
 
@@ -71,6 +74,7 @@ Other datasets:
 [`abrainc`](https://viniciusoike.github.io/realestatebr/reference/abrainc.md),
 [`bcb_realestate`](https://viniciusoike.github.io/realestatebr/reference/bcb_realestate.md),
 [`bcb_series`](https://viniciusoike.github.io/realestatebr/reference/bcb_series.md),
+[`cno`](https://viniciusoike.github.io/realestatebr/reference/cno.md),
 [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md),
 [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md),
 [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md)

@@ -84,7 +84,8 @@ Optionally filter by category, source organization, or geographic coverage.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble with one row per dataset and the following columns:</p><dl><dt>name</dt>
-<dd><p>Dataset identifier used with <code><a href="get_dataset.html">get_dataset</a></code>.</p></dd>
+<dd><p>Dataset identifier used with <code><a href="get_dataset.html">get_dataset()</a></code> or
+<code><a href="query_dataset.html">query_dataset()</a></code>, according to <code>access_mode</code>.</p></dd>
 
 <dt>title</dt>
 <dd><p>English dataset name.</p></dd>
@@ -107,6 +108,9 @@ Optionally filter by category, source organization, or geographic coverage.</p>
 <dt>coverage</dt>
 <dd><p>Time period covered.</p></dd>
 
+<dt>access_mode</dt>
+<dd><p>Either <code>"materialized"</code> or <code>"query"</code>.</p></dd>
+
 <dt>available_tables</dt>
 <dd><p>Comma-separated table names for multi-table datasets.</p></dd>
 
@@ -114,33 +118,34 @@ Optionally filter by category, source organization, or geographic coverage.</p>
 </dl></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="get_dataset.html">get_dataset</a></code> for retrieving data,
-<code><a href="get_dataset_info.html">get_dataset_info</a></code> for detailed metadata on a single dataset.</p></div>
+    <div class="dont-index"><p><code><a href="get_dataset.html">get_dataset()</a></code> and <code><a href="query_dataset.html">query_dataset()</a></code> for retrieving data,
+<code><a href="get_dataset_info.html">get_dataset_info()</a></code> for detailed metadata on a single dataset.</p></div>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">list_datasets</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Found 8 datasets. Use get_dataset(name) to retrieve data.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 8 × 10</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name  title available_tables description geography coverage frequency title_pt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> abec… ABEC… sbpe, units, cgi Housing cr… Brazil    1982-pr… monthly   Indicad…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> abra… ABRA… indicator, rada… Primary re… Brazil (… 2014-pr… quarterly Indicad…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> bcb_… BCB … accounting, app… Detailed r… Brazil (… 2001-pr… monthly   Dados d…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> bcb_… BCB … core, primary, … General ec… Brazil    varies … varies (… Séries …</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> fgv_… FGV … (single table)   Real estat… Brazil    2010-pr… monthly   Indicad…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> rppi  Braz… fipezap, ivgr, … Brazilian … Brazil    varies … monthly   Índices…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span> rppi… BIS … selected, detai… Internatio… Internat… 1970-pr… quarterly Índices…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">8</span> seco… SECO… condo, rent, la… São Paulo … São Paulo 2004-pr… monthly   Dados d…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: source &lt;chr&gt;, url &lt;chr&gt;</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Found 8 datasets. Use `get_dataset()` for <span style="color: #0000BB;">"materialized"</span> entries and</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `query_dataset()` for <span style="color: #0000BB;">"query"</span> entries.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 8 × 11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   name         title access_mode available_tables description geography coverage</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> abecip       ABEC… materializ… sbpe, units, cgi Housing cr… Brazil    1982-pr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> abrainc      ABRA… materializ… indicator, rada… Primary re… Brazil (… 2014-pr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> bcb_realest… BCB … materializ… accounting, app… Detailed r… Brazil (… 2001-pr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> bcb_series   BCB … materializ… core, primary, … General ec… Brazil    varies …</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> fgv_ibre     FGV … materializ… (single table)   Real estat… Brazil    2010-pr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> rppi         Braz… materializ… fipezap, ivgr, … Brazilian … Brazil    varies …</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span> rppi_bis     BIS … materializ… selected, detai… Internatio… Internat… 1970-pr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">8</span> secovi       SECO… materializ… condo, rent, la… São Paulo … São Paulo 2004-pr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 4 more variables: frequency &lt;chr&gt;, title_pt &lt;chr&gt;, source &lt;chr&gt;, url &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">list_datasets</span><span class="op">(</span>source <span class="op">=</span> <span class="st">"BCB"</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>No datasets found matching the specified criteria.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 0 × 10</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 10 variables: name &lt;chr&gt;, title &lt;chr&gt;, available_tables &lt;chr&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   description &lt;chr&gt;, geography &lt;chr&gt;, coverage &lt;chr&gt;, frequency &lt;chr&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   title_pt &lt;chr&gt;, source &lt;chr&gt;, url &lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 0 × 11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 11 variables: name &lt;chr&gt;, title &lt;chr&gt;, access_mode &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   available_tables &lt;chr&gt;, description &lt;chr&gt;, geography &lt;chr&gt;, coverage &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   frequency &lt;chr&gt;, title_pt &lt;chr&gt;, source &lt;chr&gt;, url &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

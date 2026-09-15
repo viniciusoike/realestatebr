@@ -24,6 +24,8 @@ FGV IBRE
 
 - **Coverage**: 2010-present
 
+- **Access mode**: `materialized`
+
 Technical economic terms; standard translations applied.
 
 ## Columns
@@ -59,6 +61,7 @@ Technical economic terms; standard translations applied.
 ## See also
 
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md),
+[`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md),
 [`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md),
 [`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
 
@@ -67,6 +70,7 @@ Other datasets:
 [`abrainc`](https://viniciusoike.github.io/realestatebr/reference/abrainc.md),
 [`bcb_realestate`](https://viniciusoike.github.io/realestatebr/reference/bcb_realestate.md),
 [`bcb_series`](https://viniciusoike.github.io/realestatebr/reference/bcb_series.md),
+[`cno`](https://viniciusoike.github.io/realestatebr/reference/cno.md),
 [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md),
 [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md),
 [`secovi`](https://viniciusoike.github.io/realestatebr/reference/secovi.md)

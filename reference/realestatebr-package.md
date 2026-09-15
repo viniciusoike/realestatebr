@@ -7,7 +7,8 @@ Developers (ABRAINC) <https://abrainc.org.br/>, the Brazilian
 Association of Real Estate Credit and Savings Entities (ABECIP)
 <https://www.abecip.org.br/>, the Getulio Vargas Foundation (FGV)
 <https://portalibre.fgv.br/>, and the Bank for International Settlements
-(BIS) <https://www.bis.org/>.
+(BIS) <https://www.bis.org/>, as well as Brazil's Federal Revenue
+Service <https://www.gov.br/receitafederal/>.
 
 ## See also
 

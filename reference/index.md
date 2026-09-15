@@ -6,6 +6,8 @@ Discover and retrieve datasets
 
 - [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
   : Get Dataset
+- [`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md)
+  : Query a Large Dataset Lazily
 - [`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
   : List Available Datasets
 - [`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)

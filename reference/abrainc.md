@@ -26,6 +26,8 @@ ABRAINC/FIPE
 
 - **Coverage**: 2014-present
 
+- **Access mode**: `materialized`
+
 - **Tables**: `"indicator"`, `"radar"`, `"leading"` (default:
   `"indicator"`)
 
@@ -147,6 +149,7 @@ Building permits in São Paulo as real estate leading indicator.
 ## See also
 
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md),
+[`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md),
 [`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md),
 [`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)
 
@@ -154,6 +157,7 @@ Other datasets:
 [`abecip`](https://viniciusoike.github.io/realestatebr/reference/abecip.md),
 [`bcb_realestate`](https://viniciusoike.github.io/realestatebr/reference/bcb_realestate.md),
 [`bcb_series`](https://viniciusoike.github.io/realestatebr/reference/bcb_series.md),
+[`cno`](https://viniciusoike.github.io/realestatebr/reference/cno.md),
 [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md),
 [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md),
 [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md),

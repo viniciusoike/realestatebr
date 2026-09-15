@@ -35,7 +35,7 @@ A named list with the following elements:
 
 - technical_info:
 
-  Cached file names and translation notes.
+  Access mode, cache or query-manifest metadata, and translation notes.
 
 ## Examples
 
@@ -100,11 +100,13 @@ str(info)
 #>  $ source_info   :List of 2
 #>   ..$ source: chr "ABECIP - Associação Brasileira das Entidades de Crédito Imobiliário"
 #>   ..$ url   : chr "https://www.abecip.org.br"
-#>  $ technical_info:List of 3
+#>  $ technical_info:List of 5
+#>   ..$ access_mode      : chr "materialized"
 #>   ..$ cached_file      :List of 3
 #>   .. ..$ sbpe : chr "abecip_sbpe.rds"
 #>   .. ..$ units: chr "abecip_units.rds"
 #>   .. ..$ cgi  : chr "abecip_cgi.rds"
+#>   ..$ query_manifest   : NULL
 #>   ..$ metadata_table   : NULL
 #>   ..$ translation_notes: chr "Column names translated from Portuguese to English following standard patterns"
 ```
