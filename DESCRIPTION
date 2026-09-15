@@ -16,7 +16,8 @@ Description: Provides access to Brazilian real estate market data from multiple
     of Real Estate Credit and Savings Entities (ABECIP)
     <https://www.abecip.org.br/>, the Getulio Vargas Foundation (FGV)
     <https://portalibre.fgv.br/>, and the Bank for International Settlements
-    (BIS) <https://www.bis.org/>.
+    (BIS) <https://www.bis.org/>, as well as Brazil's Federal Revenue Service
+    <https://www.gov.br/receitafederal/>.
 License: MIT + file LICENSE
 URL: https://github.com/viniciusoike/realestatebr, https://viniciusoike.github.io/realestatebr/
 BugReports: https://github.com/viniciusoike/realestatebr/issues
@@ -32,6 +33,7 @@ Imports:
     GetBCBData,
     httr,
     janitor,
+    jsonlite,
     lubridate,
     purrr,
     readr,
@@ -48,6 +50,9 @@ Imports:
 Roxygen: list(markdown = TRUE)
 Suggests:
     callr,
+    DBI,
+    dbplyr,
+    duckdb,
     geobr,
     ggplot2,
     kableExtra,

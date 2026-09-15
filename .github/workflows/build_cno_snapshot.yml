@@ -1,0 +1,75 @@
+name: Build CNO Snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_url:
+        description: Direct URL for the complete Receita Federal CNO archive
+        required: true
+        type: string
+      snapshot_version:
+        description: Snapshot version in YYYY-MM-DD format
+        required: true
+        type: string
+
+jobs:
+  build-cno:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+
+      - name: Install build dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::cli
+            any::DBI
+            any::digest
+            any::duckdb
+            any::jsonlite
+            any::yaml
+
+      - name: Download and extract source archive
+        env:
+          CNO_SOURCE_URL: ${{ inputs.source_url }}
+        run: |
+          mkdir -p data-raw/cno_source
+          curl --fail --location --retry 3 \
+            --user-agent "realestatebr data pipeline" \
+            --output "$RUNNER_TEMP/cno.zip" \
+            "$CNO_SOURCE_URL"
+          unzip -q "$RUNNER_TEMP/cno.zip" -d data-raw/cno_source
+
+      - name: Build and validate Parquet snapshot
+        env:
+          CNO_VERSION: ${{ inputs.snapshot_version }}
+        run: |
+          source_dir=$(dirname "$(find data-raw/cno_source -type f -iname 'cno.csv' -print -quit)")
+          if [ -z "$source_dir" ] || [ ! -f "$source_dir/cno.csv" ]; then
+            echo "The source archive does not contain cno.csv" >&2
+            exit 1
+          fi
+          export CNO_SOURCE_DIR="$source_dir"
+          Rscript -e '
+            source("data-raw/cno/build_snapshot.R")
+            build_cno_snapshot(
+              source_dir = Sys.getenv("CNO_SOURCE_DIR"),
+              version = Sys.getenv("CNO_VERSION")
+            )
+          '
+
+      - name: Upload validated snapshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cno-${{ inputs.snapshot_version }}
+          path: data-raw/cno_output/${{ inputs.snapshot_version }}/
+          if-no-files-found: error
+          retention-days: 7

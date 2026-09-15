@@ -23,6 +23,7 @@ bcb_series_primary <- get_dataset("bcb_series", table = "primary")
 \item \strong{Geography}: Brazil
 \item \strong{Frequency}: varies (daily/monthly/quarterly)
 \item \strong{Coverage}: varies by series
+\item \strong{Access mode}: \code{materialized}
 \item \strong{Tables}: \code{"core"}, \code{"primary"}, \code{"secondary"}, \code{"tertiary"}, \code{"full"} (default: \code{"core"})
 }
 
@@ -42,12 +43,13 @@ series are returned.
 }
 
 \seealso{
-\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
+\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
 Other datasets: 
 \code{\link{abecip}},
 \code{\link{abrainc}},
 \code{\link{bcb_realestate}},
+\code{\link{cno}},
 \code{\link{fgv_ibre}},
 \code{\link{rppi}},
 \code{\link{rppi_bis}},

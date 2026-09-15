@@ -23,6 +23,7 @@ rppi_bis_detailed_monthly <- get_dataset("rppi_bis", table = "detailed_monthly")
 \item \strong{Geography}: International (60+ countries including Brazil)
 \item \strong{Frequency}: quarterly
 \item \strong{Coverage}: 1970-present (varies by country)
+\item \strong{Access mode}: \code{materialized}
 \item \strong{Tables}: \code{"selected"}, \code{"detailed_monthly"}, \code{"detailed_quarterly"}, \code{"detailed_annual"}, \code{"detailed_halfyearly"} (default: \code{"selected"})
 }
 
@@ -168,13 +169,14 @@ Half-yearly detailed RPPI data.
 }
 
 \seealso{
-\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
+\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
 Other datasets: 
 \code{\link{abecip}},
 \code{\link{abrainc}},
 \code{\link{bcb_realestate}},
 \code{\link{bcb_series}},
+\code{\link{cno}},
 \code{\link{fgv_ibre}},
 \code{\link{rppi}},
 \code{\link{secovi}}

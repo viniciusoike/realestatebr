@@ -1,0 +1,160 @@
+---
+title: "Working with CNO"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+The Cadastro Nacional de Obras (CNO) is a relational dataset. One table
+describes each registered construction work, while three child tables record
+areas, CNAE activities, and responsibility periods. `realestatebr` queries
+these tables lazily with DuckDB, so filtering and aggregation happen before
+data enter R memory.
+
+The CNO snapshot publication infrastructure is still under development. The
+dataset does not appear in `list_datasets()` and the examples below will become
+available after a remote snapshot endpoint is configured.
+
+## Open the dataset
+
+Install the optional query dependencies once.
+
+```{r install}
+install.packages(c("DBI", "dbplyr", "duckdb"))
+```
+
+Open all related tables through one catalog.
+
+```{r open}
+library(realestatebr)
+library(dplyr)
+
+cno <- query_dataset("cno")
+
+cno
+```
+
+The catalog contains four lazy tables.
+
+| Table | Grain |
+|---|---|
+| `works` | One row per CNO registration |
+| `areas` | One row per reported area classification |
+| `cnaes` | One row per CNAE registration |
+| `responsibilities` | One row per responsibility period |
+
+All four tables use the twelve-digit character column `cno` as their join
+key. Keeping the tables in the same catalog ensures that joins run inside one
+DuckDB connection.
+
+## Filter before collecting
+
+The object returned by a dplyr pipeline remains lazy. `collect()` executes the
+query and returns its result as an in-memory tibble.
+
+```{r filter}
+works_sp <- cno$works |>
+  filter(
+    state == "SP",
+    registration_date >= as.Date("2025-01-01")
+  ) |>
+  select(cno, municipality_name, registration_date, status_code)
+
+works_sp
+
+works_sp |>
+  collect()
+```
+
+Select only the columns needed by the analysis. DuckDB can then avoid reading
+unused Parquet columns over the network.
+
+## Join works and areas
+
+Each work can have several area rows. The following query returns residential
+area records for works in São Paulo.
+
+```{r join-areas}
+residential_areas <- cno$areas |>
+  filter(destination == "Residencial unifamiliar") |>
+  select(cno, work_category, structure_type, area_type, area)
+
+sp_residential <- works_sp |>
+  inner_join(residential_areas, by = "cno") |>
+  collect()
+```
+
+The source may repeat a work's total area across several classifications, and
+it contains extreme area values. The package preserves these source records.
+Do not assume that summing every `areas$area` row produces an unbiased measure
+of built area.
+
+## Combine several child tables safely
+
+Joining `areas` and `cnaes` directly can multiply rows. A work with two area
+rows and three CNAE rows produces six joined rows. Aggregate each child table
+to one row per CNO before combining them when the analysis needs one row per
+work.
+
+```{r aggregate-before-join}
+area_summary <- cno$areas |>
+  group_by(cno) |>
+  summarise(
+    area_records = n(),
+    reported_area = max(area, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+cnae_summary <- cno$cnaes |>
+  group_by(cno) |>
+  summarise(
+    cnae_records = n(),
+    .groups = "drop"
+  )
+
+work_summary <- cno$works |>
+  filter(state == "SP") |>
+  left_join(area_summary, by = "cno") |>
+  left_join(cnae_summary, by = "cno") |>
+  collect()
+```
+
+The appropriate area aggregation depends on the research question. `max()`
+above demonstrates the relational pattern; it is not a general cleaning rule.
+
+## Municipality identifiers
+
+`municipality_tom_code` is Receita Federal's four-digit TOM code. It is not
+the seven-digit IBGE municipality code used by `geobr` and most Brazilian
+regional datasets. A TOM-to-IBGE crosswalk is required before joining those
+sources.
+
+## Raw values and snapshot versions
+
+The tables normalize headers, dates, numeric fields, identifiers, and text
+encoding. They otherwise preserve the source. This includes unusual state
+values, historical date sentinels, area outliers, status codes, and reported
+category labels.
+
+`query_dataset("cno")` resolves `"latest"` once and pins that immutable
+snapshot while the catalog remains open. Supply a published version explicitly
+when an analysis must be reproducible.
+
+```{r version}
+cno_2026_09_12 <- query_dataset("cno", version = "2026-09-12")
+close(cno_2026_09_12)
+```
+
+Close the catalog after the final query. Any lazy tables obtained from it
+become invalid after `close()`.
+
+```{r close}
+close(cno)
+```

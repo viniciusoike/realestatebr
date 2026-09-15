@@ -18,6 +18,7 @@
 #' * **Geography**: Brazil
 #' * **Frequency**: monthly
 #' * **Coverage**: 2010-present
+#' * **Access mode**: `materialized`
 #'
 #' Technical economic terms; standard translations applied.
 #'
@@ -33,7 +34,7 @@
 #' }
 #'
 #' @source FGV IBRE
-#' @seealso [get_dataset()], [list_datasets()], [get_dataset_info()]
+#' @seealso [get_dataset()], [query_dataset()], [list_datasets()], [get_dataset_info()]
 #' @family datasets
 #' @keywords datasets
 #' @name fgv_ibre

@@ -20,6 +20,7 @@
 #' * **Geography**: São Paulo
 #' * **Frequency**: monthly
 #' * **Coverage**: 2004-present (varies by category)
+#' * **Access mode**: `materialized`
 #' * **Tables**: `"condo"`, `"rent"`, `"launch"`, `"sale"` (default: `"all"`)
 #'
 #' Regional classifications are specific to the São Paulo metropolitan area.
@@ -39,7 +40,7 @@
 #' }
 #'
 #' @source SECOVI-SP - Sindicato da Habitação
-#' @seealso [get_dataset()], [list_datasets()], [get_dataset_info()]
+#' @seealso [get_dataset()], [query_dataset()], [list_datasets()], [get_dataset_info()]
 #' @family datasets
 #' @keywords datasets
 #' @name secovi

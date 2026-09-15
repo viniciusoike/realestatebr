@@ -9,6 +9,10 @@
 
 library(yaml)
 
+`%||%` <- function(x, y) {
+  if (is.null(x)) y else x
+}
+
 # Helpers ------------------------------------------------------------------
 
 escape_rd <- function(x) {
@@ -67,6 +71,12 @@ build_table_section <- function(key, category, default_table = NULL) {
 build_topic <- function(key, ds) {
   lines <- character(0)
   add <- function(...) lines <<- c(lines, ...)
+  access_mode <- ds$access_mode %||% "materialized"
+  access_function <- if (access_mode == "query") {
+    "query_dataset"
+  } else {
+    "get_dataset"
+  }
 
   # Title and description
   add(sprintf("#' %s", escape_rd(ds$name)))
@@ -74,7 +84,15 @@ build_topic <- function(key, ds) {
   add("#' @description")
   add(roxy_wrap(paste0(escape_rd(ds$description), ".")))
   add("#'")
-  add(sprintf("#' Retrieve this dataset with [get_dataset()] using the name `\"%s\"`.", key))
+  if (identical(ds$status, "hidden")) {
+    add("#' This dataset is under development and is not currently available.")
+  } else {
+    add(sprintf(
+      "#' Retrieve this dataset with [%s()] using the name `\"%s\"`.",
+      access_function,
+      key
+    ))
+  }
 
   tables <- names(ds$categories)
   default_table <- ds$default_table
@@ -82,17 +100,24 @@ build_topic <- function(key, ds) {
     default_table <- tables[1]
   }
 
-  add("#'")
-  add("#' ```r")
-  add(sprintf("#' %s <- get_dataset(\"%s\")", key, key))
-  if (length(tables) > 1) {
-    other <- setdiff(tables, default_table)[1]
-    add(sprintf(
-      "#' %s_%s <- get_dataset(\"%s\", table = \"%s\")",
-      key, other, key, other
-    ))
+  if (!identical(ds$status, "hidden")) {
+    add("#'")
+    add("#' ```r")
+    add(sprintf("#' %s <- %s(\"%s\")", key, access_function, key))
+    if (access_mode == "query") {
+      add(sprintf("#' %s$%s", key, default_table))
+    } else if (length(tables) > 1) {
+      other <- setdiff(tables, default_table)[1]
+      add(sprintf(
+        "#' %s_%s <- get_dataset(\"%s\", table = \"%s\")",
+        key,
+        other,
+        key,
+        other
+      ))
+    }
+    add("#' ```")
   }
-  add("#' ```")
 
   # Details: dataset-level metadata
   add("#'")
@@ -104,12 +129,18 @@ build_topic <- function(key, ds) {
   add(sprintf("#' * **Geography**: %s", escape_rd(ds$geography)))
   add(sprintf("#' * **Frequency**: %s", escape_rd(ds$frequency)))
   add(sprintf("#' * **Coverage**: %s", escape_rd(ds$coverage)))
+  add(sprintf("#' * **Access mode**: `%s`", access_mode))
   if (length(tables) > 0) {
-    add(sprintf(
-      "#' * **Tables**: %s (default: `\"%s\"`)",
-      paste0("`\"", tables, "\"`", collapse = ", "),
-      default_table
-    ))
+    tables_text <- paste0("`\"", tables, "\"`", collapse = ", ")
+    if (access_mode == "query") {
+      add(sprintf("#' * **Tables**: %s", tables_text))
+    } else {
+      add(sprintf(
+        "#' * **Tables**: %s (default: `\"%s\"`)",
+        tables_text,
+        default_table
+      ))
+    }
   }
   if (!is.null(ds$translation_notes)) {
     notes <- escape_rd(ds$translation_notes)
@@ -137,18 +168,27 @@ build_topic <- function(key, ds) {
     # Per-table structures
     for (tbl in tables) {
       category <- ds$categories[[tbl]]
-      if (is.null(category$columns)) next
+      if (is.null(category$columns)) {
+        next
+      }
       add("#'")
-      add(build_table_section(tbl, category, default_table))
+      section_default <- if (access_mode == "query") NULL else default_table
+      add(build_table_section(tbl, category, section_default))
     }
   }
 
   # Footer
   add("#'")
   add(sprintf("#' @source %s", escape_rd(ds$source)))
-  add("#' @seealso [get_dataset()], [list_datasets()], [get_dataset_info()]")
+  add(
+    "#' @seealso [get_dataset()], [query_dataset()], [list_datasets()], [get_dataset_info()]"
+  )
   add("#' @family datasets")
-  add("#' @keywords datasets")
+  if (identical(ds$status, "hidden")) {
+    add("#' @keywords internal")
+  } else {
+    add("#' @keywords datasets")
+  }
   add(sprintf("#' @name %s", key))
   add("NULL")
   return(lines)

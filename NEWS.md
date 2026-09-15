@@ -1,5 +1,7 @@
 # realestatebr 1.0.1.9000
 
+* Added infrastructure for lazy, joinable access to large relational datasets. CNO publication tooling remains under development and is not yet exposed as an available dataset.
+
 ## Bug fixes
 
 * `get_dataset("rppi", source = "github")` now supports the combined `all` table and every individual RPPI table through the dataset release cache.

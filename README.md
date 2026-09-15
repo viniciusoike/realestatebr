@@ -17,7 +17,9 @@ stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://
 
 **realestatebr** provides a unified interface to Brazilian real estate
 data. The package is organized by source, and each source holds one or
-more tables. Every table is returned as a tidy `tibble`.
+more tables. Most tables are returned as tidy tibbles. Large relational
+datasets use lazy DuckDB tables so users can filter and aggregate them
+before loading results into R memory.
 
 ## Installation
 
@@ -32,10 +34,10 @@ remotes::install_github("viniciusoike/realestatebr")
 
 ## Quick Start
 
-Two functions cover most of the package. `get_dataset()` retrieves data
-and `list_datasets()` lists what is available. `get_dataset()` takes a
-dataset `name` and an optional `table`. Without `table`, it returns the
-default table for that dataset.
+`list_datasets()` lists the available datasets and `get_dataset()`
+retrieves them. The development version also includes infrastructure for
+querying large relational datasets lazily after their remote snapshots
+are published.
 
 ``` r
 library(realestatebr)
@@ -65,6 +67,9 @@ format. Datasets are updated weekly or monthly, depending on the source.
 | `rppi` | FIPE/ZAP, IVG-R, IGMI-R, IQA, IQAIW, IVAR, SECOVI-SP | `sale`, `rent`, `all`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` |
 | `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` |
 | `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` |
+
+The currently published datasets use `get_dataset()` and return data in
+memory.
 
 ### Data Sources
 

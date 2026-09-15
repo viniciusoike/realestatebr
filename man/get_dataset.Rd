@@ -54,6 +54,7 @@ bcb_recent <- dplyr::filter(bcb_data, date >= as.Date("2020-01-01"))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
+\code{\link[=query_dataset]{query_dataset()}} for large relational datasets,
 \code{\link{list_datasets}} for available datasets,
 \code{\link{get_dataset_info}} for dataset details,
 \code{\link{clear_session_cache}} to drop the in-session memo.

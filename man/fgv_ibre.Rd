@@ -21,6 +21,7 @@ Retrieve this dataset with \code{\link[=get_dataset]{get_dataset()}} using the n
 \item \strong{Geography}: Brazil
 \item \strong{Frequency}: monthly
 \item \strong{Coverage}: 2010-present
+\item \strong{Access mode}: \code{materialized}
 }
 
 Technical economic terms; standard translations applied.
@@ -39,13 +40,14 @@ Technical economic terms; standard translations applied.
 }
 
 \seealso{
-\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
+\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
 Other datasets: 
 \code{\link{abecip}},
 \code{\link{abrainc}},
 \code{\link{bcb_realestate}},
 \code{\link{bcb_series}},
+\code{\link{cno}},
 \code{\link{rppi}},
 \code{\link{rppi_bis}},
 \code{\link{secovi}}

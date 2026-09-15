@@ -20,6 +20,7 @@
 #' * **Geography**: Brazil
 #' * **Frequency**: monthly
 #' * **Coverage**: 1982-present (varies by category)
+#' * **Access mode**: `materialized`
 #' * **Tables**: `"sbpe"`, `"units"`, `"cgi"` (default: `"sbpe"`)
 #'
 #' Column names translated from Portuguese to English following standard
@@ -79,7 +80,7 @@
 #' }
 #'
 #' @source ABECIP - Associação Brasileira das Entidades de Crédito Imobiliário
-#' @seealso [get_dataset()], [list_datasets()], [get_dataset_info()]
+#' @seealso [get_dataset()], [query_dataset()], [list_datasets()], [get_dataset_info()]
 #' @family datasets
 #' @keywords datasets
 #' @name abecip

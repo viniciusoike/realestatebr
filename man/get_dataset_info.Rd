@@ -15,7 +15,8 @@ A named list with the following elements:
 \item{metadata}{Title, description, geography, frequency, and coverage.}
 \item{categories}{Available tables/subtables and their descriptions.}
 \item{source_info}{Source organization and URL.}
-\item{technical_info}{Cached file names and translation notes.}
+\item{technical_info}{Access mode, cache or query-manifest metadata,
+and translation notes.}
 }
 }
 \description{

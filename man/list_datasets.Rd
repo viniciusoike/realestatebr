@@ -19,7 +19,8 @@ list_datasets(category = NULL, source = NULL, geography = NULL)
 \value{
 A tibble with one row per dataset and the following columns:
 \describe{
-\item{name}{Dataset identifier used with \code{\link{get_dataset}}.}
+\item{name}{Dataset identifier used with \code{\link[=get_dataset]{get_dataset()}} or
+\code{\link[=query_dataset]{query_dataset()}}, according to \code{access_mode}.}
 \item{title}{English dataset name.}
 \item{title_pt}{Portuguese dataset name.}
 \item{description}{Brief description.}
@@ -27,6 +28,7 @@ A tibble with one row per dataset and the following columns:
 \item{geography}{Geographic coverage.}
 \item{frequency}{Update frequency.}
 \item{coverage}{Time period covered.}
+\item{access_mode}{Either \code{"materialized"} or \code{"query"}.}
 \item{available_tables}{Comma-separated table names for multi-table datasets.}
 }
 }
@@ -41,6 +43,6 @@ list_datasets(source = "BCB")
 
 }
 \seealso{
-\code{\link{get_dataset}} for retrieving data,
-\code{\link{get_dataset_info}} for detailed metadata on a single dataset.
+\code{\link[=get_dataset]{get_dataset()}} and \code{\link[=query_dataset]{query_dataset()}} for retrieving data,
+\code{\link[=get_dataset_info]{get_dataset_info()}} for detailed metadata on a single dataset.
 }

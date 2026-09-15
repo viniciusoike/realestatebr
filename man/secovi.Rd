@@ -23,6 +23,7 @@ secovi_condo <- get_dataset("secovi", table = "condo")
 \item \strong{Geography}: São Paulo
 \item \strong{Frequency}: monthly
 \item \strong{Coverage}: 2004-present (varies by category)
+\item \strong{Access mode}: \code{materialized}
 \item \strong{Tables}: \code{"condo"}, \code{"rent"}, \code{"launch"}, \code{"sale"} (default: \code{"all"})
 }
 
@@ -45,13 +46,14 @@ series are returned.
 }
 
 \seealso{
-\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
+\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
 Other datasets: 
 \code{\link{abecip}},
 \code{\link{abrainc}},
 \code{\link{bcb_realestate}},
 \code{\link{bcb_series}},
+\code{\link{cno}},
 \code{\link{fgv_ibre}},
 \code{\link{rppi}},
 \code{\link{rppi_bis}}

@@ -1,12 +1,15 @@
 # Test suite for 0.4.0 internal function architecture
 # This tests the new internal fetch functions and updated get_dataset() behavior
 
-test_that("registry has internal_function fields for all datasets", {
+test_that("materialized datasets have internal_function fields", {
   registry <- load_dataset_registry()
 
-  # All datasets should have internal_function field
   for (dataset_name in names(registry$datasets)) {
     dataset_info <- registry$datasets[[dataset_name]]
+
+    if ((dataset_info$access_mode %||% "materialized") != "materialized") {
+      next
+    }
 
     expect_true(
       !is.null(dataset_info$internal_function) && dataset_info$internal_function != "",
@@ -145,11 +148,15 @@ test_that("BCB datasets have distinct dataset_function entries", {
   )
 })
 
-test_that("all datasets are accessible through get_dataset", {
+test_that("all materialized datasets are accessible through get_dataset", {
   registry <- load_dataset_registry()
 
-  # Test that get_dataset can at least attempt to load each dataset
   for (dataset_name in names(registry$datasets)) {
+    dataset_info <- registry$datasets[[dataset_name]]
+    if ((dataset_info$access_mode %||% "materialized") != "materialized") {
+      next
+    }
+
     tryCatch({
       # Try with GitHub cache first (fastest)
       data <- get_dataset(dataset_name, source = "github")
@@ -161,7 +168,6 @@ test_that("all datasets are accessible through get_dataset", {
         expect_true(!is.null(data))
       }, error = function(e2) {
         # If both fail, just check that error mentions the internal function
-        dataset_info <- registry$datasets[[dataset_name]]
         internal_func <- dataset_info$internal_function
 
         error_msg <- paste(as.character(e), as.character(e2))

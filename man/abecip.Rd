@@ -23,6 +23,7 @@ abecip_units <- get_dataset("abecip", table = "units")
 \item \strong{Geography}: Brazil
 \item \strong{Frequency}: monthly
 \item \strong{Coverage}: 1982-present (varies by category)
+\item \strong{Access mode}: \code{materialized}
 \item \strong{Tables}: \code{"sbpe"}, \code{"units"}, \code{"cgi"} (default: \code{"sbpe"})
 }
 
@@ -89,12 +90,13 @@ Coverage: January 2017-present.
 }
 
 \seealso{
-\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
+\code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
 Other datasets: 
 \code{\link{abrainc}},
 \code{\link{bcb_realestate}},
 \code{\link{bcb_series}},
+\code{\link{cno}},
 \code{\link{fgv_ibre}},
 \code{\link{rppi}},
 \code{\link{rppi_bis}},
