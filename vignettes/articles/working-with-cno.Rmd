@@ -92,6 +92,35 @@ it contains extreme area values. The package preserves these source records.
 Do not assume that summing every `areas$area` row produces an unbiased measure
 of built area.
 
+CNO `"900143355070"` also shows how exact duplicate rows affect a join between
+the `constructions` and `areas` tables.
+
+```{r join-areas-duplicates}
+construction_900143355070 <- cno$constructions |>
+  filter(cno == "900143355070")
+
+areas_900143355070 <- cno$areas |>
+  filter(cno == "900143355070")
+
+construction_areas_900143355070 <- construction_900143355070 |>
+  inner_join(areas_900143355070, by = "cno") |>
+  collect()
+
+construction_areas_900143355070
+```
+
+These duplicates are present in the original CNO dataset. `realestatebr`
+currently reproduces them exactly. When an analysis does not need repeated
+identical rows, remove them after collecting the result.
+
+```{r remove-area-duplicates}
+construction_areas_900143355070 <- construction_areas_900143355070 |>
+  distinct()
+```
+
+Future versions of `realestatebr` may add validation steps that remove exact
+duplicate rows from these tables.
+
 ## Combine several child tables safely
 
 Joining `areas` and `cnaes` directly can multiply rows. A work with two area
