@@ -4,7 +4,7 @@
 \alias{download_secovi}
 \title{Download raw SECOVI-SP indicator tables}
 \usage{
-download_secovi(table, quiet, max_retries)
+download_secovi(table, quiet, max_retries, delay = 0.5)
 }
 \arguments{
 \item{table}{Data table to import}
@@ -12,11 +12,15 @@ download_secovi(table, quiet, max_retries)
 \item{quiet}{Logical controlling messages}
 
 \item{max_retries}{Maximum number of retry attempts}
+
+\item{delay}{Seconds to wait between page requests}
 }
 \value{
 Named list of scraped data tables
 }
 \description{
-Download raw SECOVI-SP indicator tables
+Pages are requested one at a time with a short pause between them, and each
+page is retried on its own. Indicators whose page cannot be read are dropped
+with a warning; an error is raised only when no page can be read.
 }
 \keyword{internal}
