@@ -74,8 +74,8 @@ unused Parquet columns over the network.
 
 ## Join constructions and areas
 
-Each work can have several area rows. The following query returns residential
-area records for works in São Paulo.
+Each construction can have several area rows. The following query returns residential
+area records for construction works in São Paulo.
 
 ```{r join-areas}
 residential_areas <- cno$areas |>
@@ -92,6 +92,73 @@ it contains extreme area values. The package preserves these source records.
 Do not assume that summing every `areas$area` row produces an unbiased measure
 of built area.
 
+Let's look at CNO `"900143355070"`. This case shows how exact duplicate rows
+affect a join between the `constructions` and `areas` tables.
+
+```{r join-areas-duplicates}
+construction_case <- cno$constructions |>
+  filter(cno == "900143355070") |>
+  select(cno, municipality_name, state, total_area)
+
+area_case <- cno$areas |>
+  filter(cno == "900143355070")
+
+case <- construction_case |>
+  inner_join(area_case, by = "cno") |>
+  collect()
+
+case |>
+  select(
+    cno,
+    municipality_name,
+    total_area,
+    destination,
+    area_type,
+    complementary_area_type,
+    area
+  )
+
+# A tibble: 8 × 7
+#   cno          municipality_name total_area destination               area_type    complementary_area_type            area
+#   <chr>        <chr>                  <dbl> <chr>                     <chr>        <chr>                             <dbl>
+# 1 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Quadra Esportiva e Poliesportiva   160
+# 2 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Estacionamento Térreo             3076.
+# 3 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Piscina                            136.
+# 4 900143355070 LONDRINA              18719. Residencial multifamiliar Principal    NA                               15347.
+# 5 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Quadra Esportiva e Poliesportiva   160
+# 6 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Estacionamento Térreo             3076.
+# 7 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Piscina                            136.
+# 8 900143355070 LONDRINA              18719. Residencial multifamiliar Principal    NA                               15347.
+```
+
+These duplicates are present in the original CNO `areas` dataset. `realestatebr`
+currently reproduces them exactly. For most use cases, these duplicate rows
+will lead to errors, so we advise removing them using, for instance, `dplyr::distinct()`.
+
+Removing the duplicate rows, in this case, would also make the sum of the individual
+`area` column from `areas` coincide with `total_area` from `constructions`. This
+will not always be the case.
+
+```{r remove-area-duplicates}
+construction_case <- cno$constructions |>
+  filter(cno == "900143355070") |>
+  select(cno, municipality_name, state, total_area)
+
+area_case <- cno$areas |>
+  filter(cno == "900143355070") |>
+  distinct()
+
+case <- construction_case |>
+  inner_join(area_case, by = "cno") |>
+  collect()
+
+all.equal(unique(case$total_area), sum(case$area))
+#> [1] TRUE
+```
+
+Future versions of `realestatebr` may add validation steps that remove exact
+duplicate rows and other noise from these tables.
+
 ## Combine several child tables safely
 
 Joining `areas` and `cnaes` directly can multiply rows. A work with two area
@@ -104,7 +171,7 @@ area_summary <- cno$areas |>
   group_by(cno) |>
   summarise(
     area_records = n(),
-    reported_area = max(area, na.rm = TRUE),
+    reported_area = sum(area, na.rm = TRUE),
     .groups = "drop"
   )
 
@@ -122,7 +189,7 @@ construction_summary <- cno$constructions |>
   collect()
 ```
 
-The appropriate area aggregation depends on the research question. `max()`
+The appropriate area aggregation depends on the research question. `sum()`
 above demonstrates the relational pattern; it is not a general cleaning rule.
 
 ## Municipality identifiers
