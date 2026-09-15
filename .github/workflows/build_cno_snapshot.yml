@@ -121,7 +121,7 @@ jobs:
             fi
 
             printf '%s\n' \
-              works.parquet \
+              constructions.parquet \
               areas.parquet \
               cnaes.parquet \
               responsibilities.parquet \
@@ -137,7 +137,7 @@ jobs:
             fi
           else
             gh release create "$release_tag" \
-              "$snapshot_dir/works.parquet" \
+              "$snapshot_dir/constructions.parquet" \
               "$snapshot_dir/areas.parquet" \
               "$snapshot_dir/cnaes.parquet" \
               "$snapshot_dir/responsibilities.parquet" \
@@ -162,10 +162,10 @@ jobs:
             '{dataset: "cno", version: $version, manifest_url: $manifest_url}' \
             > "$RUNNER_TEMP/latest.json"
 
-          if gh release view cno-latest >/dev/null 2>&1; then
-            gh release upload cno-latest "$RUNNER_TEMP/latest.json" --clobber
+          if gh release view cno-v2-latest >/dev/null 2>&1; then
+            gh release upload cno-v2-latest "$RUNNER_TEMP/latest.json" --clobber
           else
-            gh release create cno-latest "$RUNNER_TEMP/latest.json" \
+            gh release create cno-v2-latest "$RUNNER_TEMP/latest.json" \
               --target "$GITHUB_SHA" \
               --title "Latest CNO snapshot" \
               --notes "Pointer to the current validated CNO snapshot." \

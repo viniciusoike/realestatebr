@@ -52,7 +52,7 @@ fipezap <- get_dataset("rppi", "fipezap")
 
 # Open related CNO tables lazily
 cno <- query_dataset("cno")
-cno$works
+cno$constructions
 ```
 
 ## Available Datasets
@@ -66,7 +66,7 @@ format. Update schedules vary by source.
 | `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` |
 | `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` |
 | `bcb_series` | Banco Central do Brasil | `core`, `primary`, `secondary`, `tertiary`, `full` |
-| `cno` | Receita Federal | `works`, `areas`, `cnaes`, `responsibilities` |
+| `cno` | Receita Federal | `constructions`, `areas`, `cnaes`, `responsibilities` |
 | `fgv_ibre` | FGV IBRE | — |
 | `rppi` | FIPE/ZAP, IVG-R, IGMI-R, IQA, IQAIW, IVAR, SECOVI-SP | `sale`, `rent`, `all`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` |
 | `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` |

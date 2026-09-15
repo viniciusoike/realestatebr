@@ -1,7 +1,7 @@
 # Build CNO Parquet snapshots ----
 
 CNO_SOURCE_FILES <- c(
-  works = "cno.csv",
+  constructions = "cno.csv",
   areas = "cno_areas.csv",
   cnaes = "cno_cnaes.csv",
   responsibilities = "cno_vinculos.csv"
@@ -81,7 +81,7 @@ build_cno_snapshot <- function(
     )
 
     parquet_path <- file.path(staging_dir, paste0(table, ".parquet"))
-    order_columns <- if (table == "works") c("state", "cno") else "cno"
+    order_columns <- if (table == "constructions") c("state", "cno") else "cno"
     source_rows <- write_cno_parquet(
       connection,
       normalized_view,
@@ -367,36 +367,38 @@ write_cno_parquet <- function(
 }
 
 validate_cno_relations <- function(connection) {
-  duplicate_works <- query_cno_scalar(
+  duplicate_constructions <- query_cno_scalar(
     connection,
     paste(
       "SELECT count(*) - count(DISTINCT cno)",
-      "FROM normalized_works"
+      "FROM normalized_constructions"
     )
   )
-  if (duplicate_works != 0) {
+  if (duplicate_constructions != 0) {
     cli::cli_abort(
-      "CNO works contains {duplicate_works} duplicate identifiers."
+      "CNO constructions contains {duplicate_constructions} duplicate identifiers."
     )
   }
 
   invalid_width <- query_cno_scalar(
     connection,
     paste(
-      "SELECT count(*) FROM normalized_works",
+      "SELECT count(*) FROM normalized_constructions",
       "WHERE cno IS NULL OR length(cno) <> 12"
     )
   )
   if (invalid_width != 0) {
-    cli::cli_abort("CNO works contains {invalid_width} invalid identifiers.")
+    cli::cli_abort(
+      "CNO constructions contains {invalid_width} invalid identifiers."
+    )
   }
 
-  for (table in setdiff(names(CNO_SOURCE_FILES), "works")) {
+  for (table in setdiff(names(CNO_SOURCE_FILES), "constructions")) {
     statement <- paste0(
       "SELECT count(*) FROM ",
       quote_cno_identifier(connection, paste0("normalized_", table)),
-      " AS child LEFT JOIN normalized_works AS works USING (cno) ",
-      "WHERE works.cno IS NULL"
+      " AS child LEFT JOIN normalized_constructions AS constructions USING (cno) ",
+      "WHERE constructions.cno IS NULL"
     )
     orphan_rows <- query_cno_scalar(connection, statement)
     if (orphan_rows != 0) {
@@ -411,7 +413,7 @@ validate_cno_relations <- function(connection) {
 
 read_cno_declared_totals <- function(connection, totals_path) {
   statement <- paste0(
-    "SELECT CAST(\"Total de obras\" AS BIGINT) AS works, ",
+    "SELECT CAST(\"Total de obras\" AS BIGINT) AS constructions, ",
     "CAST(\"Total de áreas\" AS BIGINT) AS areas, ",
     "CAST(\"Total de cnaes\" AS BIGINT) AS cnaes, ",
     "CAST(\"Total de vínculos\" AS BIGINT) AS responsibilities ",

@@ -13,7 +13,7 @@ Brazilian construction works.
 Retrieve this dataset with \code{\link[=query_dataset]{query_dataset()}} using the name \code{"cno"}.
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{cno <- query_dataset("cno")
-cno$works
+cno$constructions
 }\if{html}{\out{</div>}}
 }
 \details{
@@ -24,13 +24,13 @@ cno$works
 \item \strong{Frequency}: annual snapshots
 \item \strong{Coverage}: November 2018-present, including migrated CEI records with earlier start dates
 \item \strong{Access mode}: \code{query}
-\item \strong{Tables}: \code{"works"}, \code{"areas"}, \code{"cnaes"}, \code{"responsibilities"}
+\item \strong{Tables}: \code{"constructions"}, \code{"areas"}, \code{"cnaes"}, \code{"responsibilities"}
 }
 
 Column names are normalized to English, while source labels and anomalous
 values are retained without analytical cleaning.
 }
-\section{Table "works" (Construction Works)}{
+\section{Table "constructions" (Constructions)}{
 
 One row per CNO registration.
 
@@ -45,7 +45,7 @@ One row per CNO registration.
 \item{postal_code}{Postal code for works in Brazil. Stored as character.}
 \item{responsible_tax_id}{Fourteen-digit identifier of the responsible legal person. Receita Federal suppresses CPF values.}
 \item{responsible_role_code}{Four-digit code for the responsible party's role.}
-\item{work_name}{Name assigned to the construction work, not the responsible party's name.}
+\item{construction_name}{Name assigned to the construction, not the responsible party's name.}
 \item{municipality_tom_code}{Four-digit Receita Federal TOM municipality code, not an IBGE municipality code.}
 \item{municipality_name}{Municipality name published by Receita Federal.}
 \item{street_type}{Street type.}
@@ -69,8 +69,8 @@ One row per CNO registration.
 Area records classified by category, destination, structure, and area type.
 
 \describe{
-\item{cno}{CNO registration identifier joining to works.cno.}
-\item{work_category}{Category reported for the work area.}
+\item{cno}{CNO registration identifier joining to constructions.cno.}
+\item{construction_category}{Category reported for the construction area.}
 \item{destination}{Intended use reported for the work area.}
 \item{structure_type}{Construction structure type.}
 \item{area_type}{Principal or complementary area.}
@@ -84,7 +84,7 @@ Area records classified by category, destination, structure, and area type.
 CNAE economic activities associated with each construction work.
 
 \describe{
-\item{cno}{CNO registration identifier joining to works.cno.}
+\item{cno}{CNO registration identifier joining to constructions.cno.}
 \item{cnae}{Seven-digit CNAE activity code. Stored as character.}
 \item{registration_date}{Date on which the activity was registered.}
 }
@@ -95,7 +95,7 @@ CNAE economic activities associated with each construction work.
 Responsible-party roles and their periods for each construction work.
 
 \describe{
-\item{cno}{CNO registration identifier joining to works.cno.}
+\item{cno}{CNO registration identifier joining to constructions.cno.}
 \item{start_date}{Start date of the responsibility period.}
 \item{end_date}{End date of the responsibility period, when applicable.}
 \item{registration_date}{Date on which the responsibility was registered.}
