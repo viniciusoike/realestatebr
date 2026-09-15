@@ -67,7 +67,18 @@ get_dataset <- function(
 
   registry <- load_dataset_registry()
   if (!name %in% names(registry$datasets)) {
-    available <- paste(names(registry$datasets), collapse = ", ")
+    materialized <- vapply(
+      registry$datasets,
+      \(dataset) {
+        !identical(dataset$status, "hidden") &&
+          identical(dataset$access_mode %||% "materialized", "materialized")
+      },
+      logical(1)
+    )
+    available <- paste(
+      sort(names(registry$datasets)[materialized]),
+      collapse = ", "
+    )
     cli::cli_abort("Dataset '{name}' not found. Available: {available}")
   }
 
