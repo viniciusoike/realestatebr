@@ -39,6 +39,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/getting-started.html">Getting Started with realestatebr</a></li>
     <li><a class="dropdown-item" href="articles/working-with-rppi.html">Working with Property Price Indices</a></li>
+    <li><a class="dropdown-item" href="articles/working-with-cno.html">Working with CNO</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Market deep dives</h6></li>
     <li><a class="dropdown-item" href="articles/housing-credit.html">Housing Credit in Brazil</a></li>
@@ -89,7 +90,7 @@
 <div class="section level2">
 <h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<p><code><a href="reference/list_datasets.html">list_datasets()</a></code> lists the available datasets and <code><a href="reference/get_dataset.html">get_dataset()</a></code> retrieves them. The development version also includes infrastructure for querying large relational datasets lazily after their remote snapshots are published.</p>
+<p><code><a href="reference/list_datasets.html">list_datasets()</a></code> lists available datasets and their access modes. <code><a href="reference/get_dataset.html">get_dataset()</a></code> retrieves materialized datasets, while <code><a href="reference/query_dataset.html">query_dataset()</a></code> opens large relational datasets as lazy DuckDB tables.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/viniciusoike/realestatebr" class="external-link">realestatebr</a></span><span class="op">)</span></span>
 <span></span>
@@ -100,12 +101,16 @@
 <span><span class="va">sbpe</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_dataset.html">get_dataset</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"abecip"</span>, table <span class="op">=</span> <span class="st">"sbpe"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Get property price indices</span></span>
-<span><span class="va">fipezap</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">fipezap</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"fipezap"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Open related CNO tables lazily</span></span>
+<span><span class="va">cno</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/query_dataset.html">query_dataset</a></span><span class="op">(</span><span class="st">"cno"</span><span class="op">)</span></span>
+<span><span class="va">cno</span><span class="op">$</span><span class="va">works</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="available-datasets">Available Datasets<a class="anchor" aria-label="anchor" href="#available-datasets"></a>
 </h2>
-<p>The package wraps public data sources and returns each table in a tidy format. Datasets are updated weekly or monthly, depending on the source.</p>
+<p>The package wraps public data sources and returns each table in a tidy format. Update schedules vary by source.</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -147,6 +152,13 @@
 </td>
 </tr>
 <tr>
+<td><code>cno</code></td>
+<td>Receita Federal</td>
+<td>
+<code>works</code>, <code>areas</code>, <code>cnaes</code>, <code>responsibilities</code>
+</td>
+</tr>
+<tr>
 <td><code>fgv_ibre</code></td>
 <td>FGV IBRE</td>
 <td>—</td>
@@ -174,7 +186,7 @@
 </tr>
 </tbody>
 </table>
-<p>The currently published datasets use <code><a href="reference/get_dataset.html">get_dataset()</a></code> and return data in memory.</p>
+<p><code>cno</code> uses <code><a href="reference/query_dataset.html">query_dataset()</a></code> and returns related lazy tables. The remaining datasets use <code><a href="reference/get_dataset.html">get_dataset()</a></code> and return data in memory.</p>
 <div class="section level3">
 <h3 id="data-sources">Data Sources<a class="anchor" aria-label="anchor" href="#data-sources"></a>
 </h3>
@@ -270,6 +282,7 @@
 <ul>
 <li><a href="https://viniciusoike.github.io/realestatebr/articles/getting-started.html">Getting started</a></li>
 <li><a href="https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.html">Working with property price indices</a></li>
+<li><a href="https://viniciusoike.github.io/realestatebr/articles/working-with-cno.html">Working with CNO</a></li>
 <li><a href="https://viniciusoike.github.io/realestatebr/articles/housing-credit.html">Housing credit in Brazil</a></li>
 <li><a href="https://viniciusoike.github.io/realestatebr/articles/primary-market.html">The primary market and the construction cycle</a></li>
 </ul>

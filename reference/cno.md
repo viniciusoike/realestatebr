@@ -3,7 +3,12 @@
 Registration, area, economic activity, and responsibility records for
 Brazilian construction works.
 
-This dataset is under development and is not currently available.
+Retrieve this dataset with
+[`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md)
+using the name `"cno"`.
+
+    cno <- query_dataset("cno")
+    cno$works
 
 ## Source
 
@@ -18,7 +23,7 @@ Receita Federal do Brasil - Cadastro Nacional de Obras
 
 - **Geography**: Brazil
 
-- **Frequency**: daily source snapshots
+- **Frequency**: annual snapshots
 
 - **Coverage**: November 2018-present, including migrated CEI records
   with earlier start dates

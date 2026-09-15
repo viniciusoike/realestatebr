@@ -22,6 +22,7 @@ Optionally filter by category, source organization, or geographic coverage."></h
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with realestatebr</a></li>
     <li><a class="dropdown-item" href="../articles/working-with-rppi.html">Working with Property Price Indices</a></li>
+    <li><a class="dropdown-item" href="../articles/working-with-cno.html">Working with CNO</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Market deep dives</h6></li>
     <li><a class="dropdown-item" href="../articles/housing-credit.html">Housing Credit in Brazil</a></li>
@@ -125,19 +126,20 @@ Optionally filter by category, source organization, or geographic coverage.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">list_datasets</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Found 8 datasets. Use `get_dataset()` for <span style="color: #0000BB;">"materialized"</span> entries and</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Found 9 datasets. Use `get_dataset()` for <span style="color: #0000BB;">"materialized"</span> entries and</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> `query_dataset()` for <span style="color: #0000BB;">"query"</span> entries.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 8 × 11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 9 × 11</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   name         title access_mode available_tables description geography coverage</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> abecip       ABEC… materializ… sbpe, units, cgi Housing cr… Brazil    1982-pr…</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> abrainc      ABRA… materializ… indicator, rada… Primary re… Brazil (… 2014-pr…</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> bcb_realest… BCB … materializ… accounting, app… Detailed r… Brazil (… 2001-pr…</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> bcb_series   BCB … materializ… core, primary, … General ec… Brazil    varies …</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> fgv_ibre     FGV … materializ… (single table)   Real estat… Brazil    2010-pr…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> rppi         Braz… materializ… fipezap, ivgr, … Brazilian … Brazil    varies …</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span> rppi_bis     BIS … materializ… selected, detai… Internatio… Internat… 1970-pr…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">8</span> secovi       SECO… materializ… condo, rent, la… São Paulo … São Paulo 2004-pr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> cno          Nati… query       works, areas, c… Registrati… Brazil    Novembe…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> fgv_ibre     FGV … materializ… (single table)   Real estat… Brazil    2010-pr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span> rppi         Braz… materializ… fipezap, ivgr, … Brazilian … Brazil    varies …</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">8</span> rppi_bis     BIS … materializ… selected, detai… Internatio… Internat… 1970-pr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">9</span> secovi       SECO… materializ… condo, rent, la… São Paulo … São Paulo 2004-pr…</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 4 more variables: frequency &lt;chr&gt;, title_pt &lt;chr&gt;, source &lt;chr&gt;, url &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">list_datasets</span><span class="op">(</span>source <span class="op">=</span> <span class="st">"BCB"</span><span class="op">)</span></span></span>

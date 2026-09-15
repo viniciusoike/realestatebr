@@ -6,6 +6,8 @@
   realestatebr](https://viniciusoike.github.io/realestatebr/articles/getting-started.md):
 - [Working with Property Price
   Indices](https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.md):
+- [Working with
+  CNO](https://viniciusoike.github.io/realestatebr/articles/working-with-cno.md):
 
 ### Market deep dives
 

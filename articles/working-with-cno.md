@@ -6,12 +6,6 @@ record areas, CNAE activities, and responsibility periods.
 `realestatebr` queries these tables lazily with DuckDB, so filtering and
 aggregation happen before data enter R memory.
 
-The CNO snapshot publication infrastructure is still under development.
-The dataset does not appear in
-[`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
-and the examples below will become available after a remote snapshot
-endpoint is configured.
-
 ## Open the dataset
 
 Install the optional query dependencies once.
@@ -146,8 +140,8 @@ explicitly when an analysis must be reproducible.
 
 ``` r
 
-cno_2026_09_12 <- query_dataset("cno", version = "2026-09-12")
-close(cno_2026_09_12)
+cno_2026_09_13 <- query_dataset("cno", version = "2026-09-13")
+close(cno_2026_09_13)
 ```
 
 Close the catalog after the final query. Any lazy tables obtained from

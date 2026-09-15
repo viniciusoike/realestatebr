@@ -37,6 +37,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with realestatebr</a></li>
     <li><a class="dropdown-item" href="../articles/working-with-rppi.html">Working with Property Price Indices</a></li>
+    <li><a class="dropdown-item" href="../articles/working-with-cno.html">Working with CNO</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Market deep dives</h6></li>
     <li><a class="dropdown-item" href="../articles/housing-credit.html">Housing Credit in Brazil</a></li>
@@ -87,10 +88,6 @@ table describes each registered construction work, while three child
 tables record areas, CNAE activities, and responsibility periods.
 <code>realestatebr</code> queries these tables lazily with DuckDB, so
 filtering and aggregation happen before data enter R memory.</p>
-<p>The CNO snapshot publication infrastructure is still under
-development. The dataset does not appear in <code><a href="../reference/list_datasets.html">list_datasets()</a></code>
-and the examples below will become available after a remote snapshot
-endpoint is configured.</p>
 <div class="section level2">
 <h2 id="open-the-dataset">Open the dataset<a class="anchor" aria-label="anchor" href="#open-the-dataset"></a>
 </h2>
@@ -226,8 +223,8 @@ and pins that immutable snapshot while the catalog remains open. Supply
 a published version explicitly when an analysis must be
 reproducible.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cno_2026_09_12</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_dataset.html">query_dataset</a></span><span class="op">(</span><span class="st">"cno"</span>, version <span class="op">=</span> <span class="st">"2026-09-12"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">close</a></span><span class="op">(</span><span class="va">cno_2026_09_12</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">cno_2026_09_13</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_dataset.html">query_dataset</a></span><span class="op">(</span><span class="st">"cno"</span>, version <span class="op">=</span> <span class="st">"2026-09-13"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">close</a></span><span class="op">(</span><span class="va">cno_2026_09_13</span><span class="op">)</span></span></code></pre></div>
 <p>Close the catalog after the final query. Any lazy tables obtained
 from it become invalid after <code><a href="https://rdrr.io/r/base/connections.html" class="external-link">close()</a></code>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">

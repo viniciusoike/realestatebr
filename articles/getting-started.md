@@ -78,6 +78,7 @@ ds <- list_datasets()
 | abrainc | ABRAINC-FIPE Primary Market Indicators | ABRAINC/FIPE | indicator, radar, leading | quarterly |
 | bcb_realestate | BCB Real Estate Market Data | Banco Central do Brasil | accounting, application, indices, sources, units | monthly |
 | bcb_series | BCB Economic Series | Banco Central do Brasil - SGS | core, primary, secondary, tertiary, full | varies (daily/monthly/quarterly) |
+| cno | National Registry of Construction Works | Receita Federal do Brasil - Cadastro Nacional de Obras | works, areas, cnaes, responsibilities | annual snapshots |
 | fgv_ibre | FGV IBRE Real Estate Indicators | FGV IBRE | (single table) | monthly |
 | rppi | Brazilian Residential Property Price Indices | Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP) | fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp, sale, rent, all | monthly |
 | rppi_bis | BIS Residential Property Price Indices | Bank for International Settlements | selected, detailed_monthly, detailed_quarterly, detailed_annual, detailed_halfyearly | quarterly |

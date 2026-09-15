@@ -27,6 +27,8 @@ Table and column documentation for each dataset
   : BCB Real Estate Market Data
 - [`bcb_series`](https://viniciusoike.github.io/realestatebr/reference/bcb_series.md)
   : BCB Economic Series
+- [`cno`](https://viniciusoike.github.io/realestatebr/reference/cno.md)
+  : National Registry of Construction Works
 - [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md)
   : FGV IBRE Real Estate Indicators
 - [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md)

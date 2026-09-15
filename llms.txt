@@ -21,11 +21,11 @@ remotes::install_github("viniciusoike/realestatebr")
 ## Quick Start
 
 [`list_datasets()`](https://viniciusoike.github.io/realestatebr/reference/list_datasets.md)
-lists the available datasets and
+lists available datasets and their access modes.
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-retrieves them. The development version also includes infrastructure for
-querying large relational datasets lazily after their remote snapshots
-are published.
+retrieves materialized datasets, while
+[`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md)
+opens large relational datasets as lazy DuckDB tables.
 
 ``` r
 
@@ -39,12 +39,16 @@ sbpe <- get_dataset(name = "abecip", table = "sbpe")
 
 # Get property price indices
 fipezap <- get_dataset("rppi", "fipezap")
+
+# Open related CNO tables lazily
+cno <- query_dataset("cno")
+cno$works
 ```
 
 ## Available Datasets
 
 The package wraps public data sources and returns each table in a tidy
-format. Datasets are updated weekly or monthly, depending on the source.
+format. Update schedules vary by source.
 
 | Dataset | Source | Tables |
 |----|----|----|
@@ -52,12 +56,15 @@ format. Datasets are updated weekly or monthly, depending on the source.
 | `abrainc` | ABRAINC / FIPE | `indicator`, `radar`, `leading` |
 | `bcb_realestate` | Banco Central do Brasil | `accounting`, `application`, `indices`, `sources`, `units` |
 | `bcb_series` | Banco Central do Brasil | `core`, `primary`, `secondary`, `tertiary`, `full` |
+| `cno` | Receita Federal | `works`, `areas`, `cnaes`, `responsibilities` |
 | `fgv_ibre` | FGV IBRE | — |
 | `rppi` | FIPE/ZAP, IVG-R, IGMI-R, IQA, IQAIW, IVAR, SECOVI-SP | `sale`, `rent`, `all`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` |
 | `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` |
 | `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` |
 
-The currently published datasets use
+`cno` uses
+[`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md)
+and returns related lazy tables. The remaining datasets use
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
 and return data in memory.
 
@@ -163,6 +170,8 @@ ggplot(bis_compare, aes(x = date, y = value, color = ref_area_name)) +
   started](https://viniciusoike.github.io/realestatebr/articles/getting-started.html)
 - [Working with property price
   indices](https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.html)
+- [Working with
+  CNO](https://viniciusoike.github.io/realestatebr/articles/working-with-cno.html)
 - [Housing credit in
   Brazil](https://viniciusoike.github.io/realestatebr/articles/housing-credit.html)
 - [The primary market and the construction
@@ -197,6 +206,8 @@ Table and column documentation for each dataset
   : BCB Real Estate Market Data
 - [`bcb_series`](https://viniciusoike.github.io/realestatebr/reference/bcb_series.md)
   : BCB Economic Series
+- [`cno`](https://viniciusoike.github.io/realestatebr/reference/cno.md)
+  : National Registry of Construction Works
 - [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md)
   : FGV IBRE Real Estate Indicators
 - [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md)
@@ -225,6 +236,8 @@ Auxiliary data shipped with the package
   realestatebr](https://viniciusoike.github.io/realestatebr/articles/getting-started.md):
 - [Working with Property Price
   Indices](https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.md):
+- [Working with
+  CNO](https://viniciusoike.github.io/realestatebr/articles/working-with-cno.md):
 
 ### Market deep dives
 
