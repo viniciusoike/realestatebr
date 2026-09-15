@@ -11,6 +11,18 @@ on:
         description: Snapshot version in YYYY-MM-DD format
         required: true
         type: string
+      publish:
+        description: Publish the validated snapshot to GitHub Releases
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cno-snapshot-publication
+  cancel-in-progress: false
 
 jobs:
   build-cno:
@@ -73,3 +85,81 @@ jobs:
           path: data-raw/cno_output/${{ inputs.snapshot_version }}/
           if-no-files-found: error
           retention-days: 7
+
+      - name: Publish immutable snapshot release
+        if: ${{ inputs.publish }}
+        env:
+          CNO_VERSION: ${{ inputs.snapshot_version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          snapshot_dir="data-raw/cno_output/$CNO_VERSION"
+          release_tag="cno-$CNO_VERSION"
+
+          if gh release view "$release_tag" >/dev/null 2>&1; then
+            existing_dir="$RUNNER_TEMP/cno-existing-release"
+            mkdir -p "$existing_dir"
+            gh release download "$release_tag" \
+              --pattern manifest.json \
+              --dir "$existing_dir"
+            jq -S 'del(.retrieved_at)' \
+              "$existing_dir/manifest.json" > "$RUNNER_TEMP/existing-release.json"
+            jq -S 'del(.retrieved_at)' \
+              "$snapshot_dir/manifest.json" > "$RUNNER_TEMP/generated-release.json"
+            if ! cmp -s \
+              "$RUNNER_TEMP/existing-release.json" \
+              "$RUNNER_TEMP/generated-release.json"; then
+              echo "Release $release_tag already exists for different source data" >&2
+              exit 1
+            fi
+
+            printf '%s\n' \
+              works.parquet \
+              areas.parquet \
+              cnaes.parquet \
+              responsibilities.parquet \
+              manifest.json | sort > "$RUNNER_TEMP/expected-assets.txt"
+            gh release view "$release_tag" \
+              --json assets \
+              --jq '.assets[].name' | sort > "$RUNNER_TEMP/existing-assets.txt"
+            if ! cmp -s \
+              "$RUNNER_TEMP/expected-assets.txt" \
+              "$RUNNER_TEMP/existing-assets.txt"; then
+              echo "Release $release_tag does not contain the expected assets" >&2
+              exit 1
+            fi
+          else
+            gh release create "$release_tag" \
+              "$snapshot_dir/works.parquet" \
+              "$snapshot_dir/areas.parquet" \
+              "$snapshot_dir/cnaes.parquet" \
+              "$snapshot_dir/responsibilities.parquet" \
+              "$snapshot_dir/manifest.json" \
+              --target "$GITHUB_SHA" \
+              --title "CNO snapshot $CNO_VERSION" \
+              --notes "Validated CNO Parquet snapshot for $CNO_VERSION." \
+              --latest=false
+          fi
+
+      - name: Update latest snapshot pointer
+        if: ${{ inputs.publish }}
+        env:
+          CNO_VERSION: ${{ inputs.snapshot_version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_tag="cno-$CNO_VERSION"
+          manifest_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${release_tag}/manifest.json"
+          jq -n \
+            --arg version "$CNO_VERSION" \
+            --arg manifest_url "$manifest_url" \
+            '{dataset: "cno", version: $version, manifest_url: $manifest_url}' \
+            > "$RUNNER_TEMP/latest.json"
+
+          if gh release view cno-latest >/dev/null 2>&1; then
+            gh release upload cno-latest "$RUNNER_TEMP/latest.json" --clobber
+          else
+            gh release create cno-latest "$RUNNER_TEMP/latest.json" \
+              --target "$GITHUB_SHA" \
+              --title "Latest CNO snapshot" \
+              --notes "Pointer to the current validated CNO snapshot." \
+              --latest=false
+          fi

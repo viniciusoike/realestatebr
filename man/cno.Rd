@@ -10,14 +10,18 @@ Receita Federal do Brasil - Cadastro Nacional de Obras
 Registration, area, economic activity, and responsibility records for
 Brazilian construction works.
 
-This dataset is under development and is not currently available.
+Retrieve this dataset with \code{\link[=query_dataset]{query_dataset()}} using the name \code{"cno"}.
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{cno <- query_dataset("cno")
+cno$works
+}\if{html}{\out{</div>}}
 }
 \details{
 \itemize{
 \item \strong{Source}: Receita Federal do Brasil - Cadastro Nacional de Obras
 \item \strong{URL}: \url{https://dados.gov.br/dados/conjuntos-dados/cadastro-nacional-de-obras-cno}
 \item \strong{Geography}: Brazil
-\item \strong{Frequency}: daily source snapshots
+\item \strong{Frequency}: annual snapshots
 \item \strong{Coverage}: November 2018-present, including migrated CEI records with earlier start dates
 \item \strong{Access mode}: \code{query}
 \item \strong{Tables}: \code{"works"}, \code{"areas"}, \code{"cnaes"}, \code{"responsibilities"}
@@ -114,4 +118,4 @@ Other datasets:
 \code{\link{secovi}}
 }
 \concept{datasets}
-\keyword{internal}
+\keyword{datasets}

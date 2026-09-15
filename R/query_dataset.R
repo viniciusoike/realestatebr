@@ -80,16 +80,23 @@ query_dataset <- function(
   )
   manifest <- read_query_manifest(manifest_location)
   manifest_location <- attr(manifest, "manifest_location")
+  expected_schema <- query_registry_schema(dataset_info$categories)
   validate_query_manifest(
     manifest,
     name,
     version,
     available_tables,
-    dataset_info$query_manifest$schema_sha256
+    dataset_info$query_manifest$schema_sha256,
+    expected_schema
   )
 
   tables_to_open <- if (is.null(table)) available_tables else table
-  owner <- open_query_connection(manifest, manifest_location, tables_to_open)
+  owner <- open_query_connection(
+    manifest,
+    manifest_location,
+    tables_to_open,
+    expected_schema
+  )
   tables <- lapply(
     tables_to_open,
     \(table_name) dplyr::tbl(owner$connection, table_name)
@@ -158,6 +165,14 @@ validate_query_arguments <- function(name, table, version, quiet) {
   }
   if (!rlang::is_string(version) || version == "") {
     cli::cli_abort("{.arg version} must be one non-empty string.")
+  }
+  valid_version <- identical(version, "latest") ||
+    (grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", version) &&
+      !is.na(as.Date(version, format = "%Y-%m-%d")))
+  if (!valid_version) {
+    cli::cli_abort(
+      "{.arg version} must be {.val latest} or use the YYYY-MM-DD format."
+    )
   }
   if (!rlang::is_bool(quiet)) {
     cli::cli_abort("{.arg quiet} must be `TRUE` or `FALSE`.")
@@ -279,7 +294,8 @@ validate_query_manifest <- function(
   name,
   version,
   tables,
-  expected_schema_sha256
+  expected_schema_sha256,
+  expected_schema
 ) {
   required <- c(
     "dataset",
@@ -331,9 +347,21 @@ validate_query_manifest <- function(
 
   for (table in tables) {
     files <- unlist(manifest$tables[[table]]$files, use.names = FALSE)
-    if (length(files) == 0 || anyNA(files) || any(files == "")) {
+    valid_files <- vapply(files, rlang::is_string, logical(1))
+    if (
+      length(files) == 0 ||
+        !all(valid_files) ||
+        any(files == "")
+    ) {
       cli::cli_abort(
         "Manifest table {.val {table}} has no valid Parquet files."
+      )
+    }
+    if (
+      !identical(manifest$tables[[table]]$columns, expected_schema[[table]])
+    ) {
+      cli::cli_abort(
+        "Manifest schema does not match the package registry for table {.val {table}}."
       )
     }
   }
@@ -341,7 +369,24 @@ validate_query_manifest <- function(
   return(invisible(TRUE))
 }
 
-open_query_connection <- function(manifest, manifest_location, tables) {
+query_registry_schema <- function(categories) {
+  schema <- lapply(categories, function(category) {
+    columns <- lapply(category$source_columns, function(column) {
+      list(name = column$name, type = column$type)
+    })
+    names(columns) <- NULL
+    return(columns)
+  })
+
+  return(schema)
+}
+
+open_query_connection <- function(
+  manifest,
+  manifest_location,
+  tables,
+  expected_schema
+) {
   connection <- DBI::dbConnect(
     duckdb::duckdb(dbdir = ":memory:", shared_home = FALSE)
   )
@@ -363,7 +408,7 @@ open_query_connection <- function(manifest, manifest_location, tables) {
           connection,
           table,
           resources,
-          manifest$tables[[table]]$columns
+          expected_schema[[table]]
         )
       }
     },
@@ -421,7 +466,7 @@ validate_query_view_schema <- function(connection, table, expected_columns) {
       !identical(actual$column_type, expected_types)
   ) {
     cli::cli_abort(c(
-      "Parquet schema does not match the manifest for table {.val {table}}.",
+      "Parquet schema does not match the package registry for table {.val {table}}.",
       "x" = "Expected: {.val {paste(expected_names, expected_types)}}.",
       "x" = "Found: {.val {paste(actual$column_name, actual$column_type)}}."
     ))

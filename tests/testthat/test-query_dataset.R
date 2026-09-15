@@ -13,31 +13,73 @@ make_cno_query_fixture <- function() {
   tables <- list(
     works = data.frame(
       cno = c("000000000001", "000000000002"),
-      state = c("SP", "RJ"),
+      country_code = "105",
+      country_name = "BRASIL",
+      start_date = as.Date("2025-01-01"),
+      responsibility_start_date = as.Date("2025-01-01"),
+      registration_date = as.Date(c("2026-01-01", "2026-01-02")),
+      linked_cno = NA_character_,
+      postal_code = "00000000",
+      responsible_tax_id = "00000000000000",
+      responsible_role_code = "0053",
       work_name = c("Obra A", "Obra B"),
-      registration_date = as.Date(c("2026-01-01", "2026-01-02"))
+      municipality_tom_code = "7107",
+      municipality_name = c("SAO PAULO", "RIO DE JANEIRO"),
+      street_type = "RUA",
+      street_name = "TESTE",
+      street_number = "1",
+      neighborhood = "CENTRO",
+      state = c("SP", "RJ"),
+      postal_box = NA_character_,
+      address_complement = NA_character_,
+      measurement_unit = "M2",
+      total_area = c(120, 80),
+      status_code = "02",
+      status_date = as.Date("2026-01-02"),
+      responsible_legal_name = "EMPRESA TESTE",
+      plus_code = NA_character_
     ),
     areas = data.frame(
       cno = c("000000000001", "000000000001", "000000000002"),
+      work_category = "Obra Nova",
       destination = c(
         "Residencial unifamiliar",
         "Comercial salas e lojas",
         "Residencial multifamiliar"
       ),
+      structure_type = "Alvenaria",
+      area_type = "Principal",
+      complementary_area_type = NA_character_,
       area = c(100, 20, 80)
     ),
     cnaes = data.frame(
       cno = c("000000000001", "000000000002"),
-      cnae = c("4120400", "4110700")
+      cnae = c("4120400", "4110700"),
+      registration_date = as.Date("2026-01-02")
     ),
     responsibilities = data.frame(
       cno = "000000000001",
-      responsible_role_code = "0053"
+      start_date = as.Date("2025-01-01"),
+      end_date = as.Date(NA),
+      registration_date = as.Date("2026-01-02"),
+      responsible_role_code = "0053",
+      responsible_tax_id = "00000000000000"
     )
+  )
+  field_types <- list(
+    works = c(total_area = "DECIMAL(24,2)"),
+    areas = c(area = "DECIMAL(24,2)"),
+    cnaes = NULL,
+    responsibilities = NULL
   )
 
   table_entries <- lapply(names(tables), function(table) {
-    DBI::dbWriteTable(con, table, tables[[table]])
+    DBI::dbWriteTable(
+      con,
+      table,
+      tables[[table]],
+      field.types = field_types[[table]]
+    )
     columns <- DBI::dbGetQuery(
       con,
       paste0("DESCRIBE ", DBI::dbQuoteIdentifier(con, table))
@@ -60,10 +102,12 @@ make_cno_query_fixture <- function() {
       name = table,
       files = list(file_name),
       rows = nrow(tables[[table]]),
-      columns = Map(
-        \(name, type) list(name = name, type = type),
-        columns$column_name,
-        columns$column_type
+      columns = unname(
+        Map(
+          \(name, type) list(name = name, type = type),
+          columns$column_name,
+          columns$column_type
+        )
       )
     )
   })
@@ -130,7 +174,7 @@ test_that("query_dataset can return one CNO table", {
   expect_identical(DBI::dbIsValid(owner$connection), FALSE)
 })
 
-test_that("query_dataset rejects Parquet whose schema differs from manifest", {
+test_that("query_dataset rejects manifest columns outside the registry", {
   local_edition(3)
   manifest_path <- make_cno_query_fixture()
   withr::defer(unlink(dirname(manifest_path), recursive = TRUE))
@@ -141,6 +185,40 @@ test_that("query_dataset rejects Parquet whose schema differs from manifest", {
   manifest <- jsonlite::read_json(manifest_path, simplifyVector = FALSE)
   manifest$tables$works$columns[[1]]$type <- "BIGINT"
   jsonlite::write_json(manifest, manifest_path, auto_unbox = TRUE)
+
+  expect_snapshot(
+    error = TRUE,
+    query_dataset("cno", table = "works", quiet = TRUE)
+  )
+})
+
+test_that("query_dataset rejects Parquet whose schema differs from registry", {
+  local_edition(3)
+  manifest_path <- make_cno_query_fixture()
+  fixture_dir <- dirname(manifest_path)
+  withr::defer(unlink(fixture_dir, recursive = TRUE))
+  withr::local_options(
+    realestatebr.query_manifest_urls = c(cno = manifest_path)
+  )
+
+  connection <- DBI::dbConnect(
+    duckdb::duckdb(dbdir = ":memory:", shared_home = FALSE)
+  )
+  withr::defer(DBI::dbDisconnect(connection, shutdown = TRUE))
+  works_path <- file.path(fixture_dir, "works.parquet")
+  altered_path <- file.path(fixture_dir, "works-altered.parquet")
+  DBI::dbExecute(
+    connection,
+    paste0(
+      "COPY (SELECT CAST(cno AS BIGINT) AS cno, * EXCLUDE (cno) ",
+      "FROM read_parquet(",
+      DBI::dbQuoteString(connection, works_path),
+      ")) TO ",
+      DBI::dbQuoteString(connection, altered_path),
+      " (FORMAT PARQUET)"
+    )
+  )
+  file.copy(altered_path, works_path, overwrite = TRUE)
 
   expect_snapshot(
     error = TRUE,
@@ -220,20 +298,45 @@ test_that("query_dataset rejects an incompatible schema", {
   )
 })
 
+test_that("query_dataset rejects malformed versions before network access", {
+  local_edition(3)
+
+  expect_snapshot(
+    error = TRUE,
+    query_dataset("cno", version = "../current", quiet = TRUE)
+  )
+})
+
 test_that("materialized and queryable access modes are explicit", {
   local_edition(3)
   expect_snapshot(error = TRUE, get_dataset("cno", quiet = TRUE))
   expect_snapshot(error = TRUE, query_dataset("abecip", quiet = TRUE))
 
   datasets <- suppressMessages(list_datasets())
-  expect_no_match(datasets$name, "cno", fixed = TRUE)
+  cno <- datasets[datasets$name == "cno", ]
+
+  expect_identical(nrow(cno), 1L)
+  expect_identical(cno$access_mode, "query")
+  expect_identical(cno$frequency, "annual snapshots")
 })
 
-test_that("unpublished query datasets are unavailable without an override", {
-  local_edition(3)
-  withr::local_options(realestatebr.query_manifest_urls = NULL)
+test_that("CNO registry points to versioned GitHub releases", {
+  info <- get_dataset_info("cno")$technical_info$query_manifest
 
-  expect_snapshot(error = TRUE, query_dataset("cno", quiet = TRUE))
+  expect_identical(
+    info$latest_url,
+    paste0(
+      "https://github.com/viniciusoike/realestatebr/releases/",
+      "download/cno-latest/latest.json"
+    )
+  )
+  expect_identical(
+    info$version_url_template,
+    paste0(
+      "https://github.com/viniciusoike/realestatebr/releases/",
+      "download/cno-{version}/manifest.json"
+    )
+  )
 })
 
 test_that("closing a CNO catalog closes its connection", {
