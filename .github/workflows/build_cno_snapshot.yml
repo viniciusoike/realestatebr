@@ -54,10 +54,18 @@ jobs:
           CNO_SOURCE_URL: ${{ inputs.source_url }}
         run: |
           mkdir -p data-raw/cno_source
-          curl --fail --location --retry 3 \
+          curl --fail --location --http1.1 \
+            --retry 8 \
+            --retry-all-errors \
+            --retry-delay 10 \
+            --retry-max-time 3600 \
+            --connect-timeout 30 \
+            --max-time 3600 \
+            --continue-at - \
             --user-agent "realestatebr data pipeline" \
             --output "$RUNNER_TEMP/cno.zip" \
             "$CNO_SOURCE_URL"
+          unzip -t -q "$RUNNER_TEMP/cno.zip"
           unzip -q "$RUNNER_TEMP/cno.zip" -d data-raw/cno_source
 
       - name: Build and validate Parquet snapshot

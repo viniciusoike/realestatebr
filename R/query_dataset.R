@@ -397,17 +397,30 @@ open_query_connection <- function(
 
   tryCatch(
     {
-      for (table in tables) {
+      resources <- lapply(tables, function(table) {
         files <- unlist(manifest$tables[[table]]$files, use.names = FALSE)
-        resources <- vapply(
+        vapply(
           files,
           \(file) resolve_manifest_resource(manifest_location, file),
           character(1)
         )
+      })
+      needs_httpfs <- any(vapply(
+        resources,
+        \(files) any(grepl("^https://", files)),
+        logical(1)
+      ))
+      if (needs_httpfs) {
+        DBI::dbExecute(connection, "INSTALL httpfs")
+        DBI::dbExecute(connection, "LOAD httpfs")
+      }
+
+      for (index in seq_along(tables)) {
+        table <- tables[[index]]
         create_query_view(
           connection,
           table,
-          resources,
+          resources[[index]],
           expected_schema[[table]]
         )
       }
