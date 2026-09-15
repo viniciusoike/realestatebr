@@ -11,6 +11,9 @@
 
 ### Bug fixes
 
+- Unknown-dataset errors from
+  [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
+  now list only materialized datasets in alphabetical order.
 - `get_dataset("secovi", source = "fresh")` and
   `get_dataset("bcb_realestate", source = "fresh")` now raise an error
   when the original source is unavailable instead of silently returning

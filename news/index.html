@@ -58,7 +58,8 @@
 <code><a href="../reference/query_dataset.html">query_dataset()</a></code> now loads DuckDB’s <code>httpfs</code> extension when accessing remote Parquet snapshots.</li>
 </ul><div class="section level3">
 <h3 id="bug-fixes-1-0-1-9000">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-0-1-9000"></a></h3>
-<ul><li>
+<ul><li>Unknown-dataset errors from <code><a href="../reference/get_dataset.html">get_dataset()</a></code> now list only materialized datasets in alphabetical order.</li>
+<li>
 <code>get_dataset("secovi", source = "fresh")</code> and <code>get_dataset("bcb_realestate", source = "fresh")</code> now raise an error when the original source is unavailable instead of silently returning the GitHub release cache.</li>
 <li>
 <code>get_dataset("secovi")</code> now downloads each indicator page separately with a timeout and user agent, and warns about indicators it could not read.</li>
