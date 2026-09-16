@@ -210,6 +210,32 @@ datasets:
     cached_file: "secovi_sp.rds"
     default_table: "all"
     translation_notes: "Regional classifications are specific to the São Paulo metropolitan area. SECOVI no longer publishes indicators 25 (`launches_rmsp`) and 118 (`sales_rmsp`), so they are not returned."
+
+  sinapi:
+    name: "SINAPI Construction Costs and Indices"
+    name_pt: "Custos e Índices da Construção Civil SINAPI"
+    description: "Monthly construction costs, cost indices, and percentage changes from the National System of Construction Costs and Indices"
+    source: "IBGE - Sistema Nacional de Pesquisa de Custos e Índices da Construção Civil"
+    url: "https://sidra.ibge.gov.br/tabela/2296"
+    geography: "Brazil, geographic regions, and states"
+    frequency: "monthly"
+    coverage: "March 1986-present (varies by series)"
+    update_schedule: "monthly"
+    warn_after_days: 60
+    columns:
+      date: "First day of the reference month."
+      geography_type: "Geographic level: brazil, region, or state."
+      geography_code: "IBGE code for the geographic unit; interpret together with geography_type."
+      geography_name: "Geographic unit name in Portuguese."
+      variable: "Series identifier: cost, materials_cost, labor_cost, cost_index, materials_index, labor_index, monthly_change, year_to_date_change, or twelve_month_change."
+      variable_label: "Original IBGE variable label in Portuguese."
+      unit: "Original IBGE unit: Reais, Número-índice, or percent."
+      value: "Observed value. Missing values and periods not covered by a series are omitted."
+    internal_function: "fetch_sinapi"
+    dataset_function: "get_sinapi"
+    data_type: "tibble"
+    cached_file: "sinapi.rds"
+    translation_notes: "Data come from SIDRA table 2296. Monetary series are expressed in the currency reported by IBGE for each historical period."
     
   rppi_bis:
     name: "BIS Residential Property Price Indices"
@@ -644,3 +670,151 @@ datasets:
           Qualificação do contribuinte: {name: "responsible_role_code", type: "VARCHAR"}
           NI do responsável: {name: "responsible_tax_id", type: "VARCHAR"}
     translation_notes: "Column names are normalized to English, while source labels and anomalous values are retained without analytical cleaning"
+
+  mcmv:
+    name: "FGTS/MCMV Housing Finance and Subsidized Projects"
+    name_pt: "Financiamentos FGTS/MCMV e empreendimentos subsidiados"
+    description: "Published financing observations, official financing summaries, and subsidized housing project records"
+    status: hidden
+    source: "Ministério das Cidades - Secretaria Nacional de Habitação"
+    url: "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/habitacao/programa-minha-casa-minha-vida/bases-de-dados-do-programa-minha-casa-minha-vida"
+    geography: Brazil
+    frequency: "dated full snapshots"
+    coverage: "Initial financing snapshot through 2026-07-24; projects through 2026-06-30"
+    update_schedule: "manual snapshots"
+    access_mode: query
+    data_type: "lazy tables"
+    translation_notes: "Source categories, missing observations, duplicates, and anomalies are retained. See the [working article](../articles/working-with-mcmv.html) and [data dictionary](../articles/mcmv-data-dictionary.html)."
+    query_manifest:
+      latest_url: "https://github.com/viniciusoike/realestatebr/releases/download/mcmv-v1-latest/latest.json"
+      version_url_template: "https://github.com/viniciusoike/realestatebr/releases/download/mcmv-{version}/manifest.json"
+      schema_sha256: "c833f97a3205d0b7890b2508bfcd51de47fef354b810eb25543f7c58f15007f9"
+    categories:
+      financing:
+        name: "Financing"
+        description: "one published financing observation; no unique key"
+        grain: "one published financing observation; no unique key"
+        columns:
+          reference_date: "Reference date reported inside the source; not retrieval or publication date."
+          code_muni_6: "Six-digit IBGE municipality identifier without its check digit."
+          name_muni: "Municipality name as published, including whitespace and capitalization."
+          state: "Source state abbreviation."
+          region: "Source Brazilian region label; capitalization is preserved."
+          contract_date: "Financing signature or project contract date. Midnight timestamps are converted to dates."
+          units_financed: "Number of financed housing units reported in this observation."
+          amount_financed: "Financing amount, in nominal BRL."
+          subsidy_fgts_discount: "FGTS discount subsidy, in nominal BRL."
+          subsidy_ogu_discount: "Federal budget (OGU) discount subsidy, in nominal BRL."
+          subsidy_fgts_interest: "FGTS interest-equilibrium subsidy, in nominal BRL."
+          subsidy_ogu_interest: "OGU interest-equilibrium subsidy, in nominal BRL."
+          purchase_price: "Property purchase value, in nominal BRL."
+          household_income: "Reported household income, in nominal BRL; no frequency inferred."
+          financing_program: "Source financing program label, including programs outside MCMV/CVA."
+          interest_rate: "Source interest rate in percentage units; periodicity is not inferred."
+          property_type: "Source property-type label, preserving capitalization variants."
+          fgts_account_holder: "Source FGTS account-holder code, retained as character; not a Boolean."
+          amortization_system: "Source amortization-system label."
+          birth_date: "Reported borrower birth date; unpublished in July analytical layout."
+          income_band: "Source income-band label or code; no undocumented code crosswalk is applied."
+          project_name: "Source development name; unpublished in July financing layout."
+          sex: "Source sex code; unpublished in March analytical layout."
+        source_columns:
+          data_referencia: {name: "reference_date", type: "DATE", unit: "calendar date"}
+          cod_ibge: {name: "code_muni_6", type: "VARCHAR", unit: "identifier or source label"}
+          txt_municipio: {name: "name_muni", type: "VARCHAR", unit: "identifier or source label"}
+          txt_uf: {name: "state", type: "VARCHAR", unit: "identifier or source label"}
+          txt_regiao: {name: "region", type: "VARCHAR", unit: "identifier or source label"}
+          data_assinatura_financiamento: {name: "contract_date", type: "DATE", unit: "calendar date"}
+          qtd_uh_financiadas: {name: "units_financed", type: "INTEGER", unit: "housing units"}
+          vlr_financiamento: {name: "amount_financed", type: "DOUBLE", unit: "nominal BRL"}
+          vlr_subsidio_desconto_fgts: {name: "subsidy_fgts_discount", type: "DOUBLE", unit: "nominal BRL"}
+          vlr_subsidio_desconto_ogu: {name: "subsidy_ogu_discount", type: "DOUBLE", unit: "nominal BRL"}
+          vlr_subsidio_equilíbrio_fgts: {name: "subsidy_fgts_interest", type: "DOUBLE", unit: "nominal BRL"}
+          vlr_subsidio_equilíbrio_ogu: {name: "subsidy_ogu_interest", type: "DOUBLE", unit: "nominal BRL"}
+          vlr_compra: {name: "purchase_price", type: "DOUBLE", unit: "nominal BRL"}
+          vlr_renda_familiar: {name: "household_income", type: "DOUBLE", unit: "nominal BRL"}
+          txt_programa_fgts: {name: "financing_program", type: "VARCHAR", unit: "identifier or source label"}
+          num_taxa_juros: {name: "interest_rate", type: "DOUBLE", unit: "source percentage units"}
+          txt_tipo_imovel: {name: "property_type", type: "VARCHAR", unit: "identifier or source label"}
+          bln_cotista: {name: "fgts_account_holder", type: "VARCHAR", unit: "identifier or source label"}
+          txt_sistema_amortizacao: {name: "amortization_system", type: "VARCHAR", unit: "identifier or source label"}
+          dte_nascimento: {name: "birth_date", type: "DATE", unit: "calendar date"}
+          txt_compatibilidade_faixa_renda: {name: "income_band", type: "VARCHAR", unit: "identifier or source label"}
+          txt_nome_empreendimento: {name: "project_name", type: "VARCHAR", unit: "identifier or source label"}
+          co_sexo: {name: "sex", type: "VARCHAR", unit: "identifier or source label"}
+      financing_summary:
+        name: "Financing Summary"
+        description: "municipality/year/month/income band; historical annual municipality/year"
+        grain: "municipality/year/month/income band; historical annual municipality/year"
+        columns:
+          reference_date: "Reference date reported inside the source; not retrieval or publication date."
+          code_muni_6: "Six-digit IBGE municipality identifier without its check digit."
+          name_muni: "Municipality name as published, including whitespace and capitalization."
+          state: "Source state abbreviation."
+          region: "Source Brazilian region label; capitalization is preserved."
+          contract_year: "Source financing year; missing years are retained."
+          contract_month: "Source financing month; absent in annual summaries."
+          units_financed: "Number of financed housing units reported in this observation."
+          amount_financed: "Financing amount, in nominal BRL."
+          subsidy_total: "Official total subsidy in nominal BRL; July reconciles to all four analytical subsidy components."
+          income_band: "Source income-band label or code; no undocumented code crosswalk is applied."
+        source_columns:
+          data_referencia: {name: "reference_date", type: "DATE", unit: "calendar date"}
+          cod_ibge: {name: "code_muni_6", type: "VARCHAR", unit: "identifier or source label"}
+          txt_municipio: {name: "name_muni", type: "VARCHAR", unit: "identifier or source label"}
+          mcmv_fgts_txt_uf: {name: "state", type: "VARCHAR", unit: "identifier or source label"}
+          txt_regiao: {name: "region", type: "VARCHAR", unit: "identifier or source label"}
+          num_ano: {name: "contract_year", type: "INTEGER", unit: "year"}
+          num_mes: {name: "contract_month", type: "INTEGER", unit: "month (1-12)"}
+          qtd_uh_financiadas: {name: "units_financed", type: "INTEGER", unit: "housing units"}
+          vlr_financiamento: {name: "amount_financed", type: "DOUBLE", unit: "nominal BRL"}
+          vlr_subsidio: {name: "subsidy_total", type: "DOUBLE", unit: "nominal BRL"}
+          txt_compatibilidade_faixa_renda: {name: "income_band", type: "VARCHAR", unit: "identifier or source label"}
+      subsidized_projects:
+        name: "Subsidized Projects"
+        description: "one published project record; duplicates and missing operation codes retained"
+        grain: "one published project record; duplicates and missing operation codes retained"
+        columns:
+          reference_date: "Reference date reported inside the source; not retrieval or publication date."
+          code_muni_6: "Six-digit IBGE municipality identifier without its check digit."
+          name_muni: "Municipality name as published, including whitespace and capitalization."
+          state: "Source state abbreviation."
+          region: "Source Brazilian region label; capitalization is preserved."
+          contract_date: "Financing signature or project contract date. Midnight timestamps are converted to dates."
+          operation_code: "Source operation identifier; missing and repeated values are retained. Not a primary key."
+          project_name: "Source development name; unpublished in July financing layout."
+          financial_agent: "Source financial-agent name."
+          modality: "Source housing modality label."
+          project_status: "Source project-status label."
+          units_contracted: "Reported contracted housing units, including repeated source records."
+          units_delivered: "Reported delivered housing units."
+          units_outstanding: "Reported active outstanding housing units."
+          units_cancelled: "Reported cancelled housing units; missing counts are not zero."
+          amount_contracted: "Total project contract amount, in nominal BRL."
+          amount_disbursed: "Disbursed project amount, in nominal BRL."
+          responsible_entity_cnpj: "Source CNPJ of construction company or social entity, stored as character."
+          responsible_entity_name: "Source name of construction company or social entity."
+          address: "Source project address."
+          postal_code: "Source postal code (CEP), stored as character."
+        source_columns:
+          data_referencia: {name: "reference_date", type: "DATE", unit: "calendar date"}
+          cod_ibge: {name: "code_muni_6", type: "VARCHAR", unit: "identifier or source label"}
+          txt_nome_municipio: {name: "name_muni", type: "VARCHAR", unit: "identifier or source label"}
+          txt_sigla_uf: {name: "state", type: "VARCHAR", unit: "identifier or source label"}
+          txt_regiao: {name: "region", type: "VARCHAR", unit: "identifier or source label"}
+          dt_assinatura: {name: "contract_date", type: "DATE", unit: "calendar date"}
+          cod_operacao: {name: "operation_code", type: "VARCHAR", unit: "identifier or source label"}
+          txt_nome_empreendimento: {name: "project_name", type: "VARCHAR", unit: "identifier or source label"}
+          txt_nome_agente_financeiro: {name: "financial_agent", type: "VARCHAR", unit: "identifier or source label"}
+          txt_modalidade: {name: "modality", type: "VARCHAR", unit: "identifier or source label"}
+          txt_situacao_empreendimento: {name: "project_status", type: "VARCHAR", unit: "identifier or source label"}
+          qtd_uh: {name: "units_contracted", type: "INTEGER", unit: "housing units"}
+          qtd_uh_entregues: {name: "units_delivered", type: "INTEGER", unit: "housing units"}
+          qtd_uh_vigentes: {name: "units_outstanding", type: "INTEGER", unit: "housing units"}
+          qtd_uh_distratadas: {name: "units_cancelled", type: "INTEGER", unit: "housing units"}
+          val_contratado_total: {name: "amount_contracted", type: "DOUBLE", unit: "nominal BRL"}
+          val_desembolsado: {name: "amount_disbursed", type: "DOUBLE", unit: "nominal BRL"}
+          txt_cnpj_construtora_entidade: {name: "responsible_entity_cnpj", type: "VARCHAR", unit: "identifier or source label"}
+          txt_nome_construtora_entidade: {name: "responsible_entity_name", type: "VARCHAR", unit: "identifier or source label"}
+          txt_endereco: {name: "address", type: "VARCHAR", unit: "identifier or source label"}
+          txt_cep: {name: "postal_code", type: "VARCHAR", unit: "identifier or source label"}

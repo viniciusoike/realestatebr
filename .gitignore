@@ -104,3 +104,6 @@ index.html
 ..Rcheck/
 .positai
 .claude/worktrees/
+
+data-raw/mcmv_output/
+data-raw/mcmv_source/
