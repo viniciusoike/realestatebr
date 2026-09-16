@@ -17,7 +17,8 @@ Description: Provides access to Brazilian real estate market data from multiple
     <https://www.abecip.org.br/>, the Getulio Vargas Foundation (FGV)
     <https://portalibre.fgv.br/>, and the Bank for International Settlements
     (BIS) <https://www.bis.org/>, as well as Brazil's Federal Revenue Service
-    <https://www.gov.br/receitafederal/>.
+    <https://www.gov.br/receitafederal/> and the Brazilian Institute of
+    Geography and Statistics (IBGE) <https://www.ibge.gov.br/>.
 License: MIT + file LICENSE
 URL: https://github.com/viniciusoike/realestatebr, https://viniciusoike.github.io/realestatebr/
 BugReports: https://github.com/viniciusoike/realestatebr/issues

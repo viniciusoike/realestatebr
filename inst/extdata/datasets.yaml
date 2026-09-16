@@ -210,6 +210,32 @@ datasets:
     cached_file: "secovi_sp.rds"
     default_table: "all"
     translation_notes: "Regional classifications are specific to the São Paulo metropolitan area. SECOVI no longer publishes indicators 25 (`launches_rmsp`) and 118 (`sales_rmsp`), so they are not returned."
+
+  sinapi:
+    name: "SINAPI Construction Costs and Indices"
+    name_pt: "Custos e Índices da Construção Civil SINAPI"
+    description: "Monthly construction costs, cost indices, and percentage changes from the National System of Construction Costs and Indices"
+    source: "IBGE - Sistema Nacional de Pesquisa de Custos e Índices da Construção Civil"
+    url: "https://sidra.ibge.gov.br/tabela/2296"
+    geography: "Brazil, geographic regions, and states"
+    frequency: "monthly"
+    coverage: "March 1986-present (varies by series)"
+    update_schedule: "monthly"
+    warn_after_days: 60
+    columns:
+      date: "First day of the reference month."
+      geography_type: "Geographic level: brazil, region, or state."
+      geography_code: "IBGE code for the geographic unit; interpret together with geography_type."
+      geography_name: "Geographic unit name in Portuguese."
+      variable: "Series identifier: cost, materials_cost, labor_cost, cost_index, materials_index, labor_index, monthly_change, year_to_date_change, or twelve_month_change."
+      variable_label: "Original IBGE variable label in Portuguese."
+      unit: "Original IBGE unit: Reais, Número-índice, or percent."
+      value: "Observed value. Missing values and periods not covered by a series are omitted."
+    internal_function: "fetch_sinapi"
+    dataset_function: "get_sinapi"
+    data_type: "tibble"
+    cached_file: "sinapi.rds"
+    translation_notes: "Data come from SIDRA table 2296. Monetary series are expressed in the currency reported by IBGE for each historical period."
     
   rppi_bis:
     name: "BIS Residential Property Price Indices"

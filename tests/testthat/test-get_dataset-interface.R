@@ -19,7 +19,7 @@ test_that("get_dataset lists materialized datasets alphabetically", {
   expected <- paste(
     "Dataset 'aaa' not found. Available:",
     "abecip, abrainc, bcb_realestate, bcb_series, fgv_ibre,",
-    "rppi, rppi_bis, secovi"
+    "rppi, rppi_bis, secovi, sinapi"
   )
   expect_match(error$message, expected, fixed = TRUE)
   expect_false(grepl("cno", error$message, fixed = TRUE))

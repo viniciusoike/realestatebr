@@ -1,5 +1,6 @@
 # realestatebr 1.0.1.9000
 
+* `get_dataset("sinapi")` now provides monthly construction costs, indices, and percentage changes for Brazil, geographic regions, and states from IBGE SIDRA table 2296.
 * The CNO main table is now named `constructions` instead of `works`; its `work_name` and `work_category` columns are now `construction_name` and `construction_category`.
 * `query_dataset()` now provides lazy, joinable DuckDB access to annual CNO snapshots published as Parquet files on GitHub Releases.
 * `query_dataset()` now loads DuckDB's `httpfs` extension when accessing remote Parquet snapshots.

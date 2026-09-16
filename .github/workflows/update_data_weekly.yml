@@ -4,7 +4,7 @@ on:
   schedule:
     # Every Monday at 10 AM UTC (7 AM Brazil time)
     - cron: '0 10 * * 1'
-    # 1st of each month at 11 AM UTC — ensures BIS RPPI (30-day cue) is caught monthly
+    # 1st of each month at 11 AM UTC — catches datasets with 30-day cues
     - cron: '0 11 1 * *'
   workflow_dispatch:
     inputs:

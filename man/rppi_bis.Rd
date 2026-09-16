@@ -179,7 +179,8 @@ Other datasets:
 \code{\link{cno}},
 \code{\link{fgv_ibre}},
 \code{\link{rppi}},
-\code{\link{secovi}}
+\code{\link{secovi}},
+\code{\link{sinapi}}
 }
 \concept{datasets}
 \keyword{datasets}
