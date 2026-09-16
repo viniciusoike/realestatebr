@@ -14,7 +14,7 @@
 #'   options). Each dataset has its own help topic documenting tables and
 #'   columns: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
 #'   \link{bcb_series}, \link{fgv_ibre}, \link{rppi}, \link{rppi_bis},
-#'   and \link{secovi}.
+#'   \link{secovi}, and \link{sinapi}.
 #' @param table Character. Specific table within a multi-table dataset. See
 #'   \code{\link{get_dataset_info}} for available tables per dataset.
 #' @param source Character. Data source preference:
@@ -50,7 +50,7 @@
 #'   For table and column documentation of each dataset, see the dataset
 #'   help topics: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
 #'   \link{bcb_series}, \link{fgv_ibre}, \link{rppi}, \link{rppi_bis},
-#'   \link{secovi}.
+#'   \link{secovi}, and \link{sinapi}.
 #'
 #' @export
 get_dataset <- function(

@@ -11,7 +11,7 @@ get_dataset(name, table = NULL, source = "auto", quiet = FALSE)
 options). Each dataset has its own help topic documenting tables and
 columns: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
 \link{bcb_series}, \link{fgv_ibre}, \link{rppi}, \link{rppi_bis},
-and \link{secovi}.}
+\link{secovi}, and \link{sinapi}.}
 
 \item{table}{Character. Specific table within a multi-table dataset. See
 \code{\link{get_dataset_info}} for available tables per dataset.}
@@ -61,5 +61,5 @@ bcb_recent <- dplyr::filter(bcb_data, date >= as.Date("2020-01-01"))
 For table and column documentation of each dataset, see the dataset
 help topics: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
 \link{bcb_series}, \link{fgv_ibre}, \link{rppi}, \link{rppi_bis},
-\link{secovi}.
+\link{secovi}, and \link{sinapi}.
 }

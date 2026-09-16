@@ -170,6 +170,13 @@ get_required_columns <- function(dataset_name) {
     "b3_stocks" = c("date", "ticker", "close_price"),
     "fgv_indicators" = c("date", "indicator", "value"),
     "secovi" = c("date", "category", "variable", "name", "value"),
+    "sinapi" = c(
+      "date",
+      "geography_type",
+      "geography_code",
+      "variable",
+      "value"
+    ),
     "bis_selected" = c("date", "country", "value"),
     "cbic" = c("date", "indicator", "value"),
     "property_records" = c("date", "state", "transactions"),
@@ -186,7 +193,8 @@ get_required_columns <- function(dataset_name) {
 #'
 get_mixed_unit_columns <- function(dataset_name) {
   mixed_unit_columns <- list(
-    "secovi" = "value"
+    "secovi" = "value",
+    "sinapi" = "value"
   )
 
   return(mixed_unit_columns[[dataset_name]])
