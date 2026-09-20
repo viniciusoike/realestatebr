@@ -4,6 +4,12 @@
 # dropping internal agent docs (AGENTS.md, CLAUDE.md, ...) before the site
 # build, because pkgdown renders every root-level .md into the published
 # site, sitemap and search index (r-lib/pkgdown#2959).
+#
+# The pkgdown job grants page-deployment permissions explicitly: GitHub only
+# allows the called workflow to keep or narrow the caller's GITHUB_TOKEN
+# permissions, never elevate them. A workflow-level `permissions: read-all`
+# does NOT work here (the deploy step inside the reusable workflow would be
+# capped to read and the run fails at startup); only job-level grants do.
 on:
   push:
     branches: [main, master]
@@ -15,10 +21,12 @@ on:
 
 name: pkgdown
 
-permissions: read-all
-
 jobs:
   pkgdown:
     uses: viniciusoike/.github/.github/workflows/pkgdown.yml@main
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     with:
       internal_md_docs: "CLAUDE.md AGENTS.md"
