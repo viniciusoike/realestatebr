@@ -10,8 +10,8 @@ get_dataset(name, table = NULL, source = "auto", quiet = FALSE)
 \item{name}{Character. Dataset name (see \code{\link{list_datasets}} for
 options). Each dataset has its own help topic documenting tables and
 columns: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
-\link{bcb_series}, \link{fgv_ibre}, \link{rppi}, \link{rppi_bis},
-and \link{secovi}.}
+\link{bcb_series}, \link{fgv_ibre}, \link{pim_pf_construction},
+\link{rppi}, \link{rppi_bis}, \link{secovi}, and \link{sinapi}.}
 
 \item{table}{Character. Specific table within a multi-table dataset. See
 \code{\link{get_dataset_info}} for available tables per dataset.}
@@ -60,6 +60,6 @@ bcb_recent <- dplyr::filter(bcb_data, date >= as.Date("2020-01-01"))
 \code{\link{clear_session_cache}} to drop the in-session memo.
 For table and column documentation of each dataset, see the dataset
 help topics: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
-\link{bcb_series}, \link{fgv_ibre}, \link{rppi}, \link{rppi_bis},
-\link{secovi}.
+\link{bcb_series}, \link{fgv_ibre}, \link{pim_pf_construction},
+\link{rppi}, \link{rppi_bis}, \link{secovi}, and \link{sinapi}.
 }
