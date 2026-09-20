@@ -105,44 +105,49 @@ link_pim_pf_construction <- function(old, current) {
   link_factor <- mean(current_overlap$value) / mean(old_overlap$value)
   historical <- old |>
     dplyr::filter(.data$date < link_start) |>
-    dplyr::mutate(
-      value = .data$value * link_factor,
-      source_table = pim_pf_old_table
-    )
+    dplyr::mutate(value = .data$value * link_factor)
   current <- current |>
-    dplyr::filter(.data$date >= link_start) |>
-    dplyr::mutate(source_table = pim_pf_current_table)
+    dplyr::filter(.data$date >= link_start)
 
-  data <- dplyr::bind_rows(historical, current) |>
-    dplyr::transmute(
-      date = .data$date,
+  dat <- dplyr::bind_rows(
+    `2294` = historical,
+    `8886` = current,
+    .id = "source_table"
+  ) |>
+    dplyr::mutate(
       variable = "construction_inputs_production_index",
       reference_period = "2022 average = 100",
-      source_table = .data$source_table,
-      value = .data$value
+      source_table = as.integer(.data$source_table)
     ) |>
+    dplyr::select(dplyr::all_of(c(
+      "date",
+      "variable",
+      "reference_period",
+      "source_table",
+      "value"
+    ))) |>
     dplyr::arrange(.data$date)
 
-  attr(data, "link_factor") <- link_factor
-  return(data)
+  attr(dat, "link_factor") <- link_factor
+  return(dat)
 }
 
-prepare_pim_pf_series <- function(data, expected_table) {
-  data <- dplyr::filter(
-    data,
+prepare_pim_pf_series <- function(dat, expected_table) {
+  dat <- dplyr::filter(
+    dat,
     .data$aggregate_id == as.character(expected_table),
     !is.na(.data$value)
   )
 
   return(tibble::tibble(
-    date = as.Date(paste0(data$period, "01"), format = "%Y%m%d"),
-    value = data$value
+    date = as.Date(paste0(dat$period, "01"), format = "%Y%m%d"),
+    value = dat$value
   ))
 }
 
-validate_pim_pf_construction <- function(data) {
+validate_pim_pf_construction <- function(dat) {
   validate_dataset(
-    data,
+    dat,
     dataset_name = "pim_pf_construction",
     required_cols = c(
       "date",
@@ -154,14 +159,14 @@ validate_pim_pf_construction <- function(data) {
     min_rows = 400
   )
 
-  if (anyDuplicated(data$date) > 0) {
+  if (anyDuplicated(dat$date) > 0) {
     cli::cli_abort("PIM-PF construction data contains duplicate months.")
   }
-  expected_dates <- seq(min(data$date), max(data$date), by = "month")
-  if (!identical(data$date, expected_dates)) {
+  expected_dates <- seq(min(dat$date), max(dat$date), by = "month")
+  if (!identical(dat$date, expected_dates)) {
     cli::cli_abort("PIM-PF construction data contains missing months.")
   }
-  if (any(data$value <= 0)) {
+  if (any(dat$value <= 0)) {
     cli::cli_abort("PIM-PF construction index must contain positive values.")
   }
 

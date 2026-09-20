@@ -43,9 +43,7 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
     }
 
     # ---- DATE VALIDATION ----
-    date_columns <- names(data)[sapply(data, function(x) {
-      inherits(x, "Date") || inherits(x, "POSIXt")
-    })]
+    date_columns <- names(data)[sapply(data, function(x) inherits(x, "Date") || inherits(x, "POSIXt"))]
     if (length(date_columns) > 0) {
       for (date_col in date_columns) {
         col_name <- paste0("valid_dates_", date_col)
@@ -63,7 +61,7 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
           }
           checks[[col_name]] <- (
             min_date >= earliest_valid_date &&
-              max_date <= (Sys.Date() + 365) # Allow up to 1 year in future
+            max_date <= (Sys.Date() + 365)  # Allow up to 1 year in future
           )
 
           # Check for date continuity (no huge gaps)
@@ -71,7 +69,7 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
             date_diff <- as.numeric(diff(sort(date_values)))
             max_gap <- max(date_diff, na.rm = TRUE)
             gap_name <- paste0("reasonable_gaps_", date_col)
-            checks[[gap_name]] <- max_gap <= 366 # Max 1 year gap
+            checks[[gap_name]] <- max_gap <= 366  # Max 1 year gap
           }
         }
       }
@@ -81,10 +79,7 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
     # Long-format datasets mix units in one value column, so column-wide
     # outlier and range checks do not apply; they get dataset-specific checks.
     numeric_columns <- names(data)[sapply(data, is.numeric)]
-    numeric_columns <- setdiff(
-      numeric_columns,
-      get_mixed_unit_columns(dataset_name)
-    )
+    numeric_columns <- setdiff(numeric_columns, get_mixed_unit_columns(dataset_name))
     if (length(numeric_columns) > 0) {
       for (num_col in numeric_columns) {
         col_values <- data[[num_col]][!is.na(data[[num_col]])]
@@ -92,8 +87,7 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
         if (length(col_values) > 0) {
           # Check for extreme outliers
           outlier_name <- paste0("outliers_", num_col)
-          if (length(col_values) >= 10) {
-            # Need sufficient data for outlier detection
+          if (length(col_values) >= 10) {  # Need sufficient data for outlier detection
             Q1 <- quantile(col_values, 0.25, na.rm = TRUE)
             Q3 <- quantile(col_values, 0.75, na.rm = TRUE)
             IQR <- Q3 - Q1
@@ -102,15 +96,11 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
 
             outliers <- sum(col_values < lower_bound | col_values > upper_bound)
             outlier_pct <- outliers / length(col_values)
-            checks[[outlier_name]] <- outlier_pct < 0.05 # Less than 5% outliers
+            checks[[outlier_name]] <- outlier_pct < 0.05  # Less than 5% outliers
           }
 
           # Check for reasonable ranges for specific variables
-          range_check <- check_variable_ranges(
-            num_col,
-            col_values,
-            dataset_name
-          )
+          range_check <- check_variable_ranges(num_col, col_values, dataset_name)
           if (!is.null(range_check)) {
             range_name <- paste0("range_", num_col)
             checks[[range_name]] <- range_check
@@ -123,13 +113,14 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
 
     # Check for excessive missing data
     missing_pct <- sapply(data, function(x) sum(is.na(x)) / length(x))
-    checks$acceptable_missing <- all(missing_pct < 0.5) # Less than 50% missing per column
+    checks$acceptable_missing <- all(missing_pct < 0.5)  # Less than 50% missing per column
 
     # Check for duplicate rows
     if (nrow(data) > 1) {
       duplicate_rows <- sum(duplicated(data))
-      checks$no_excessive_duplicates <- duplicate_rows < (nrow(data) * 0.1) # Less than 10% duplicates
+      checks$no_excessive_duplicates <- duplicate_rows < (nrow(data) * 0.1)  # Less than 10% duplicates
     }
+
   } else if (is.list(data)) {
     # For list data (like RPPI or ABRAINC), validate each component
     checks$valid_list_structure <- is.list(data) && length(names(data)) > 0
@@ -138,15 +129,8 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
     for (element_name in names(data)) {
       element_data <- data[[element_name]]
       if (is.data.frame(element_data)) {
-        element_checks <- validate_dataset(
-          element_data,
-          paste0(dataset_name, "_", element_name)
-        )
-        checks[[paste0(
-          "element_",
-          element_name,
-          "_valid"
-        )]] <- element_checks$overall_passed
+        element_checks <- validate_dataset(element_data, paste0(dataset_name, "_", element_name))
+        checks[[paste0("element_", element_name, "_valid")]] <- element_checks$overall_passed
       }
     }
   }
@@ -173,12 +157,8 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
   if (validation_result$passed) {
     cli::cli_alert_success("✓ {dataset_name} passed all validation checks")
   } else {
-    failed_checks <- names(checks)[sapply(checks, function(x) {
-      is.logical(x) && !x
-    })]
-    cli::cli_alert_warning(
-      "⚠ {dataset_name} failed {length(failed_checks)} checks: {paste(failed_checks, collapse=', ')}"
-    )
+    failed_checks <- names(checks)[sapply(checks, function(x) is.logical(x) && !x)]
+    cli::cli_alert_warning("⚠ {dataset_name} failed {length(failed_checks)} checks: {paste(failed_checks, collapse=', ')}")
   }
 
   return(validation_result)
@@ -196,20 +176,11 @@ get_required_columns <- function(dataset_name) {
     "fgv_indicators" = c("date", "indicator", "value"),
     "secovi" = c("date", "category", "variable", "name", "value"),
     "sinapi" = c(
-      "date",
-      "geography_type",
-      "geography_code",
-      "payroll_relief",
-      "variable",
-      "unit",
-      "value"
+      "date", "geography_type", "geography_code", "payroll_relief",
+      "variable", "unit", "value"
     ),
     "pim_pf_construction" = c(
-      "date",
-      "variable",
-      "reference_period",
-      "source_table",
-      "value"
+      "date", "variable", "reference_period", "source_table", "value"
     ),
     "bis_selected" = c("date", "country", "value"),
     "cbic" = c("date", "indicator", "value"),
@@ -276,7 +247,7 @@ check_variable_ranges <- function(column_name, values, dataset_name) {
     }
   }
 
-  return(NULL) # No specific range check
+  return(NULL)  # No specific range check
 }
 
 #' Dataset-Specific Validation
@@ -289,16 +260,16 @@ validate_dataset_specific <- function(data, dataset_name) {
   if (dataset_name == "bcb_series") {
     # BCB series should have reasonable series codes
     if ("series_code" %in% names(data)) {
-      specific_checks$valid_series_codes <- all(
-        nchar(as.character(data$series_code)) > 0
-      )
+      specific_checks$valid_series_codes <- all(nchar(as.character(data$series_code)) > 0)
     }
+
   } else if (dataset_name == "b3_stocks") {
     # B3 stocks should have valid ticker symbols
     if ("ticker" %in% names(data)) {
       tickers <- unique(data$ticker)
-      specific_checks$valid_tickers <- all(nchar(as.character(tickers)) >= 4) # Brazilian tickers are usually 4+ chars
+      specific_checks$valid_tickers <- all(nchar(as.character(tickers)) >= 4)  # Brazilian tickers are usually 4+ chars
     }
+
   } else if (dataset_name == "secovi") {
     # Every registered indicator is published, once per series and month
     expected_variables <- realestatebr:::secovi_metadata[["label"]]
@@ -316,12 +287,13 @@ validate_dataset_specific <- function(data, dataset_name) {
       mean
     )
     specific_checks$series_mostly_complete <- all(missing_by_series < 0.05)
+
   } else if (dataset_name == "rppi_sale" || dataset_name == "rppi_rent") {
     # RPPI data should have reasonable geographic coverage
     if ("city" %in% names(data) || "region" %in% names(data)) {
-      geo_col <- if ("city" %in% names(data)) "city" else "region"
+      geo_col <- if("city" %in% names(data)) "city" else "region"
       unique_regions <- length(unique(data[[geo_col]]))
-      specific_checks$adequate_geographic_coverage <- unique_regions >= 3 # At least 3 regions/cities
+      specific_checks$adequate_geographic_coverage <- unique_regions >= 3  # At least 3 regions/cities
     }
   }
 
@@ -372,16 +344,11 @@ generate_validation_report <- function(validation_results) {
   total_datasets <- length(validation_results)
   passed_datasets <- sum(sapply(validation_results, function(x) x$passed))
 
-  report_lines <- c(
-    report_lines,
+  report_lines <- c(report_lines,
     paste0("- Total datasets validated: ", total_datasets),
     paste0("- Datasets passed: ", passed_datasets),
     paste0("- Datasets failed: ", total_datasets - passed_datasets),
-    paste0(
-      "- Overall pass rate: ",
-      round(passed_datasets / total_datasets * 100, 1),
-      "%"
-    ),
+    paste0("- Overall pass rate: ", round(passed_datasets / total_datasets * 100, 1), "%"),
     ""
   )
 
@@ -390,30 +357,19 @@ generate_validation_report <- function(validation_results) {
 
   for (result in validation_results) {
     status_icon <- if (result$passed) "✅" else "❌"
-    report_lines <- c(
-      report_lines,
+    report_lines <- c(report_lines,
       paste0("### ", result$dataset, " ", status_icon),
       paste0("- Validation time: ", result$timestamp),
-      paste0(
-        "- Checks passed: ",
-        result$summary$passed_checks,
-        "/",
-        result$summary$total_checks,
-        " (",
-        result$summary$pass_rate,
-        "%)"
-      ),
+      paste0("- Checks passed: ", result$summary$passed_checks, "/", result$summary$total_checks,
+             " (", result$summary$pass_rate, "%)"),
       ""
     )
 
     # Show failed checks if any
     if (!result$passed) {
-      failed_checks <- names(result$checks)[sapply(result$checks, function(x) {
-        is.logical(x) && !x
-      })]
+      failed_checks <- names(result$checks)[sapply(result$checks, function(x) is.logical(x) && !x)]
       if (length(failed_checks) > 0) {
-        report_lines <- c(
-          report_lines,
+        report_lines <- c(report_lines,
           "**Failed checks:**",
           paste0("- ", failed_checks),
           ""

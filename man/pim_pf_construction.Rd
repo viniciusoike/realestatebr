@@ -42,7 +42,7 @@ their full 2012 overlap.
 \seealso{
 \code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
-Other datasets: 
+Other datasets:
 \code{\link{abecip}},
 \code{\link{abrainc}},
 \code{\link{bcb_realestate}},

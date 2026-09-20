@@ -92,34 +92,36 @@ get_sinapi <- function(quiet = FALSE, max_retries = 3L) {
 }
 
 clean_sinapi <- function(with_relief, without_relief) {
-  with_relief$payroll_relief <- TRUE
-  without_relief$payroll_relief <- FALSE
-
-  data <- dplyr::bind_rows(with_relief, without_relief)
-  variable <- unname(sinapi_variable_names[data$variable_id])
+  dat <- dplyr::bind_rows(
+    with_relief = with_relief,
+    without_relief = without_relief,
+    .id = "payroll_relief"
+  )
+  dat$payroll_relief <- dat$payroll_relief == "with_relief"
+  variable <- unname(sinapi_variable_names[dat$variable_id])
   geography_type <- unname(
-    sinapi_geography_names[data$geography_level]
+    sinapi_geography_names[dat$geography_level]
   )
 
   if (anyNA(variable)) {
-    unknown <- unique(data$variable_id[is.na(variable)])
+    unknown <- unique(dat$variable_id[is.na(variable)])
     cli::cli_abort("Unknown SINAPI variable ID: {.val {unknown}}.")
   }
   if (anyNA(geography_type)) {
-    unknown <- unique(data$geography_level[is.na(geography_type)])
+    unknown <- unique(dat$geography_level[is.na(geography_type)])
     cli::cli_abort("Unknown SINAPI geography level: {.val {unknown}}.")
   }
 
-  data <- tibble::tibble(
-    date = as.Date(paste0(data$period, "01"), format = "%Y%m%d"),
+  dat <- tibble::tibble(
+    date = as.Date(paste0(dat$period, "01"), format = "%Y%m%d"),
     geography_type = geography_type,
-    geography_code = data$geography_code,
-    geography_name = data$geography_name,
-    payroll_relief = data$payroll_relief,
+    geography_code = dat$geography_code,
+    geography_name = dat$geography_name,
+    payroll_relief = dat$payroll_relief,
     variable = variable,
-    variable_label = data$variable_name,
-    unit = data$unit,
-    value = data$value
+    variable_label = dat$variable_name,
+    unit = dat$unit,
+    value = dat$value
   ) |>
     dplyr::filter(!is.na(.data$value)) |>
     dplyr::arrange(
@@ -130,12 +132,12 @@ clean_sinapi <- function(with_relief, without_relief) {
       .data$variable
     )
 
-  return(data)
+  return(dat)
 }
 
-validate_sinapi <- function(data) {
+validate_sinapi <- function(dat) {
   validate_dataset(
-    data,
+    dat,
     dataset_name = "sinapi",
     required_cols = c(
       "date",
@@ -157,10 +159,10 @@ validate_sinapi <- function(data) {
     "payroll_relief",
     "variable"
   )
-  if (any(duplicated(data[keys]))) {
+  if (any(duplicated(dat[keys]))) {
     cli::cli_abort("SINAPI data contains duplicate observation keys.")
   }
-  if (!setequal(unique(data$payroll_relief), c(TRUE, FALSE))) {
+  if (!setequal(unique(dat$payroll_relief), c(TRUE, FALSE))) {
     cli::cli_abort("SINAPI data must contain both payroll-relief variants.")
   }
 
