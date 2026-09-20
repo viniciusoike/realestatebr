@@ -43,6 +43,10 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          # CRAN switched macOS (R 4.6) binaries to zstd compression; the
+          # "stable" pak build's pkgdepends cannot extract zstd archives,
+          # so use the devel build, which supports them.
+          pak-version: devel
           extra-packages: any::rcmdcheck
           needs: check
 
