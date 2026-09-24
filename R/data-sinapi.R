@@ -15,7 +15,7 @@
 #'
 #' @details
 #' * **Source**: IBGE - Sistema Nacional de Pesquisa de Custos e Índices da Construção Civil
-#' * **URL**: <https://sidra.ibge.gov.br/tabela/2296>
+#' * **URL**: <https://apisidra.ibge.gov.br/desctabapi.aspx?c=2296>
 #' * **Geography**: Brazil, geographic regions, and states
 #' * **Frequency**: monthly
 #' * **Coverage**: March 1986-present (varies by variable and payroll-relief treatment)
