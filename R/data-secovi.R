@@ -16,7 +16,7 @@
 #'
 #' @details
 #' * **Source**: SECOVI-SP - Sindicato da Habitação
-#' * **URL**: <https://www.secovi.com.br>
+#' * **URL**: <https://indiceseconomicos.secovi.com.br>
 #' * **Geography**: São Paulo
 #' * **Frequency**: monthly
 #' * **Coverage**: 2004-present (varies by category)

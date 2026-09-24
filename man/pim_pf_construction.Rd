@@ -18,7 +18,7 @@ Retrieve this dataset with \code{\link[=get_dataset]{get_dataset()}} using the n
 \details{
 \itemize{
 \item \strong{Source}: IBGE - Pesquisa Industrial Mensal - Produção Física
-\item \strong{URL}: \url{https://sidra.ibge.gov.br/tabela/8886}
+\item \strong{URL}: \url{https://apisidra.ibge.gov.br/desctabapi.aspx?c=8886}
 \item \strong{Geography}: Brazil
 \item \strong{Frequency}: monthly
 \item \strong{Coverage}: January 1991-present
@@ -42,7 +42,7 @@ their full 2012 overlap.
 \seealso{
 \code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
-Other datasets:
+Other datasets: 
 \code{\link{abecip}},
 \code{\link{abrainc}},
 \code{\link{bcb_realestate}},

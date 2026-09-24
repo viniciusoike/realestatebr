@@ -19,7 +19,7 @@ secovi_condo <- get_dataset("secovi", table = "condo")
 \details{
 \itemize{
 \item \strong{Source}: SECOVI-SP - Sindicato da Habitação
-\item \strong{URL}: \url{https://www.secovi.com.br}
+\item \strong{URL}: \url{https://indiceseconomicos.secovi.com.br}
 \item \strong{Geography}: São Paulo
 \item \strong{Frequency}: monthly
 \item \strong{Coverage}: 2004-present (varies by category)

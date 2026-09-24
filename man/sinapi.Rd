@@ -18,7 +18,7 @@ Retrieve this dataset with \code{\link[=get_dataset]{get_dataset()}} using the n
 \details{
 \itemize{
 \item \strong{Source}: IBGE - Sistema Nacional de Pesquisa de Custos e Índices da Construção Civil
-\item \strong{URL}: \url{https://sidra.ibge.gov.br/tabela/2296}
+\item \strong{URL}: \url{https://apisidra.ibge.gov.br/desctabapi.aspx?c=2296}
 \item \strong{Geography}: Brazil, geographic regions, and states
 \item \strong{Frequency}: monthly
 \item \strong{Coverage}: March 1986-present (varies by variable and payroll-relief treatment)
@@ -48,7 +48,7 @@ index variables.
 \seealso{
 \code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
-Other datasets:
+Other datasets: 
 \code{\link{abecip}},
 \code{\link{abrainc}},
 \code{\link{bcb_realestate}},

@@ -15,7 +15,7 @@
 #'
 #' @details
 #' * **Source**: IBGE - Pesquisa Industrial Mensal - Produção Física
-#' * **URL**: <https://sidra.ibge.gov.br/tabela/8886>
+#' * **URL**: <https://apisidra.ibge.gov.br/desctabapi.aspx?c=8886>
 #' * **Geography**: Brazil
 #' * **Frequency**: monthly
 #' * **Coverage**: January 1991-present
