@@ -51,21 +51,21 @@ count(fgv, name_series, name_simplified)
 #> # A tibble: 15 × 3
 #>    name_series                                             name_simplified     n
 #>    <chr>                                                   <chr>           <int>
-#>  1 ICST Com ajuste Sazonal - Índice de Confiança da Const… ic_cst            193
-#>  2 IE-CST Com ajuste Sazonal - Índice de Expectativas da … ie_cst            193
-#>  3 INCC - 1o Decendio                                      incc_1o_decend…   259
-#>  4 INCC - 2o Decendio                                      incc_2o_decend…   259
-#>  5 INCC - Brasil                                           incc_brasil       361
-#>  6 INCC - Brasil - DI                                      incc_brasil_di    360
-#>  7 INCC - Brasil-10                                        incc_brasil_10    361
-#>  8 INCC - Fechamento Mensal                                incc              361
-#>  9 ISA-CST Com ajuste Sazonal - Índice da Situação Atual … isa_cst           193
-#> 10 Sondagem da Construção – Nível de Utilização da Capaci… nuci              160
-#> 11 Índice de Variação de Aluguéis Residenciais (IVAR) - B… ivar_belo_hori…    91
-#> 12 Índice de Variação de Aluguéis Residenciais (IVAR) - M… ivar_brazil        91
-#> 13 Índice de Variação de Aluguéis Residenciais (IVAR) - P… ivar_porto_ale…    91
-#> 14 Índice de Variação de Aluguéis Residenciais (IVAR) - R… ivar_rio_de_ja…    91
-#> 15 Índice de Variação de Aluguéis Residenciais (IVAR) - S… ivar_sao_paulo     91
+#>  1 ICST Com ajuste Sazonal - Índice de Confiança da Const… ic_cst            194
+#>  2 IE-CST Com ajuste Sazonal - Índice de Expectativas da … ie_cst            194
+#>  3 INCC - 1o Decendio                                      incc_1o_decend…   261
+#>  4 INCC - 2o Decendio                                      incc_2o_decend…   260
+#>  5 INCC - Brasil                                           incc_brasil       362
+#>  6 INCC - Brasil - DI                                      incc_brasil_di    362
+#>  7 INCC - Brasil-10                                        incc_brasil_10    362
+#>  8 INCC - Fechamento Mensal                                incc              362
+#>  9 ISA-CST Com ajuste Sazonal - Índice da Situação Atual … isa_cst           194
+#> 10 Sondagem da Construção – Nível de Utilização da Capaci… nuci              161
+#> 11 Índice de Variação de Aluguéis Residenciais (IVAR) - B… ivar_belo_hori…    93
+#> 12 Índice de Variação de Aluguéis Residenciais (IVAR) - M… ivar_brazil        93
+#> 13 Índice de Variação de Aluguéis Residenciais (IVAR) - P… ivar_porto_ale…    93
+#> 14 Índice de Variação de Aluguéis Residenciais (IVAR) - R… ivar_rio_de_ja…    93
+#> 15 Índice de Variação de Aluguéis Residenciais (IVAR) - S… ivar_sao_paulo     93
 ```
 
 The plot below shows the confidence indicators of the construction

@@ -52,7 +52,9 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.1.9000" id="realestatebr-1019000">realestatebr 1.0.1.9000<a class="anchor" aria-label="anchor" href="#realestatebr-1019000"></a></h2>
-<ul><li>The CNO main table is now named <code>constructions</code> instead of <code>works</code>; its <code>work_name</code> and <code>work_category</code> columns are now <code>construction_name</code> and <code>construction_category</code>.</li>
+<ul><li>Added <code>get_dataset("pim_pf_construction")</code>, a linked monthly IBGE production index for construction inputs from January 1991.</li>
+<li>Added <code>get_dataset("sinapi")</code>, with monthly IBGE construction costs and indices by state, region, and Brazil, both with and without payroll-tax relief.</li>
+<li>The CNO main table is now named <code>constructions</code> instead of <code>works</code>; its <code>work_name</code> and <code>work_category</code> columns are now <code>construction_name</code> and <code>construction_category</code>.</li>
 <li>
 <code><a href="../reference/query_dataset.html">query_dataset()</a></code> now provides lazy, joinable DuckDB access to annual CNO snapshots published as Parquet files on GitHub Releases.</li>
 <li>

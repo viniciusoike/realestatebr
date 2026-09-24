@@ -31,12 +31,16 @@ Table and column documentation for each dataset
   : National Registry of Construction Works
 - [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md)
   : FGV IBRE Real Estate Indicators
+- [`pim_pf_construction`](https://viniciusoike.github.io/realestatebr/reference/pim_pf_construction.md)
+  : PIM-PF Construction-input Production Index
 - [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md)
   : Brazilian Residential Property Price Indices
 - [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md)
   : BIS Residential Property Price Indices
 - [`secovi`](https://viniciusoike.github.io/realestatebr/reference/secovi.md)
   : SECOVI-SP Real Estate Market Data
+- [`sinapi`](https://viniciusoike.github.io/realestatebr/reference/sinapi.md)
+  : SINAPI Construction Costs and Indices
 
 ## Bundled tables
 

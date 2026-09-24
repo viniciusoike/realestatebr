@@ -80,9 +80,11 @@ ds <- list_datasets()
 | bcb_series | BCB Economic Series | Banco Central do Brasil - SGS | core, primary, secondary, tertiary, full | varies (daily/monthly/quarterly) |
 | cno | National Registry of Construction Works | Receita Federal do Brasil - Cadastro Nacional de Obras | constructions, areas, cnaes, responsibilities | annual snapshots |
 | fgv_ibre | FGV IBRE Real Estate Indicators | FGV IBRE | (single table) | monthly |
+| pim_pf_construction | PIM-PF Construction-input Production Index | IBGE - Pesquisa Industrial Mensal - Produção Física | (single table) | monthly |
 | rppi | Brazilian Residential Property Price Indices | Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP) | fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp, sale, rent, all | monthly |
 | rppi_bis | BIS Residential Property Price Indices | Bank for International Settlements | selected, detailed_monthly, detailed_quarterly, detailed_annual, detailed_halfyearly | quarterly |
 | secovi | SECOVI-SP Real Estate Market Data | SECOVI-SP - Sindicato da Habitação | condo, rent, launch, sale | monthly |
+| sinapi | SINAPI Construction Costs and Indices | IBGE - Sistema Nacional de Pesquisa de Custos e Índices da Construção Civil | (single table) | monthly |
 
 - **[`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)**
   shows available tables and metadata for a given dataset.

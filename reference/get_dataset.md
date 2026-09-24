@@ -25,10 +25,12 @@ get_dataset(name, table = NULL, source = "auto", quiet = FALSE)
   [bcb_realestate](https://viniciusoike.github.io/realestatebr/reference/bcb_realestate.md),
   [bcb_series](https://viniciusoike.github.io/realestatebr/reference/bcb_series.md),
   [fgv_ibre](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md),
+  [pim_pf_construction](https://viniciusoike.github.io/realestatebr/reference/pim_pf_construction.md),
   [rppi](https://viniciusoike.github.io/realestatebr/reference/rppi.md),
   [rppi_bis](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md),
+  [secovi](https://viniciusoike.github.io/realestatebr/reference/secovi.md),
   and
-  [secovi](https://viniciusoike.github.io/realestatebr/reference/secovi.md).
+  [sinapi](https://viniciusoike.github.io/realestatebr/reference/sinapi.md).
 
 - table:
 
@@ -90,9 +92,12 @@ dataset, see the dataset help topics:
 [bcb_realestate](https://viniciusoike.github.io/realestatebr/reference/bcb_realestate.md),
 [bcb_series](https://viniciusoike.github.io/realestatebr/reference/bcb_series.md),
 [fgv_ibre](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md),
+[pim_pf_construction](https://viniciusoike.github.io/realestatebr/reference/pim_pf_construction.md),
 [rppi](https://viniciusoike.github.io/realestatebr/reference/rppi.md),
 [rppi_bis](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md),
-[secovi](https://viniciusoike.github.io/realestatebr/reference/secovi.md).
+[secovi](https://viniciusoike.github.io/realestatebr/reference/secovi.md),
+and
+[sinapi](https://viniciusoike.github.io/realestatebr/reference/sinapi.md).
 
 ## Examples
 

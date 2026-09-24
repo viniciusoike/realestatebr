@@ -1,66 +1,58 @@
-# SECOVI-SP Real Estate Market Data
+# PIM-PF Construction-input Production Index
 
-São Paulo real estate market indicators including condominium fees,
-rentals, launches, and sales.
+Linked monthly physical-production index for inputs typically used in
+construction.
 
 Retrieve this dataset with
 [`get_dataset()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset.md)
-using the name `"secovi"`.
+using the name `"pim_pf_construction"`.
 
-    secovi <- get_dataset("secovi")
-    secovi_condo <- get_dataset("secovi", table = "condo")
+    pim_pf_construction <- get_dataset("pim_pf_construction")
 
 ## Source
 
-SECOVI-SP - Sindicato da Habitação
+IBGE - Pesquisa Industrial Mensal - Produção Física
 
 ## Details
 
-- **Source**: SECOVI-SP - Sindicato da Habitação
+- **Source**: IBGE - Pesquisa Industrial Mensal - Produção Física
 
-- **URL**: <https://www.secovi.com.br>
+- **URL**: <https://sidra.ibge.gov.br/tabela/8886>
 
-- **Geography**: São Paulo
+- **Geography**: Brazil
 
 - **Frequency**: monthly
 
-- **Coverage**: 2004-present (varies by category)
+- **Coverage**: January 1991-present
 
 - **Access mode**: `materialized`
 
-- **Tables**: `"condo"`, `"rent"`, `"launch"`, `"sale"` (default:
-  `"all"`)
-
-Regional classifications are specific to the São Paulo metropolitan
-area. SECOVI no longer publishes indicators 25 (`launches_rmsp`) and 118
-(`sales_rmsp`), so they are not returned.
+The 1991-2011 series from SIDRA table 2294 is linked to table 8886 using
+their full 2012 overlap.
 
 ## Columns
 
-All tables share the structure below; the `table` argument filters which
-series are returned.
-
 - date:
 
-  Reference month.
-
-- category:
-
-  Market segment: condo, rent, launch, or sale.
+  First day of the reference month.
 
 - variable:
 
-  Indicator within the category (e.g. icon, default_condominio,
-  acao_locaticia).
+  Series identifier: construction_inputs_production_index.
 
-- name:
+- reference_period:
 
-  Breakdown dimension of the indicator (region, property type, or
-  total).
+  Reference period of the linked index: 2022 average = 100.
+
+- source_table:
+
+  SIDRA table supplying the observation: 2294 before 2012 and 8886 from
+  2012 onward.
 
 - value:
 
-  Indicator value; unit varies by variable.
+  Linked physical-production index. Values before 2012 are rescaled by
+  the ratio of the two source series' 2012 annual means.
 
 ## See also
 
@@ -76,7 +68,7 @@ Other datasets:
 [`bcb_series`](https://viniciusoike.github.io/realestatebr/reference/bcb_series.md),
 [`cno`](https://viniciusoike.github.io/realestatebr/reference/cno.md),
 [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md),
-[`pim_pf_construction`](https://viniciusoike.github.io/realestatebr/reference/pim_pf_construction.md),
 [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md),
 [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md),
+[`secovi`](https://viniciusoike.github.io/realestatebr/reference/secovi.md),
 [`sinapi`](https://viniciusoike.github.io/realestatebr/reference/sinapi.md)
