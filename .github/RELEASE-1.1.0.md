@@ -34,10 +34,10 @@ reliability improvements before the planned 2.0.0 schema migration.
 - [x] Change `DESCRIPTION` from `1.0.1.9000` to `1.1.0`.
 - [x] Finalize the `NEWS.md` entry.
 - [x] Run the CRAN submission checks and prepare `cran-comments.md`.
-- [ ] Tag the package release as `v1.1.0`.
-- [ ] Create the GitHub release and link the package release to the CNO
+- [x] Tag the package release as `v1.1.0`.
+- [x] Create the GitHub release and link the package release to the CNO
       snapshot assets.
-- [ ] Bump `DESCRIPTION` to `1.1.0.9000` after release.
+- [x] Bump `DESCRIPTION` to `1.1.0.9000` after release.
 
 ## Deferred to 2.0.0
 
