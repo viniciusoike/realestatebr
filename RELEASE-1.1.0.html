@@ -47,7 +47,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>realestatebr 1.1.0 release checklist</h1>
-      <small class="dont-index">Source: <a href="https://github.com/viniciusoike/realestatebr/blob/cno-v2-latest/.github/RELEASE-1.1.0.md" class="external-link"><code>.github/RELEASE-1.1.0.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/viniciusoike/realestatebr/blob/main/.github/RELEASE-1.1.0.md" class="external-link"><code>.github/RELEASE-1.1.0.md</code></a></small>
     </div>
 
 <div id="realestatebr-110-release-checklist" class="section level1">
@@ -55,29 +55,29 @@
 <p>This release is additive. It groups the CNO query interface, validated CNO Parquet snapshots, the IBGE SINAPI and PIM-PF datasets, and compatible reliability improvements before the planned 2.0.0 schema migration.</p>
 <div class="section level2">
 <h2 id="scope">Scope<a class="anchor" aria-label="anchor" href="#scope"></a></h2>
-<ul class="task-list"><li><label><input type="checkbox">Confirm the package version is <code>1.1.0</code> at release time.</label></li>
-<li><label><input type="checkbox">Keep <code>date_start</code>, <code>date_end</code>, and <code>...</code> accepted by <code><a href="reference/get_dataset.html">get_dataset()</a></code>.</label></li>
-<li><label><input type="checkbox">Confirm that the CNO interface uses <code>query_dataset("cno")</code> and that <code><a href="reference/get_dataset.html">get_dataset()</a></code> continues to reject lazy datasets with a clear message.</label></li>
-<li><label><input type="checkbox">Validate the CNO snapshot manifest, schema hash, row counts, and source attribution.</label></li>
-<li><label><input type="checkbox">Publish or refresh the immutable CNO Parquet release and its latest pointer.</label></li>
-<li><label><input type="checkbox">Ensure the package registry points to the intended CNO snapshot.</label></li>
-<li><label><input type="checkbox">Confirm that <code>sinapi.rds</code> and <code>pim_pf_construction.rds</code> are published in the <code>cache-latest</code> release.</label></li>
+<ul class="task-list"><li><label><input type="checkbox" checked>Confirm the package version is <code>1.1.0</code> at release time.</label></li>
+<li><label><input type="checkbox" checked>Keep <code>date_start</code>, <code>date_end</code>, and <code>...</code> accepted by <code><a href="reference/get_dataset.html">get_dataset()</a></code>.</label></li>
+<li><label><input type="checkbox" checked>Confirm that the CNO interface uses <code>query_dataset("cno")</code> and that <code><a href="reference/get_dataset.html">get_dataset()</a></code> continues to reject lazy datasets with a clear message.</label></li>
+<li><label><input type="checkbox" checked>Validate the CNO snapshot manifest, schema hash, row counts, and source attribution.</label></li>
+<li><label><input type="checkbox" checked>Publish or refresh the immutable CNO Parquet release and its latest pointer. Published as <code>cno-2026-09-24</code>, with <code>cno-v2-latest</code> pointing to it.</label></li>
+<li><label><input type="checkbox" checked>Ensure the package registry points to the intended CNO snapshot.</label></li>
+<li><label><input type="checkbox" checked>Confirm that <code>sinapi.rds</code> and <code>pim_pf_construction.rds</code> are published in the <code>cache-latest</code> release.</label></li>
 </ul></div>
 <div class="section level2">
 <h2 id="verification">Verification<a class="anchor" aria-label="anchor" href="#verification"></a></h2>
-<ul class="task-list"><li><label><input type="checkbox">Run focused <code><a href="reference/get_dataset.html">get_dataset()</a></code> and <code><a href="reference/query_dataset.html">query_dataset()</a></code> tests.</label></li>
-<li><label><input type="checkbox">Run the complete test suite.</label></li>
-<li><label><input type="checkbox">Regenerate documentation with <code>devtools::document()</code>.</label></li>
-<li><label><input type="checkbox">Run <code><a href="https://pkgdown.r-lib.org/reference/check_pkgdown.html" class="external-link">pkgdown::check_pkgdown()</a></code>.</label></li>
-<li><label><input type="checkbox">Run <code>devtools::check()</code>.</label></li>
-<li><label><input type="checkbox">Run <code>git diff --check</code> and review the generated NEWS and reference pages.</label></li>
-<li><label><input type="checkbox">Test a remote filtered CNO query against the published Parquet snapshot.</label></li>
+<ul class="task-list"><li><label><input type="checkbox" checked>Run focused <code><a href="reference/get_dataset.html">get_dataset()</a></code> and <code><a href="reference/query_dataset.html">query_dataset()</a></code> tests.</label></li>
+<li><label><input type="checkbox" checked>Run the complete test suite.</label></li>
+<li><label><input type="checkbox" checked>Regenerate documentation with <code>devtools::document()</code>.</label></li>
+<li><label><input type="checkbox" checked>Run <code><a href="https://pkgdown.r-lib.org/reference/check_pkgdown.html" class="external-link">pkgdown::check_pkgdown()</a></code>.</label></li>
+<li><label><input type="checkbox" checked>Run <code>devtools::check()</code>.</label></li>
+<li><label><input type="checkbox" checked>Run <code>git diff --check</code> and review the generated NEWS and reference pages.</label></li>
+<li><label><input type="checkbox" checked>Test a remote filtered CNO query against the published Parquet snapshot.</label></li>
 </ul></div>
 <div class="section level2">
 <h2 id="release">Release<a class="anchor" aria-label="anchor" href="#release"></a></h2>
 <ul class="task-list"><li><label><input type="checkbox" checked>Change <code>DESCRIPTION</code> from <code>1.0.1.9000</code> to <code>1.1.0</code>.</label></li>
 <li><label><input type="checkbox" checked>Finalize the <code>NEWS.md</code> entry.</label></li>
-<li><label><input type="checkbox">Run the CRAN submission checks and prepare <code>cran-comments.md</code>.</label></li>
+<li><label><input type="checkbox" checked>Run the CRAN submission checks and prepare <code>cran-comments.md</code>.</label></li>
 <li><label><input type="checkbox">Tag the package release as <code>v1.1.0</code>.</label></li>
 <li><label><input type="checkbox">Create the GitHub release and link the package release to the CNO snapshot assets.</label></li>
 <li><label><input type="checkbox">Bump <code>DESCRIPTION</code> to <code>1.1.0.9000</code> after release.</label></li>

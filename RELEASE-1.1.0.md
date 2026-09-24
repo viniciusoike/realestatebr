@@ -20,7 +20,8 @@ Validate the CNO snapshot manifest, schema hash, row counts, and source
 attribution.
 
 Publish or refresh the immutable CNO Parquet release and its latest
-pointer.
+pointer. Published as `cno-2026-09-24`, with `cno-v2-latest` pointing to
+it.
 
 Ensure the package registry points to the intended CNO snapshot.
 
