@@ -54,8 +54,13 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
           min_date <- min(date_values)
           max_date <- max(date_values)
 
+          earliest_valid_date <- if (dataset_name == "sinapi") {
+            as.Date("1986-01-01")
+          } else {
+            as.Date("1990-01-01")
+          }
           checks[[col_name]] <- (
-            min_date >= as.Date("1990-01-01") &&
+            min_date >= earliest_valid_date &&
             max_date <= (Sys.Date() + 365)  # Allow up to 1 year in future
           )
 
@@ -170,6 +175,13 @@ get_required_columns <- function(dataset_name) {
     "b3_stocks" = c("date", "ticker", "close_price"),
     "fgv_indicators" = c("date", "indicator", "value"),
     "secovi" = c("date", "category", "variable", "name", "value"),
+    "sinapi" = c(
+      "date", "geography_type", "geography_code", "payroll_relief",
+      "variable", "unit", "value"
+    ),
+    "pim_pf_construction" = c(
+      "date", "variable", "reference_period", "source_table", "value"
+    ),
     "bis_selected" = c("date", "country", "value"),
     "cbic" = c("date", "indicator", "value"),
     "property_records" = c("date", "state", "transactions"),
@@ -186,7 +198,8 @@ get_required_columns <- function(dataset_name) {
 #'
 get_mixed_unit_columns <- function(dataset_name) {
   mixed_unit_columns <- list(
-    "secovi" = "value"
+    "secovi" = "value",
+    "sinapi" = "value"
   )
 
   return(mixed_unit_columns[[dataset_name]])

@@ -1,5 +1,7 @@
 # realestatebr 1.0.1.9000
 
+* Added `get_dataset("pim_pf_construction")`, a linked monthly IBGE production index for construction inputs from January 1991.
+* Added `get_dataset("sinapi")`, with monthly IBGE construction costs and indices by state, region, and Brazil, both with and without payroll-tax relief.
 * The CNO main table is now named `constructions` instead of `works`; its `work_name` and `work_category` columns are now `construction_name` and `construction_category`.
 * `query_dataset()` now provides lazy, joinable DuckDB access to annual CNO snapshots published as Parquet files on GitHub Releases.
 * `query_dataset()` now loads DuckDB's `httpfs` extension when accessing remote Parquet snapshots.

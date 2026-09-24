@@ -211,6 +211,58 @@ datasets:
     default_table: "all"
     translation_notes: "Regional classifications are specific to the São Paulo metropolitan area. SECOVI no longer publishes indicators 25 (`launches_rmsp`) and 118 (`sales_rmsp`), so they are not returned."
     
+  sinapi:
+    name: "SINAPI Construction Costs and Indices"
+    name_pt: "Custos e Índices da Construção Civil SINAPI"
+    description: "Monthly construction costs, cost indices, and percentage changes, with and without payroll-tax relief"
+    source: "IBGE - Sistema Nacional de Pesquisa de Custos e Índices da Construção Civil"
+    url: "https://sidra.ibge.gov.br/tabela/2296"
+    geography: "Brazil, geographic regions, and states"
+    frequency: "monthly"
+    coverage: "March 1986-present (varies by variable and payroll-relief treatment)"
+    update_schedule: "monthly"
+    warn_after_days: 60
+    columns:
+      date: "First day of the reference month."
+      geography_type: "Geographic level: brazil, region, or state."
+      geography_code: "IBGE code for the geographic unit; interpret together with geography_type."
+      geography_name: "Geographic unit name in Portuguese."
+      payroll_relief: "Whether the series includes payroll-tax relief (desoneração da folha de pagamento)."
+      variable: "Series identifier: cost, materials_cost, labor_cost, cost_index, materials_index, labor_index, monthly_change, year_to_date_change, or twelve_month_change."
+      variable_label: "Original IBGE variable label in Portuguese."
+      unit: "Original IBGE unit: Reais for costs, Número-índice for indices, and a percent sign for changes."
+      value: "Observed value. Missing, unavailable, and suppressed observations are omitted."
+    internal_function: "fetch_sinapi"
+    dataset_function: "get_sinapi"
+    data_type: "tibble"
+    cached_file: "sinapi.rds"
+    default_table: "all"
+    translation_notes: "Payroll-relief series come from SIDRA table 2296 and series without payroll relief from table 6586. The R$/m² level starts in September 2012 with relief and January 2017 without relief; earlier coverage applies only to index variables."
+
+  pim_pf_construction:
+    name: "PIM-PF Construction-input Production Index"
+    name_pt: "Índice de Produção dos Insumos da Construção Civil PIM-PF"
+    description: "Linked monthly physical-production index for inputs typically used in construction"
+    source: "IBGE - Pesquisa Industrial Mensal - Produção Física"
+    url: "https://sidra.ibge.gov.br/tabela/8886"
+    geography: "Brazil"
+    frequency: "monthly"
+    coverage: "January 1991-present"
+    update_schedule: "monthly"
+    warn_after_days: 60
+    columns:
+      date: "First day of the reference month."
+      variable: "Series identifier: construction_inputs_production_index."
+      reference_period: "Reference period of the linked index: 2022 average = 100."
+      source_table: "SIDRA table supplying the observation: 2294 before 2012 and 8886 from 2012 onward."
+      value: "Linked physical-production index. Values before 2012 are rescaled by the ratio of the two source series' 2012 annual means."
+    internal_function: "fetch_pim_pf_construction"
+    dataset_function: "get_pim_pf_construction"
+    data_type: "tibble"
+    cached_file: "pim_pf_construction.rds"
+    default_table: "all"
+    translation_notes: "The 1991-2011 series from SIDRA table 2294 is linked to table 8886 using their full 2012 overlap."
+
   rppi_bis:
     name: "BIS Residential Property Price Indices"
     name_pt: "Índices de Preços Residenciais BIS"
