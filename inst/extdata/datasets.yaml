@@ -230,14 +230,14 @@ datasets:
       payroll_relief: "Whether the series includes payroll-tax relief (desoneração da folha de pagamento)."
       variable: "Series identifier: cost, materials_cost, labor_cost, cost_index, materials_index, labor_index, monthly_change, year_to_date_change, or twelve_month_change."
       variable_label: "Original IBGE variable label in Portuguese."
-      unit: "Original IBGE unit: Reais, Número-índice, or percent."
+      unit: "Original IBGE unit: Reais for costs, Número-índice for indices, and a percent sign for changes."
       value: "Observed value. Missing, unavailable, and suppressed observations are omitted."
     internal_function: "fetch_sinapi"
     dataset_function: "get_sinapi"
     data_type: "tibble"
     cached_file: "sinapi.rds"
     default_table: "all"
-    translation_notes: "Payroll-relief series come from SIDRA table 2296 and series without payroll relief from table 6586. The R$/m² level starts in January 2013 with relief and January 2017 without relief; earlier coverage applies only to index variables."
+    translation_notes: "Payroll-relief series come from SIDRA table 2296 and series without payroll relief from table 6586. The R$/m² level starts in September 2012 with relief and January 2017 without relief; earlier coverage applies only to index variables."
 
   pim_pf_construction:
     name: "PIM-PF Construction-input Production Index"

@@ -55,3 +55,19 @@ test_that("SINAPI rejects unknown upstream identifiers", {
     clean_sinapi(with_relief, without_relief)
   )
 })
+
+test_that("SINAPI validation rejects observations without a unit", {
+  local_edition(3)
+  dat <- tibble::tibble(
+    date = rep(as.Date("2017-01-01"), 1000),
+    geography_type = "state",
+    geography_code = as.character(seq_len(1000)),
+    geography_name = "State",
+    payroll_relief = rep(c(TRUE, FALSE), 500),
+    variable = "cost",
+    unit = c("", rep("Reais", 999)),
+    value = 1
+  )
+
+  expect_snapshot(error = TRUE, validate_sinapi(dat))
+})

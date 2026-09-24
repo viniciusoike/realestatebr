@@ -58,3 +58,23 @@ test_that("IBGE dissemination symbols retain their meanings", {
 
   expect_equal(result, c(1.25, 0, NA, NA, NA, NA))
 })
+
+test_that("metadata units replace empty units from data responses", {
+  dat <- tibble::tibble(
+    variable_id = c("48", "48", "1196"),
+    unit = c("", "Reais", "")
+  )
+  units <- c("48" = "Reais", "1196" = "%")
+
+  result <- apply_ibge_units(dat, units)
+
+  expect_equal(result$unit, c("Reais", "Reais", "%"))
+})
+
+test_that("response units are kept for variables missing from metadata", {
+  dat <- tibble::tibble(variable_id = c("1", "2"), unit = c("Reais", ""))
+
+  result <- apply_ibge_units(dat, c("3" = "%"))
+
+  expect_equal(result$unit, c("Reais", NA))
+})

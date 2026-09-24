@@ -162,6 +162,9 @@ validate_sinapi <- function(dat) {
   if (any(duplicated(dat[keys]))) {
     cli::cli_abort("SINAPI data contains duplicate observation keys.")
   }
+  if (anyNA(dat$unit) || any(dat$unit == "")) {
+    cli::cli_abort("SINAPI data contains observations without a unit.")
+  }
   if (!setequal(unique(dat$payroll_relief), c(TRUE, FALSE))) {
     cli::cli_abort("SINAPI data must contain both payroll-relief variants.")
   }

@@ -40,13 +40,21 @@ download_ibge_aggregate <- function(
         url,
         quiet = quiet,
         max_retries = max_retries,
-        description = "IBGE aggregate {aggregate}"
+        description = paste("IBGE aggregate", aggregate)
       )
       parse_ibge_aggregate_chunk(raw, aggregate)
     }
   )
+  dat <- dplyr::bind_rows(chunks)
 
-  return(dplyr::bind_rows(chunks))
+  units <- download_ibge_units(
+    aggregate,
+    quiet = quiet,
+    max_retries = max_retries
+  )
+  dat <- apply_ibge_units(dat, units)
+
+  return(dat)
 }
 
 download_ibge_periods <- function(aggregate, quiet, max_retries) {
@@ -55,10 +63,46 @@ download_ibge_periods <- function(aggregate, quiet, max_retries) {
     url,
     quiet = quiet,
     max_retries = max_retries,
-    description = "IBGE aggregate {aggregate} period list"
+    description = paste("IBGE aggregate", aggregate, "period list")
   )
 
   return(vapply(raw, `[[`, character(1), "id"))
+}
+
+# Data responses leave `unidade` empty when the requested periods include
+# months before a variable starts, so units come from the metadata endpoint.
+download_ibge_units <- function(aggregate, quiet, max_retries) {
+  url <- paste0(ibge_aggregates_base_url, "/", aggregate, "/metadados")
+  raw <- download_ibge_json(
+    url,
+    quiet = quiet,
+    max_retries = max_retries,
+    description = paste("IBGE aggregate", aggregate, "metadata")
+  )
+
+  units <- vapply(
+    raw$variaveis,
+    function(variable) variable$unidade %||% NA_character_,
+    character(1)
+  )
+  names(units) <- vapply(
+    raw$variaveis,
+    function(variable) as.character(variable$id),
+    character(1)
+  )
+
+  return(units)
+}
+
+apply_ibge_units <- function(dat, units) {
+  if (nrow(dat) == 0) {
+    return(dat)
+  }
+
+  metadata_unit <- unname(units[dat$variable_id])
+  dat$unit <- dplyr::coalesce(metadata_unit, dplyr::na_if(dat$unit, ""))
+
+  return(dat)
 }
 
 build_ibge_aggregate_url <- function(

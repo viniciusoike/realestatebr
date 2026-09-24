@@ -26,9 +26,9 @@ Retrieve this dataset with \code{\link[=get_dataset]{get_dataset()}} using the n
 }
 
 Payroll-relief series come from SIDRA table 2296 and series without payroll
-relief from table 6586. The R$/m² level starts in January 2013 with relief
-and January 2017 without relief; earlier coverage applies only to index
-variables.
+relief from table 6586. The R$/m² level starts in September 2012 with
+relief and January 2017 without relief; earlier coverage applies only to
+index variables.
 }
 \section{Columns}{
 
@@ -40,7 +40,7 @@ variables.
 \item{payroll_relief}{Whether the series includes payroll-tax relief (desoneração da folha de pagamento).}
 \item{variable}{Series identifier: cost, materials_cost, labor_cost, cost_index, materials_index, labor_index, monthly_change, year_to_date_change, or twelve_month_change.}
 \item{variable_label}{Original IBGE variable label in Portuguese.}
-\item{unit}{Original IBGE unit: Reais, Número-índice, or percent.}
+\item{unit}{Original IBGE unit: Reais for costs, Número-índice for indices, and a percent sign for changes.}
 \item{value}{Observed value. Missing, unavailable, and suppressed observations are omitted.}
 }
 }

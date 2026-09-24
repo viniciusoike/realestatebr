@@ -388,7 +388,7 @@ list(
     command = fetch_dataset("sinapi"),
     cue = tar_cue_age(
       name = sinapi_data,
-      age = as.difftime(30, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
@@ -406,7 +406,7 @@ list(
     command = fetch_dataset("pim_pf_construction"),
     cue = tar_cue_age(
       name = pim_pf_construction_data,
-      age = as.difftime(30, units = "days")
+      age = as.difftime(6, units = "days")
     )
   ),
   tar_target(
@@ -511,16 +511,16 @@ list(
           "rppi_iqa",
           "rppi_iqaiw",
           "rppi_ivar",
-          "rppi_secovi_sp"
+          "rppi_secovi_sp",
+          "sinapi",
+          "pim_pf_construction"
         ),
         manual_datasets = c(
           "fgv_ibre",
           "abecip_cgi"
         ),
         monthly_datasets = c(
-          "bis_rppi",
-          "sinapi",
-          "pim_pf_construction"
+          "bis_rppi"
         ),
         cache_files = cache_files,
         validations = validations
