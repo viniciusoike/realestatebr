@@ -130,23 +130,6 @@ accounts, which finance construction and home purchases.
 sbpe <- get_dataset("abecip", table = "sbpe")
 
 glimpse(sbpe)
-#> Rows: 540
-#> Columns: 15
-#> $ date              <date> 1982-01-01, 1982-02-01, 1982-03-01, 1982-04-01, 198…
-#> $ sbpe_inflow       <dbl> 238234.1, 224080.0, 247218.8, 264925.0, 227636.3, 31…
-#> $ sbpe_outflow      <dbl> 261523.1, 161176.0, 118662.8, 378395.0, 137201.3, 15…
-#> $ sbpe_netflow      <dbl> -23289, 62904, 128556, -113470, 90435, 164739, -9934…
-#> $ sbpe_netflow_pct  <dbl> -0.009387130, 0.021881448, 0.043761242, -0.037006429…
-#> $ sbpe_yield        <dbl> 417103, 0, 0, 485995, 0, 0, 642432, 0, 0, 957944, 0,…
-#> $ sbpe_stock        <dbl> 2874764, 2937668, 3066224, 3438749, 3529184, 3693923…
-#> $ rural_inflow      <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ rural_outflow     <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ rural_netflow     <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ rural_netflow_pct <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ rural_yield       <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ rural_stock       <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ total_stock       <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-#> $ total_netflow     <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
 ```
 
 The plot below shows the annual net savings flow in recent years.
@@ -176,8 +159,6 @@ ggplot(sbpe_annual, aes(year, net_flow)) +
   theme_series()
 ```
 
-![](getting-started_files/figure-html/unnamed-chunk-10-1.png)
-
 The companion table `"units"` contains monthly counts of financed units.
 
 ``` r
@@ -185,15 +166,6 @@ The companion table `"units"` contains monthly counts of financed units.
 units <- get_dataset("abecip", table = "units")
 
 glimpse(units)
-#> Rows: 294
-#> Columns: 7
-#> $ date                  <date> 2002-01-01, 2002-02-01, 2002-03-01, 2002-04-01,…
-#> $ units_construction    <dbl> 200, 483, 1049, 684, 571, 1109, 216, 506, 1698, …
-#> $ units_acquisition     <dbl> 1455, 1456, 1522, 1723, 1536, 1536, 1706, 1838, …
-#> $ units_total           <dbl> 1655, 1939, 2571, 2407, 2107, 2645, 1922, 2344, …
-#> $ currency_construction <dbl> 13.540470, 32.117295, 62.592800, 44.422429, 23.4…
-#> $ currency_acquisition  <dbl> 83.95237, 96.12279, 101.71222, 108.14803, 98.281…
-#> $ currency_total        <dbl> 97.49284, 128.24008, 164.30502, 152.57046, 121.7…
 ```
 
 The plot shows the number of units financed per month, with a LOESS
@@ -221,8 +193,6 @@ ggplot(units_recent, aes(date, units_total)) +
   ) +
   theme_series()
 ```
-
-![](getting-started_files/figure-html/unnamed-chunk-12-1.png)
 
 ## Example: real estate credit portfolio
 
@@ -275,8 +245,6 @@ ggplot(sfh_pf, aes(date, value / 1e9)) +
   theme_series()
 ```
 
-![](getting-started_files/figure-html/unnamed-chunk-14-1.png)
-
 The grouped series show the entire household credit stock by credit
 line.
 
@@ -307,8 +275,6 @@ ggplot(credit_stock, aes(date, value / 1e9)) +
   ) +
   theme_series()
 ```
-
-![](getting-started_files/figure-html/unnamed-chunk-15-1.png)
 
 One caveat when joining tables: `bcb_realestate` uses end-of-month
 dates, such as `2023-01-31`, while most other datasets use the first day

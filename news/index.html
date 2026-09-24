@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,16 +51,12 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.0.1.9000" id="realestatebr-1019000">realestatebr 1.0.1.9000<a class="anchor" aria-label="anchor" href="#realestatebr-1019000"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.1.0" id="realestatebr-110">realestatebr 1.1.0<a class="anchor" aria-label="anchor" href="#realestatebr-110"></a></h2>
 <ul><li>Added <code>get_dataset("pim_pf_construction")</code>, a linked monthly IBGE production index for construction inputs from January 1991.</li>
 <li>Added <code>get_dataset("sinapi")</code>, with monthly IBGE construction costs and indices by state, region, and Brazil, both with and without payroll-tax relief.</li>
-<li>The CNO main table is now named <code>constructions</code> instead of <code>works</code>; its <code>work_name</code> and <code>work_category</code> columns are now <code>construction_name</code> and <code>construction_category</code>.</li>
-<li>
-<code><a href="../reference/query_dataset.html">query_dataset()</a></code> now provides lazy, joinable DuckDB access to annual CNO snapshots published as Parquet files on GitHub Releases.</li>
-<li>
-<code><a href="../reference/query_dataset.html">query_dataset()</a></code> now loads DuckDB’s <code>httpfs</code> extension when accessing remote Parquet snapshots.</li>
+<li>Added <code><a href="../reference/query_dataset.html">query_dataset()</a></code> for lazy, joinable DuckDB access to large relational datasets. Its first dataset is <code>cno</code>, with annual snapshots of the Federal Revenue Service construction registry published as Parquet files on GitHub Releases.</li>
 </ul><div class="section level3">
-<h3 id="bug-fixes-1-0-1-9000">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-0-1-9000"></a></h3>
+<h3 id="bug-fixes-1-1-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-1-0"></a></h3>
 <ul><li>Unknown-dataset errors from <code><a href="../reference/get_dataset.html">get_dataset()</a></code> now list only materialized datasets in alphabetical order.</li>
 <li>
 <code>get_dataset("secovi", source = "fresh")</code> and <code>get_dataset("bcb_realestate", source = "fresh")</code> now raise an error when the original source is unavailable instead of silently returning the GitHub release cache.</li>
@@ -75,12 +71,7 @@
 <code>get_dataset("secovi")</code> once again downloads current SECOVI-SP data after <code>xml2</code> 1.6.0 changed its default HTML encoding. SECOVI responses are now parsed explicitly as ISO-8859-1, and upstream indicators 25 (<code>launches_rmsp</code>) and 118 (<code>sales_rmsp</code>) are no longer requested because SECOVI has discontinued them.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="breaking-changes-1-0-1-9000">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-0-1-9000"></a></h3>
-<ul><li>Removed <code>date_start</code> and <code>date_end</code> from <code><a href="../reference/get_dataset.html">get_dataset()</a></code>. Filter the <code>date</code> column of the returned data instead.</li>
-<li>Removed <code>...</code> from <code><a href="../reference/get_dataset.html">get_dataset()</a></code>. Unknown arguments now raise an error instead of being passed on or silently dropped.</li>
-</ul></div>
-<div class="section level3">
-<h3 id="other-changes-1-0-1-9000">Other changes<a class="anchor" aria-label="anchor" href="#other-changes-1-0-1-9000"></a></h3>
+<h3 id="other-changes-1-1-0">Other changes<a class="anchor" aria-label="anchor" href="#other-changes-1-1-0"></a></h3>
 <ul><li>Replaced the <code>rbcb</code> dependency with <code>GetBCBData</code>, which splits long requests into windows the BCB SGS API accepts.</li>
 <li>
 <code>get_dataset("bcb_series")</code> now returns each series in full, from its first published observation instead of 2010-01-01. Daily series such as SELIC (code 432) were previously dropped, since SGS rejects requests spanning more than ten years.</li>

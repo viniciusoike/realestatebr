@@ -9,5 +9,5 @@ reports the source itself.
 ## Usage
 
 ``` r
-get_from_internal_function(name, dataset_info, table)
+get_from_internal_function(name, dataset_info, table, quiet = FALSE, ...)
 ```

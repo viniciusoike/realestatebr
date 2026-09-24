@@ -9,7 +9,15 @@ from an in-memory memo to avoid redundant network traffic.
 ## Usage
 
 ``` r
-get_dataset(name, table = NULL, source = "auto", quiet = FALSE)
+get_dataset(
+  name,
+  table = NULL,
+  source = "auto",
+  date_start = NULL,
+  date_end = NULL,
+  quiet = FALSE,
+  ...
+)
 ```
 
 ## Arguments
@@ -59,10 +67,26 @@ get_dataset(name, table = NULL, source = "auto", quiet = FALSE)
   [`clear_session_cache`](https://viniciusoike.github.io/realestatebr/reference/clear_session_cache.md)
   to drop the in-session memo.
 
+- date_start:
+
+  Date. Optional first date to retain for time-series datasets. Retained
+  for compatibility; filtering is applied after the dataset is loaded.
+
+- date_end:
+
+  Date. Optional last date to retain for time-series datasets. Retained
+  for compatibility; filtering is applied after the dataset is loaded.
+
 - quiet:
 
   Logical. If `TRUE`, suppresses informational messages. Errors and
   warnings are still shown.
+
+- ...:
+
+  Additional arguments passed to the internal function when a fresh
+  download is required. Retained for compatibility with the 1.0.1
+  interface.
 
 ## Value
 
@@ -72,8 +96,8 @@ to inspect the expected structure.
 
 ## Details
 
-To restrict a time series to a date window, filter the returned `date`
-column with
+To restrict a time series to a date window, use `date_start` and
+`date_end` or filter the returned `date` column with
 [`dplyr::filter()`](https://dplyr.tidyverse.org/reference/filter.html).
 
 ## See also
@@ -109,6 +133,9 @@ sbpe_data <- get_dataset("abecip", table = "sbpe")
 
 bcb_data <- get_dataset("bcb_series", quiet = TRUE)
 
-bcb_recent <- dplyr::filter(bcb_data, date >= as.Date("2020-01-01"))
+bcb_recent <- get_dataset(
+  "bcb_series",
+  date_start = as.Date("2020-01-01")
+)
 }
 ```
