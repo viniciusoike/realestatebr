@@ -8,11 +8,13 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-NOT_CRAN <- identical(tolower(Sys.getenv("NOT_CRAN")), "true")
+BUILD_LIVE_VIGNETTES <- identical(
+  tolower(Sys.getenv("REALESTATEBR_BUILD_LIVE_VIGNETTES")),
+  "true"
+)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = NOT_CRAN,
   fig.width = 7,
   fig.asp = 0.618,
   fig.align = "center",
@@ -139,7 +141,7 @@ mechanism for residential mortgages in Brazil. The `sbpe` table from `abecip`
 tracks deposits into and withdrawals from savings accounts, which finance
 construction and home purchases.
 
-```{r}
+```{r, eval = BUILD_LIVE_VIGNETTES}
 sbpe <- get_dataset("abecip", table = "sbpe")
 
 glimpse(sbpe)
@@ -147,7 +149,7 @@ glimpse(sbpe)
 
 The plot below shows the annual net savings flow in recent years.
 
-```{r}
+```{r, eval = BUILD_LIVE_VIGNETTES}
 # Annual net credit flow
 sbpe_annual <- sbpe |>
   filter(date >= as.Date("2019-01-01")) |>
@@ -173,7 +175,7 @@ ggplot(sbpe_annual, aes(year, net_flow)) +
 
 The companion table `"units"` contains monthly counts of financed units.
 
-```{r}
+```{r, eval = BUILD_LIVE_VIGNETTES}
 units <- get_dataset("abecip", table = "units")
 
 glimpse(units)
@@ -181,7 +183,7 @@ glimpse(units)
 
 The plot shows the number of units financed per month, with a LOESS trend line.
 
-```{r}
+```{r, eval = BUILD_LIVE_VIGNETTES}
 # Monthly SBPE units financed
 units_recent <- units |>
   filter(date >= as.Date("2019-01-01"))
@@ -213,7 +215,7 @@ identifier into parts you can filter on.
 
 The code below reads a single series and then a group of related series.
 
-```{r}
+```{r, eval = BUILD_LIVE_VIGNETTES}
 bcb <- get_dataset("bcb_realestate")
 
 # Get a specific series
@@ -244,7 +246,7 @@ credit_stock <- bcb |>
 
 The single series shows only the values from SFH (specific credit line).
 
-```{r}
+```{r, eval = BUILD_LIVE_VIGNETTES}
 ggplot(sfh_pf, aes(date, value / 1e9)) +
   geom_line(lwd = 0.8, color = color_palette[1]) +
   labs(title = "SFH", y = "R$ (billions)") +
@@ -253,7 +255,7 @@ ggplot(sfh_pf, aes(date, value / 1e9)) +
 
 The grouped series show the entire household credit stock by credit line.
 
-```{r}
+```{r, eval = BUILD_LIVE_VIGNETTES}
 credit_stock <- credit_stock |>
   mutate(
     credit_line_label = dplyr::recode(

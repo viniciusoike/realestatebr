@@ -4,7 +4,7 @@
 \alias{get_dataset_with_fallback}
 \title{Get Dataset with Fallback Strategy}
 \usage{
-get_dataset_with_fallback(name, dataset_info, table, quiet)
+get_dataset_with_fallback(name, dataset_info, table, quiet, ...)
 }
 \value{
 A list with elements \code{data} and \code{tier}, where \code{tier} names the

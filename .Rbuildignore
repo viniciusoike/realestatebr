@@ -11,10 +11,12 @@
 ^inst/cached_data/.*\.csv\.gz$
 ^inst/cached_data/.*\.csv$
 ^\.claude$
+^\.agents$
 ^\.github$
 ^\.DS_Store$
 ^backup$
 ^CLAUDE\.md$
+^skills-lock\.json$
 ^claude$
 ^_pkgdown\.yml$
 ^docs$
