@@ -1,10 +1,8 @@
-# realestatebr 1.0.1.9000
+# realestatebr 1.1.0
 
 * Added `get_dataset("pim_pf_construction")`, a linked monthly IBGE production index for construction inputs from January 1991.
 * Added `get_dataset("sinapi")`, with monthly IBGE construction costs and indices by state, region, and Brazil, both with and without payroll-tax relief.
-* The CNO main table is now named `constructions` instead of `works`; its `work_name` and `work_category` columns are now `construction_name` and `construction_category`.
-* `query_dataset()` now provides lazy, joinable DuckDB access to annual CNO snapshots published as Parquet files on GitHub Releases.
-* `query_dataset()` now loads DuckDB's `httpfs` extension when accessing remote Parquet snapshots.
+* Added `query_dataset()` for lazy, joinable DuckDB access to large relational datasets. Its first dataset is `cno`, with annual snapshots of the Federal Revenue Service construction registry published as Parquet files on GitHub Releases.
 
 ## Bug fixes
 
@@ -17,13 +15,6 @@
 * `get_dataset("rppi", source = "github")` now supports the combined `all` table and every individual RPPI table through the dataset release cache.
 * The weekly cache pipeline now refreshes age-cued datasets reliably despite schedule jitter, uploads only cache files produced from updated upstream targets, rejects stale SECOVI data, and reports target failures as failed workflow runs.
 * `get_dataset("secovi")` once again downloads current SECOVI-SP data after `xml2` 1.6.0 changed its default HTML encoding. SECOVI responses are now parsed explicitly as ISO-8859-1, and upstream indicators 25 (`launches_rmsp`) and 118 (`sales_rmsp`) are no longer requested because SECOVI has discontinued them.
-
-## Breaking changes
-
-* Removed `date_start` and `date_end` from `get_dataset()`. Filter the `date`
-  column of the returned data instead.
-* Removed `...` from `get_dataset()`. Unknown arguments now raise an error
-  instead of being passed on or silently dropped.
 
 ## Other changes
 

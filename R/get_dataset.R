@@ -24,15 +24,24 @@
 #'     \item{"fresh"}{Fresh download from the original source.}
 #'   }
 #'   Use \code{\link{clear_session_cache}} to drop the in-session memo.
+#' @param date_start Date. Optional first date to retain for time-series
+#'   datasets. Retained for compatibility; filtering is applied after the
+#'   dataset is loaded.
+#' @param date_end Date. Optional last date to retain for time-series datasets.
+#'   Retained for compatibility; filtering is applied after the dataset is
+#'   loaded.
 #' @param quiet Logical. If `TRUE`, suppresses informational messages. Errors
 #'   and warnings are still shown.
+#' @param ... Additional arguments passed to the internal function when a
+#'   fresh download is required. Retained for compatibility with the 1.0.1
+#'   interface.
 #'
 #' @return A tibble or named list, depending on the dataset. Use
 #'   \code{\link{get_dataset_info}} to inspect the expected structure.
 #'
 #' @details
-#' To restrict a time series to a date window, filter the returned `date`
-#' column with \code{dplyr::filter()}.
+#' To restrict a time series to a date window, use `date_start` and `date_end`
+#' or filter the returned `date` column with \code{dplyr::filter()}.
 #'
 #' @examplesIf interactive()
 #' abecip_data <- get_dataset("abecip")
@@ -41,7 +50,10 @@
 #'
 #' bcb_data <- get_dataset("bcb_series", quiet = TRUE)
 #'
-#' bcb_recent <- dplyr::filter(bcb_data, date >= as.Date("2020-01-01"))
+#' bcb_recent <- get_dataset(
+#'   "bcb_series",
+#'   date_start = as.Date("2020-01-01")
+#' )
 #'
 #' @seealso [query_dataset()] for large relational datasets,
 #'   \code{\link{list_datasets}} for available datasets,
@@ -57,9 +69,23 @@ get_dataset <- function(
   name,
   table = NULL,
   source = "auto",
-  quiet = FALSE
+  date_start = NULL,
+  date_end = NULL,
+  quiet = FALSE,
+  ...
 ) {
   source <- match.arg(source, choices = c("auto", "github", "fresh"))
+
+  date_start <- normalize_dataset_date(date_start, "date_start")
+  date_end <- normalize_dataset_date(date_end, "date_end")
+
+  if (!is.null(date_start) && !is.null(date_end) && date_start > date_end) {
+    cli::cli_abort("{.arg date_start} must be on or before {.arg date_end}.")
+  }
+
+  if ("cached" %in% names(list(...))) {
+    cli::cli_abort("unused argument {.arg cached}")
+  }
 
   if (!rlang::is_bool(quiet)) {
     cli::cli_abort("{.arg quiet} must be `TRUE` or `FALSE`.")
@@ -107,7 +133,8 @@ get_dataset <- function(
       name,
       dataset_info,
       resolved_table,
-      quiet
+      quiet,
+      ...
     )
   } else {
     result <- get_dataset_from_source(
@@ -115,15 +142,18 @@ get_dataset <- function(
       dataset_info,
       source,
       resolved_table,
-      quiet
+      quiet,
+      ...
     )
   }
 
-  if (!is.null(result$data) && !quiet) {
+  data <- filter_dataset_date_range(result$data, date_start, date_end)
+
+  if (!is.null(data) && !quiet) {
     show_import_message(name, table_info, result$tier)
   }
 
-  return(result$data)
+  return(data)
 }
 
 #' Get Dataset with Fallback Strategy
@@ -137,7 +167,8 @@ get_dataset_with_fallback <- function(
   name,
   dataset_info,
   table,
-  quiet
+  quiet,
+  ...
 ) {
   memoed <- memo_get(memo_key(name, table))
   if (!is.null(memoed)) {
@@ -147,7 +178,14 @@ get_dataset_with_fallback <- function(
   errors <- list()
 
   result <- rlang::try_fetch(
-    get_dataset_from_source(name, dataset_info, "github", table, quiet),
+    get_dataset_from_source(
+      name,
+      dataset_info,
+      "github",
+      table,
+      quiet,
+      ...
+    ),
     error = function(cnd) {
       errors$github <<- cnd$message
       if (!quiet) {
@@ -165,7 +203,14 @@ get_dataset_with_fallback <- function(
   }
 
   result <- rlang::try_fetch(
-    get_dataset_from_source(name, dataset_info, "fresh", table, quiet),
+    get_dataset_from_source(
+      name,
+      dataset_info,
+      "fresh",
+      table,
+      quiet,
+      ...
+    ),
     error = function(cnd) {
       errors$fresh <<- cnd$message
       if (!quiet) {
@@ -201,12 +246,19 @@ get_dataset_from_source <- function(
   dataset_info,
   source,
   table,
-  quiet
+  quiet,
+  ...
 ) {
   data <- switch(
     source,
     "github" = get_from_github_cache(name, dataset_info, table, quiet),
-    "fresh" = get_from_internal_function(name, dataset_info, table)
+    "fresh" = get_from_internal_function(
+      name,
+      dataset_info,
+      table,
+      quiet,
+      ...
+    )
   )
 
   if (!is.null(data)) {
@@ -250,7 +302,13 @@ get_from_github_cache <- function(name, dataset_info, table, quiet = FALSE) {
 #' unless debug mode is on, since `get_dataset()` reports the source itself.
 #'
 #' @keywords internal
-get_from_internal_function <- function(name, dataset_info, table) {
+get_from_internal_function <- function(
+  name,
+  dataset_info,
+  table,
+  quiet = FALSE,
+  ...
+) {
   internal_function <- dataset_info$dataset_function
 
   if (is.null(internal_function) || internal_function == "") {
@@ -259,7 +317,8 @@ get_from_internal_function <- function(name, dataset_info, table) {
     )
   }
 
-  args <- list(quiet = !is_debug_mode())
+  args <- list(...)
+  args$quiet <- quiet || !is_debug_mode()
 
   if (internal_function == "get_rppi") {
     args$table <- table %||% "sale"
@@ -271,6 +330,78 @@ get_from_internal_function <- function(name, dataset_info, table) {
 
   func <- get(internal_function, mode = "function")
   data <- do.call(func, args)
+
+  return(data)
+}
+
+#' Normalize a date filter supplied to `get_dataset()`.
+#'
+#' @noRd
+normalize_dataset_date <- function(value, argument) {
+  if (is.null(value)) {
+    return(NULL)
+  }
+
+  if (length(value) != 1L || is.na(value)) {
+    cli::cli_abort("{.arg {argument}} must be a single valid date.")
+  }
+
+  parsed <- tryCatch(
+    as.Date(value),
+    error = function(error) {
+      cli::cli_abort(
+        "{.arg {argument}} must be a single valid date.",
+        parent = error
+      )
+    }
+  )
+
+  if (is.na(parsed)) {
+    cli::cli_abort("{.arg {argument}} must be a single valid date.")
+  }
+
+  return(parsed)
+}
+
+#' Apply a date range to materialized dataset output when possible.
+#'
+#' @noRd
+filter_dataset_date_range <- function(
+  data,
+  date_start = NULL,
+  date_end = NULL
+) {
+  if (is.null(date_start) && is.null(date_end)) {
+    return(data)
+  }
+
+  if (is.data.frame(data) && "date" %in% names(data)) {
+    data_date <- tryCatch(as.Date(data$date), error = function(error) NULL)
+
+    if (is.null(data_date)) {
+      return(data)
+    }
+
+    keep <- !is.na(data_date)
+    if (!is.null(date_start)) {
+      keep <- keep & data_date >= date_start
+    }
+    if (!is.null(date_end)) {
+      keep <- keep & data_date <= date_end
+    }
+
+    data <- data[keep, , drop = FALSE]
+    return(data)
+  }
+
+  if (is.list(data) && !is.data.frame(data)) {
+    data <- lapply(
+      data,
+      filter_dataset_date_range,
+      date_start = date_start,
+      date_end = date_end
+    )
+  }
 
   return(data)
 }

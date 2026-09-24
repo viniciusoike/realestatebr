@@ -125,7 +125,7 @@ clean_bcb_realestate <- function(df, quiet = FALSE) {
     dplyr::rename(date = Data, series_info = Info, value = Valor) |>
     dplyr::mutate(
       value_raw = stringr::str_replace(value, ",", "."),
-      value = suppressWarnings(as.numeric(value_raw)),
+      value = suppressWarnings(as.numeric(.data$value_raw)),
       series_info = stringr::str_replace_all(series_info, new_names),
       year = lubridate::year(date),
       month = lubridate::month(date),
@@ -139,7 +139,7 @@ clean_bcb_realestate <- function(df, quiet = FALSE) {
     )
   }
 
-  df <- dplyr::select(df, -value_raw)
+  df <- dplyr::select(df, -dplyr::all_of("value_raw"))
 
   df <- tidyr::separate_wider_delim(
     df,
