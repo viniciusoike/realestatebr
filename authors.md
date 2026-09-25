@@ -8,15 +8,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/viniciusoike/realestatebr/blob/v1.1.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/viniciusoike/realestatebr/blob/main/DESCRIPTION)
 
 Oike V (2026). *realestatebr: Import Brazilian Real Estate Data into R*.
-R package version 1.1.0, <https://github.com/viniciusoike/realestatebr>.
+R package version 1.1.0.9000,
+<https://github.com/viniciusoike/realestatebr>.
 
     @Manual{,
       title = {realestatebr: Import Brazilian Real Estate Data into R},
       author = {Vinicius Oike},
       year = {2026},
-      note = {R package version 1.1.0},
+      note = {R package version 1.1.0.9000},
       url = {https://github.com/viniciusoike/realestatebr},
     }
