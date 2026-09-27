@@ -701,7 +701,6 @@ datasets:
     name: "FGTS/MCMV Housing Finance and Subsidized Projects"
     name_pt: "Financiamentos FGTS/MCMV e empreendimentos subsidiados"
     description: "Published financing observations, official financing summaries, and subsidized housing project records"
-    status: hidden
     source: "Ministério das Cidades - Secretaria Nacional de Habitação"
     url: "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/habitacao/programa-minha-casa-minha-vida/bases-de-dados-do-programa-minha-casa-minha-vida"
     geography: Brazil

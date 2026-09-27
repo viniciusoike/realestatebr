@@ -7,7 +7,12 @@
 #' Published financing observations, official financing summaries, and
 #' subsidized housing project records.
 #'
-#' This dataset is under development and is not currently available.
+#' Retrieve this dataset with [query_dataset()] using the name `"mcmv"`.
+#'
+#' ```r
+#' mcmv <- query_dataset("mcmv")
+#' mcmv$financing
+#' ```
 #'
 #' @details
 #' * **Source**: Ministério das Cidades - Secretaria Nacional de Habitação
@@ -100,6 +105,6 @@
 #' @source Ministério das Cidades - Secretaria Nacional de Habitação
 #' @seealso [get_dataset()], [query_dataset()], [list_datasets()], [get_dataset_info()]
 #' @family datasets
-#' @keywords internal
+#' @keywords datasets
 #' @name mcmv
 NULL

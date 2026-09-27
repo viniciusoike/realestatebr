@@ -10,7 +10,11 @@ Ministério das Cidades - Secretaria Nacional de Habitação
 Published financing observations, official financing summaries, and
 subsidized housing project records.
 
-This dataset is under development and is not currently available.
+Retrieve this dataset with \code{\link[=query_dataset]{query_dataset()}} using the name \code{"mcmv"}.
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{mcmv <- query_dataset("mcmv")
+mcmv$financing
+}\if{html}{\out{</div>}}
 }
 \details{
 \itemize{
@@ -125,4 +129,4 @@ Other datasets:
 \code{\link{sinapi}}
 }
 \concept{datasets}
-\keyword{internal}
+\keyword{datasets}

@@ -68,12 +68,13 @@ format. Update schedules vary by source.
 | `bcb_series` | Banco Central do Brasil | `core`, `primary`, `secondary`, `tertiary`, `full` |
 | `cno` | Receita Federal | `constructions`, `areas`, `cnaes`, `responsibilities` |
 | `fgv_ibre` | FGV IBRE | — |
+| `mcmv` | Ministério das Cidades | `financing`, `financing_summary`, `subsidized_projects` |
 | `rppi` | FIPE/ZAP, IVG-R, IGMI-R, IQA, IQAIW, IVAR, SECOVI-SP | `sale`, `rent`, `all`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` |
 | `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` |
 | `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` |
 
-`cno` uses `query_dataset()` and returns related lazy tables. The
-remaining datasets use `get_dataset()` and return data in memory.
+`cno` and `mcmv` use `query_dataset()` and return related lazy tables.
+The remaining datasets use `get_dataset()` and return data in memory.
 
 ### Data Sources
 
@@ -180,6 +181,8 @@ ggplot(bis_compare, aes(x = date, y = value, color = ref_area_name)) +
   indices](https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.html)
 - [Working with
   CNO](https://viniciusoike.github.io/realestatebr/articles/working-with-cno.html)
+- [Working with
+  MCMV](https://viniciusoike.github.io/realestatebr/articles/working-with-mcmv.html)
 - [Housing credit in
   Brazil](https://viniciusoike.github.io/realestatebr/articles/housing-credit.html)
 - [The primary market and the construction

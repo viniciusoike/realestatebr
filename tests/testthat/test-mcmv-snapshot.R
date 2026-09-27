@@ -119,7 +119,7 @@ test_that("MCMV snapshots use existing lazy catalog and manifest contracts", {
     version = "2026-07-24", registry_path = test_path("../../inst/extdata/datasets.yaml")), "already exists")
 })
 
-test_that("failed MCMV builds clean staging and hidden catalogs stay hidden", {
+test_that("failed MCMV builds clean staging", {
   b <- mcmv_builder()
   output <- tempfile()
   withr::defer(unlink(output, recursive = TRUE))
@@ -128,9 +128,25 @@ test_that("failed MCMV builds clean staging and hidden catalogs stay hidden", {
   expect_error(b$build_mcmv_snapshot(sources, output_dir = output,
     registry_path = test_path("../../inst/extdata/datasets.yaml")), "Missing source")
   expect_length(list.files(output, all.files = FALSE), 0L)
-  withr::local_options(realestatebr.query_manifest_urls = NULL)
-  expect_error(query_dataset("mcmv"), "not available")
-  expect_equal(sum(list_datasets()$name == "mcmv"), 0L)
+})
+
+test_that("MCMV is listed and points to versioned GitHub releases", {
+  expect_equal(sum(list_datasets()$name == "mcmv"), 1L)
+  info <- get_dataset_info("mcmv")$technical_info$query_manifest
+  expect_identical(
+    info$latest_url,
+    paste0(
+      "https://github.com/viniciusoike/realestatebr/releases/",
+      "download/mcmv-v1-latest/latest.json"
+    )
+  )
+  expect_identical(
+    info$version_url_template,
+    paste0(
+      "https://github.com/viniciusoike/realestatebr/releases/",
+      "download/mcmv-{version}/manifest.json"
+    )
+  )
 })
 
 test_that("shared snapshot schema hashing preserves CNO checksum", {
