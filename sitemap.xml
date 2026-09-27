@@ -6,11 +6,9 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/articles/getting-started.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/articles/housing-credit.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/articles/index.html</loc></url>
-<url><loc>https://viniciusoike.github.io/realestatebr/articles/mcmv-data-dictionary.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/articles/primary-market.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/articles/realestatebr-1-0-1.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/articles/working-with-cno.html</loc></url>
-<url><loc>https://viniciusoike.github.io/realestatebr/articles/working-with-mcmv.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/articles/working-with-rppi.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/authors.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/index.html</loc></url>
@@ -65,6 +63,7 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_fgv_ibre.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_from_github_cache.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_from_internal_function.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/get_paic.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_pim_pf_construction.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_rppi.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/get_rppi_bis.html</loc></url>
@@ -83,8 +82,8 @@
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/list_datasets.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/load_abecip_cgi.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/load_dataset_registry.html</loc></url>
-<url><loc>https://viniciusoike.github.io/realestatebr/reference/mcmv.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/memo_key.html</loc></url>
+<url><loc>https://viniciusoike.github.io/realestatebr/reference/paic.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/pim_pf_construction.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/query_dataset.html</loc></url>
 <url><loc>https://viniciusoike.github.io/realestatebr/reference/realestatebr-package.html</loc></url>

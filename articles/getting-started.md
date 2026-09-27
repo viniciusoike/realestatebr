@@ -80,6 +80,7 @@ ds <- list_datasets()
 | bcb_series | BCB Economic Series | Banco Central do Brasil - SGS | core, primary, secondary, tertiary, full | varies (daily/monthly/quarterly) |
 | cno | National Registry of Construction Works | Receita Federal do Brasil - Cadastro Nacional de Obras | constructions, areas, cnaes, responsibilities | annual snapshots |
 | fgv_ibre | FGV IBRE Real Estate Indicators | FGV IBRE | (single table) | monthly |
+| paic | PAIC Construction Industry Data | IBGE - Pesquisa Anual da Indústria da Construção | activity, size, state | annual |
 | pim_pf_construction | PIM-PF Construction-input Production Index | IBGE - Pesquisa Industrial Mensal - Produção Física | (single table) | monthly |
 | rppi | Brazilian Residential Property Price Indices | Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP) | fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp, sale, rent, all | monthly |
 | rppi_bis | BIS Residential Property Price Indices | Bank for International Settlements | selected, detailed_monthly, detailed_quarterly, detailed_annual, detailed_halfyearly | quarterly |

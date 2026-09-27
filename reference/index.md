@@ -31,6 +31,8 @@ Table and column documentation for each dataset
   : National Registry of Construction Works
 - [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md)
   : FGV IBRE Real Estate Indicators
+- [`paic`](https://viniciusoike.github.io/realestatebr/reference/paic.md)
+  : PAIC Construction Industry Data
 - [`pim_pf_construction`](https://viniciusoike.github.io/realestatebr/reference/pim_pf_construction.md)
   : PIM-PF Construction-input Production Index
 - [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md)
