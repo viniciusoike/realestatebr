@@ -6,6 +6,11 @@ tables and queries them with DuckDB, so filters and aggregations run
 before any data enter R memory. The financing table alone holds almost
 eight million rows.
 
+The data are published by the Secretaria Nacional de Habitação (SNH)
+under a [Creative Commons
+Attribution](https://dadosabertos.cidades.gov.br/dataset/dados-do-programa-minha-casa-minha-vida-pmcmv)
+license. Cite the Ministério das Cidades when you use them.
+
 | Table | Grain |
 |----|----|
 | `financing` | One published financing contract, usually one housing unit |

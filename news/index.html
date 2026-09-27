@@ -21,10 +21,14 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with realestatebr</a></li>
     <li><a class="dropdown-item" href="../articles/working-with-rppi.html">Working with Property Price Indices</a></li>
     <li><a class="dropdown-item" href="../articles/working-with-cno.html">Working with CNO</a></li>
+    <li><a class="dropdown-item" href="../articles/working-with-mcmv.html">Working with MCMV</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Market deep dives</h6></li>
     <li><a class="dropdown-item" href="../articles/housing-credit.html">Housing Credit in Brazil</a></li>
     <li><a class="dropdown-item" href="../articles/primary-market.html">The Primary Market and the Construction Cycle</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Data dictionaries</h6></li>
+    <li><a class="dropdown-item" href="../articles/mcmv-data-dictionary.html">MCMV data dictionary</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul></li>
@@ -52,7 +56,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="realestatebr-development-version">realestatebr (development version)<a class="anchor" aria-label="anchor" href="#realestatebr-development-version"></a></h2>
-<ul><li>Added <code>get_dataset("paic")</code>, with annual IBGE construction-industry data for the new series starting in 2024 (SIDRA tables 10463, 10441, and 10442). The <code>activity</code>, <code>size</code>, and <code>state</code> tables cover enterprises, employment, revenue, costs, and output; values publish in original units with a <code>value_status</code> column for SIDRA symbols. Do not compare with the 2007-2023 series (see IBGE Nota técnica 01/2026).</li>
+<ul><li>Added <code>query_dataset("mcmv")</code>, with Minha Casa, Minha Vida financing contracts, official financing totals, and federally subsidized housing projects from the Ministério das Cidades. A new article covers the three tables, and a data dictionary documents their columns and source changes.</li>
+<li>Added <code>get_dataset("paic")</code>, with annual IBGE construction-industry data for the new series starting in 2024 (SIDRA tables 10463, 10441, and 10442). The <code>activity</code>, <code>size</code>, and <code>state</code> tables cover enterprises, employment, revenue, costs, and output; values publish in original units with a <code>value_status</code> column for SIDRA symbols. Do not compare with the 2007-2023 series (see IBGE Nota técnica 01/2026).</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.0" id="realestatebr-110">realestatebr 1.1.0<a class="anchor" aria-label="anchor" href="#realestatebr-110"></a></h2>

@@ -3,7 +3,12 @@
 Published financing observations, official financing summaries, and
 subsidized housing project records.
 
-This dataset is under development and is not currently available.
+Retrieve this dataset with
+[`query_dataset()`](https://viniciusoike.github.io/realestatebr/reference/query_dataset.md)
+using the name `"mcmv"`.
+
+    mcmv <- query_dataset("mcmv")
+    mcmv$financing
 
 ## Source
 
@@ -293,6 +298,7 @@ Other datasets:
 [`bcb_series`](https://viniciusoike.github.io/realestatebr/reference/bcb_series.md),
 [`cno`](https://viniciusoike.github.io/realestatebr/reference/cno.md),
 [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md),
+[`paic`](https://viniciusoike.github.io/realestatebr/reference/paic.md),
 [`pim_pf_construction`](https://viniciusoike.github.io/realestatebr/reference/pim_pf_construction.md),
 [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md),
 [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md),

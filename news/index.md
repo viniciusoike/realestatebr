@@ -2,6 +2,11 @@
 
 ## realestatebr (development version)
 
+- Added `query_dataset("mcmv")`, with Minha Casa, Minha Vida financing
+  contracts, official financing totals, and federally subsidized housing
+  projects from the Ministério das Cidades. A new article covers the
+  three tables, and a data dictionary documents their columns and source
+  changes.
 - Added `get_dataset("paic")`, with annual IBGE construction-industry
   data for the new series starting in 2024 (SIDRA tables 10463, 10441,
   and 10442). The `activity`, `size`, and `state` tables cover

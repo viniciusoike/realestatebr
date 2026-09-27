@@ -4,11 +4,13 @@ pkgdown_sha: ~
 articles:
   getting-started: getting-started.html
   articles/housing-credit: housing-credit.html
+  articles/mcmv-data-dictionary: mcmv-data-dictionary.html
   articles/primary-market: primary-market.html
   articles/realestatebr-1-0-1: realestatebr-1-0-1.html
   articles/working-with-cno: working-with-cno.html
+  articles/working-with-mcmv: working-with-mcmv.html
   articles/working-with-rppi: working-with-rppi.html
-last_built: 2026-09-27T20:49Z
+last_built: 2026-09-27T22:49Z
 urls:
   reference: https://viniciusoike.github.io/realestatebr/reference
   article: https://viniciusoike.github.io/realestatebr/articles
