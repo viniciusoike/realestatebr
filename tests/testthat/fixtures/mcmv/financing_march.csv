@@ -1,0 +1,4 @@
+"data_referencia";"cod_ibge";"txt_municipio";"mcmv_fgts_txt_uf";"txt_regiao";"data_assinatura_financiamento";"qtd_uh_financiadas";"vlr_financiamento";"vlr_subsidio_desconto_fgts";"vlr_subsidio_desconto_ogu";"vlr_subsidio_equilíbrio_fgts";"vlr_subsidio_equilíbrio_ogu";"vlr_compra";"vlr_renda_familiar";"txt_programa_fgts";"num_taxa_juros";"txt_tipo_imovel";"bln_cotista";"txt_sistema_amortizacao";"dte_nascimento";"txt_compatibilidade_faixa_renda";"txt_nome_empreendimento"
+"13/03/2026";110001;Alta Floresta D'Oeste ;RO;Norte;2025-12-23 00:00:00.000;1;105398.45;45390.0;0.0;24912.81;0.0;;1688.0;Carta de Crédito Individual;;Novo;;;;Fora MCMV/CVA;""
+"13/03/2026";110001;Alta Floresta D'Oeste ;RO;Norte;2015-10-09 00:00:00.000;1;75225.0;0.0;0.0;0.0;0.0;75225.0;4302.75;Pró-Cotista;8.5101;Novo;S;price;;Faixa 3;""
+"13/03/2026";110001;Alta Floresta D'Oeste ;RO;Norte;2025-08-25 00:00:00.000;1;163000.0;0.0;0.0;0.0;0.0;;9945.48;X;;Usado;;;;Fora MCMV/CVA;""

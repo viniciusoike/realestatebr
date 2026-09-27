@@ -1,0 +1,194 @@
+name: Build MCMV Snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      financing_url:
+        description: Direct analytical CSV, ZIP, or RAR URL
+        required: true
+        type: string
+      summary_url:
+        description: Direct official summary CSV, ZIP, or RAR URL
+        required: true
+        type: string
+      projects_url:
+        description: Direct subsidized-project CSV, ZIP, or RAR URL
+        required: true
+        type: string
+      financing_layout:
+        description: Analytical layout and numeric convention
+        type: choice
+        options: [financing_july, financing_march, financing_legacy]
+        default: financing_july
+      summary_layout:
+        description: Summary layout and numeric convention
+        type: choice
+        options: [summary_monthly, summary_annual]
+        default: summary_monthly
+      projects_layout:
+        description: Identical headers; June uses Brazilian numbers, March decimal points
+        type: choice
+        options: [projects_june, projects_march]
+        default: projects_june
+      snapshot_version:
+        description: Immutable snapshot version (YYYY-MM-DD); leave empty to use the financing reference date
+        required: false
+        default: ""
+        type: string
+      source_license:
+        description: Dataset-specific license and evidence URL permitting redistribution (required to publish)
+        default: Unconfirmed
+        type: string
+      publish:
+        description: Publish validated immutable assets and update the latest pointer
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mcmv-snapshot-publication
+  cancel-in-progress: false
+
+jobs:
+  build-mcmv:
+    runs-on: ubuntu-latest
+    env:
+      MCMV_VERSION_INPUT: ${{ inputs.snapshot_version }}
+      MCMV_FINANCING_URL: ${{ inputs.financing_url }}
+      MCMV_SUMMARY_URL: ${{ inputs.summary_url }}
+      MCMV_PROJECTS_URL: ${{ inputs.projects_url }}
+      MCMV_FINANCING_LAYOUT: ${{ inputs.financing_layout }}
+      MCMV_SUMMARY_LAYOUT: ${{ inputs.summary_layout }}
+      MCMV_PROJECTS_LAYOUT: ${{ inputs.projects_layout }}
+      MCMV_LICENSE: ${{ inputs.source_license }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::DBI
+            any::duckdb
+            any::dbplyr
+            any::digest
+            any::jsonlite
+            any::yaml
+            any::devtools
+      - name: Install archive reader
+        run: sudo apt-get update && sudo apt-get install -y libarchive-tools
+      - name: Check publication license evidence
+        if: ${{ inputs.publish }}
+        shell: Rscript {0}
+        run: |
+          license <- Sys.getenv("MCMV_LICENSE")
+          if (!nzchar(license) || grepl("unconfirmed", license, ignore.case = TRUE) ||
+              !grepl("https://", license, fixed = TRUE)) {
+            cli::cli_abort("Publication requires a reviewed dataset license and evidence URL.")
+          }
+      - name: Download sources with retries
+        shell: python
+        run: |
+          import os, pathlib, subprocess, urllib.parse
+          root = pathlib.Path("data-raw/mcmv_source")
+          root.mkdir(parents=True, exist_ok=True)
+          for table, key in [("financing", "FINANCING"), ("financing_summary", "SUMMARY"), ("subsidized_projects", "PROJECTS")]:
+              url = os.environ[f"MCMV_{key}_URL"]
+              parsed = urllib.parse.urlparse(url)
+              suffix = pathlib.Path(parsed.path).suffix.lower()
+              if parsed.scheme != "https" or suffix not in [".csv", ".zip", ".rar"]:
+                  raise ValueError("Provide a direct HTTPS CSV, ZIP, or RAR URL")
+              dest = root / (table + suffix)
+              subprocess.run(["curl", "--fail", "--location", "--retry", "8",
+                  "--retry-all-errors", "--retry-delay", "10", "--connect-timeout", "30",
+                  "--max-time", "3600", "--user-agent", "realestatebr data pipeline",
+                  "--output", str(dest), url], check=True)
+      - name: Resolve snapshot version
+        shell: Rscript {0}
+        run: |
+          source("data-raw/mcmv/discover_sources.R")
+          version <- Sys.getenv("MCMV_VERSION_INPUT")
+          if (!nzchar(version)) {
+            financing <- list.files("data-raw/mcmv_source", "^financing[.]", full.names = TRUE)
+            version <- mcmv_reference_version(financing)
+          }
+          cli::cli_inform("Snapshot version: {.val {version}}.")
+          cat(sprintf("MCMV_VERSION=%s\n", version), file = Sys.getenv("GITHUB_ENV"), append = TRUE)
+      - name: Build and validate snapshot
+        shell: Rscript {0}
+        run: |
+          source("data-raw/mcmv/build_snapshot.R")
+          tables <- c("financing", "financing_summary", "subsidized_projects")
+          keys <- c("FINANCING", "SUMMARY", "PROJECTS")
+          paths <- vapply(tables, function(table) {
+            found <- list.files("data-raw/mcmv_source", paste0("^", table, "[.]"), full.names = TRUE)
+            if (length(found) != 1L) cli::cli_abort("Expected one input per table.")
+            return(found)
+          }, "")
+          path <- build_mcmv_snapshot(paths,
+            layouts = stats::setNames(Sys.getenv(paste0("MCMV_", keys, "_LAYOUT")), tables),
+            source_urls = stats::setNames(Sys.getenv(paste0("MCMV_", keys, "_URL")), tables),
+            source_license = Sys.getenv("MCMV_LICENSE"), version = Sys.getenv("MCMV_VERSION"))
+          report <- jsonlite::read_json(path)$validation$reconciliation
+          if (report$status == "compared" && any(unlist(report[c("unmatched_groups",
+              "unit_mismatches", "amount_mismatches", "subsidy_mismatches", "repeated_summary_groups")]) != 0)) {
+            cli::cli_abort("Financing reconciliation failed; review the source files before publication.")
+          }
+      - name: Upload validated artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcmv-${{ env.MCMV_VERSION }}
+          path: data-raw/mcmv_output/${{ env.MCMV_VERSION }}/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Publish immutable release
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_tag="mcmv-$MCMV_VERSION"
+          snapshot_dir="data-raw/mcmv_output/$MCMV_VERSION"
+          if gh release view "$release_tag" >/dev/null 2>&1; then
+            echo "Immutable release already exists; it will not be overwritten." >&2
+            exit 1
+          fi
+          gh release create "$release_tag" "$snapshot_dir"/*.parquet "$snapshot_dir/manifest.json" \
+            --target "$GITHUB_SHA" --title "MCMV snapshot $MCMV_VERSION" \
+            --notes "Validated full MCMV snapshot. Source attribution, license, dates, and anomalies are in manifest.json." \
+            --latest=false
+      - name: Verify remote lazy access before updating pointer
+        if: ${{ inputs.publish }}
+        shell: Rscript {0}
+        run: |
+          devtools::load_all()
+          url <- sprintf("https://github.com/%s/releases/download/mcmv-%s/manifest.json",
+            Sys.getenv("GITHUB_REPOSITORY"), Sys.getenv("MCMV_VERSION"))
+          options(realestatebr.query_manifest_urls = c(mcmv = url))
+          local({
+            catalog <- query_dataset("mcmv", version = Sys.getenv("MCMV_VERSION"))
+            on.exit(close(catalog))
+            for (table in catalog) {
+              result <- table |> dplyr::filter(state == "SP") |>
+                dplyr::summarise(rows = dplyr::n()) |> dplyr::collect()
+              if (nrow(result) != 1L) cli::cli_abort("Remote query verification failed.")
+            }
+          })
+      - name: Update latest pointer
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          manifest_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/mcmv-$MCMV_VERSION/manifest.json"
+          jq -n --arg version "$MCMV_VERSION" --arg manifest_url "$manifest_url" \
+            '{dataset: "mcmv", version: $version, manifest_url: $manifest_url}' > "$RUNNER_TEMP/latest.json"
+          if gh release view mcmv-v1-latest >/dev/null 2>&1; then
+            gh release upload mcmv-v1-latest "$RUNNER_TEMP/latest.json" --clobber
+          else
+            gh release create mcmv-v1-latest "$RUNNER_TEMP/latest.json" \
+              --target "$GITHUB_SHA" --title "Latest MCMV snapshot" \
+              --notes "Pointer to a validated MCMV snapshot." --latest=false
+          fi

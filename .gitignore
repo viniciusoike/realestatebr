@@ -110,3 +110,6 @@ index.html
 AGENTS.md
 CLAUDE.md
 skills-lock.json
+
+data-raw/mcmv_output/
+data-raw/mcmv_source/

@@ -1,0 +1,86 @@
+name: Discover MCMV Sources
+
+# Checks the Ministry's MCMV page weekly. When the published files differ
+# from the latest snapshot, it starts an unpublished validation build and
+# opens an issue. Publishing remains a manual run of Build MCMV Snapshot.
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+  issues: write
+
+concurrency:
+  group: mcmv-source-discovery
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - name: Install R packages
+        shell: Rscript {0}
+        run: install.packages(c("cli", "jsonlite", "xml2"))
+      - name: Compare landing page with latest snapshot
+        id: discover
+        shell: Rscript {0}
+        run: |
+          source("data-raw/mcmv/discover_sources.R")
+          page <- url(mcmv_landing_url, headers = c("User-Agent" = "realestatebr data pipeline"))
+          html <- readLines(page, encoding = "UTF-8", warn = FALSE)
+          close(page)
+          urls <- discover_mcmv_sources(html)
+          latest_url <- sprintf(
+            "https://github.com/%s/releases/download/mcmv-v1-latest/latest.json",
+            Sys.getenv("GITHUB_REPOSITORY")
+          )
+          changed <- mcmv_sources_changed(urls, read_mcmv_manifest(latest_url))
+          cli::cli_inform(c("Discovered MCMV sources:", stats::setNames(urls, rep("*", 3))))
+          outputs <- c(
+            sprintf("changed=%s", tolower(changed)),
+            sprintf("financing_url=%s", urls[["financing"]]),
+            sprintf("summary_url=%s", urls[["financing_summary"]]),
+            sprintf("projects_url=%s", urls[["subsidized_projects"]])
+          )
+          cat(outputs, file = Sys.getenv("GITHUB_OUTPUT"), sep = "\n", append = TRUE)
+      - name: Start validation build and open issue
+        if: steps.discover.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FINANCING_URL: ${{ steps.discover.outputs.financing_url }}
+          SUMMARY_URL: ${{ steps.discover.outputs.summary_url }}
+          PROJECTS_URL: ${{ steps.discover.outputs.projects_url }}
+        run: |
+          title="MCMV source update: $(basename "$FINANCING_URL"), $(basename "$SUMMARY_URL"), $(basename "$PROJECTS_URL")"
+          existing=$(gh issue list --state all --search "\"$title\" in:title" --json title --jq ".[] | select(.title == \"$title\") | .title")
+          if [ -n "$existing" ]; then
+            echo "An issue already tracks these files; nothing to do."
+            exit 0
+          fi
+          gh workflow run build_mcmv_snapshot.yml \
+            -f financing_url="$FINANCING_URL" \
+            -f summary_url="$SUMMARY_URL" \
+            -f projects_url="$PROJECTS_URL" \
+            -f publish=false
+          cat > "$RUNNER_TEMP/issue.md" <<EOF
+          The MCMV page lists files that differ from the latest published snapshot.
+
+          - Financing: $FINANCING_URL
+          - Summary: $SUMMARY_URL
+          - Subsidized projects: $PROJECTS_URL
+
+          An unpublished validation run of **Build MCMV Snapshot** has started with the default layouts. Check its result in the Actions tab.
+
+          - If it passes, review the manifest artifact and rerun the workflow with the same URLs, the dataset license, and \`publish = true\`.
+          - If it fails on headers or parsing, the Ministry changed the layout. Add a layout to \`data-raw/mcmv/build_snapshot.R\` before publishing.
+          EOF
+          gh issue create --title "$title" --body-file "$RUNNER_TEMP/issue.md"

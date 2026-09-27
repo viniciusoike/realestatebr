@@ -1,0 +1,163 @@
+---
+title: "MCMV data dictionary"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+
+registry_path <- system.file(
+  "extdata",
+  "datasets.yaml",
+  package = "realestatebr"
+)
+mcmv <- yaml::read_yaml(registry_path)$datasets$mcmv
+
+column_table <- function(table) {
+  category <- mcmv$categories[[table]]
+  sources <- category$source_columns
+  dictionary <- data.frame(
+    Column = paste0("`", vapply(sources, `[[`, "", "name"), "`"),
+    `Source header` = paste0("`", names(sources), "`"),
+    Type = vapply(sources, `[[`, "", "type"),
+    Unit = vapply(sources, `[[`, "", "unit"),
+    check.names = FALSE
+  )
+  dictionary$Definition <- unlist(
+    category$columns[vapply(sources, `[[`, "", "name")],
+    use.names = FALSE
+  )
+  knitr::kable(dictionary, row.names = FALSE)
+}
+```
+
+This dictionary defines the three MCMV tables returned by
+`query_dataset("mcmv")`. The column tables below come from the package
+registry, the same source as the `?mcmv` help page. The
+[working article](working-with-mcmv.html) shows how to query the tables.
+
+The source is the Ministério das Cidades'
+[MCMV open-data page](`r mcmv$url`). Its official
+[data dictionary](https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/habitacao/programa-minha-casa-minha-vida/minha-casa-minha-vida-fnhis-sub-50-1/arquivos-fnhis-sub-50/Dicionarios_SNH_2025_10_09.pdf)
+(version 2.4, October 2025) predates the July 2026 files and does not
+describe several of their changes. The notes below record where the published
+files depart from it.
+
+## Conventions
+
+- **Names.** Columns use English names. Measures share prefixes: `units_*`
+  for housing units, `amount_*` for financed, contracted, or disbursed
+  amounts, and `subsidy_<source>_<component>` for subsidy components.
+- **Money.** Amounts are nominal BRL, stored as doubles without rounding.
+- **Municipalities.** `code_muni_6` is the six-digit IBGE code, without the
+  check digit. `name_muni`, `state`, and `region` keep the source's spelling
+  and capitalization.
+- **Dates.** `reference_date` is the date the source reports for its own
+  extract, not the download or publication date. Contract dates come from
+  timestamps that are always midnight, so they are stored as dates.
+- **Missing values.** `NA` means the source left the value blank, or the
+  release did not publish the column at all. The package never fills in
+  missing values, from zero or from older snapshots.
+- **Categories.** Labels and codes appear as published, including
+  inconsistent capitalization. The package applies no crosswalk the source
+  does not document.
+
+## `financing`
+
+`r mcmv$categories$financing$description`. In the July 2026 release, every
+row reports exactly one unit.
+
+```{r financing}
+column_table("financing")
+```
+
+### Categorical values
+
+| Column | Values in the July 2026 release | Meaning |
+|---|---|---|
+| `income_band` | `1`, `2`, `3`, `4`, missing | Undocumented codes. Code `4` appears only in contracts signed from 2025 onward. Older releases published text labels instead of codes. |
+| `fgts_account_holder` | `S`, `N`, `1`, `0`, missing | FGTS account holder flag, mixing two encodings. Missing in about 94% of rows. |
+| `sex` | `M`, `F`, `X`, missing | Source codes. `X` is undocumented. |
+| `property_type` | `novo`/`usado` in three capitalizations, missing | New or existing dwelling. |
+| `amortization_system` | `price`, `sac`, `sacre` in varying case, missing | Price, SAC, or SACRE amortization. |
+| `financing_program` | Program labels | Includes lines such as `Fundo Social` and `Classe Média`. Some labels vary in spelling, such as `Apoio à Produção` and `Apoio à producao`. |
+
+`interest_rate` is in percentage units as published. The source does not
+state its periodicity. `household_income` has no stated periodicity either.
+
+### Subsidy components
+
+The four subsidy columns split the subsidy by funding source and mechanism.
+
+- `subsidy_fgts_discount` and `subsidy_ogu_discount` are the discounts
+  applied to the purchase, funded by the FGTS or by the federal budget (OGU).
+- `subsidy_fgts_interest` and `subsidy_ogu_interest` are the interest
+  subsidies ("equilíbrio") that lower the financing cost.
+
+In the July 2026 release, the four components sum to `subsidy_total` in
+`financing_summary` for every municipality, month, and income band. The
+discount components alone do not.
+
+## `financing_summary`
+
+`r mcmv$categories$financing_summary$description`. These are the Ministry's
+own totals, not sums computed by the package.
+
+```{r summary}
+column_table("financing_summary")
+```
+
+In the July 2026 release, the summary and `financing` agree in every
+municipality, year, month, and income band: unit counts match exactly and
+amounts match within BRL 0.01.
+
+## `subsidized_projects`
+
+`r mcmv$categories$subsidized_projects$description`. These projects are
+funded by the federal budget (OGU) under modalities such as FAR, Entidades,
+Rural, and Oferta Publica.
+
+```{r projects}
+column_table("subsidized_projects")
+```
+
+Keep these points in mind before aggregating.
+
+- **Duplicates.** The June 2026 release has 3,281 exact duplicate rows.
+  Remove them with `distinct()` before counting projects or units.
+- **Operation codes.** `operation_code` is missing in 4,608 rows and repeats
+  in others, so it is not a primary key.
+- **Unit accounting.** `units_contracted` equals `units_delivered +
+  units_outstanding + units_cancelled` in every row where all four are
+  reported. Six rows lack `units_cancelled`.
+- **Labels.** `modality` includes both `Rural` and `RURAL`.
+
+`responsible_entity_cnpj` and `postal_code` are text, which preserves leading
+zeros.
+
+## Changes across source releases
+
+The Ministry has changed file layouts between releases without notice. The
+package recognizes the layouts below and rejects any other layout.
+
+| Release | Table | Change |
+|---|---|---|
+| December 2025 | `financing` | 23 columns with birth date and project name; income bands as text labels; Brazilian number format. |
+| March 2026 | `financing` | No `sex` column; state header renamed; decimal-point numbers; about 494,000 rows labeled `Fora MCMV/CVA`. |
+| July 2026 | `financing` | `sex` returns; birth date and project name removed; income bands become codes `1` to `4`; Brazilian number format. |
+| Up to 2025 | `financing_summary` | Annual totals by municipality, without month, region, or income band. |
+| July 2026 | `financing_summary` | Monthly totals by municipality and income band; decimal-point numbers. |
+| March 2026 | `subsidized_projects` | Decimal-point numbers. |
+| June 2026 | `subsidized_projects` | Same headers as March, but Brazilian number format and thousands separators in municipality codes. |
+
+Columns missing from a release appear as `NA` in every row of that snapshot.
+In annual summaries, a missing `contract_month` means the source did not
+publish monthly detail, not January.
+
+Each release replaces the full history, and releases overlap. They are
+published as separate snapshots and should not be appended to each other.

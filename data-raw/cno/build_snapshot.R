@@ -1,5 +1,7 @@
 # Build CNO Parquet snapshots ----
 
+source("data-raw/pipeline/snapshot_helpers.R")
+
 CNO_SOURCE_FILES <- c(
   constructions = "cno.csv",
   areas = "cno_areas.csv",
@@ -82,17 +84,17 @@ build_cno_snapshot <- function(
 
     parquet_path <- file.path(staging_dir, paste0(table, ".parquet"))
     order_columns <- if (table == "constructions") c("state", "cno") else "cno"
-    source_rows <- write_cno_parquet(
+    source_rows <- write_snapshot_parquet(
       connection,
       normalized_view,
       parquet_path,
       order_columns
     )
-    parquet_rows <- query_cno_scalar(
+    parquet_rows <- query_snapshot_scalar(
       connection,
       paste0(
         "SELECT count(*) FROM read_parquet(",
-        quote_cno_string(connection, parquet_path),
+        quote_snapshot_string(connection, parquet_path),
         ")"
       )
     )
@@ -101,17 +103,17 @@ build_cno_snapshot <- function(
         "Table {.val {table}} changed row count while writing Parquet."
       )
     }
-    replace_cno_view_with_parquet(
+    replace_snapshot_view_with_parquet(
       connection,
       normalized_view,
       parquet_path
     )
 
-    distinct_cno <- query_cno_scalar(
+    distinct_cno <- query_snapshot_scalar(
       connection,
       paste0(
         "SELECT count(DISTINCT cno) FROM ",
-        quote_cno_identifier(connection, normalized_view)
+        quote_snapshot_identifier(connection, normalized_view)
       )
     )
     columns <- lapply(category$source_columns, function(column) {
@@ -121,8 +123,8 @@ build_cno_snapshot <- function(
     schema_metadata[[table]] <- columns
     table_metadata[[table]] <- list(
       grain = category$grain,
-      primary_key = as_cno_manifest_array(category$primary_key),
-      foreign_key = as_cno_manifest_array(category$foreign_key),
+      primary_key = as_snapshot_manifest_array(category$primary_key),
+      foreign_key = as_snapshot_manifest_array(category$foreign_key),
       columns = columns,
       rows = source_rows,
       distinct_cno = distinct_cno,
@@ -136,25 +138,10 @@ build_cno_snapshot <- function(
   declared_totals <- read_cno_declared_totals(connection, totals_path)
   validate_cno_declared_totals(declared_totals, table_metadata)
 
-  source_metadata <- lapply(source_paths, function(path) {
-    list(
-      file = basename(path),
-      bytes = unname(file.size(path)),
-      sha256 = digest::digest(path, algo = "sha256", file = TRUE)
-    )
-  })
-  source_metadata$totals <- list(
-    file = basename(totals_path),
-    bytes = unname(file.size(totals_path)),
-    sha256 = digest::digest(totals_path, algo = "sha256", file = TRUE)
-  )
+  source_metadata <- lapply(source_paths, snapshot_file_metadata)
+  source_metadata$totals <- snapshot_file_metadata(totals_path)
 
-  schema_json <- jsonlite::toJSON(schema_metadata, auto_unbox = TRUE)
-  schema_sha256 <- digest::digest(
-    schema_json,
-    algo = "sha256",
-    serialize = FALSE
-  )
+  schema_sha256 <- snapshot_schema_hash(schema_metadata)
   expected_schema_sha256 <- cno_info$query_manifest$schema_sha256
   if (!identical(schema_sha256, expected_schema_sha256)) {
     cli::cli_abort(c(
@@ -178,13 +165,7 @@ build_cno_snapshot <- function(
     tables = table_metadata
   )
   manifest_path <- file.path(staging_dir, "manifest.json")
-  jsonlite::write_json(
-    manifest,
-    manifest_path,
-    auto_unbox = TRUE,
-    pretty = TRUE,
-    null = "null"
-  )
+  write_snapshot_manifest(manifest, manifest_path)
 
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
   if (!file.rename(staging_dir, snapshot_dir)) {
@@ -250,9 +231,9 @@ validate_cno_build_arguments <- function(
 create_cno_source_view <- function(connection, view, path) {
   statement <- paste0(
     "CREATE VIEW ",
-    quote_cno_identifier(connection, view),
+    quote_snapshot_identifier(connection, view),
     " AS SELECT * FROM read_csv(",
-    quote_cno_string(connection, path),
+    quote_snapshot_string(connection, path),
     ", header = true, all_varchar = true, encoding = 'cp1252', ",
     "strict_mode = true, nullstr = '')"
   )
@@ -260,22 +241,6 @@ create_cno_source_view <- function(connection, view, path) {
   return(invisible(TRUE))
 }
 
-replace_cno_view_with_parquet <- function(
-  connection,
-  normalized_view,
-  parquet_path
-) {
-  statement <- paste0(
-    "CREATE OR REPLACE VIEW ",
-    quote_cno_identifier(connection, normalized_view),
-    " AS SELECT * FROM read_parquet(",
-    quote_cno_string(connection, parquet_path),
-    ")"
-  )
-  DBI::dbExecute(connection, statement)
-
-  return(invisible(TRUE))
-}
 
 validate_cno_source_headers <- function(
   connection,
@@ -285,7 +250,7 @@ validate_cno_source_headers <- function(
 ) {
   statement <- paste0(
     "DESCRIBE SELECT * FROM ",
-    quote_cno_identifier(connection, source_view)
+    quote_snapshot_identifier(connection, source_view)
   )
   actual <- DBI::dbGetQuery(connection, statement)$column_name
   if (!identical(actual, expected)) {
@@ -310,8 +275,8 @@ create_cno_normalized_view <- function(
     function(source_name) {
       target <- columns[[source_name]]$name
       type <- columns[[source_name]]$type
-      source_sql <- quote_cno_identifier(connection, source_name)
-      target_sql <- quote_cno_identifier(connection, target)
+      source_sql <- quote_snapshot_identifier(connection, source_name)
+      target_sql <- quote_snapshot_identifier(connection, target)
 
       paste0(
         "CAST(NULLIF(",
@@ -327,47 +292,20 @@ create_cno_normalized_view <- function(
 
   statement <- paste0(
     "CREATE VIEW ",
-    quote_cno_identifier(connection, normalized_view),
+    quote_snapshot_identifier(connection, normalized_view),
     " AS SELECT ",
     paste(expressions, collapse = ", "),
     " FROM ",
-    quote_cno_identifier(connection, source_view)
+    quote_snapshot_identifier(connection, source_view)
   )
   DBI::dbExecute(connection, statement)
 
   return(invisible(TRUE))
 }
 
-write_cno_parquet <- function(
-  connection,
-  normalized_view,
-  parquet_path,
-  order_columns
-) {
-  order_sql <- paste(
-    vapply(
-      order_columns,
-      \(column) quote_cno_identifier(connection, column),
-      character(1)
-    ),
-    collapse = ", "
-  )
-  statement <- paste0(
-    "COPY (SELECT * FROM ",
-    quote_cno_identifier(connection, normalized_view),
-    " ORDER BY ",
-    order_sql,
-    ") TO ",
-    quote_cno_string(connection, parquet_path),
-    " (FORMAT PARQUET, COMPRESSION ZSTD, ROW_GROUP_SIZE 122880)"
-  )
-  rows <- DBI::dbExecute(connection, statement)
-
-  return(as.numeric(rows))
-}
 
 validate_cno_relations <- function(connection) {
-  duplicate_constructions <- query_cno_scalar(
+  duplicate_constructions <- query_snapshot_scalar(
     connection,
     paste(
       "SELECT count(*) - count(DISTINCT cno)",
@@ -380,7 +318,7 @@ validate_cno_relations <- function(connection) {
     )
   }
 
-  invalid_width <- query_cno_scalar(
+  invalid_width <- query_snapshot_scalar(
     connection,
     paste(
       "SELECT count(*) FROM normalized_constructions",
@@ -396,11 +334,11 @@ validate_cno_relations <- function(connection) {
   for (table in setdiff(names(CNO_SOURCE_FILES), "constructions")) {
     statement <- paste0(
       "SELECT count(*) FROM ",
-      quote_cno_identifier(connection, paste0("normalized_", table)),
+      quote_snapshot_identifier(connection, paste0("normalized_", table)),
       " AS child LEFT JOIN normalized_constructions AS constructions USING (cno) ",
       "WHERE constructions.cno IS NULL"
     )
-    orphan_rows <- query_cno_scalar(connection, statement)
+    orphan_rows <- query_snapshot_scalar(connection, statement)
     if (orphan_rows != 0) {
       cli::cli_abort(
         "CNO table {.val {table}} contains {orphan_rows} orphan rows."
@@ -418,7 +356,7 @@ read_cno_declared_totals <- function(connection, totals_path) {
     "CAST(\"Total de cnaes\" AS BIGINT) AS cnaes, ",
     "CAST(\"Total de vínculos\" AS BIGINT) AS responsibilities ",
     "FROM read_csv(",
-    quote_cno_string(connection, totals_path),
+    quote_snapshot_string(connection, totals_path),
     ", header = true, all_varchar = true, encoding = 'cp1252')"
   )
 
@@ -439,23 +377,6 @@ validate_cno_declared_totals <- function(declared, table_metadata) {
   return(invisible(TRUE))
 }
 
-query_cno_scalar <- function(connection, statement) {
-  value <- DBI::dbGetQuery(connection, statement)[[1]][[1]]
-  return(as.numeric(value))
-}
 
-quote_cno_identifier <- function(connection, value) {
-  return(as.character(DBI::dbQuoteIdentifier(connection, value)))
-}
 
-quote_cno_string <- function(connection, value) {
-  return(as.character(DBI::dbQuoteString(connection, value)))
-}
 
-as_cno_manifest_array <- function(value) {
-  if (is.null(value)) {
-    return(NULL)
-  }
-
-  return(as.list(unname(value)))
-}

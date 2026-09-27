@@ -49,6 +49,7 @@ Other datasets:
 \code{\link{bcb_series}},
 \code{\link{cno}},
 \code{\link{fgv_ibre}},
+\code{\link{mcmv}},
 \code{\link{paic}},
 \code{\link{rppi}},
 \code{\link{rppi_bis}},
