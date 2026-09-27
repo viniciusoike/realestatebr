@@ -78,4 +78,18 @@ short-lived validation artifact. With `publish = true`, it also:
 2. queries the published files remotely;
 3. updates `latest.json` in the `mcmv-v1-latest` release.
 
-Publishing requires a license with an evidence URL.
+Publishing requires a license with an evidence URL. When the version is left
+empty, the workflow uses the `data_referencia` date inside the financing file.
+
+## Discovering new releases
+
+File names change irregularly between releases (`mcmv_subsidiado_202606302.zip`,
+`mcmv_financ_sintetico_20260724_v2.zip`), so their dates are not reliable.
+`discover_sources.R` instead matches three stable prefixes among the landing
+page's links and requires exactly one link per table.
+
+The weekly `Discover MCMV Sources` workflow compares the discovered URLs with
+those in the latest published manifest. When they differ, it starts an
+unpublished run of `Build MCMV Snapshot` and opens an issue named after the
+three files. An existing issue with the same name stops the workflow from
+repeating the build. Publishing stays manual.

@@ -31,8 +31,9 @@ on:
         options: [projects_june, projects_march]
         default: projects_june
       snapshot_version:
-        description: Immutable snapshot version (YYYY-MM-DD)
-        required: true
+        description: Immutable snapshot version (YYYY-MM-DD); leave empty to use the financing reference date
+        required: false
+        default: ""
         type: string
       source_license:
         description: Dataset-specific license and evidence URL permitting redistribution (required to publish)
@@ -54,7 +55,7 @@ jobs:
   build-mcmv:
     runs-on: ubuntu-latest
     env:
-      MCMV_VERSION: ${{ inputs.snapshot_version }}
+      MCMV_VERSION_INPUT: ${{ inputs.snapshot_version }}
       MCMV_FINANCING_URL: ${{ inputs.financing_url }}
       MCMV_SUMMARY_URL: ${{ inputs.summary_url }}
       MCMV_PROJECTS_URL: ${{ inputs.projects_url }}
@@ -106,6 +107,17 @@ jobs:
                   "--retry-all-errors", "--retry-delay", "10", "--connect-timeout", "30",
                   "--max-time", "3600", "--user-agent", "realestatebr data pipeline",
                   "--output", str(dest), url], check=True)
+      - name: Resolve snapshot version
+        shell: Rscript {0}
+        run: |
+          source("data-raw/mcmv/discover_sources.R")
+          version <- Sys.getenv("MCMV_VERSION_INPUT")
+          if (!nzchar(version)) {
+            financing <- list.files("data-raw/mcmv_source", "^financing[.]", full.names = TRUE)
+            version <- mcmv_reference_version(financing)
+          }
+          cli::cli_inform("Snapshot version: {.val {version}}.")
+          cat(sprintf("MCMV_VERSION=%s\n", version), file = Sys.getenv("GITHUB_ENV"), append = TRUE)
       - name: Build and validate snapshot
         shell: Rscript {0}
         run: |
@@ -129,8 +141,8 @@ jobs:
       - name: Upload validated artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: mcmv-${{ inputs.snapshot_version }}
-          path: data-raw/mcmv_output/${{ inputs.snapshot_version }}/
+          name: mcmv-${{ env.MCMV_VERSION }}
+          path: data-raw/mcmv_output/${{ env.MCMV_VERSION }}/
           if-no-files-found: error
           retention-days: 7
       - name: Publish immutable release
