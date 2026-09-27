@@ -1,3 +1,7 @@
+# realestatebr (development version)
+
+* Added `query_dataset("mcmv")`, with Minha Casa, Minha Vida financing contracts, official financing totals, and federally subsidized housing projects from the Ministério das Cidades. A new article covers the three tables, and a data dictionary documents their columns and source changes.
+
 # realestatebr 1.1.0
 
 * Added `get_dataset("pim_pf_construction")`, a linked monthly IBGE production index for construction inputs from January 1991.

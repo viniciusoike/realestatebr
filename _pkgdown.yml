@@ -49,11 +49,16 @@ articles:
       - getting-started
       - articles/working-with-rppi
       - articles/working-with-cno
+      - articles/working-with-mcmv
   - title: "Market deep dives"
     navbar: Market deep dives
     contents:
       - articles/housing-credit
       - articles/primary-market
+  - title: "Data dictionaries"
+    navbar: Data dictionaries
+    contents:
+      - articles/mcmv-data-dictionary
   - title: internal
     contents:
       - articles/realestatebr-1-0-1

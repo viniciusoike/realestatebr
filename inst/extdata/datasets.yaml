@@ -706,7 +706,7 @@ datasets:
     url: "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/habitacao/programa-minha-casa-minha-vida/bases-de-dados-do-programa-minha-casa-minha-vida"
     geography: Brazil
     frequency: "dated full snapshots"
-    coverage: "Initial financing snapshot through 2026-07-24; projects through 2026-06-30"
+    coverage: "Contracts signed from 2009 onward; each snapshot reports its own reference dates"
     update_schedule: "manual snapshots"
     access_mode: query
     data_type: "lazy tables"
@@ -718,7 +718,7 @@ datasets:
     categories:
       financing:
         name: "Financing"
-        description: "one published financing observation; no unique key"
+        description: "One published financing observation, usually one housing unit. The source has no unique key"
         grain: "one published financing observation; no unique key"
         columns:
           reference_date: "Reference date reported inside the source; not retrieval or publication date."
@@ -726,7 +726,7 @@ datasets:
           name_muni: "Municipality name as published, including whitespace and capitalization."
           state: "Source state abbreviation."
           region: "Source Brazilian region label; capitalization is preserved."
-          contract_date: "Financing signature or project contract date. Midnight timestamps are converted to dates."
+          contract_date: "Financing contract signature date."
           units_financed: "Number of financed housing units reported in this observation."
           amount_financed: "Financing amount, in nominal BRL."
           subsidy_fgts_discount: "FGTS discount subsidy, in nominal BRL."
@@ -770,7 +770,7 @@ datasets:
           co_sexo: {name: "sex", type: "VARCHAR", unit: "identifier or source label"}
       financing_summary:
         name: "Financing Summary"
-        description: "municipality/year/month/income band; historical annual municipality/year"
+        description: "Official totals by municipality, year, month, and income band"
         grain: "municipality/year/month/income band; historical annual municipality/year"
         columns:
           reference_date: "Reference date reported inside the source; not retrieval or publication date."
@@ -798,7 +798,7 @@ datasets:
           txt_compatibilidade_faixa_renda: {name: "income_band", type: "VARCHAR", unit: "identifier or source label"}
       subsidized_projects:
         name: "Subsidized Projects"
-        description: "one published project record; duplicates and missing operation codes retained"
+        description: "One published subsidized-project record. Duplicate rows and missing operation codes are retained"
         grain: "one published project record; duplicates and missing operation codes retained"
         columns:
           reference_date: "Reference date reported inside the source; not retrieval or publication date."
@@ -806,9 +806,9 @@ datasets:
           name_muni: "Municipality name as published, including whitespace and capitalization."
           state: "Source state abbreviation."
           region: "Source Brazilian region label; capitalization is preserved."
-          contract_date: "Financing signature or project contract date. Midnight timestamps are converted to dates."
+          contract_date: "Project contract signature date."
           operation_code: "Source operation identifier; missing and repeated values are retained. Not a primary key."
-          project_name: "Source development name; unpublished in July financing layout."
+          project_name: "Source development name."
           financial_agent: "Source financial-agent name."
           modality: "Source housing modality label."
           project_status: "Source project-status label."

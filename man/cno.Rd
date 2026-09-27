@@ -113,6 +113,7 @@ Other datasets:
 \code{\link{bcb_realestate}},
 \code{\link{bcb_series}},
 \code{\link{fgv_ibre}},
+\code{\link{mcmv}},
 \code{\link{pim_pf_construction}},
 \code{\link{rppi}},
 \code{\link{rppi_bis}},
