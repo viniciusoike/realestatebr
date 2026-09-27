@@ -13,8 +13,9 @@
 #' @param name Character. Dataset name (see \code{\link{list_datasets}} for
 #'   options). Each dataset has its own help topic documenting tables and
 #'   columns: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
-#'   \link{bcb_series}, \link{fgv_ibre}, \link{pim_pf_construction},
-#'   \link{rppi}, \link{rppi_bis}, \link{secovi}, and \link{sinapi}.
+#'   \link{bcb_series}, \link{fgv_ibre}, \link{paic},
+#'   \link{pim_pf_construction}, \link{rppi}, \link{rppi_bis}, \link{secovi},
+#'   and \link{sinapi}.
 #' @param table Character. Specific table within a multi-table dataset. See
 #'   \code{\link{get_dataset_info}} for available tables per dataset.
 #' @param source Character. Data source preference:
@@ -61,8 +62,9 @@
 #'   \code{\link{clear_session_cache}} to drop the in-session memo.
 #'   For table and column documentation of each dataset, see the dataset
 #'   help topics: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
-#'   \link{bcb_series}, \link{fgv_ibre}, \link{pim_pf_construction},
-#'   \link{rppi}, \link{rppi_bis}, \link{secovi}, and \link{sinapi}.
+#'   \link{bcb_series}, \link{fgv_ibre}, \link{paic},
+#'   \link{pim_pf_construction}, \link{rppi}, \link{rppi_bis}, \link{secovi},
+#'   and \link{sinapi}.
 #'
 #' @export
 get_dataset <- function(
@@ -564,7 +566,8 @@ supports_table_all <- function(func_name) {
     "get_secovi",
     "get_rppi_bis",
     "get_bcb_series",
-    "get_fgv_ibre"
+    "get_fgv_ibre",
+    "get_paic"
   )
 
   return(func_name %in% functions_with_table)

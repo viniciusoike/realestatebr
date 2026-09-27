@@ -182,6 +182,18 @@ get_required_columns <- function(dataset_name) {
     "pim_pf_construction" = c(
       "date", "variable", "reference_period", "source_table", "value"
     ),
+    "paic_activity" = c(
+      "year", "source_table", "geography_type", "size_band",
+      "activity_level", "variable", "unit", "value"
+    ),
+    "paic_size" = c(
+      "year", "source_table", "geography_type", "size_band",
+      "variable", "unit", "value"
+    ),
+    "paic_state" = c(
+      "year", "source_table", "geography_type", "geography_basis",
+      "variable", "unit", "value"
+    ),
     "bis_selected" = c("date", "country", "value"),
     "cbic" = c("date", "indicator", "value"),
     "property_records" = c("date", "state", "transactions"),
@@ -199,7 +211,10 @@ get_required_columns <- function(dataset_name) {
 get_mixed_unit_columns <- function(dataset_name) {
   mixed_unit_columns <- list(
     "secovi" = "value",
-    "sinapi" = "value"
+    "sinapi" = "value",
+    "paic_activity" = "value",
+    "paic_size" = "value",
+    "paic_state" = "value"
   )
 
   return(mixed_unit_columns[[dataset_name]])
