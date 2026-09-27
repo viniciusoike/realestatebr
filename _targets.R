@@ -424,6 +424,66 @@ list(
     )
   ),
 
+  # ========================================================================
+  # ANNUAL UPDATES - Annual datasets refreshed on IBGE's release schedule
+  # ========================================================================
+
+  # ---- PAIC - Construction Industry Data (new 2024-onward series) ----
+  # Annual release (usually June); the 180-day cue matches the registry's
+  # warn window instead of the weekly SINAPI cue.
+  tar_target(
+    name = paic_activity_data,
+    command = fetch_dataset("paic", table = "activity"),
+    cue = tar_cue_age(
+      name = paic_activity_data,
+      age = as.difftime(180, units = "days")
+    )
+  ),
+  tar_target(
+    name = paic_activity_cache,
+    command = save_to_cache(paic_activity_data, "paic_activity")
+  ),
+  tar_target(
+    name = paic_activity_validation,
+    command = validate_dataset(paic_activity_data, "paic_activity")
+  ),
+  tar_target(
+    name = paic_size_data,
+    command = fetch_dataset("paic", table = "size"),
+    cue = tar_cue_age(
+      name = paic_size_data,
+      age = as.difftime(180, units = "days")
+    )
+  ),
+  tar_target(
+    name = paic_size_cache,
+    command = save_to_cache(paic_size_data, "paic_size")
+  ),
+  tar_target(
+    name = paic_size_validation,
+    command = validate_dataset(paic_size_data, "paic_size")
+  ),
+  tar_target(
+    name = paic_state_data,
+    command = fetch_dataset("paic", table = "state"),
+    cue = tar_cue_age(
+      name = paic_state_data,
+      age = as.difftime(180, units = "days")
+    )
+  ),
+  tar_target(
+    name = paic_state_cache,
+    command = save_to_cache(paic_state_data, "paic_state")
+  ),
+  tar_target(
+    name = paic_state_validation,
+    command = validate_dataset(paic_state_data, "paic_state")
+  ),
+  tar_target(
+    name = paic_cache,
+    command = c(paic_activity_cache, paic_size_cache, paic_state_cache)
+  ),
+
   # Pipeline summary -------------------------------------------------------
 
   tar_target(
@@ -451,7 +511,8 @@ list(
         rppi_cache_secovi_sp,
         bis_rppi_cache,
         sinapi_cache,
-        pim_pf_construction_cache
+        pim_pf_construction_cache,
+        paic_cache
       )
 
       # Collect all validations
@@ -468,7 +529,10 @@ list(
         rppi_all = rppi_all_validation,
         bis_rppi = bis_rppi_validation,
         sinapi = sinapi_validation,
-        pim_pf_construction = pim_pf_construction_validation
+        pim_pf_construction = pim_pf_construction_validation,
+        paic_activity = paic_activity_validation,
+        paic_size = paic_size_validation,
+        paic_state = paic_state_validation
       )
 
       summary_info <- list(
@@ -493,7 +557,10 @@ list(
           "rppi_secovi_sp",
           "bis_rppi",
           "sinapi",
-          "pim_pf_construction"
+          "pim_pf_construction",
+          "paic_activity",
+          "paic_size",
+          "paic_state"
         ),
         weekly_datasets = c(
           "bcb_series",
@@ -521,6 +588,11 @@ list(
         ),
         monthly_datasets = c(
           "bis_rppi"
+        ),
+        annual_datasets = c(
+          "paic_activity",
+          "paic_size",
+          "paic_state"
         ),
         cache_files = cache_files,
         validations = validations

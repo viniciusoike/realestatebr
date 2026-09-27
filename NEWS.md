@@ -1,3 +1,7 @@
+# realestatebr (development version)
+
+* Added `get_dataset("paic")`, with annual IBGE construction-industry data for the new series starting in 2024 (SIDRA tables 10463, 10441, and 10442). The `activity`, `size`, and `state` tables cover enterprises, employment, revenue, costs, and output; values publish in original units with a `value_status` column for SIDRA symbols. Do not compare with the 2007-2023 series (see IBGE Nota técnica 01/2026).
+
 # realestatebr 1.1.0
 
 * Added `get_dataset("pim_pf_construction")`, a linked monthly IBGE production index for construction inputs from January 1991.
