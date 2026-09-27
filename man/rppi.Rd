@@ -182,6 +182,7 @@ Other datasets:
 \code{\link{cno}},
 \code{\link{fgv_ibre}},
 \code{\link{mcmv}},
+\code{\link{paic}},
 \code{\link{pim_pf_construction}},
 \code{\link{rppi_bis}},
 \code{\link{secovi}},
