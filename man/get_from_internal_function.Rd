@@ -4,7 +4,7 @@
 \alias{get_from_internal_function}
 \title{Get Data from Internal Function}
 \usage{
-get_from_internal_function(name, dataset_info, table)
+get_from_internal_function(name, dataset_info, table, quiet = FALSE, ...)
 }
 \description{
 Calls dataset-specific internal functions for a fresh download from the

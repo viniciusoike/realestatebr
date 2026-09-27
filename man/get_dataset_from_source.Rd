@@ -4,7 +4,7 @@
 \alias{get_dataset_from_source}
 \title{Get Dataset from Specific Source}
 \usage{
-get_dataset_from_source(name, dataset_info, source, table, quiet)
+get_dataset_from_source(name, dataset_info, source, table, quiet, ...)
 }
 \value{
 A list with elements \code{data} and \code{tier}.

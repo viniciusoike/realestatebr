@@ -1,11 +1,44 @@
 # Tests for the public get_dataset() argument contract and messaging.
 # These run offline by seeding the in-session memo.
 
-test_that("get_dataset rejects unknown arguments", {
+test_that("get_dataset rejects removed cache argument", {
   expect_error(get_dataset("abecip", cached = TRUE), "unused argument")
+})
+
+test_that("get_dataset retains date filters for compatibility", {
+  withr::defer(clear_session_cache())
+  memo_set(
+    memo_key("abecip", "sbpe"),
+    tibble::tibble(
+      date = as.Date(c("2019-01-01", "2020-01-01", "2021-01-01")),
+      value = 1:3
+    )
+  )
+
+  result <- get_dataset(
+    "abecip",
+    table = "sbpe",
+    date_start = as.Date("2020-01-01"),
+    date_end = as.Date("2020-12-31"),
+    quiet = TRUE
+  )
+
+  expect_equal(result$date, as.Date("2020-01-01"))
+  expect_equal(result$value, 2L)
+})
+
+test_that("get_dataset validates date filters", {
   expect_error(
-    get_dataset("abecip", date_start = as.Date("2020-01-01")),
-    "unused argument"
+    get_dataset("abecip", date_start = c("2020-01-01", "2020-02-01")),
+    "single valid date"
+  )
+  expect_error(
+    get_dataset(
+      "abecip",
+      date_start = as.Date("2021-01-01"),
+      date_end = as.Date("2020-01-01")
+    ),
+    "on or before"
   )
   expect_error(get_dataset("abecip", quiet = "yes"), "must be")
 })
@@ -19,7 +52,7 @@ test_that("get_dataset lists materialized datasets alphabetically", {
   expected <- paste(
     "Dataset 'aaa' not found. Available:",
     "abecip, abrainc, bcb_realestate, bcb_series, fgv_ibre,",
-    "rppi, rppi_bis, secovi"
+    "pim_pf_construction, rppi, rppi_bis, secovi, sinapi"
   )
   expect_match(error$message, expected, fixed = TRUE)
   expect_false(grepl("cno", error$message, fixed = TRUE))

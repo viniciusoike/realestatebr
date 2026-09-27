@@ -382,6 +382,48 @@ list(
     command = validate_dataset(bis_rppi_data, "rppi_bis")
   ),
 
+  # ---- SINAPI - Construction Costs and Indices ----
+  tar_target(
+    name = sinapi_data,
+    command = fetch_dataset("sinapi"),
+    cue = tar_cue_age(
+      name = sinapi_data,
+      age = as.difftime(6, units = "days")
+    )
+  ),
+  tar_target(
+    name = sinapi_cache,
+    command = save_to_cache(sinapi_data, "sinapi")
+  ),
+  tar_target(
+    name = sinapi_validation,
+    command = validate_dataset(sinapi_data, "sinapi")
+  ),
+
+  # ---- PIM-PF - Construction-input Production ----
+  tar_target(
+    name = pim_pf_construction_data,
+    command = fetch_dataset("pim_pf_construction"),
+    cue = tar_cue_age(
+      name = pim_pf_construction_data,
+      age = as.difftime(6, units = "days")
+    )
+  ),
+  tar_target(
+    name = pim_pf_construction_cache,
+    command = save_to_cache(
+      pim_pf_construction_data,
+      "pim_pf_construction"
+    )
+  ),
+  tar_target(
+    name = pim_pf_construction_validation,
+    command = validate_dataset(
+      pim_pf_construction_data,
+      "pim_pf_construction"
+    )
+  ),
+
   # Pipeline summary -------------------------------------------------------
 
   tar_target(
@@ -407,7 +449,9 @@ list(
         rppi_cache_iqaiw,
         rppi_cache_ivar,
         rppi_cache_secovi_sp,
-        bis_rppi_cache
+        bis_rppi_cache,
+        sinapi_cache,
+        pim_pf_construction_cache
       )
 
       # Collect all validations
@@ -422,7 +466,9 @@ list(
         rppi_sale = rppi_sale_validation,
         rppi_rent = rppi_rent_validation,
         rppi_all = rppi_all_validation,
-        bis_rppi = bis_rppi_validation
+        bis_rppi = bis_rppi_validation,
+        sinapi = sinapi_validation,
+        pim_pf_construction = pim_pf_construction_validation
       )
 
       summary_info <- list(
@@ -445,7 +491,9 @@ list(
           "rppi_iqaiw",
           "rppi_ivar",
           "rppi_secovi_sp",
-          "bis_rppi"
+          "bis_rppi",
+          "sinapi",
+          "pim_pf_construction"
         ),
         weekly_datasets = c(
           "bcb_series",
@@ -463,7 +511,9 @@ list(
           "rppi_iqa",
           "rppi_iqaiw",
           "rppi_ivar",
-          "rppi_secovi_sp"
+          "rppi_secovi_sp",
+          "sinapi",
+          "pim_pf_construction"
         ),
         manual_datasets = c(
           "fgv_ibre",

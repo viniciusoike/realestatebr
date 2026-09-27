@@ -103,7 +103,13 @@ index.html
 # Root level .Rcheck variant
 ..Rcheck/
 .positai
-.claude/worktrees/
+
+# AI assistant files (local only)
+.agents/
+.claude/
+AGENTS.md
+CLAUDE.md
+skills-lock.json
 
 data-raw/mcmv_output/
 data-raw/mcmv_source/

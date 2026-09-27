@@ -30,9 +30,11 @@ reference:
       - bcb_series
       - cno
       - fgv_ibre
+      - pim_pf_construction
       - rppi
       - rppi_bis
       - secovi
+      - sinapi
   - title: "Bundled tables"
     desc: "Auxiliary data shipped with the package"
     contents:

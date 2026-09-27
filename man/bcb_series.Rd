@@ -51,9 +51,11 @@ Other datasets:
 \code{\link{bcb_realestate}},
 \code{\link{cno}},
 \code{\link{fgv_ibre}},
+\code{\link{pim_pf_construction}},
 \code{\link{rppi}},
 \code{\link{rppi_bis}},
-\code{\link{secovi}}
+\code{\link{secovi}},
+\code{\link{sinapi}}
 }
 \concept{datasets}
 \keyword{datasets}

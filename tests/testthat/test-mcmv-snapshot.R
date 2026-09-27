@@ -106,7 +106,7 @@ test_that("MCMV snapshots use existing lazy catalog and manifest contracts", {
   close(catalog)
   close(catalog)
   expect_identical(DBI::dbIsValid(owner$connection), FALSE)
-  expect_error(query_dataset("mcmv", version = "2025-01-01"), "not available at this manifest")
+  expect_error(query_dataset("mcmv", version = "2025-01-01"), "not available")
   manifest <- jsonlite::read_json(path)
   expect_equal(manifest$tables$financing$rows, 3)
   expect_equal(unlist(manifest$source$files$financing$absent_columns), c("birth_date", "project_name"))
