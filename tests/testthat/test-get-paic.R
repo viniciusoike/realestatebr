@@ -29,7 +29,7 @@ make_paic_raw <- function(
     geography_code = recycle(geography_code),
     geography_name = recycle(geography_name),
     value_raw = recycle(as.character(values)),
-    value = suppressWarnings(as.numeric(recycle(values)))
+    value = parse_ibge_value(recycle(values))
   )
 
   if (!is.null(category_code)) {
@@ -48,6 +48,61 @@ make_paic_raw <- function(
   }
 
   return(dat)
+}
+
+# Raw SIDRA response for table 10442, 2024, all variables at N1, N2, and N3
+# (retrieved 2026-09-27).
+read_paic_state_fixture <- function() {
+  path <- testthat::test_path("fixtures", "paic_10442_2024.json")
+  json <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+
+  return(parse_ibge_aggregate_chunk(json, 10442L))
+}
+
+# Synthetic raw response covering every expected key. Activity totals equal
+# the sum of the three size-band subtotals; state cells in the size table's
+# total and 1-4 bands carry SIDRA's "-" as the live API does.
+make_paic_complete_raw <- function(table) {
+  if (table == "activity") {
+    grid <- tidyr::expand_grid(
+      variable_id = paic_activity_variables,
+      category_code = paic_activity_categories$category_id
+    )
+    grid$values <- ifelse(grid$category_code == "105185", "3", "1")
+    return(make_paic_raw(
+      table = 10463,
+      variable_id = grid$variable_id,
+      unit = unname(paic_variable_units[grid$variable_id]),
+      category_code = grid$category_code,
+      values = grid$values
+    ))
+  }
+
+  geographies <- tibble::tibble(
+    level = c("N1", rep("N2", 5), rep("N3", length(paic_state_codes))),
+    code = c("1", as.character(1:5), paic_state_codes)
+  )
+  grid <- tidyr::expand_grid(
+    variable_id = paic_size_variables,
+    category_code = names(paic_size_categories),
+    geographies
+  )
+  grid$values <- ifelse(
+    grid$level == "N3" & grid$category_code != "104030",
+    "-",
+    "10"
+  )
+
+  return(make_paic_raw(
+    table = 10441,
+    variable_id = grid$variable_id,
+    unit = unname(paic_variable_units[grid$variable_id]),
+    category_code = grid$category_code,
+    geography_level = grid$level,
+    geography_code = grid$code,
+    geography_name = grid$code,
+    values = grid$values
+  ))
 }
 
 test_that("PAIC derives value_status from SIDRA symbols", {
@@ -160,24 +215,6 @@ test_that("PAIC activity rejects unknown category IDs", {
   expect_snapshot(error = TRUE, clean_paic_activity(raw))
 })
 
-test_that("PAIC activity size bands sum to the all-firm total", {
-  # National division total is the sum of the three size bands; only
-  # "Total das empresas" covers all firms.
-  raw <- make_paic_raw(
-    table = 10463,
-    variable_id = "631",
-    unit = "Pessoas",
-    category_code = c("105185", "8415", "8418", "8432"),
-    values = c("1000", "100", "300", "600")
-  )
-
-  result <- clean_paic_activity(raw)
-  total <- result$value[result$size_band == "total"]
-  bands <- sum(result$value[result$size_band != "total"])
-
-  expect_equal(total, bands)
-})
-
 test_that("PAIC size keeps level variables with three size bands", {
   raw <- make_paic_raw(
     table = 10441,
@@ -278,7 +315,7 @@ test_that("PAIC keys include the geography level", {
     )
   )
 
-  result <- suppressWarnings(clean_paic_state(raw))
+  result <- clean_paic_state(raw)
 
   expect_equal(
     result$geography_type,
@@ -288,34 +325,195 @@ test_that("PAIC keys include the geography level", {
     result$variable_id,
     c("13807", "631", "13807", "631")
   )
-  expect_no_error(suppressWarnings(validate_paic_state(result)))
+})
+
+test_that("PAIC state matches published SIDRA figures", {
+  dat <- clean_paic_state(read_paic_state_fixture())
+
+  expect_no_error(validate_paic_state(dat))
+
+  employment <- dat[dat$variable_id == "631", ]
+  national <- employment$value[employment$geography_type == "brazil"]
+  states <- employment[employment$geography_type == "state", ]
+
+  expect_equal(national, 2181647)
+  expect_equal(nrow(states), 27L)
+  expect_equal(sum(states$value), national)
+})
+
+test_that("PAIC state validation rejects a missing state", {
+  local_edition(3)
+  dat <- clean_paic_state(read_paic_state_fixture())
+  dat <- dat[!(dat$geography_type == "state" & dat$geography_code == "35"), ]
+
+  expect_snapshot(error = TRUE, validate_paic_state(dat))
 })
 
 test_that("PAIC validation rejects duplicate keys", {
   local_edition(3)
-  raw <- make_paic_raw(
-    table = 10442,
-    variable_id = c("631", "631"),
-    unit = "Pessoas",
-    values = c("100", "200")
-  )
-  dat <- suppressWarnings(clean_paic_state(raw))
+  dat <- clean_paic_state(read_paic_state_fixture())
+  dat <- dplyr::bind_rows(dat, dat[1, ])
 
-  expect_snapshot(error = TRUE, suppressWarnings(validate_paic_state(dat)))
+  expect_snapshot(error = TRUE, validate_paic_state(dat))
 })
 
 test_that("PAIC validation enforces the headquarters basis for 13807", {
   local_edition(3)
-  raw <- make_paic_raw(
-    table = 10442,
-    variable_id = "13807",
-    unit = "Unidades",
-    values = "4232"
-  )
-  dat <- suppressWarnings(clean_paic_state(raw))
-  dat$geography_basis <- "work_location"
+  dat <- clean_paic_state(read_paic_state_fixture())
+  dat$geography_basis[dat$variable_id == "13807"] <- "work_location"
 
-  expect_snapshot(error = TRUE, suppressWarnings(validate_paic_state(dat)))
+  expect_snapshot(error = TRUE, validate_paic_state(dat))
+})
+
+test_that("PAIC size drops unpublished state cells", {
+  # SIDRA publishes state figures in table 10441 for firms with five or
+  # more workers only; "-" in the state total and 1-4 bands is not a zero.
+  raw <- make_paic_raw(
+    table = 10441,
+    variable_id = "410",
+    unit = "Unidades",
+    category_code = c("104029", "111261", "104030", "104029"),
+    geography_level = c("N3", "N3", "N3", "N2"),
+    geography_code = c("35", "35", "35", "3"),
+    geography_name = c("São Paulo", "São Paulo", "São Paulo", "Sudeste"),
+    values = c("-", "-", "20878", "94818")
+  )
+
+  result <- clean_paic_size(raw)
+
+  expect_equal(result$geography_type, c("region", "state"))
+  expect_equal(result$size_band, c("total", "5_plus"))
+  expect_equal(result$value, c(94818, 20878))
+})
+
+test_that("PAIC size validation accepts complete data", {
+  dat <- clean_paic_size(make_paic_complete_raw("size"))
+
+  expect_no_error(validate_paic_size(dat))
+  expect_setequal(dat$size_band[dat$geography_type == "state"], "5_plus")
+})
+
+test_that("PAIC size validation rejects state rows outside the 5+ band", {
+  local_edition(3)
+  dat <- clean_paic_size(make_paic_complete_raw("size"))
+  extra <- dat[dat$geography_type == "state", ][1, ]
+  extra$size_band <- "total"
+  dat <- dplyr::bind_rows(dat, extra)
+
+  expect_snapshot(error = TRUE, validate_paic_size(dat))
+})
+
+test_that("PAIC activity validation accepts consistent size bands", {
+  dat <- clean_paic_activity(make_paic_complete_raw("activity"))
+
+  expect_no_error(validate_paic_activity(dat))
+})
+
+test_that("PAIC activity validation rejects inconsistent size bands", {
+  local_edition(3)
+  dat <- clean_paic_activity(make_paic_complete_raw("activity"))
+  broken <- dat$variable_id == "631" &
+    dat$activity_level == "total" &
+    dat$size_band == "5_29"
+  dat$value[broken] <- 5
+
+  expect_snapshot(error = TRUE, validate_paic_activity(dat))
+})
+
+test_that("PAIC cleaners reject malformed responses", {
+  local_edition(3)
+  empty <- make_paic_raw(table = 10442, variable_id = "631", unit = "Pessoas")
+  empty <- empty[0, ]
+  wrong_table <- make_paic_raw(
+    table = 10441,
+    variable_id = "631",
+    unit = "Pessoas"
+  )
+  no_geography <- make_paic_raw(
+    table = 10442,
+    variable_id = "631",
+    unit = "Pessoas",
+    geography_code = NA_character_
+  )
+  bad_level <- make_paic_raw(
+    table = 10442,
+    variable_id = "631",
+    unit = "Pessoas",
+    geography_level = "N6"
+  )
+  no_unit <- make_paic_raw(table = 10442, variable_id = "631", unit = "")
+  no_classification <- make_paic_raw(
+    table = 10463,
+    variable_id = "631",
+    unit = "Pessoas"
+  )
+  bad_size <- make_paic_raw(
+    table = 10441,
+    variable_id = "410",
+    unit = "Unidades",
+    category_code = "999999"
+  )
+
+  expect_snapshot(error = TRUE, clean_paic_base(empty, 10442L))
+  expect_snapshot(error = TRUE, clean_paic_base(wrong_table, 10442L))
+  expect_snapshot(error = TRUE, clean_paic_base(no_geography, 10442L))
+  expect_snapshot(error = TRUE, clean_paic_base(bad_level, 10442L))
+  expect_snapshot(error = TRUE, clean_paic_base(no_unit, 10442L))
+  expect_snapshot(error = TRUE, clean_paic_activity(no_classification))
+  expect_snapshot(error = TRUE, clean_paic_size(bad_size))
+})
+
+test_that("get_dataset dispatches PAIC tables with the registry schema", {
+  local_edition(3)
+  clear_session_cache()
+  withr::defer(clear_session_cache())
+  local_mocked_bindings(
+    download_paic_table = function(table, quiet, max_retries) {
+      switch(
+        table,
+        "activity" = make_paic_complete_raw("activity"),
+        "size" = make_paic_complete_raw("size"),
+        "state" = read_paic_state_fixture()
+      )
+    }
+  )
+
+  result <- get_dataset("paic", table = "all", source = "fresh", quiet = TRUE)
+  columns <- load_dataset_registry()$datasets$paic$categories
+
+  expect_named(result, c("activity", "size", "state"))
+  for (tbl in names(result)) {
+    expect_s3_class(result[[tbl]], "tbl_df")
+    expect_named(result[[tbl]], names(columns[[tbl]]$columns))
+  }
+
+  clear_session_cache()
+  state <- get_dataset(
+    "paic",
+    table = "state",
+    source = "fresh",
+    quiet = TRUE
+  )
+  expect_equal(state, result$state, ignore_attr = TRUE)
+})
+
+test_that("PAIC fresh download matches the registry schema", {
+  skip_on_cran()
+  skip_if_offline()
+
+  result <- get_paic("all", quiet = TRUE)
+  columns <- load_dataset_registry()$datasets$paic$categories
+
+  expect_named(result, c("activity", "size", "state"))
+  for (tbl in names(result)) {
+    expect_named(result[[tbl]], names(columns[[tbl]]$columns))
+  }
+  employment <- result$state[
+    result$state$variable_id == "631" &
+      result$state$geography_type == "brazil" &
+      result$state$year == 2024L,
+  ]
+  expect_equal(employment$value, 2181647)
 })
 
 test_that("PAIC registry documents three tables with activity as default", {

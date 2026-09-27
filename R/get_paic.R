@@ -17,12 +17,44 @@ paic_geography_names <- c(
   "N3" = "state"
 )
 
+paic_state_codes <- c(
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
+  "21",
+  "22",
+  "23",
+  "24",
+  "25",
+  "26",
+  "27",
+  "28",
+  "29",
+  "31",
+  "32",
+  "33",
+  "35",
+  "41",
+  "42",
+  "43",
+  "50",
+  "51",
+  "52",
+  "53"
+)
+
 # English identifiers for every retained variable, keyed by SIDRA variable ID.
 # Table 10463 keeps all 89 variables; table 10441 keeps the 16 level
 # variables (share variables with IDs starting in "1000" are dropped);
 # table 10442 keeps all 6 variables. Identifiers repeat across tables when
 # the concept matches (e.g. "gross_revenue" is 1260 in `activity` and 1239
-# in `size`); `variable_id` always disambiguates.
+# in `size`); `variable_id` always disambiguates. Variable 1245 in `state`
+# equals 1236 plus 411 (construction plus development costs), so it gets
+# its own identifier.
 paic_variable_names <- c(
   "410" = "firms",
   "631" = "employment",
@@ -34,7 +66,7 @@ paic_variable_names <- c(
   "1237" = "materials_consumption",
   "411" = "third_party_development_costs",
   "412" = "third_party_development_materials",
-  "1280" = "other_costs_total",
+  "1280" = "other_costs",
   "1260" = "gross_revenue",
   "1240" = "net_revenue",
   "637" = "intermediate_consumption",
@@ -116,7 +148,7 @@ paic_variable_names <- c(
   "1235" = "personnel_costs",
   "1238" = "other_costs",
   "1239" = "gross_revenue",
-  "1245" = "construction_costs",
+  "1245" = "construction_and_development_costs",
   "13807" = "firms_hq",
   "13808" = "firms_active"
 )
@@ -513,8 +545,10 @@ paic_size_categories <- c(
 
 # Geography basis for table 10442, keyed by variable ID. Variable 13807
 # counts firms by headquarters state ("origem - sede"); all other variables
-# follow the work location. Nota técnica 01/2026 describes table 10442 as
-# the regional distribution "considerando o local de atuação das empresas".
+# follow the work location. The PAIC 2024 publication (v. 34, June 2026,
+# "Conceituação das variáveis investigadas") states that the regional block
+# collects employment, wages, costs, and output by "Unidade da Federação de
+# atuação da empresa" (checked 2026-09-27).
 paic_state_geography_basis <- c(
   "13807" = "headquarters",
   "13808" = "work_location",
@@ -668,7 +702,7 @@ download_paic_table <- function(table, quiet, max_retries) {
 clean_paic_activity <- function(raw) {
   base <- clean_paic_base(raw, expected_table = paic_tables[["activity"]])
 
-  category_id <- raw$classification_12296_code
+  category_id <- paic_classification_codes(raw, 12296L)
   size_band <- paic_activity_categories$size_band[
     match(category_id, paic_activity_categories$category_id)
   ]
@@ -709,7 +743,6 @@ clean_paic_activity <- function(raw) {
     value_raw = base$value_raw,
     value_status = base$value_status
   )
-  dat$division_code[is.na(dat$activity_code)] <- NA_character_
 
   dat <- dplyr::arrange(
     dat,
@@ -723,15 +756,12 @@ clean_paic_activity <- function(raw) {
 }
 
 clean_paic_size <- function(raw) {
-  raw <- dplyr::filter(
-    raw,
-    !grepl("^1000", .data$variable_id)
-  )
+  raw <- raw[!grepl("^1000", raw$variable_id), ]
   base <- clean_paic_base(raw, expected_table = paic_tables[["size"]])
 
   # `clean_paic_base()` preserves input row order, so the classification
   # column aligns with the base rows by position.
-  category_id <- raw$classification_319_code
+  category_id <- paic_classification_codes(raw, 319L)
   size_band <- unname(paic_size_categories[category_id])
 
   unknown <- unique(category_id[is.na(size_band)])
@@ -754,6 +784,11 @@ clean_paic_size <- function(raw) {
     value_raw = base$value_raw,
     value_status = base$value_status
   )
+
+  # SIDRA publishes state figures for firms with five or more workers only;
+  # "-" in the state total and 1-4 bands marks unpublished cells, not zeros.
+  unpublished <- dat$geography_type == "state" & dat$size_band != "5_plus"
+  dat <- dat[!unpublished, ]
 
   dat <- dplyr::arrange(
     dat,
@@ -804,6 +839,11 @@ clean_paic_state <- function(raw) {
 }
 
 clean_paic_base <- function(raw, expected_table) {
+  if (nrow(raw) == 0) {
+    cli::cli_abort(
+      "PAIC response for SIDRA table {.val {expected_table}} is empty."
+    )
+  }
   if (!identical(unique(raw$aggregate_id), as.character(expected_table))) {
     cli::cli_abort(
       "PAIC response is not from SIDRA table {.val {expected_table}}."
@@ -825,7 +865,7 @@ clean_paic_base <- function(raw, expected_table) {
     unknown <- unique(raw$variable_id[bad_unit])
     cli::cli_abort("Unexpected unit for PAIC variable ID: {.val {unknown}}.")
   }
-  if (anyNA(raw$unit) | any(raw$unit == "")) {
+  if (anyNA(raw$unit) || any(raw$unit == "")) {
     unknown <- unique(raw$variable_id[is.na(raw$unit) | raw$unit == ""])
     cli::cli_abort(
       "PAIC data contains observations without a unit: {.val {unknown}}."
@@ -836,6 +876,9 @@ clean_paic_base <- function(raw, expected_table) {
   if (anyNA(geography_type)) {
     unknown <- unique(raw$geography_level[is.na(geography_type)])
     cli::cli_abort("Unknown PAIC geography level: {.val {unknown}}.")
+  }
+  if (anyNA(raw$geography_code) || any(raw$geography_code == "")) {
+    cli::cli_abort("PAIC data contains observations without a geography code.")
   }
 
   year <- suppressWarnings(as.integer(raw$period))
@@ -861,13 +904,30 @@ clean_paic_base <- function(raw, expected_table) {
   return(dat)
 }
 
+paic_classification_codes <- function(
+  raw,
+  classification_id,
+  call = rlang::caller_env()
+) {
+  column <- paste0("classification_", classification_id, "_code")
+  if (!column %in% names(raw)) {
+    cli::cli_abort(
+      "PAIC response lacks classification {.val {classification_id}}.",
+      call = call
+    )
+  }
+
+  return(raw[[column]])
+}
+
 paic_value_status <- function(value_raw) {
+  value_raw <- trimws(value_raw)
   status <- rep("observed", length(value_raw))
   status[is.na(value_raw) | value_raw == ""] <- "missing"
   status[!is.na(value_raw) & value_raw == "-"] <- "zero"
   status[!is.na(value_raw) & value_raw == ".."] <- "not_applicable"
   status[!is.na(value_raw) & value_raw == "..."] <- "not_available"
-  status[!is.na(value_raw) & value_raw %in% c("X", "X ")] <- "suppressed"
+  status[!is.na(value_raw) & value_raw == "X"] <- "suppressed"
 
   return(status)
 }
@@ -914,120 +974,40 @@ validate_paic <- function(dat, table) {
 }
 
 validate_paic_activity <- function(dat) {
-  validate_dataset(
-    dat,
-    dataset_name = "paic_activity",
-    required_cols = c(
-      "year",
-      "source_table",
-      "geography_type",
-      "geography_code",
-      "geography_name",
-      "size_band",
-      "activity_level",
-      "activity_code",
-      "variable_id",
-      "variable",
-      "unit",
-      "value"
-    ),
-    min_rows = 4000,
-    check_dates = FALSE
-  )
+  validate_paic_common(dat, "activity")
 
-  keys <- c(
-    "year",
-    "geography_type",
-    "geography_code",
-    "variable_id",
-    "size_band",
-    "activity_code"
+  # Only "Total das empresas" covers all firms; it must equal the sum of the
+  # three size-band subtotals. The tolerance absorbs IBGE rounding.
+  totals <- dat[dat$activity_level == "total", ]
+  check <- dplyr::summarise(
+    totals,
+    gap = abs(
+      sum(.data$value[.data$size_band == "total"]) -
+        sum(.data$value[.data$size_band != "total"])
+    ),
+    .by = c("year", "variable_id")
   )
-  check <- dplyr::summarise(dat, n = dplyr::n(), .by = dplyr::all_of(keys))
-  if (any(check$n > 1)) {
-    cli::cli_abort("PAIC activity data contains duplicate observation keys.")
-  }
-  if (anyNA(dat$unit) || any(dat$unit == "")) {
-    cli::cli_abort("PAIC activity data contains observations without a unit.")
-  }
-  if (!setequal(unique(dat$size_band), c("total", "1_4", "5_29", "30_plus"))) {
-    cli::cli_abort("PAIC activity data must contain all firm-size bands.")
+  bad <- unique(check$variable_id[!is.na(check$gap) & check$gap > 1])
+  if (length(bad) > 0) {
+    cli::cli_abort(
+      "PAIC activity size bands do not sum to the all-firm total for variable{?s} {.val {bad}}."
+    )
   }
 
   return(invisible(TRUE))
 }
 
 validate_paic_size <- function(dat) {
-  validate_dataset(
-    dat,
-    dataset_name = "paic_size",
-    required_cols = c(
-      "year",
-      "source_table",
-      "geography_type",
-      "geography_code",
-      "geography_name",
-      "size_band",
-      "variable_id",
-      "variable",
-      "unit",
-      "value"
-    ),
-    min_rows = 1000,
-    check_dates = FALSE
-  )
-
-  keys <- c(
-    "year",
-    "geography_type",
-    "geography_code",
-    "variable_id",
-    "size_band"
-  )
-  check <- dplyr::summarise(dat, n = dplyr::n(), .by = dplyr::all_of(keys))
-  if (any(check$n > 1)) {
-    cli::cli_abort("PAIC size data contains duplicate observation keys.")
-  }
-  if (anyNA(dat$unit) || any(dat$unit == "")) {
-    cli::cli_abort("PAIC size data contains observations without a unit.")
-  }
-  if (any(grepl("^1000", dat$variable_id))) {
-    cli::cli_abort("PAIC size data must not contain share variables.")
-  }
+  validate_paic_common(dat, "size")
 
   return(invisible(TRUE))
 }
 
 validate_paic_state <- function(dat) {
-  validate_dataset(
-    dat,
-    dataset_name = "paic_state",
-    required_cols = c(
-      "year",
-      "source_table",
-      "geography_type",
-      "geography_code",
-      "geography_name",
-      "geography_basis",
-      "variable_id",
-      "variable",
-      "unit",
-      "value"
-    ),
-    min_rows = 100,
-    check_dates = FALSE
-  )
+  validate_paic_common(dat, "state")
 
-  keys <- c("year", "geography_type", "geography_code", "variable_id")
-  check <- dplyr::summarise(dat, n = dplyr::n(), .by = dplyr::all_of(keys))
-  if (any(check$n > 1)) {
-    cli::cli_abort("PAIC state data contains duplicate observation keys.")
-  }
-  if (anyNA(dat$unit) || any(dat$unit == "")) {
-    cli::cli_abort("PAIC state data contains observations without a unit.")
-  }
   basis <- unique(dat$geography_basis[dat$variable_id == "13807"])
-  if (length(basis) != 1L || basis != "headquarters") {
+  if (!identical(basis, "headquarters")) {
     cli::cli_abort("PAIC variable 13807 must use the headquarters basis.")
   }
   other_basis <- unique(dat$geography_basis[dat$variable_id != "13807"])
@@ -1038,4 +1018,93 @@ validate_paic_state <- function(dat) {
   }
 
   return(invisible(TRUE))
+}
+
+# Checks shared by all PAIC tables: required columns, unique keys, units,
+# and exact coverage of the pinned crosswalk for every year present.
+validate_paic_common <- function(dat, table, call = rlang::caller_env()) {
+  expected <- paic_expected_keys(table)
+  keys <- c("year", names(expected))
+
+  validate_dataset(
+    dat,
+    dataset_name = paste0("paic_", table),
+    required_cols = c(keys, "source_table", "variable", "unit", "value"),
+    check_dates = FALSE
+  )
+
+  check <- dplyr::summarise(dat, n = dplyr::n(), .by = dplyr::all_of(keys))
+  if (any(check$n > 1)) {
+    cli::cli_abort(
+      "PAIC {table} data contains duplicate observation keys.",
+      call = call
+    )
+  }
+  if (anyNA(dat$unit) || any(dat$unit == "")) {
+    cli::cli_abort(
+      "PAIC {table} data contains observations without a unit.",
+      call = call
+    )
+  }
+
+  expected <- tidyr::expand_grid(year = unique(dat$year), expected)
+  missing <- dplyr::anti_join(expected, dat, by = keys)
+  if (nrow(missing) > 0) {
+    cli::cli_abort(
+      c(
+        "PAIC {table} data is missing {nrow(missing)} expected observation{?s}.",
+        "i" = "First missing key: {paic_format_key(missing[1, ])}."
+      ),
+      call = call
+    )
+  }
+  unexpected <- dplyr::anti_join(dat[keys], expected, by = keys)
+  if (nrow(unexpected) > 0) {
+    cli::cli_abort(
+      c(
+        "PAIC {table} data contains {nrow(unexpected)} unexpected observation{?s}.",
+        "i" = "First unexpected key: {paic_format_key(unexpected[1, ])}."
+      ),
+      call = call
+    )
+  }
+
+  return(invisible(TRUE))
+}
+
+# Expected observation keys per year, from the pinned crosswalks.
+paic_expected_keys <- function(table) {
+  geographies <- tibble::tibble(
+    geography_type = c("brazil", rep("region", 5), rep("state", 27)),
+    geography_code = c("1", as.character(1:5), paic_state_codes)
+  )
+
+  keys <- switch(
+    table,
+    "activity" = tidyr::expand_grid(
+      geography_type = "brazil",
+      geography_code = "1",
+      variable_id = paic_activity_variables,
+      paic_activity_categories[c("size_band", "activity_code")]
+    ),
+    # State rows cover firms with five or more workers only.
+    "size" = tidyr::expand_grid(
+      geographies,
+      variable_id = paic_size_variables,
+      size_band = unname(paic_size_categories)
+    ) |>
+      dplyr::filter(
+        .data$geography_type != "state" | .data$size_band == "5_plus"
+      ),
+    "state" = tidyr::expand_grid(
+      geographies,
+      variable_id = paic_state_variables
+    )
+  )
+
+  return(keys)
+}
+
+paic_format_key <- function(row) {
+  return(paste(names(row), unlist(row), sep = " = ", collapse = ", "))
 }

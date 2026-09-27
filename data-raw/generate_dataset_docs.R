@@ -48,7 +48,7 @@ build_table_section <- function(key, category, default_table = NULL) {
     escape_rd(category$name)
   )
   lines <- title
-  desc <- escape_rd(category$description)
+  desc <- sub("\\.$", "", escape_rd(category$description))
   if (!is.null(default_table) && identical(key, default_table)) {
     desc <- paste0(desc, ". This is the default table")
   }

@@ -483,10 +483,6 @@ list(
     name = paic_cache,
     command = c(paic_activity_cache, paic_size_cache, paic_state_cache)
   ),
-  tar_target(
-    name = paic_validation,
-    command = validate_dataset(paic_activity_data, "paic_activity")
-  ),
 
   # Pipeline summary -------------------------------------------------------
 
@@ -534,7 +530,6 @@ list(
         bis_rppi = bis_rppi_validation,
         sinapi = sinapi_validation,
         pim_pf_construction = pim_pf_construction_validation,
-        paic = paic_validation,
         paic_activity = paic_activity_validation,
         paic_size = paic_size_validation,
         paic_state = paic_state_validation

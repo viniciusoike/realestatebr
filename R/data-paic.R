@@ -27,7 +27,12 @@
 #' reflects the new Cadastro Básico de Seleção. Values publish in original
 #' units, including thousand reais. Table 10463 covers all firms at national
 #' level only; table 10442 covers firms with five or more workers by
-#' headquarters or work location.
+#' headquarters or work location. The work-location basis of variables 13808,
+#' 631, 673, 1245, and 1241 follows the PAIC 2024 publication (v. 34, June
+#' 2026), which collects the regional block by Unidade da Federação de atuação
+#' da empresa. In table 10441, SIDRA marks unpublished state cells in the
+#' total and 1-4 bands with a dash; these rows are dropped rather than read as
+#' zeros.
 #'
 #' @section Table "activity" (Activity by Size Band):
 #' General construction-enterprise data by firm-size band and CNAE activity
@@ -37,7 +42,7 @@
 #' workers reaches divisions only, 5-29 adds groups, and 30+ reaches classes.
 #' No category covers all sizes for a single division; the only all-firm row
 #' is Total das empresas, so a national division total is the sum of the three
-#' size bands.. This is the default table.
+#' size bands. This is the default table.
 #' Coverage: 2024-present.
 #'
 #' \describe{
@@ -56,16 +61,18 @@
 #'   \item{variable}{English series identifier (e.g. firms, employment, wages, construction_output).}
 #'   \item{variable_name_pt}{Original IBGE variable label in Portuguese.}
 #'   \item{unit}{Original IBGE unit, including thousand reais (Mil Reais) where specified.}
-#'   \item{value}{Observed value; SIDRA dash (-) is absolute zero.}
+#'   \item{value}{Observed value in the original unit; NA when the cell is not applicable, not available, or suppressed.}
 #'   \item{value_raw}{Original SIDRA cell text.}
-#'   \item{value_status}{Cell status: observed, zero, not_applicable (..), not_available (...), suppressed (X), or missing.}
+#'   \item{value_status}{Cell status: observed, zero (SIDRA -), not_applicable (..), not_available (...), suppressed (X), or missing.}
 #' }
 #'
 #' @section Table "size" (Size Bands by Geography):
 #' General construction-enterprise data by firm-size band from SIDRA table
-#' 10441 (Brazil, regions, and states, all firms). Keeps the 16 level
-#' variables; the 16 share variables (percentual do total geral) are dropped
-#' because users can derive them..
+#' 10441 (Brazil, regions, and states, all firms). State rows cover firms with
+#' five or more workers only, because SIDRA does not publish state figures for
+#' the total and 1-4 bands. Keeps the 16 level variables; the 16 share
+#' variables (percentual do total geral) are dropped because users can derive
+#' them.
 #' Coverage: 2024-present.
 #'
 #' \describe{
@@ -74,14 +81,14 @@
 #'   \item{geography_type}{Geographic level: brazil, region, or state.}
 #'   \item{geography_code}{IBGE code for the geographic unit; interpret together with geography_type.}
 #'   \item{geography_name}{Geographic unit name in Portuguese.}
-#'   \item{size_band}{Firm-size band: total, 1_4, or 5_plus.}
+#'   \item{size_band}{Firm-size band: total, 1_4, or 5_plus (states: 5_plus only).}
 #'   \item{variable_id}{SIDRA variable ID.}
 #'   \item{variable}{English series identifier (e.g. firms, employment, wages, construction_output).}
 #'   \item{variable_name_pt}{Original IBGE variable label in Portuguese.}
 #'   \item{unit}{Original IBGE unit, including thousand reais (Mil Reais) where specified.}
-#'   \item{value}{Observed value; SIDRA dash (-) is absolute zero.}
+#'   \item{value}{Observed value in the original unit; NA when the cell is not applicable, not available, or suppressed.}
 #'   \item{value_raw}{Original SIDRA cell text.}
-#'   \item{value_status}{Cell status: observed, zero, not_applicable (..), not_available (...), suppressed (X), or missing.}
+#'   \item{value_status}{Cell status: observed, zero (SIDRA -), not_applicable (..), not_available (...), suppressed (X), or missing.}
 #' }
 #'
 #' @section Table "state" (Large Firms by State):
@@ -89,7 +96,7 @@
 #' more workers from SIDRA table 10442 (Brazil, regions, and states). The
 #' geography_basis column records whether the variable follows headquarters
 #' (13807, origem-sede) or work location (all other variables, local de
-#' atuação)..
+#' atuação).
 #' Coverage: 2024-present.
 #'
 #' \describe{
@@ -100,12 +107,12 @@
 #'   \item{geography_name}{Geographic unit name in Portuguese.}
 #'   \item{geography_basis}{Geographic meaning: headquarters (variable 13807) or work_location (all other variables).}
 #'   \item{variable_id}{SIDRA variable ID.}
-#'   \item{variable}{English series identifier (e.g. employment, wages, construction_output).}
+#'   \item{variable}{English series identifier (e.g. employment, wages, construction_output). construction_and_development_costs (1245) includes development costs and differs from construction_costs in the other tables.}
 #'   \item{variable_name_pt}{Original IBGE variable label in Portuguese.}
 #'   \item{unit}{Original IBGE unit, including thousand reais (Mil Reais) where specified.}
-#'   \item{value}{Observed value; SIDRA dash (-) is absolute zero.}
+#'   \item{value}{Observed value in the original unit; NA when the cell is not applicable, not available, or suppressed.}
 #'   \item{value_raw}{Original SIDRA cell text.}
-#'   \item{value_status}{Cell status: observed, zero, not_applicable (..), not_available (...), suppressed (X), or missing.}
+#'   \item{value_status}{Cell status: observed, zero (SIDRA -), not_applicable (..), not_available (...), suppressed (X), or missing.}
 #' }
 #'
 #' @source IBGE - Pesquisa Anual da Indústria da Construção
