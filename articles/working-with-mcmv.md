@@ -1,0 +1,234 @@
+# Working with MCMV
+
+The Ministério das Cidades publishes open data on Minha Casa, Minha Vida
+(MCMV) as three files. `realestatebr` normalizes them into three lazy
+tables and queries them with DuckDB, so filters and aggregations run
+before any data enter R memory. The financing table alone holds almost
+eight million rows.
+
+| Table | Grain |
+|----|----|
+| `financing` | One published financing contract, usually one housing unit |
+| `financing_summary` | Official totals by municipality, year, month, and income band |
+| `subsidized_projects` | One published project record financed by the federal budget (OGU) |
+
+The [MCMV data
+dictionary](https://viniciusoike.github.io/realestatebr/articles/mcmv-data-dictionary.md)
+defines every column and documents how the source files changed across
+releases.
+
+## Open the dataset
+
+Install the optional query dependencies once.
+
+``` r
+
+install.packages(c("DBI", "dbplyr", "duckdb"))
+```
+
+Open all three tables through one catalog.
+
+``` r
+
+library(realestatebr)
+library(dplyr)
+
+mcmv <- query_dataset("mcmv")
+mcmv
+```
+
+## Aggregate before collecting
+
+Each `financing` row reports one financed unit. Summing `units_financed`
+therefore counts contracts, and summing `amount_financed` gives the
+nominal credit volume.
+
+``` r
+
+yearly <- mcmv$financing |>
+  mutate(year = year(contract_date)) |>
+  group_by(year) |>
+  summarise(
+    units = sum(units_financed, na.rm = TRUE),
+    amount_bn = sum(amount_financed, na.rm = TRUE) / 1e9
+  ) |>
+  arrange(year) |>
+  collect()
+
+tail(yearly, 4)
+#> # A tibble: 4 × 3
+#>    year  units amount_bn
+#>   <dbl>  <dbl>     <dbl>
+#> 1  2023 491209      74.4
+#> 2  2024 605554      99.2
+#> 3  2025 668553     116.
+#> 4  2026 398641      74.5
+```
+
+The last year is partial: it ends at the snapshot’s reference date.
+Amounts are nominal BRL. Deflate them before comparing years.
+
+Filter on `state` or `code_muni_6` to restrict the query to a region.
+The financing Parquet file is sorted by state and municipality, so
+DuckDB reads only the relevant parts of it.
+
+``` r
+
+mcmv$financing |>
+  filter(state == "SP", contract_date >= as.Date("2023-01-01")) |>
+  group_by(name_muni) |>
+  summarise(
+    units = sum(units_financed, na.rm = TRUE),
+    amount_mn = sum(amount_financed, na.rm = TRUE) / 1e6
+  ) |>
+  arrange(desc(units)) |>
+  head(3) |>
+  collect()
+#> # A tibble: 3 × 3
+#>   name_muni       units amount_mn
+#>   <chr>           <dbl>     <dbl>
+#> 1 SÃO PAULO      250441    50224.
+#> 2 SOROCABA        18421     3211.
+#> 3 RIBEIRÃO PRETO  18378     3153.
+```
+
+## Income bands are source codes
+
+Recent releases publish income bands as codes `1` to `4`, without
+labels, and the official dictionary does not define them. `realestatebr`
+keeps the codes as published instead of guessing a crosswalk. Code `4`
+appears only in contracts signed from 2025 onward.
+
+``` r
+
+mcmv$financing_summary |>
+  filter(contract_year >= 2025) |>
+  group_by(contract_year, income_band) |>
+  summarise(units = sum(units_financed, na.rm = TRUE), .groups = "drop") |>
+  arrange(contract_year, income_band) |>
+  collect()
+#> # A tibble: 10 × 3
+#>    contract_year income_band  units
+#>            <int> <chr>        <dbl>
+#>  1          2025 1           238421
+#>  2          2025 2           194023
+#>  3          2025 3           199630
+#>  4          2025 4            29969
+#>  5          2025 <NA>          6510
+#>  6          2026 1           132237
+#>  7          2026 2            92587
+#>  8          2026 3           147466
+#>  9          2026 4            25341
+#> 10          2026 <NA>          1010
+```
+
+A missing income band is not the same as a contract outside MCMV. The
+`financing_program` column carries the source’s program labels,
+including `Fundo Social` and `Classe Média`.
+
+## Use the summary for aggregate series
+
+`financing_summary` holds the Ministry’s own totals. For the July 2026
+release, these totals agree with the sums of `financing` in every
+municipality, month, and income band, to within BRL 0.01. The summary is
+about ten times smaller, so it answers aggregate questions faster.
+
+`subsidy_total` in the summary equals the sum of all four subsidy
+columns in `financing`: the FGTS and OGU discounts plus the FGTS and OGU
+interest subsidies. This relationship was checked for the July 2026
+release; verify it again when using a different snapshot.
+
+## Harmonize labels in your query
+
+The package preserves source labels, including inconsistent
+capitalization. `property_type`, for instance, contains `novo`, `Novo`,
+and `NOVO`. Harmonize labels inside the query when your analysis needs
+it.
+
+``` r
+
+mcmv$financing |>
+  mutate(property_type = lower(property_type)) |>
+  count(property_type) |>
+  collect()
+#> # A tibble: 3 × 2
+#>   property_type       n
+#>   <chr>           <dbl>
+#> 1 usado         1504065
+#> 2 <NA>             6565
+#> 3 novo          6339252
+```
+
+`fgts_account_holder` mixes `S`/`N` with `1`/`0` and is missing in most
+rows. It is stored as text, not as a logical column.
+
+## Subsidized projects contain duplicates
+
+`subsidized_projects` includes exact duplicate rows, and
+`operation_code` is neither unique nor always present. Remove exact
+duplicates before counting projects or units.
+
+``` r
+
+mcmv$subsidized_projects |>
+  distinct() |>
+  group_by(project_status) |>
+  summarise(
+    projects = n(),
+    units_contracted = sum(units_contracted, na.rm = TRUE),
+    units_delivered = sum(units_delivered, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  collect()
+#> # A tibble: 3 × 4
+#>   project_status       projects units_contracted units_delivered
+#>   <chr>                   <dbl>            <dbl>           <dbl>
+#> 1 Concluído               15588          1648140         1646858
+#> 2 Distratado/Cancelado      395            48268             686
+#> 3 Não Concluído            6847           410701           36606
+```
+
+[`distinct()`](https://dplyr.tidyverse.org/reference/distinct.html)
+removes only identical rows. Records that repeat an operation code with
+different values remain, and the source gives no rule for choosing
+between them.
+
+The unit columns satisfy
+`units_contracted = units_delivered + units_outstanding + units_cancelled`
+in every row where all four are reported. A few rows lack
+`units_cancelled`; the package keeps it missing rather than filling in
+zero.
+
+## Joining tables
+
+The tables share no contract or project identifier. Do not join
+`financing` to `subsidized_projects` by project name. Compare them only
+as aggregates, for instance by municipality and year, and keep in mind
+that they cover different programs: `financing` covers FGTS-funded
+credit, while `subsidized_projects` covers projects funded by the
+federal budget.
+
+`code_muni_6` is the six-digit IBGE municipality code, without the check
+digit. To join with seven-digit codes, such as those in `geobr`, drop
+the last digit of the seven-digit code.
+
+## Snapshot versions
+
+Every MCMV release replaces the full history, so the package publishes
+each release as an immutable snapshot. `query_dataset("mcmv")` opens the
+latest one. Pin a version when an analysis must be reproducible.
+
+``` r
+
+mcmv_2026_07 <- query_dataset("mcmv", version = "2026-07-24")
+close(mcmv_2026_07)
+```
+
+Close the catalog after the final query. Lazy tables obtained from it
+become invalid after
+[`close()`](https://rdrr.io/r/base/connections.html).
+
+``` r
+
+close(mcmv)
+```

@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/viniciusoike/realestatebr/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/viniciusoike/realestatebr/blob/mcmv-2026-07-24/DESCRIPTION)
 
 Oike V (2026). *realestatebr: Import Brazilian Real Estate Data into R*.
 R package version 1.1.0.9000,
