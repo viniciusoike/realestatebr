@@ -34,6 +34,7 @@
 ^cran-comments\.md$
 ^PLAN_RELEASE_CRAN\.md$
 ^\.positai$
+^\.omx$
 ^CRAN-SUBMISSION$
 ^AGENTS\.md
 ^vignettes/articles$
