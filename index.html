@@ -13,8 +13,8 @@
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Import Brazilian Real Estate Data into R">
-<meta name="description" content="Provides access to Brazilian real estate market data from multiple official sources: the Central Bank of Brazil (BCB) &lt;https://www.bcb.gov.br/&gt;, the Brazilian Association of Real Estate Developers (ABRAINC) &lt;https://abrainc.org.br/&gt;, the Brazilian Association of Real Estate Credit and Savings Entities (ABECIP) &lt;https://www.abecip.org.br/&gt;, the Getulio Vargas Foundation (FGV) &lt;https://portalibre.fgv.br/&gt;, and the Bank for International Settlements (BIS) &lt;https://www.bis.org/&gt;, as well as Brazil's Federal Revenue Service &lt;https://www.gov.br/receitafederal/&gt; and the Brazilian Institute of Geography and Statistics (IBGE) &lt;https://www.ibge.gov.br/&gt;.">
-<meta property="og:description" content="Provides access to Brazilian real estate market data from multiple official sources: the Central Bank of Brazil (BCB) &lt;https://www.bcb.gov.br/&gt;, the Brazilian Association of Real Estate Developers (ABRAINC) &lt;https://abrainc.org.br/&gt;, the Brazilian Association of Real Estate Credit and Savings Entities (ABECIP) &lt;https://www.abecip.org.br/&gt;, the Getulio Vargas Foundation (FGV) &lt;https://portalibre.fgv.br/&gt;, and the Bank for International Settlements (BIS) &lt;https://www.bis.org/&gt;, as well as Brazil's Federal Revenue Service &lt;https://www.gov.br/receitafederal/&gt; and the Brazilian Institute of Geography and Statistics (IBGE) &lt;https://www.ibge.gov.br/&gt;.">
+<meta name="description" content="Provides access to Brazilian real estate market data from multiple official sources: the Central Bank of Brazil (BCB) &lt;https://www.bcb.gov.br/&gt;, the Brazilian Association of Real Estate Developers (ABRAINC) &lt;https://abrainc.org.br/&gt;, the Brazilian Association of Real Estate Credit and Savings Entities (ABECIP) &lt;https://www.abecip.org.br/&gt;, the Getulio Vargas Foundation (FGV) &lt;https://portalibre.fgv.br/&gt;, and the Bank for International Settlements (BIS) &lt;https://www.bis.org/&gt;, as well as Brazil's Federal Revenue Service &lt;https://www.gov.br/receitafederal/&gt;, the Brazilian Institute of Geography and Statistics (IBGE) &lt;https://www.ibge.gov.br/&gt;, and the Ministry of Cities &lt;https://www.gov.br/cidades/&gt;.">
+<meta property="og:description" content="Provides access to Brazilian real estate market data from multiple official sources: the Central Bank of Brazil (BCB) &lt;https://www.bcb.gov.br/&gt;, the Brazilian Association of Real Estate Developers (ABRAINC) &lt;https://abrainc.org.br/&gt;, the Brazilian Association of Real Estate Credit and Savings Entities (ABECIP) &lt;https://www.abecip.org.br/&gt;, the Getulio Vargas Foundation (FGV) &lt;https://portalibre.fgv.br/&gt;, and the Bank for International Settlements (BIS) &lt;https://www.bis.org/&gt;, as well as Brazil's Federal Revenue Service &lt;https://www.gov.br/receitafederal/&gt;, the Brazilian Institute of Geography and Statistics (IBGE) &lt;https://www.ibge.gov.br/&gt;, and the Ministry of Cities &lt;https://www.gov.br/cidades/&gt;.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">realestatebr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -175,6 +175,18 @@
 </td>
 </tr>
 <tr>
+<td><code>paic</code></td>
+<td>IBGE</td>
+<td>
+<code>activity</code>, <code>size</code>, <code>state</code>
+</td>
+</tr>
+<tr>
+<td><code>pim_pf_construction</code></td>
+<td>IBGE</td>
+<td>—</td>
+</tr>
+<tr>
 <td><code>rppi</code></td>
 <td>FIPE/ZAP, IVG-R, IGMI-R, IQA, IQAIW, IVAR, SECOVI-SP</td>
 <td>
@@ -194,6 +206,11 @@
 <td>
 <code>condo</code>, <code>rent</code>, <code>launch</code>, <code>sale</code>
 </td>
+</tr>
+<tr>
+<td><code>sinapi</code></td>
+<td>IBGE</td>
+<td>—</td>
 </tr>
 </tbody>
 </table>

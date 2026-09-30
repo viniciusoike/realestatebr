@@ -1,6 +1,6 @@
 # Changelog
 
-## realestatebr (development version)
+## realestatebr 1.2.0
 
 - Added `query_dataset("mcmv")`, with Minha Casa, Minha Vida financing
   contracts, official financing totals, and federally subsidized housing
