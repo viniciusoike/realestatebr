@@ -35,9 +35,9 @@ Ministério das Cidades - Secretaria Nacional de Habitação
 
 Source categories, missing observations, duplicates, and anomalies are
 retained. See the [working
-article](https://viniciusoike.github.io/realestatebr/articles/working-with-mcmv.md)
+article](https://viniciusoike.github.io/realestatebr/articles/working-with-mcmv.html)
 and [data
-dictionary](https://viniciusoike.github.io/realestatebr/articles/mcmv-data-dictionary.md).
+dictionary](https://viniciusoike.github.io/realestatebr/articles/mcmv-data-dictionary.html).
 
 ## Table "financing" (Financing)
 
