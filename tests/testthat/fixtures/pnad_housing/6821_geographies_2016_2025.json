@@ -1,0 +1,20 @@
+[
+  {
+    "id": "162",
+    "variavel": "Domicílios",
+    "unidade": "Mil unidades",
+    "resultados": [
+      {
+        "classificacoes": [
+          {"id": "63", "nome": "Condição de ocupação do domicílio", "categoria": {"95826": "Total"}}
+        ],
+        "series": [
+          {"localidade": {"id": "1", "nivel": {"id": "N1", "nome": "Brasil"}, "nome": "Brasil"}, "serie": {"2016": "66697", "2025": "79305"}},
+          {"localidade": {"id": "5300108", "nivel": {"id": "N6", "nome": "Município"}, "nome": "Brasília (DF)"}, "serie": {"2016": "936", "2025": "1089"}},
+          {"localidade": {"id": "3501", "nivel": {"id": "N7", "nome": "Região Metropolitana até 2020"}, "nome": "São Paulo (SP)"}, "serie": {"2016": "7100", "2025": "8234"}},
+          {"localidade": {"id": "510", "nivel": {"id": "N14", "nome": "Região Integrada de Desenvolvimento até 2020"}, "nome": "Grande Teresina"}, "serie": {"2016": "366", "2025": "440"}}
+        ]
+      }
+    ]
+  }
+]

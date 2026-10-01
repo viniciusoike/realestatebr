@@ -344,6 +344,68 @@ datasets:
     default_table: "activity"
     translation_notes: "New 2024-onward series per IBGE Nota técnica 01/2026; the 2024 series break reflects the new Cadastro Básico de Seleção. Values publish in original units, including thousand reais. Table 10463 covers all firms at national level only; table 10442 covers firms with five or more workers by headquarters or work location. The work-location basis of variables 13808, 631, 673, 1245, and 1241 follows the PAIC 2024 publication (v. 34, June 2026), which collects the regional block by Unidade da Federação de atuação da empresa. In table 10441, SIDRA marks unpublished state cells in the total and 1-4 bands with a dash; these rows are dropped rather than read as zeros."
 
+  pnad_housing:
+    name: "PNAD Contínua Housing"
+    name_pt: "Habitação na PNAD Contínua"
+    description: "Annual household tenure, dwelling type, household size, and domestic-unit composition estimates from PNAD Contínua"
+    source: "IBGE - Pesquisa Nacional por Amostra de Domicílios Contínua anual"
+    url: "https://sidra.ibge.gov.br/pesquisa/pnadca/tabelas"
+    geography: "Brazil, geographic regions, states, state capitals, published metropolitan regions, and published integrated-development regions"
+    frequency: "annual"
+    coverage: "2016-2025 for housing-module tables, excluding 2020-2021; 2012-2025 for household composition"
+    update_schedule: "annual"
+    warn_after_days: 180
+    categories:
+      tenure:
+        name: "Housing Tenure"
+        description: "Household estimates, shares, and coefficients of variation by tenure from SIDRA table 6821"
+        coverage: "2016-2019 and 2022-2025"
+      dwelling_type:
+        name: "Dwelling Type"
+        description: "Household estimates, shares, and coefficients of variation by dwelling type from SIDRA table 6820"
+        coverage: "2016-2019 and 2022-2025"
+      household_size:
+        name: "Household Size"
+        description: "Household estimates, shares, and coefficients of variation by number of residents from SIDRA table 6678"
+        coverage: "2016-2019 and 2022-2025"
+      mean_household_size:
+        name: "Mean Household Size"
+        description: "Published mean residents per household and its coefficient of variation from SIDRA table 6578"
+        coverage: "2016-2019 and 2022-2025"
+      household_composition:
+        name: "Domestic-unit Composition"
+        description: "Household estimates and coefficients of variation by domestic-unit species from SIDRA table 6788, restricted to total reference-person sex"
+        coverage: "2012-2025"
+    columns:
+      year: "Reference year."
+      source_table: "SIDRA table supplying the observation."
+      geography_type: "Geographic level: brazil, region, state, capital, metropolitan_region, or integrated_development_region."
+      geography_code: "IBGE code for the geographic unit; interpret together with geography_type."
+      geography_name: "Geographic unit name in Portuguese, including the source boundary-vintage text."
+      geography_level_name: "Original SIDRA geographic-level label in Portuguese."
+      classification_id: "SIDRA classification ID; missing for mean_household_size."
+      category_id: "SIDRA category ID; missing for mean_household_size."
+      category: "Stable English category identifier; missing for mean_household_size."
+      category_name_pt: "Original SIDRA category label in Portuguese; missing for mean_household_size."
+      variable_id: "SIDRA variable ID."
+      variable: "Stable English measure identifier."
+      variable_name_pt: "Original IBGE variable label in Portuguese."
+      unit: "Original IBGE unit: Mil unidades, Pessoas, or percent."
+      value: "Observed value in the original unit; NA when the cell is not applicable, not available, suppressed, or missing."
+      value_raw: "Original SIDRA cell text."
+      value_status: "Cell status: observed, zero, not_applicable, not_available, suppressed, or missing."
+    internal_function: "fetch_pnad_housing"
+    dataset_function: "get_pnad_housing"
+    data_type: "list"
+    cached_file:
+      tenure: "pnad_housing_tenure.rds"
+      dwelling_type: "pnad_housing_dwelling_type.rds"
+      household_size: "pnad_housing_household_size.rds"
+      mean_household_size: "pnad_housing_mean_household_size.rds"
+      household_composition: "pnad_housing_household_composition.rds"
+    default_table: "tenure"
+    translation_notes: "Counts remain in thousand households, percentages remain on a 0-100 scale, and coefficients of variation are separate measures. Total categories coexist with component categories and must be excluded before summing components. Housing-module tables have no 2020-2021 observations. Household composition describes relationships to the reference person, not a number of families; its published count rows are restricted to total reference-person sex. Geography labels retain the boundary-vintage text published by IBGE."
+
   rppi_bis:
     name: "BIS Residential Property Price Indices"
     name_pt: "Índices de Preços Residenciais BIS"

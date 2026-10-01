@@ -122,7 +122,14 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
     # ---- DATA QUALITY CHECKS ----
 
     # Check for excessive missing data
-    missing_pct <- sapply(data, function(x) sum(is.na(x)) / length(x))
+    missing_data <- data[setdiff(
+      names(data),
+      get_allowed_all_missing_columns(dataset_name)
+    )]
+    missing_pct <- sapply(
+      missing_data,
+      function(x) sum(is.na(x)) / length(x)
+    )
     checks$acceptable_missing <- all(missing_pct < 0.5) # Less than 50% missing per column
 
     # Check for duplicate rows
@@ -239,6 +246,11 @@ get_required_columns <- function(dataset_name) {
       "unit",
       "value"
     ),
+    "pnad_housing_tenure" = pnad_housing_required_columns(),
+    "pnad_housing_dwelling_type" = pnad_housing_required_columns(),
+    "pnad_housing_household_size" = pnad_housing_required_columns(),
+    "pnad_housing_mean_household_size" = pnad_housing_required_columns(),
+    "pnad_housing_household_composition" = pnad_housing_required_columns(),
     "bis_selected" = c("date", "country", "value"),
     "cbic" = c("date", "indicator", "value"),
     "property_records" = c("date", "state", "transactions"),
@@ -259,10 +271,33 @@ get_mixed_unit_columns <- function(dataset_name) {
     "sinapi" = "value",
     "paic_activity" = "value",
     "paic_size" = "value",
-    "paic_state" = "value"
+    "paic_state" = "value",
+    "pnad_housing_tenure" = "value",
+    "pnad_housing_dwelling_type" = "value",
+    "pnad_housing_household_size" = "value",
+    "pnad_housing_mean_household_size" = "value",
+    "pnad_housing_household_composition" = "value"
   )
 
   return(mixed_unit_columns[[dataset_name]])
+}
+
+get_allowed_all_missing_columns <- function(dataset_name) {
+  allowed <- list(
+    "pnad_housing_mean_household_size" = c(
+      "classification_id",
+      "category_id",
+      "category",
+      "category_name_pt"
+    )
+  )
+
+  columns <- allowed[[dataset_name]]
+  if (is.null(columns)) {
+    return(character())
+  }
+
+  return(columns)
 }
 
 #' Check Variable Ranges
@@ -354,6 +389,10 @@ validate_dataset_specific <- function(data, dataset_name) {
       unique_regions <- length(unique(data[[geo_col]]))
       specific_checks$adequate_geographic_coverage <- unique_regions >= 3 # At least 3 regions/cities
     }
+  } else if (startsWith(dataset_name, "pnad_housing_")) {
+    table <- sub("^pnad_housing_", "", dataset_name)
+    realestatebr:::validate_pnad_housing(data, table)
+    specific_checks$source_contract <- TRUE
   }
 
   if (length(specific_checks) == 0) {
@@ -361,6 +400,38 @@ validate_dataset_specific <- function(data, dataset_name) {
   }
 
   return(specific_checks)
+}
+
+pnad_housing_required_columns <- function() {
+  return(c(
+    "year",
+    "source_table",
+    "geography_type",
+    "geography_code",
+    "geography_name",
+    "geography_level_name",
+    "classification_id",
+    "category_id",
+    "category",
+    "category_name_pt",
+    "variable_id",
+    "variable",
+    "variable_name_pt",
+    "unit",
+    "value",
+    "value_raw",
+    "value_status"
+  ))
+}
+
+assert_validation_passed <- function(validation) {
+  if (!isTRUE(validation$passed)) {
+    cli::cli_abort(
+      "Validation failed for {.val {validation$dataset}}; cache was not written."
+    )
+  }
+
+  return(invisible(TRUE))
 }
 
 #' Create Validation Summary

@@ -1,0 +1,54 @@
+[
+  {
+    "id": "162",
+    "variavel": "Domicílios",
+    "unidade": "Mil unidades",
+    "resultados": [
+      {
+        "classificacoes": [
+          {"id": "293", "nome": "Sexo do responsável pelo domicílio", "categoria": {"100311": "Total"}},
+          {"id": "460", "nome": "Espécie de unidade doméstica", "categoria": {"45902": "Total"}}
+        ],
+        "series": [
+          {"localidade": {"id": "1", "nivel": {"id": "N1", "nome": "Brasil"}, "nome": "Brasil"}, "serie": {"2020": "70570", "2021": "71048"}}
+        ]
+      },
+      {
+        "classificacoes": [
+          {"id": "293", "nome": "Sexo do responsável pelo domicílio", "categoria": {"100311": "Total"}},
+          {"id": "460", "nome": "Espécie de unidade doméstica", "categoria": {"12076": "Unipessoal"}}
+        ],
+        "series": [
+          {"localidade": {"id": "1", "nivel": {"id": "N1", "nome": "Brasil"}, "nome": "Brasil"}, "serie": {"2020": "10430", "2021": "10519"}}
+        ]
+      },
+      {
+        "classificacoes": [
+          {"id": "293", "nome": "Sexo do responsável pelo domicílio", "categoria": {"100311": "Total"}},
+          {"id": "460", "nome": "Espécie de unidade doméstica", "categoria": {"12077": "Nuclear"}}
+        ],
+        "series": [
+          {"localidade": {"id": "1", "nivel": {"id": "N1", "nome": "Brasil"}, "nome": "Brasil"}, "serie": {"2020": "48407", "2021": "48559"}}
+        ]
+      },
+      {
+        "classificacoes": [
+          {"id": "293", "nome": "Sexo do responsável pelo domicílio", "categoria": {"100311": "Total"}},
+          {"id": "460", "nome": "Espécie de unidade doméstica", "categoria": {"12078": "Estendida"}}
+        ],
+        "series": [
+          {"localidade": {"id": "1", "nivel": {"id": "N1", "nome": "Brasil"}, "nome": "Brasil"}, "serie": {"2020": "11066", "2021": "11301"}}
+        ]
+      },
+      {
+        "classificacoes": [
+          {"id": "293", "nome": "Sexo do responsável pelo domicílio", "categoria": {"100311": "Total"}},
+          {"id": "460", "nome": "Espécie de unidade doméstica", "categoria": {"12079": "Composta"}}
+        ],
+        "series": [
+          {"localidade": {"id": "1", "nivel": {"id": "N1", "nome": "Brasil"}, "nome": "Brasil"}, "serie": {"2020": "667", "2021": "668"}}
+        ]
+      }
+    ]
+  }
+]
