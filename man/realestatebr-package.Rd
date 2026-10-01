@@ -6,7 +6,7 @@
 \alias{realestatebr-package}
 \title{realestatebr: Import Brazilian Real Estate Data into R}
 \description{
-Provides access to Brazilian real estate market data from multiple official sources: the Central Bank of Brazil (BCB) \url{https://www.bcb.gov.br/}, the Brazilian Association of Real Estate Developers (ABRAINC) \url{https://abrainc.org.br/}, the Brazilian Association of Real Estate Credit and Savings Entities (ABECIP) \url{https://www.abecip.org.br/}, the Getulio Vargas Foundation (FGV) \url{https://portalibre.fgv.br/}, and the Bank for International Settlements (BIS) \url{https://www.bis.org/}, as well as Brazil's Federal Revenue Service \url{https://www.gov.br/receitafederal/pt-br/}, the Brazilian Institute of Geography and Statistics \url{https://www.ibge.gov.br/}, and the Ministry of Cities \url{https://www.gov.br/cidades/pt-br/}.
+Provides access to Brazilian real estate market data from multiple official sources: the Central Bank of Brazil (BCB) \url{https://www.bcb.gov.br/}, the Brazilian Association of Real Estate Developers (ABRAINC) \url{https://abrainc.org.br/}, the Brazilian Association of Real Estate Credit and Savings Entities (ABECIP) \url{https://www.abecip.org.br/}, the Getulio Vargas Foundation (FGV) \url{https://portalibre.fgv.br/}, and the Bank for International Settlements (BIS) \url{https://www.bis.org/}, as well as Brazil's Federal Revenue Service \url{https://www.gov.br/receitafederal/pt-br/}, the Brazilian Institute of Geography and Statistics (IBGE) \url{https://www.ibge.gov.br/}, and the Ministry of Cities \url{https://www.gov.br/cidades/pt-br/}.
 }
 \seealso{
 Useful links:
