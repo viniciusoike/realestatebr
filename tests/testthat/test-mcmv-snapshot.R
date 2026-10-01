@@ -130,6 +130,107 @@ test_that("failed MCMV builds clean staging", {
   expect_length(list.files(output, all.files = FALSE), 0L)
 })
 
+test_that("MCMV snapshots reject empty source tables", {
+  skip_if_not_installed("duckdb", "1.5.5")
+  b <- mcmv_builder()
+  sources <- mcmv_fixture_sources()
+  for (table in names(sources)) {
+    output <- tempfile("mcmv-empty-")
+    empty <- tempfile(fileext = ".csv")
+    writeLines(readLines(sources[[table]], n = 1L), empty)
+    changed <- sources
+    changed[[table]] <- empty
+    expect_error(
+      b$build_mcmv_snapshot(changed, output_dir = output,
+        version = "2026-07-24", registry_path = test_path("../../inst/extdata/datasets.yaml")),
+      "no rows|empty"
+    )
+    expect_length(list.files(output, all.files = FALSE), 0L)
+    unlink(c(output, empty), recursive = TRUE)
+  }
+})
+
+test_that("monthly MCMV summaries must reconcile before finalization", {
+  skip_if_not_installed("duckdb", "1.5.5")
+  b <- mcmv_builder()
+  sources <- mcmv_fixture_sources()
+  original <- readLines(sources[["financing_summary"]])
+  for (changed_lines in list(
+    sub("24/07/2026", "25/07/2026", original, fixed = TRUE),
+    sub("144415.57", "144416.57", original, fixed = TRUE)
+  )) {
+    output <- tempfile("mcmv-reconciliation-")
+    changed <- tempfile(fileext = ".csv")
+    writeLines(changed_lines, changed)
+    inputs <- sources
+    inputs[["financing_summary"]] <- changed
+    expect_error(
+      b$build_mcmv_snapshot(inputs, output_dir = output,
+        version = "2026-07-24", registry_path = test_path("../../inst/extdata/datasets.yaml")),
+      "reconciliation|reference dates"
+    )
+    expect_length(list.files(output, all.files = FALSE), 0L)
+    unlink(c(output, changed), recursive = TRUE)
+  }
+})
+
+test_that("historical annual MCMV summaries remain explicitly not comparable", {
+  skip_if_not_installed("duckdb", "1.5.5")
+  b <- mcmv_builder()
+  sources <- mcmv_fixture_sources()
+  sources[["financing_summary"]] <- test_path("fixtures/mcmv/summary_annual.csv")
+  layouts <- c(financing = "financing_july", financing_summary = "summary_annual",
+    subsidized_projects = "projects_june")
+  output <- tempfile("mcmv-annual-")
+  withr::defer(unlink(output, recursive = TRUE))
+  path <- b$build_mcmv_snapshot(sources, layouts = layouts, output_dir = output,
+    version = "2026-07-24", registry_path = test_path("../../inst/extdata/datasets.yaml"))
+  expect_identical(jsonlite::read_json(path)$validation$reconciliation$status,
+    "not comparable")
+})
+
+test_that("only an identical existing MCMV release can be promoted", {
+  b <- mcmv_builder()
+  candidate <- list(
+    dataset = "mcmv", version = "2026-07-24", schema_version = 1L,
+    schema_sha256 = "schema", retrieved_at = "first run",
+    source = list(organization = "Ministry", url = "https://example.test/page",
+      license = "Reviewed", files = list(
+        financing = list(sha256 = "source", url = "https://example.test/source.csv",
+          layout = "financing_july", source_rows = 3)
+      )),
+    tables = list(financing = list(rows = 3, record_fingerprint = "records",
+      columns = list(list(name = "state", type = "VARCHAR")),
+      files = list("financing.parquet"), bytes = 10, sha256 = "parquet"))
+  )
+  published <- candidate
+  published$retrieved_at <- "earlier run"
+  assets <- list(
+    list(name = "financing.parquet", size = 10),
+    list(name = "manifest.json", size = 20)
+  )
+  expect_invisible(b$validate_mcmv_existing_release(candidate, published, assets))
+
+  published$source$files$financing$sha256 <- "other source"
+  expect_error(b$validate_mcmv_existing_release(candidate, published, assets),
+    "does not match")
+  published <- candidate
+  published$tables$financing$record_fingerprint <- "other records"
+  expect_error(b$validate_mcmv_existing_release(candidate, published, assets),
+    "does not match")
+  published <- candidate
+  expect_error(b$validate_mcmv_existing_release(candidate, published, assets[-1]),
+    "assets")
+  assets[[1]]$size <- 9
+  expect_error(b$validate_mcmv_existing_release(candidate, published, assets),
+    "assets")
+
+  empty <- candidate
+  empty$tables$financing$files <- list()
+  expect_error(b$validate_mcmv_existing_release(empty, empty, assets[2]),
+    "assets")
+})
+
 test_that("MCMV is listed and points to versioned GitHub releases", {
   expect_equal(sum(list_datasets()$name == "mcmv"), 1L)
   info <- get_dataset_info("mcmv")$technical_info$query_manifest

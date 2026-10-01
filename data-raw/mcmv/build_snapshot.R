@@ -215,6 +215,8 @@ build_mcmv_snapshot <- function(
     path <- extract_mcmv_source(sources[[table]], file.path(workspace, table))
     adapter <- create_mcmv_table(con, path, layouts[[table]], info, table)
     if (adapter$table != table) cli::cli_abort("Layout does not match requested table.")
+    source_rows <- query_snapshot_scalar(con, paste("SELECT count(*) FROM", paste0(table, "_source")))
+    if (source_rows == 0) cli::cli_abort("MCMV source {.val {table}} has no rows.")
     parquet <- file.path(staging, paste0(table, ".parquet"))
     order <- c("state", "code_muni_6", if (table == "financing_summary") "contract_year" else "contract_date")
     fingerprint_sql <- paste0("SELECT CAST(sum(CAST(hash(",
@@ -222,7 +224,6 @@ build_mcmv_snapshot <- function(
       ") AS HUGEINT)) AS VARCHAR) fingerprint FROM ", table)
     source_fingerprint <- DBI::dbGetQuery(con, fingerprint_sql)$fingerprint
     rows <- write_snapshot_parquet(con, table, parquet, order)
-    source_rows <- query_snapshot_scalar(con, paste("SELECT count(*) FROM", paste0(table, "_source")))
     replace_snapshot_view_with_parquet(con, table, parquet)
     parquet_rows <- query_snapshot_scalar(con, paste("SELECT count(*) FROM", table))
     parquet_fingerprint <- DBI::dbGetQuery(con, fingerprint_sql)$fingerprint
@@ -258,6 +259,16 @@ build_mcmv_snapshot <- function(
     count(*) FILTER (WHERE units_contracted <> units_delivered + units_outstanding + units_cancelled) unit_identity_mismatches
     FROM subsidized_projects")
   reconciliation <- reconcile_mcmv(con, layouts[["financing_summary"]] == "summary_monthly")
+  if (layouts[["financing_summary"]] == "summary_monthly") {
+    if (reconciliation$status != "compared") {
+      cli::cli_abort("Monthly MCMV financing reconciliation requires matching reference dates.")
+    }
+    checks <- unlist(reconciliation[c("unmatched_groups", "unit_mismatches",
+      "amount_mismatches", "subsidy_mismatches", "repeated_summary_groups")])
+    if (!isTRUE(all(checks == 0))) {
+      cli::cli_abort("Monthly MCMV financing reconciliation failed.")
+    }
+  }
   manifest <- list(dataset = "mcmv", version = version, schema_version = 1L,
     schema_sha256 = checksum, retrieved_at = retrieved_at,
     source = list(organization = info$source, url = info$url, license = source_license, files = provenance),
@@ -267,4 +278,49 @@ build_mcmv_snapshot <- function(
   complete <- TRUE
   cli::cli_inform("Built MCMV snapshot at {.path {snapshot_dir}}.")
   return(file.path(snapshot_dir, "manifest.json"))
+}
+
+validate_mcmv_existing_release <- function(candidate, published, assets) {
+  # Parquet bytes may differ between rebuilds, so identity rests on record
+  # fingerprints and source hashes rather than on Parquet checksums.
+  signature <- function(manifest) {
+    return(list(
+      dataset = manifest$dataset, version = manifest$version,
+      schema_version = manifest$schema_version,
+      schema_sha256 = manifest$schema_sha256,
+      source = list(
+        organization = manifest$source$organization,
+        url = manifest$source$url,
+        license = manifest$source$license,
+        files = lapply(manifest$source$files, function(file) {
+          return(file[c("sha256", "url", "layout", "source_rows")])
+        })
+      ),
+      tables = lapply(manifest$tables, function(table) {
+        return(table[c("rows", "record_fingerprint", "columns", "files",
+          "reference_dates")])
+      })
+    ))
+  }
+  if (!identical(signature(candidate), signature(published))) {
+    cli::cli_abort("Existing MCMV release does not match the validated inputs.")
+  }
+
+  expected_files <- c("manifest.json", unlist(lapply(published$tables, `[[`, "files")))
+  asset_names <- vapply(assets, `[[`, "", "name")
+  if (anyDuplicated(asset_names) || !setequal(asset_names, expected_files)) {
+    cli::cli_abort("Existing MCMV release assets do not match its manifest.")
+  }
+  for (table in published$tables) {
+    file <- unlist(table$files, use.names = FALSE)
+    if (length(file) != 1L) {
+      cli::cli_abort("Existing MCMV release assets do not match its manifest.")
+    }
+    asset <- assets[[match(file, asset_names)]]
+    if (!identical(as.numeric(asset$size), as.numeric(table$bytes))) {
+      cli::cli_abort("Existing MCMV release assets do not match its manifest.")
+    }
+  }
+
+  return(invisible(TRUE))
 }

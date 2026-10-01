@@ -29,7 +29,7 @@ jobs:
           use-public-rspm: true
       - name: Install R packages
         shell: Rscript {0}
-        run: install.packages(c("cli", "jsonlite", "xml2"))
+        run: install.packages(c("cli", "httr", "jsonlite", "xml2"))
       - name: Compare landing page with latest snapshot
         id: discover
         shell: Rscript {0}
