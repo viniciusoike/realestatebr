@@ -277,6 +277,22 @@ get_dataset_from_source <- function(
 #'
 #' @keywords internal
 get_from_github_cache <- function(name, dataset_info, table, quiet = FALSE) {
+  cached_files <- dataset_info$cached_file
+  if (
+    identical(table, "all") &&
+      is.list(cached_files) &&
+      is.null(cached_files$all)
+  ) {
+    tables <- names(cached_files)
+    return(stats::setNames(
+      lapply(
+        tables,
+        \(table) get_from_github_cache(name, dataset_info, table, quiet)
+      ),
+      tables
+    ))
+  }
+
   cached_name <- get_cached_name(name, dataset_info, table)
 
   if (is.null(cached_name)) {

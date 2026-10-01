@@ -504,6 +504,37 @@ test_that("PNAD Housing registry maps every selector to a cache asset", {
   expect_identical(registry$dataset_function, "get_pnad_housing")
 })
 
+test_that("PNAD Housing loads all tables from release assets", {
+  clear_session_cache()
+  withr::defer(clear_session_cache())
+  local_mocked_bindings(
+    fetch_github_release_asset = function(cached_name, quiet) {
+      tibble::tibble(asset = cached_name)
+    }
+  )
+
+  expected <- stats::setNames(
+    paste0("pnad_housing_", names(pnad_housing_tables)),
+    names(pnad_housing_tables)
+  )
+
+  for (source in c("github", "auto")) {
+    clear_session_cache()
+    result <- get_dataset(
+      "pnad_housing",
+      table = "all",
+      source = source,
+      quiet = TRUE
+    )
+
+    expect_named(result, names(expected))
+    expect_identical(
+      vapply(result, \(dat) dat$asset, character(1)),
+      expected
+    )
+  }
+})
+
 test_that("PNAD Housing fresh download matches the live source contract", {
   skip_on_cran()
   skip_if_offline()
