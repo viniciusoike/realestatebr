@@ -790,7 +790,7 @@ datasets:
     update_schedule: "manual snapshots"
     access_mode: query
     data_type: "lazy tables"
-    translation_notes: "Source categories, missing observations, duplicates, and anomalies are retained. See the [working article](../articles/working-with-mcmv.html) and [data dictionary](../articles/mcmv-data-dictionary.html)."
+    translation_notes: "Source categories, missing observations, duplicates, and anomalies are retained. See the [working article](https://viniciusoike.github.io/realestatebr/articles/working-with-mcmv.html) and [data dictionary](https://viniciusoike.github.io/realestatebr/articles/mcmv-data-dictionary.html)."
     query_manifest:
       latest_url: "https://github.com/viniciusoike/realestatebr/releases/download/mcmv-v1-latest/latest.json"
       version_url_template: "https://github.com/viniciusoike/realestatebr/releases/download/mcmv-{version}/manifest.json"
