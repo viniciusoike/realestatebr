@@ -10,6 +10,8 @@
   CNO](https://viniciusoike.github.io/realestatebr/articles/working-with-cno.md):
 - [Working with
   MCMV](https://viniciusoike.github.io/realestatebr/articles/working-with-mcmv.md):
+- [Working with PNAD
+  Housing](https://viniciusoike.github.io/realestatebr/articles/working-with-pnad-housing.md):
 
 ### Market deep dives
 

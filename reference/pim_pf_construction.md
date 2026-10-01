@@ -70,6 +70,7 @@ Other datasets:
 [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md),
 [`mcmv`](https://viniciusoike.github.io/realestatebr/reference/mcmv.md),
 [`paic`](https://viniciusoike.github.io/realestatebr/reference/paic.md),
+[`pnad_housing`](https://viniciusoike.github.io/realestatebr/reference/pnad_housing.md),
 [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md),
 [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md),
 [`secovi`](https://viniciusoike.github.io/realestatebr/reference/secovi.md),

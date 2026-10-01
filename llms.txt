@@ -61,6 +61,7 @@ format. Update schedules vary by source.
 | `mcmv` | Ministério das Cidades | `financing`, `financing_summary`, `subsidized_projects` |
 | `paic` | IBGE | `activity`, `size`, `state` |
 | `pim_pf_construction` | IBGE | — |
+| `pnad_housing` | IBGE | `tenure`, `dwelling_type`, `household_size`, `mean_household_size`, `household_composition` |
 | `rppi` | FIPE/ZAP, IVG-R, IGMI-R, IQA, IQAIW, IVAR, SECOVI-SP | `sale`, `rent`, `all`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` |
 | `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` |
 | `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` |
@@ -222,6 +223,8 @@ Table and column documentation for each dataset
   : PAIC Construction Industry Data
 - [`pim_pf_construction`](https://viniciusoike.github.io/realestatebr/reference/pim_pf_construction.md)
   : PIM-PF Construction-input Production Index
+- [`pnad_housing`](https://viniciusoike.github.io/realestatebr/reference/pnad_housing.md)
+  : PNAD Contínua Housing
 - [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md)
   : Brazilian Residential Property Price Indices
 - [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md)
@@ -254,6 +257,8 @@ Auxiliary data shipped with the package
   CNO](https://viniciusoike.github.io/realestatebr/articles/working-with-cno.md):
 - [Working with
   MCMV](https://viniciusoike.github.io/realestatebr/articles/working-with-mcmv.md):
+- [Working with PNAD
+  Housing](https://viniciusoike.github.io/realestatebr/articles/working-with-pnad-housing.md):
 
 ### Market deep dives
 

@@ -2,6 +2,8 @@
 
 ## realestatebr 1.2.0
 
+CRAN release: 2026-10-01
+
 - Added `query_dataset("mcmv")`, with Minha Casa, Minha Vida financing
   contracts, official financing totals, and federally subsidized housing
   projects from the Ministério das Cidades. A new article covers the
@@ -13,6 +15,10 @@
   enterprises, employment, revenue, costs, and output; values publish in
   original units with a `value_status` column for SIDRA symbols. Do not
   compare with the 2007-2023 series (see IBGE Nota técnica 01/2026).
+- Added `get_dataset("pnad_housing")` with annual PNAD Contínua
+  household tenure, dwelling type, household size, mean size, and
+  domestic-unit composition estimates, including published shares and
+  coefficients of variation in their original units.
 
 ## realestatebr 1.1.0
 

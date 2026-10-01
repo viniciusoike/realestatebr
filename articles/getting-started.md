@@ -83,6 +83,7 @@ ds <- list_datasets()
 | mcmv | FGTS/MCMV Housing Finance and Subsidized Projects | Ministério das Cidades - Secretaria Nacional de Habitação | financing, financing_summary, subsidized_projects | dated full snapshots |
 | paic | PAIC Construction Industry Data | IBGE - Pesquisa Anual da Indústria da Construção | activity, size, state | annual |
 | pim_pf_construction | PIM-PF Construction-input Production Index | IBGE - Pesquisa Industrial Mensal - Produção Física | (single table) | monthly |
+| pnad_housing | PNAD Contínua Housing | IBGE - Pesquisa Nacional por Amostra de Domicílios Contínua anual | tenure, dwelling_type, household_size, mean_household_size, household_composition | annual |
 | rppi | Brazilian Residential Property Price Indices | Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP) | fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp, sale, rent, all | monthly |
 | rppi_bis | BIS Residential Property Price Indices | Bank for International Settlements | selected, detailed_monthly, detailed_quarterly, detailed_annual, detailed_halfyearly | quarterly |
 | secovi | SECOVI-SP Real Estate Market Data | SECOVI-SP - Sindicato da Habitação | condo, rent, launch, sale | monthly |

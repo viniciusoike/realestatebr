@@ -37,6 +37,8 @@ Table and column documentation for each dataset
   : PAIC Construction Industry Data
 - [`pim_pf_construction`](https://viniciusoike.github.io/realestatebr/reference/pim_pf_construction.md)
   : PIM-PF Construction-input Production Index
+- [`pnad_housing`](https://viniciusoike.github.io/realestatebr/reference/pnad_housing.md)
+  : PNAD Contínua Housing
 - [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md)
   : Brazilian Residential Property Price Indices
 - [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md)

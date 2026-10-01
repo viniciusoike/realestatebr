@@ -39,6 +39,7 @@
     <li><a class="dropdown-item" href="../articles/working-with-rppi.html">Working with Property Price Indices</a></li>
     <li><a class="dropdown-item" href="../articles/working-with-cno.html">Working with CNO</a></li>
     <li><a class="dropdown-item" href="../articles/working-with-mcmv.html">Working with MCMV</a></li>
+    <li><a class="dropdown-item" href="../articles/working-with-pnad-housing.html">Working with PNAD Housing</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Market deep dives</h6></li>
     <li><a class="dropdown-item" href="../articles/housing-credit.html">Housing Credit in Brazil</a></li>
@@ -160,7 +161,7 @@ smoothed with a 3-month moving average and the HP filter.</p>
 <code class="sourceCode R"><span><span class="va">ivgr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"ivgr"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">ivgr</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 304</span></span>
+<span><span class="co">#&gt; Rows: 305</span></span>
 <span><span class="co">#&gt; Columns: 5</span></span>
 <span><span class="co">#&gt; $ date     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2001-03-01<span style="color: #949494;">, </span>2001-04-01<span style="color: #949494;">, </span>2001-05-01<span style="color: #949494;">, </span>2001-06-01<span style="color: #949494;">, </span>2001-07-01<span style="color: #949494;">, </span>…</span></span>
 <span><span class="co">#&gt; $ name_geo <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"…</span></span>
@@ -189,7 +190,7 @@ spans major Brazilian cities from 2014.</p>
 <code class="sourceCode R"><span><span class="va">igmi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, <span class="st">"igmi"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">igmi</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 1,639</span></span>
+<span><span class="co">#&gt; Rows: 1,672</span></span>
 <span><span class="co">#&gt; Columns: 5</span></span>
 <span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">, </span>2014-01-01<span style="color: #949494;">,</span>…</span></span>
 <span><span class="co">#&gt; $ name_muni <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "São Paulo"<span style="color: #949494;">, </span>"Rio De Janeiro"<span style="color: #949494;">, </span>"Belo Horizonte"<span style="color: #949494;">, </span>"Fortaleza"…</span></span>
@@ -237,7 +238,7 @@ final series is smoothed with a 3-month moving average.</p>
 <code class="sourceCode R"><span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"fipezap"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">fz</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 689,472</span></span>
+<span><span class="co">#&gt; Rows: 692,550</span></span>
 <span><span class="co">#&gt; Columns: 7</span></span>
 <span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">,</span>…</span></span>
 <span><span class="co">#&gt; $ name_muni <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>…</span></span>
@@ -460,7 +461,7 @@ data from 2021.</p>
 <code class="sourceCode R"><span><span class="va">fz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_dataset.html">get_dataset</a></span><span class="op">(</span><span class="st">"rppi"</span>, table <span class="op">=</span> <span class="st">"fipezap"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">fz</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 689,472</span></span>
+<span><span class="co">#&gt; Rows: 692,550</span></span>
 <span><span class="co">#&gt; Columns: 7</span></span>
 <span><span class="co">#&gt; $ date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">, </span>2008-01-01<span style="color: #949494;">,</span>…</span></span>
 <span><span class="co">#&gt; $ name_muni <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>"Brazil"<span style="color: #949494;">, </span>…</span></span>

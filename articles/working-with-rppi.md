@@ -86,7 +86,7 @@ smoothed with a 3-month moving average and the HP filter.
 ivgr <- get_dataset("rppi", "ivgr")
 
 glimpse(ivgr)
-#> Rows: 304
+#> Rows: 305
 #> Columns: 5
 #> $ date     <date> 2001-03-01, 2001-04-01, 2001-05-01, 2001-06-01, 2001-07-01, …
 #> $ name_geo <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "…
@@ -121,7 +121,7 @@ spans major Brazilian cities from 2014.
 igmi <- get_dataset("rppi", "igmi")
 
 glimpse(igmi)
-#> Rows: 1,639
+#> Rows: 1,672
 #> Columns: 5
 #> $ date      <date> 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01,…
 #> $ name_muni <chr> "São Paulo", "Rio De Janeiro", "Belo Horizonte", "Fortaleza"…
@@ -171,7 +171,7 @@ Four columns are specific to FipeZap.
 fz <- get_dataset("rppi", table = "fipezap")
 
 glimpse(fz)
-#> Rows: 689,472
+#> Rows: 692,550
 #> Columns: 7
 #> $ date      <date> 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01,…
 #> $ name_muni <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", …
@@ -443,7 +443,7 @@ data from 2021.
 fz <- get_dataset("rppi", table = "fipezap")
 
 glimpse(fz)
-#> Rows: 689,472
+#> Rows: 692,550
 #> Columns: 7
 #> $ date      <date> 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01, 2008-01-01,…
 #> $ name_muni <chr> "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", "Brazil", …
