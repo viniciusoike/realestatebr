@@ -72,7 +72,10 @@ make_paic_complete_raw <- function(table) {
     return(make_paic_raw(
       table = 10463,
       variable_id = grid$variable_id,
-      unit = unname(paic_variable_units[grid$variable_id]),
+      unit = paic_variables$unit[match(
+        grid$variable_id,
+        paic_variables$variable_id
+      )],
       category_code = grid$category_code,
       values = grid$values
     ))
@@ -96,7 +99,10 @@ make_paic_complete_raw <- function(table) {
   return(make_paic_raw(
     table = 10441,
     variable_id = grid$variable_id,
-    unit = unname(paic_variable_units[grid$variable_id]),
+    unit = paic_variables$unit[match(
+      grid$variable_id,
+      paic_variables$variable_id
+    )],
     category_code = grid$category_code,
     geography_level = grid$level,
     geography_code = grid$code,
@@ -104,6 +110,21 @@ make_paic_complete_raw <- function(table) {
     values = grid$values
   ))
 }
+
+test_that("PAIC variable table covers every requested variable", {
+  expect_false(anyDuplicated(paic_variables$variable_id) > 0)
+  for (column in names(paic_variables)) {
+    expect_false(
+      anyNA(paic_variables[[column]]) || any(paic_variables[[column]] == "")
+    )
+  }
+  requested <- c(
+    paic_activity_variables,
+    paic_size_variables,
+    paic_state_variables
+  )
+  expect_setequal(paic_variables$variable_id, requested)
+})
 
 test_that("PAIC derives value_status from SIDRA symbols", {
   expect_equal(
