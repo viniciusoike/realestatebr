@@ -1,0 +1,25 @@
+[
+  {
+    "id": "162",
+    "variavel": "Domicílios",
+    "unidade": "Mil unidades",
+    "resultados": [
+      {
+        "classificacoes": [
+          {"id": "68", "nome": "Número de moradores", "categoria": {"9902": "Total"}}
+        ],
+        "series": [
+          {"localidade": {"id": "1", "nivel": {"id": "N1", "nome": "Brasil"}, "nome": "Brasil"}, "serie": {"2025": "79305"}}
+        ]
+      },
+      {
+        "classificacoes": [
+          {"id": "68", "nome": "Número de moradores", "categoria": {"1092": "1 morador"}}
+        ],
+        "series": [
+          {"localidade": {"id": "1", "nivel": {"id": "N1", "nome": "Brasil"}, "nome": "Brasil"}, "serie": {"2025": "15633"}}
+        ]
+      }
+    ]
+  }
+]

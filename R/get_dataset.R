@@ -13,7 +13,7 @@
 #' @param name Character. Dataset name (see \code{\link{list_datasets}} for
 #'   options). Each dataset has its own help topic documenting tables and
 #'   columns: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
-#'   \link{bcb_series}, \link{fgv_ibre}, \link{paic},
+#'   \link{bcb_series}, \link{fgv_ibre}, \link{paic}, \link{pnad_housing},
 #'   \link{pim_pf_construction}, \link{rppi}, \link{rppi_bis}, \link{secovi},
 #'   and \link{sinapi}.
 #' @param table Character. Specific table within a multi-table dataset. See
@@ -62,7 +62,7 @@
 #'   \code{\link{clear_session_cache}} to drop the in-session memo.
 #'   For table and column documentation of each dataset, see the dataset
 #'   help topics: \link{abecip}, \link{abrainc}, \link{bcb_realestate},
-#'   \link{bcb_series}, \link{fgv_ibre}, \link{paic},
+#'   \link{bcb_series}, \link{fgv_ibre}, \link{paic}, \link{pnad_housing},
 #'   \link{pim_pf_construction}, \link{rppi}, \link{rppi_bis}, \link{secovi},
 #'   and \link{sinapi}.
 #'
@@ -277,6 +277,22 @@ get_dataset_from_source <- function(
 #'
 #' @keywords internal
 get_from_github_cache <- function(name, dataset_info, table, quiet = FALSE) {
+  cached_files <- dataset_info$cached_file
+  if (
+    identical(table, "all") &&
+      is.list(cached_files) &&
+      is.null(cached_files$all)
+  ) {
+    tables <- names(cached_files)
+    return(stats::setNames(
+      lapply(
+        tables,
+        \(table) get_from_github_cache(name, dataset_info, table, quiet)
+      ),
+      tables
+    ))
+  }
+
   cached_name <- get_cached_name(name, dataset_info, table)
 
   if (is.null(cached_name)) {
@@ -567,7 +583,8 @@ supports_table_all <- function(func_name) {
     "get_rppi_bis",
     "get_bcb_series",
     "get_fgv_ibre",
-    "get_paic"
+    "get_paic",
+    "get_pnad_housing"
   )
 
   return(func_name %in% functions_with_table)

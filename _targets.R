@@ -484,6 +484,140 @@ list(
     command = c(paic_activity_cache, paic_size_cache, paic_state_cache)
   ),
 
+  # ---- PNAD Housing ------------------------------------------------------
+  tar_target(
+    name = pnad_housing_tenure_data,
+    command = fetch_dataset("pnad_housing", table = "tenure"),
+    cue = tar_cue_age(
+      name = pnad_housing_tenure_data,
+      age = as.difftime(180, units = "days")
+    )
+  ),
+  tar_target(
+    name = pnad_housing_tenure_validation,
+    command = validate_dataset(
+      pnad_housing_tenure_data,
+      "pnad_housing_tenure"
+    )
+  ),
+  tar_target(
+    name = pnad_housing_tenure_cache,
+    command = {
+      assert_validation_passed(pnad_housing_tenure_validation)
+      save_to_cache(pnad_housing_tenure_data, "pnad_housing_tenure")
+    }
+  ),
+  tar_target(
+    name = pnad_housing_dwelling_type_data,
+    command = fetch_dataset("pnad_housing", table = "dwelling_type"),
+    cue = tar_cue_age(
+      name = pnad_housing_dwelling_type_data,
+      age = as.difftime(180, units = "days")
+    )
+  ),
+  tar_target(
+    name = pnad_housing_dwelling_type_validation,
+    command = validate_dataset(
+      pnad_housing_dwelling_type_data,
+      "pnad_housing_dwelling_type"
+    )
+  ),
+  tar_target(
+    name = pnad_housing_dwelling_type_cache,
+    command = {
+      assert_validation_passed(pnad_housing_dwelling_type_validation)
+      save_to_cache(
+        pnad_housing_dwelling_type_data,
+        "pnad_housing_dwelling_type"
+      )
+    }
+  ),
+  tar_target(
+    name = pnad_housing_household_size_data,
+    command = fetch_dataset("pnad_housing", table = "household_size"),
+    cue = tar_cue_age(
+      name = pnad_housing_household_size_data,
+      age = as.difftime(180, units = "days")
+    )
+  ),
+  tar_target(
+    name = pnad_housing_household_size_validation,
+    command = validate_dataset(
+      pnad_housing_household_size_data,
+      "pnad_housing_household_size"
+    )
+  ),
+  tar_target(
+    name = pnad_housing_household_size_cache,
+    command = {
+      assert_validation_passed(pnad_housing_household_size_validation)
+      save_to_cache(
+        pnad_housing_household_size_data,
+        "pnad_housing_household_size"
+      )
+    }
+  ),
+  tar_target(
+    name = pnad_housing_mean_household_size_data,
+    command = fetch_dataset("pnad_housing", table = "mean_household_size"),
+    cue = tar_cue_age(
+      name = pnad_housing_mean_household_size_data,
+      age = as.difftime(180, units = "days")
+    )
+  ),
+  tar_target(
+    name = pnad_housing_mean_household_size_validation,
+    command = validate_dataset(
+      pnad_housing_mean_household_size_data,
+      "pnad_housing_mean_household_size"
+    )
+  ),
+  tar_target(
+    name = pnad_housing_mean_household_size_cache,
+    command = {
+      assert_validation_passed(pnad_housing_mean_household_size_validation)
+      save_to_cache(
+        pnad_housing_mean_household_size_data,
+        "pnad_housing_mean_household_size"
+      )
+    }
+  ),
+  tar_target(
+    name = pnad_housing_household_composition_data,
+    command = fetch_dataset("pnad_housing", table = "household_composition"),
+    cue = tar_cue_age(
+      name = pnad_housing_household_composition_data,
+      age = as.difftime(180, units = "days")
+    )
+  ),
+  tar_target(
+    name = pnad_housing_household_composition_validation,
+    command = validate_dataset(
+      pnad_housing_household_composition_data,
+      "pnad_housing_household_composition"
+    )
+  ),
+  tar_target(
+    name = pnad_housing_household_composition_cache,
+    command = {
+      assert_validation_passed(pnad_housing_household_composition_validation)
+      save_to_cache(
+        pnad_housing_household_composition_data,
+        "pnad_housing_household_composition"
+      )
+    }
+  ),
+  tar_target(
+    name = pnad_housing_cache,
+    command = c(
+      pnad_housing_tenure_cache,
+      pnad_housing_dwelling_type_cache,
+      pnad_housing_household_size_cache,
+      pnad_housing_mean_household_size_cache,
+      pnad_housing_household_composition_cache
+    )
+  ),
+
   # Pipeline summary -------------------------------------------------------
 
   tar_target(
@@ -512,7 +646,8 @@ list(
         bis_rppi_cache,
         sinapi_cache,
         pim_pf_construction_cache,
-        paic_cache
+        paic_cache,
+        pnad_housing_cache
       )
 
       # Collect all validations
@@ -532,7 +667,12 @@ list(
         pim_pf_construction = pim_pf_construction_validation,
         paic_activity = paic_activity_validation,
         paic_size = paic_size_validation,
-        paic_state = paic_state_validation
+        paic_state = paic_state_validation,
+        pnad_housing_tenure = pnad_housing_tenure_validation,
+        pnad_housing_dwelling_type = pnad_housing_dwelling_type_validation,
+        pnad_housing_household_size = pnad_housing_household_size_validation,
+        pnad_housing_mean_household_size = pnad_housing_mean_household_size_validation,
+        pnad_housing_household_composition = pnad_housing_household_composition_validation
       )
 
       summary_info <- list(
@@ -560,7 +700,12 @@ list(
           "pim_pf_construction",
           "paic_activity",
           "paic_size",
-          "paic_state"
+          "paic_state",
+          "pnad_housing_tenure",
+          "pnad_housing_dwelling_type",
+          "pnad_housing_household_size",
+          "pnad_housing_mean_household_size",
+          "pnad_housing_household_composition"
         ),
         weekly_datasets = c(
           "bcb_series",
@@ -592,7 +737,12 @@ list(
         annual_datasets = c(
           "paic_activity",
           "paic_size",
-          "paic_state"
+          "paic_state",
+          "pnad_housing_tenure",
+          "pnad_housing_dwelling_type",
+          "pnad_housing_household_size",
+          "pnad_housing_mean_household_size",
+          "pnad_housing_household_composition"
         ),
         cache_files = cache_files,
         validations = validations

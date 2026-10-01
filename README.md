@@ -71,6 +71,7 @@ format. Update schedules vary by source.
 | `mcmv` | Ministério das Cidades | `financing`, `financing_summary`, `subsidized_projects` |
 | `paic` | IBGE | `activity`, `size`, `state` |
 | `pim_pf_construction` | IBGE | — |
+| `pnad_housing` | IBGE | `tenure`, `dwelling_type`, `household_size`, `mean_household_size`, `household_composition` |
 | `rppi` | FIPE/ZAP, IVG-R, IGMI-R, IQA, IQAIW, IVAR, SECOVI-SP | `sale`, `rent`, `all`, `fipezap`, `ivgr`, `igmi`, `iqa`, `iqaiw`, `ivar`, `secovi_sp` |
 | `rppi_bis` | Bank for International Settlements | `selected`, `detailed_monthly`, `detailed_quarterly`, `detailed_annual`, `detailed_halfyearly` |
 | `secovi` | SECOVI-SP | `condo`, `rent`, `launch`, `sale` |

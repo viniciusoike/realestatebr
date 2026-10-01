@@ -33,6 +33,7 @@ reference:
       - mcmv
       - paic
       - pim_pf_construction
+      - pnad_housing
       - rppi
       - rppi_bis
       - secovi
@@ -52,6 +53,7 @@ articles:
       - articles/working-with-rppi
       - articles/working-with-cno
       - articles/working-with-mcmv
+      - articles/working-with-pnad-housing
   - title: "Market deep dives"
     navbar: Market deep dives
     contents:

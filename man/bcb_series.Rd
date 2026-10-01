@@ -54,6 +54,7 @@ Other datasets:
 \code{\link{mcmv}},
 \code{\link{paic}},
 \code{\link{pim_pf_construction}},
+\code{\link{pnad_housing}},
 \code{\link{rppi}},
 \code{\link{rppi_bis}},
 \code{\link{secovi}},
