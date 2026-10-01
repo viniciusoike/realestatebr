@@ -24,8 +24,10 @@
 #' * **Tables**: `"financing"`, `"financing_summary"`, `"subsidized_projects"`
 #'
 #' Source categories, missing observations, duplicates, and anomalies are
-#' retained. See the [working article](../articles/working-with-mcmv.html) and
-#' [data dictionary](../articles/mcmv-data-dictionary.html).
+#' retained. See the [working
+#' article](https://viniciusoike.github.io/realestatebr/articles/working-with-mcmv.html)
+#' and [data
+#' dictionary](https://viniciusoike.github.io/realestatebr/articles/mcmv-data-dictionary.html).
 #'
 #' @section Table "financing" (Financing):
 #' One published financing observation, usually one housing unit. The source

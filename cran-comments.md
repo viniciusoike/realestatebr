@@ -16,3 +16,6 @@ submission covers the changes in both 1.1.0 and 1.2.0.
   403 Forbidden to automated requests because IBGE serves them behind a
   Cloudflare browser challenge. They open normally in a web browser and are
   the official catalogue pages for the IBGE tables the package reads.
+
+* "IBGE", flagged as possibly misspelled in DESCRIPTION, is the acronym of
+  the Brazilian Institute of Geography and Statistics.

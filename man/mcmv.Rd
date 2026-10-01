@@ -28,8 +28,8 @@ mcmv$financing
 }
 
 Source categories, missing observations, duplicates, and anomalies are
-retained. See the \href{../articles/working-with-mcmv.html}{working article} and
-\href{../articles/mcmv-data-dictionary.html}{data dictionary}.
+retained. See the \href{https://viniciusoike.github.io/realestatebr/articles/working-with-mcmv.html}{working article}
+and \href{https://viniciusoike.github.io/realestatebr/articles/mcmv-data-dictionary.html}{data dictionary}.
 }
 \section{Table "financing" (Financing)}{
 
