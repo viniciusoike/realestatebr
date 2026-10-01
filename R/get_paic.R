@@ -1,7 +1,7 @@
 # PAIC constants ---------------------------------------------------------------
 #
 # Pesquisa Anual da Indústria da Construção (PAIC), new series from 2024
-# onward. See data-raw/paic-dataset-plan.md and IBGE Nota técnica 01/2026.
+# onward. See IBGE Nota técnica 01/2026.
 # Legacy 2007-2023 tables are out of scope for the first release; do not
 # join the two series or report growth rates across the 2023-2024 break.
 
