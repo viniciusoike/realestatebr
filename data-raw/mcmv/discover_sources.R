@@ -65,17 +65,51 @@ mcmv_sources_changed <- function(urls, manifest) {
   return(!identical(unname(published), unname(urls)))
 }
 
+mcmv_get <- function(url) httr::GET(url)
+
 read_mcmv_manifest <- function(latest_url) {
-  latest <- tryCatch(
-    jsonlite::read_json(latest_url),
-    error = function(e) NULL,
-    warning = function(w) NULL
-  )
+  read_json <- function(url, missing_ok = FALSE) {
+    response <- mcmv_get(url)
+    if (missing_ok && httr::status_code(response) == 404L) {
+      return(NULL)
+    }
+    httr::stop_for_status(response)
+    return(jsonlite::fromJSON(
+      httr::content(response, as = "text", encoding = "UTF-8"),
+      simplifyVector = FALSE
+    ))
+  }
+
+  latest <- read_json(latest_url, missing_ok = TRUE)
   if (is.null(latest)) {
     cli::cli_inform("No published MCMV snapshot found at {.url {latest_url}}.")
     return(NULL)
   }
-  return(jsonlite::read_json(latest$manifest_url))
+  manifest_url <- latest$manifest_url
+  if (
+    !is.character(manifest_url) ||
+      length(manifest_url) != 1L ||
+      is.na(manifest_url) ||
+      !nzchar(manifest_url)
+  ) {
+    cli::cli_abort("MCMV latest pointer has no valid {.field manifest_url}.")
+  }
+  manifest <- read_json(manifest_url)
+  files <- manifest$source$files
+  if (
+    !is.list(files) ||
+      !all(vapply(
+        names(mcmv_source_prefixes),
+        function(table) {
+          url <- files[[table]]$url
+          is.character(url) && length(url) == 1L && !is.na(url) && nzchar(url)
+        },
+        logical(1)
+      ))
+  ) {
+    cli::cli_abort("MCMV manifest has invalid {.field source.files} URLs.")
+  }
+  return(manifest)
 }
 
 # Snapshot version ----

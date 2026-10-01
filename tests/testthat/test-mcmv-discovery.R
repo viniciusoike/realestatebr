@@ -11,6 +11,18 @@ landing_html <- function(extra = character()) {
   return(c(html[seq_len(closing - 1)], extra, html[closing:length(html)]))
 }
 
+mcmv_response <- function(status, body = "{}") {
+  structure(
+    list(
+      status_code = status,
+      content = charToRaw(body),
+      headers = list(`content-type` = "application/json"),
+      url = "https://example.test/latest.json"
+    ),
+    class = "response"
+  )
+}
+
 test_that("discovery finds one data file per table on the landing page", {
   d <- mcmv_discovery()
   urls <- d$discover_mcmv_sources(landing_html())
@@ -91,6 +103,86 @@ test_that("changes are detected against the published manifest", {
   expect_true(d$mcmv_sources_changed(urls, NULL))
   manifest$source$files$financing$url <- NULL
   expect_true(d$mcmv_sources_changed(urls, manifest))
+})
+
+test_that("only a confirmed missing latest pointer means no snapshot", {
+  d <- mcmv_discovery()
+  d$mcmv_get <- function(url) mcmv_response(404L)
+  expect_message(expect_null(d$read_mcmv_manifest(
+    "https://example.test/latest.json"
+  )))
+
+  d$mcmv_get <- function(url) mcmv_response(503L)
+  expect_error(d$read_mcmv_manifest("https://example.test/latest.json"))
+
+  d$mcmv_get <- function(url) cli::cli_abort("network failed")
+  expect_error(
+    d$read_mcmv_manifest("https://example.test/latest.json"),
+    "network failed"
+  )
+})
+
+test_that("invalid latest pointers and manifests fail discovery", {
+  d <- mcmv_discovery()
+  latest_url <- "https://example.test/latest.json"
+  manifest_url <- "https://example.test/manifest.json"
+
+  d$mcmv_get <- function(url) mcmv_response(200L, "{")
+  expect_error(d$read_mcmv_manifest(latest_url))
+
+  d$mcmv_get <- function(url) mcmv_response(200L, '{"dataset":"mcmv"}')
+  expect_error(d$read_mcmv_manifest(latest_url), "manifest_url")
+
+  pointer <- sprintf('{"manifest_url":"%s"}', manifest_url)
+  d$mcmv_get <- function(url) {
+    if (identical(url, latest_url)) {
+      mcmv_response(200L, pointer)
+    } else {
+      mcmv_response(404L)
+    }
+  }
+  expect_error(d$read_mcmv_manifest(latest_url))
+
+  d$mcmv_get <- function(url) {
+    if (identical(url, latest_url)) {
+      mcmv_response(200L, pointer)
+    } else {
+      mcmv_response(200L, "{")
+    }
+  }
+  expect_error(d$read_mcmv_manifest(latest_url))
+
+  d$mcmv_get <- function(url) {
+    if (identical(url, latest_url)) {
+      mcmv_response(200L, pointer)
+    } else {
+      mcmv_response(200L, "{}")
+    }
+  }
+  expect_error(d$read_mcmv_manifest(latest_url), "source")
+})
+
+test_that("a published manifest is read from the latest pointer", {
+  d <- mcmv_discovery()
+  latest_url <- "https://example.test/latest.json"
+  manifest_url <- "https://example.test/manifest.json"
+  urls <- d$discover_mcmv_sources(landing_html())
+  manifest <- list(
+    source = list(files = lapply(as.list(urls), function(url) list(url = url)))
+  )
+  pointer <- jsonlite::toJSON(
+    list(manifest_url = manifest_url),
+    auto_unbox = TRUE
+  )
+  body <- jsonlite::toJSON(manifest, auto_unbox = TRUE)
+  d$mcmv_get <- function(url) {
+    if (identical(url, latest_url)) {
+      mcmv_response(200L, pointer)
+    } else {
+      mcmv_response(200L, body)
+    }
+  }
+  expect_false(d$mcmv_sources_changed(urls, d$read_mcmv_manifest(latest_url)))
 })
 
 test_that("snapshot version comes from the reference date inside the file", {

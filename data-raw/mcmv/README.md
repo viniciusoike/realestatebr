@@ -78,6 +78,11 @@ short-lived validation artifact. With `publish = true`, it also:
 2. queries the published files remotely;
 3. updates `latest.json` in the `mcmv-v1-latest` release.
 
+If remote verification fails after the immutable release is created, rerun the
+workflow with the same version and source inputs. It checks the existing
+manifest and asset inventory before retrying verification and updating the
+pointer; conflicting inputs cannot replace the release.
+
 Publishing requires a license with an evidence URL. When the version is left
 empty, the workflow uses the `data_referencia` date inside the financing file.
 
@@ -93,3 +98,6 @@ those in the latest published manifest. When they differ, it starts an
 unpublished run of `Build MCMV Snapshot` and opens an issue named after the
 three files. An existing issue with the same name stops the workflow from
 repeating the build. Publishing stays manual.
+
+Detection compares URLs only. If the Ministry replaces a file's content under
+the same name, the workflow does not notice; run `Build MCMV Snapshot` by hand.

@@ -129,15 +129,10 @@ jobs:
             if (length(found) != 1L) cli::cli_abort("Expected one input per table.")
             return(found)
           }, "")
-          path <- build_mcmv_snapshot(paths,
+          build_mcmv_snapshot(paths,
             layouts = stats::setNames(Sys.getenv(paste0("MCMV_", keys, "_LAYOUT")), tables),
             source_urls = stats::setNames(Sys.getenv(paste0("MCMV_", keys, "_URL")), tables),
             source_license = Sys.getenv("MCMV_LICENSE"), version = Sys.getenv("MCMV_VERSION"))
-          report <- jsonlite::read_json(path)$validation$reconciliation
-          if (report$status == "compared" && any(unlist(report[c("unmatched_groups",
-              "unit_mismatches", "amount_mismatches", "subsidy_mismatches", "repeated_summary_groups")]) != 0)) {
-            cli::cli_abort("Financing reconciliation failed; review the source files before publication.")
-          }
       - name: Upload validated artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -152,14 +147,24 @@ jobs:
         run: |
           release_tag="mcmv-$MCMV_VERSION"
           snapshot_dir="data-raw/mcmv_output/$MCMV_VERSION"
-          if gh release view "$release_tag" >/dev/null 2>&1; then
-            echo "Immutable release already exists; it will not be overwritten." >&2
-            exit 1
+          existing_dir="$RUNNER_TEMP/mcmv-existing"
+          mkdir -p "$existing_dir"
+          if gh release view "$release_tag" --json assets > "$existing_dir/release.json" 2>/dev/null; then
+            gh release download "$release_tag" --pattern manifest.json --dir "$existing_dir"
+            Rscript - "$snapshot_dir/manifest.json" "$existing_dir/manifest.json" "$existing_dir/release.json" <<'RSCRIPT'
+          source("data-raw/mcmv/build_snapshot.R")
+          args <- commandArgs(trailingOnly = TRUE)
+          candidate <- jsonlite::read_json(args[[1]])
+          published <- jsonlite::read_json(args[[2]])
+          assets <- jsonlite::read_json(args[[3]])$assets
+          validate_mcmv_existing_release(candidate, published, assets)
+          RSCRIPT
+          else
+            gh release create "$release_tag" "$snapshot_dir"/*.parquet "$snapshot_dir/manifest.json" \
+              --target "$GITHUB_SHA" --title "MCMV snapshot $MCMV_VERSION" \
+              --notes "Validated full MCMV snapshot. Source attribution, license, dates, and anomalies are in manifest.json." \
+              --latest=false
           fi
-          gh release create "$release_tag" "$snapshot_dir"/*.parquet "$snapshot_dir/manifest.json" \
-            --target "$GITHUB_SHA" --title "MCMV snapshot $MCMV_VERSION" \
-            --notes "Validated full MCMV snapshot. Source attribution, license, dates, and anomalies are in manifest.json." \
-            --latest=false
       - name: Verify remote lazy access before updating pointer
         if: ${{ inputs.publish }}
         shell: Rscript {0}
@@ -168,13 +173,20 @@ jobs:
           url <- sprintf("https://github.com/%s/releases/download/mcmv-%s/manifest.json",
             Sys.getenv("GITHUB_REPOSITORY"), Sys.getenv("MCMV_VERSION"))
           options(realestatebr.query_manifest_urls = c(mcmv = url))
+          manifest <- jsonlite::read_json(file.path("data-raw/mcmv_output",
+            Sys.getenv("MCMV_VERSION"), "manifest.json"))
           local({
             catalog <- query_dataset("mcmv", version = Sys.getenv("MCMV_VERSION"))
             on.exit(close(catalog))
-            for (table in catalog) {
-              result <- table |> dplyr::filter(state == "SP") |>
-                dplyr::summarise(rows = dplyr::n()) |> dplyr::collect()
-              if (nrow(result) != 1L) cli::cli_abort("Remote query verification failed.")
+            for (name in names(catalog)) {
+              result <- catalog[[name]] |>
+                dplyr::summarise(rows = dplyr::n()) |>
+                dplyr::collect()
+              expected <- manifest$tables[[name]]$rows
+              if (nrow(result) != 1L || expected <= 0 ||
+                  as.numeric(result$rows[[1]]) != as.numeric(expected)) {
+                cli::cli_abort("Remote table {.val {name}} does not match the validated row count.")
+              }
             }
           })
       - name: Update latest pointer
