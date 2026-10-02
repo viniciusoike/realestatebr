@@ -69,3 +69,5 @@ Suggests:
     trendseries,
     withr
 VignetteBuilder: knitr
+Config/Needs/website:
+    viniciusoike/ekiopkgdown

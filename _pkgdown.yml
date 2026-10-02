@@ -1,12 +1,6 @@
 url: https://viniciusoike.github.io/realestatebr/
 template:
-  bootstrap: 5
-  bslib:
-    bootswatch: yeti
-    primary: "#0D1B2A"
-    heading_font: {google: "Lora"}
-    code_font: {google: "JetBrains Mono"}
-    "code-font-size": 0.82em
+  package: ekiopkgdown
 
 logo:
   src: man/figures/hexlogo.png
@@ -71,13 +65,3 @@ news:
   releases:
   - text: "Version 1.0.1"
     href: articles/realestatebr-1-0-1.html
-
-navbar:
-  structure:
-    left: [intro, reference, articles, news]
-    right: [search, github]
-  components:
-    github:
-      icon: fab fa-github
-      href: https://github.com/viniciusoike/realestatebr
-      aria-label: GitHub
