@@ -253,6 +253,25 @@ test_that("PNAD Housing cleans a categorized table", {
   expect_identical(result$value_status, c("observed", "observed"))
 })
 
+test_that("PNAD Housing rejects decimals unsupported by the numeric parser", {
+  local_edition(3)
+  raw <- make_pnad_housing_raw(
+    table = 6578,
+    variable_id = "10163",
+    unit = "Pessoas",
+    values = "1.2"
+  )
+  expect_identical(clean_pnad_housing(raw, "mean_household_size")$value, 1.2)
+
+  raw$value_raw <- "1,2"
+  raw$value <- NA_real_
+  expect_error(
+    clean_pnad_housing(raw, "mean_household_size"),
+    'Unknown PNAD Housing value symbol: "1,2".',
+    fixed = TRUE
+  )
+})
+
 test_that("PNAD Housing mean table has typed missing categories", {
   raw <- make_pnad_housing_raw(
     table = 6578,
@@ -504,6 +523,24 @@ test_that("PNAD Housing registry maps every selector to a cache asset", {
   expect_identical(registry$dataset_function, "get_pnad_housing")
 })
 
+test_that("PNAD Housing retains newly published years in every table", {
+  local_mocked_bindings(
+    download_pnad_housing_table = function(table, quiet, max_retries) {
+      raw <- make_pnad_housing_complete_raw(table)
+      next_year <- raw
+      next_year$period <- "2026"
+      raw <- dplyr::bind_rows(raw, next_year)
+      attr(raw, "published_periods") <- c("2025", "2026")
+      return(raw)
+    }
+  )
+
+  result <- get_pnad_housing("all", quiet = TRUE)
+  for (dat in result) {
+    expect_identical(sort(unique(dat$year)), c(2025L, 2026L))
+  }
+})
+
 test_that("PNAD Housing loads all tables from release assets", {
   clear_session_cache()
   withr::defer(clear_session_cache())
@@ -544,14 +581,18 @@ test_that("PNAD Housing fresh download matches the live source contract", {
   geography_types <- unname(pnad_housing_geography_names)
 
   expect_named(result, names(pnad_housing_tables))
+  for (dat in result) {
+    expect_setequal(
+      dat$year,
+      as.integer(attr(dat, "published_periods"))
+    )
+  }
   for (table in setdiff(names(result), "household_composition")) {
-    expect_identical(sort(unique(result[[table]]$year)), housing_years)
+    expect_true(all(housing_years %in% result[[table]]$year))
+    expect_false(any(result[[table]]$year %in% c(2020L, 2021L)))
     expect_setequal(result[[table]]$geography_type, geography_types)
   }
-  expect_identical(
-    sort(unique(result$household_composition$year)),
-    2012:2025
-  )
+  expect_true(all(2012:2025 %in% result$household_composition$year))
   expect_setequal(
     result$household_composition$geography_type,
     geography_types

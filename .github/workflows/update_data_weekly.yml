@@ -100,15 +100,6 @@ jobs:
             echo "targets_failed=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # Always save the updated store, even on failure, so the next run
-      # can resume from the correct state.
-      - name: Save targets store
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: _targets
-          key: targets-store-${{ runner.os }}-${{ github.run_id }}
-
       - name: Validate cached data files
         id: validate
         run: |
@@ -215,6 +206,14 @@ jobs:
             uploaded=$((uploaded + 1))
           done
           echo "Uploaded $uploaded file(s)"
+
+      # Keep the previous store when publication fails so the next run retries.
+      - name: Save targets store
+        if: success() && steps.pipeline.outputs.targets_failed != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: _targets
+          key: targets-store-${{ runner.os }}-${{ github.run_id }}
 
       - name: Report completion
         if: always()
