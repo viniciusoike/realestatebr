@@ -11,6 +11,9 @@
 #'
 #' @return List with validation results
 validate_dataset <- function(data, dataset_name, schema = NULL) {
+  if (identical(dataset_name, "secovi_sp")) {
+    dataset_name <- "secovi"
+  }
   checks <- list()
   dataset_type <- class(data)[1]
 
@@ -20,6 +23,9 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
 
   # Check if data exists and is not empty
   checks$data_exists <- !is.null(data)
+  required_cols <- get_required_columns(dataset_name)
+  checks$valid_data_type <- is.data.frame(data) ||
+    (is.list(data) && is.null(required_cols))
   checks$not_empty <- if (is.data.frame(data)) {
     nrow(data) > 0
   } else if (is.list(data)) {
@@ -28,12 +34,13 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
     length(data) > 0
   }
 
+  structural_checks <- checks[vapply(checks, is.logical, logical(1))]
+
   # For data frames, check columns
   if (is.data.frame(data)) {
     checks$has_columns <- ncol(data) > 0
 
     # Check for required columns based on dataset
-    required_cols <- get_required_columns(dataset_name)
     if (!is.null(required_cols)) {
       missing_cols <- setdiff(required_cols, names(data))
       checks$required_columns <- length(missing_cols) == 0
@@ -41,6 +48,13 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
         checks$missing_columns <- missing_cols
       }
     }
+
+    if ("date" %in% required_cols) {
+      checks$date_column <- inherits(data$date, "Date") ||
+        inherits(data$date, "POSIXt")
+      checks$complete_dates <- !anyNA(data$date)
+    }
+    structural_checks <- checks[vapply(checks, is.logical, logical(1))]
 
     # ---- DATE VALIDATION ----
     date_columns <- names(data)[sapply(data, function(x) {
@@ -141,6 +155,8 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
     # For list data (like RPPI or ABRAINC), validate each component
     checks$valid_list_structure <- is.list(data) && length(names(data)) > 0
 
+    structural_checks <- checks[vapply(checks, is.logical, logical(1))]
+
     # Check each list element
     for (element_name in names(data)) {
       element_data <- data[[element_name]]
@@ -153,7 +169,11 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
           "element_",
           element_name,
           "_valid"
-        )]] <- element_checks$overall_passed
+        )]] <- element_checks$passed
+        structural_checks[[element_name]] <- element_checks$structural_passed
+      } else {
+        structural_checks[[element_name]] <- FALSE
+        checks[[paste0("element_", element_name, "_valid")]] <- FALSE
       }
     }
   }
@@ -162,6 +182,18 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
   specific_checks <- validate_dataset_specific(data, dataset_name)
   if (!is.null(specific_checks)) {
     checks <- c(checks, specific_checks)
+    structural_checks <- c(
+      structural_checks,
+      specific_checks[intersect(
+        names(specific_checks),
+        c(
+          "source_contract",
+          "all_variables_present",
+          "unique_series_dates",
+          "valid_series_codes"
+        )
+      )]
+    )
   }
 
   # ---- SUMMARY ----
@@ -173,6 +205,7 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
     dataset_type = dataset_type,
     checks = checks,
     passed = checks$overall_passed,
+    structural_passed = all(unlist(structural_checks)),
     summary = create_validation_summary(checks, dataset_name)
   )
 
@@ -196,68 +229,30 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
 #' Define expected columns for each dataset type
 #'
 get_required_columns <- function(dataset_name) {
-  required_columns <- list(
-    "bcb_series" = c("date", "series_code", "series_name", "value"),
-    "bcb_realestate" = c("date", "series_code", "series_name", "value"),
-    "b3_stocks" = c("date", "ticker", "close_price"),
-    "fgv_indicators" = c("date", "indicator", "value"),
-    "secovi" = c("date", "category", "variable", "name", "value"),
-    "sinapi" = c(
-      "date",
-      "geography_type",
-      "geography_code",
-      "payroll_relief",
-      "variable",
-      "unit",
-      "value"
-    ),
-    "pim_pf_construction" = c(
-      "date",
-      "variable",
-      "reference_period",
-      "source_table",
-      "value"
-    ),
-    "paic_activity" = c(
-      "year",
-      "source_table",
-      "geography_type",
-      "size_band",
-      "activity_level",
-      "variable",
-      "unit",
-      "value"
-    ),
-    "paic_size" = c(
-      "year",
-      "source_table",
-      "geography_type",
-      "size_band",
-      "variable",
-      "unit",
-      "value"
-    ),
-    "paic_state" = c(
-      "year",
-      "source_table",
-      "geography_type",
-      "geography_basis",
-      "variable",
-      "unit",
-      "value"
-    ),
-    "pnad_housing_tenure" = pnad_housing_required_columns(),
-    "pnad_housing_dwelling_type" = pnad_housing_required_columns(),
-    "pnad_housing_household_size" = pnad_housing_required_columns(),
-    "pnad_housing_mean_household_size" = pnad_housing_required_columns(),
-    "pnad_housing_household_composition" = pnad_housing_required_columns(),
-    "bis_selected" = c("date", "country", "value"),
-    "cbic" = c("date", "indicator", "value"),
-    "property_records" = c("date", "state", "transactions"),
-    "nre_ire" = c("date", "type", "value")
-  )
-
-  return(required_columns[[dataset_name]])
+  datasets <- realestatebr:::load_dataset_registry()$datasets
+  for (name in names(datasets)) {
+    info <- datasets[[name]]
+    if (identical(dataset_name, name)) {
+      return(names(info$columns))
+    }
+    files <- unlist(info$cached_file)
+    if (is.null(files)) {
+      next
+    }
+    stems <- sub("\\.(rds|csv\\.gz)$", "", basename(files))
+    position <- match(dataset_name, stems)
+    if (!is.na(position)) {
+      columns <- info$columns
+      if (is.list(info$cached_file)) {
+        table <- names(files)[position]
+        if (!is.null(info$categories[[table]]$columns)) {
+          columns <- info$categories[[table]]$columns
+        }
+      }
+      return(names(columns))
+    }
+  }
+  return(NULL)
 }
 
 #' Get Mixed-Unit Columns for Dataset
@@ -354,9 +349,9 @@ validate_dataset_specific <- function(data, dataset_name) {
 
   if (dataset_name == "bcb_series") {
     # BCB series should have reasonable series codes
-    if ("series_code" %in% names(data)) {
+    if ("code_bcb" %in% names(data)) {
       specific_checks$valid_series_codes <- all(
-        nchar(as.character(data$series_code)) > 0
+        !is.na(data$code_bcb) & data$code_bcb > 0
       )
     }
   } else if (dataset_name == "b3_stocks") {
@@ -425,7 +420,11 @@ pnad_housing_required_columns <- function() {
 }
 
 assert_validation_passed <- function(validation) {
-  if (!isTRUE(validation$passed)) {
+  passed <- validation$structural_passed
+  if (is.null(passed)) {
+    passed <- validation$passed
+  }
+  if (!isTRUE(passed)) {
     cli::cli_abort(
       "Validation failed for {.val {validation$dataset}}; cache was not written."
     )

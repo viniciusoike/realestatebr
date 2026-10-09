@@ -49,6 +49,11 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Test source pipeline and builders
+        env:
+          REALESTATEBR_RUN_LIVE: "false"
+        run: Rscript -e 'testthat::test_local(stop_on_failure = TRUE)'
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true

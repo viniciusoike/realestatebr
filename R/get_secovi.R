@@ -403,35 +403,30 @@ secovi_extract_header <- function(x) {
 }
 
 
-#' Extract the year values embedded in single-row annotation tables
-#'
-#' The SECOVI scrape includes 1-row tables of the form "Ano: 2023". This
-#' function identifies those rows and returns the years as a numeric vector.
-#'
-#' @param x Raw list of tables from `rvest::html_table()`
-#' @noRd
-secovi_get_years <- function(x) {
-  single_row <- x[purrr::map_int(x, nrow) == 1]
-  year_rows <- dplyr::bind_rows(single_row)
-  year_vals <- stats::na.omit(year_rows$X3)
-  years <- as.numeric(stringr::str_remove(year_vals, "Ano: "))
-  return(years)
-}
-
-
 clean_secovi <- function(x) {
-  tables <- purrr::keep(x, secovi_keep_table)
-  tables <- purrr::map(tables, secovi_extract_header)
-  tables <- purrr::map(tables, secovi_basic_clean)
+  tables <- list()
+  current_year <- NA_character_
 
-  years <- secovi_get_years(x)
-
-  year_labels <- rep(years, each = ceiling(length(tables) / length(years)))
-  if (length(year_labels) != length(tables)) {
-    years <- years[-1]
-    year_labels <- rep(years, each = ceiling(length(tables) / length(years)))
+  for (table in x) {
+    if (nrow(table) == 1 && "X3" %in% names(table)) {
+      annotation <- as.character(table[["X3"]][[1]])
+      if (!is.na(annotation) && stringr::str_detect(annotation, "^Ano")) {
+        if (!stringr::str_detect(annotation, "^Ano:\\s*\\d{4}\\s*$")) {
+          cli::cli_abort(
+            "SECOVI-SP has an invalid year annotation: {.val {annotation}}."
+          )
+        }
+        current_year <- stringr::str_extract(annotation, "\\d{4}")
+      }
+    } else if (secovi_keep_table(table)) {
+      if (is.na(current_year)) {
+        cli::cli_abort("SECOVI-SP data table has no preceding year annotation.")
+      }
+      cleaned <- secovi_basic_clean(secovi_extract_header(table))
+      tables[[length(tables) + 1L]] <- cleaned
+      names(tables)[[length(tables)]] <- current_year
+    }
   }
-  names(tables) <- year_labels
 
   fact_table <- dplyr::bind_rows(tables, .id = "year")
   fact_table <- secovi_clean_date_label(fact_table)

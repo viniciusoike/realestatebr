@@ -126,8 +126,27 @@ clean_abrainc <- function(ls, category) {
   labels <- nms[[category]][["labels"]]
   col_names <- nms[[category]][["names"]]
 
-  df <- dplyr::select(df, dplyr::where(~ !all(is.na(.x))))
-  df <- df[, 1:length(col_names)]
+  spacer_cols <- switch(
+    category,
+    indicator = c(6, 11, 16, 21, 26, 29),
+    radar = integer(),
+    leading = c(8, 15, 22, 29, 36)
+  )
+  source_cols <- seq_len(length(col_names) + length(spacer_cols))
+  if (ncol(df) < max(source_cols)) {
+    cli::cli_abort(
+      "Abrainc {.val {category}} sheet has fewer columns than expected."
+    )
+  }
+  if (
+    length(spacer_cols) > 0 &&
+      any(!vapply(df[spacer_cols], \(column) all(is.na(column)), logical(1)))
+  ) {
+    cli::cli_abort(
+      "Abrainc {.val {category}} sheet has data in a spacer column."
+    )
+  }
+  df <- df[setdiff(source_cols, spacer_cols)]
   names(df) <- col_names
 
   subcategories <- list(
@@ -297,19 +316,19 @@ build_abrainc_col_names <- function() {
   lead_col_names <- c("date", paste(rep(xx, each = length(yy)), yy, sep = "-"))
 
   lead_labels <- dplyr::tribble(
-    ~variable                                                   ,
-    ~variable_label                                             ,
-    "leading_index"                                             ,
-    "Real Estate Leading Indicator (100 = dec/2000)"            ,
-    "leading_index_12m"                                         ,
-    "Real Estate Leading Indicator (% 12-month cumulative) (%)" ,
-    "alvaras_total"                                             ,
-    "Number of Building Permits (per month)"                    ,
-    "alvaras_prop"                                              ,
-    "Distribution of Building Permits in S\u00e3o Paulo (Total)"     ,
-    "alvaras_total_12m"                                         ,
-    "Building Permits (12-month cumulative)"                    ,
-    "alvaras_prop_12m"                                          ,
+    ~variable                                                    ,
+    ~variable_label                                              ,
+    "leading_index"                                              ,
+    "Real Estate Leading Indicator (100 = dec/2000)"             ,
+    "leading_index_12m"                                          ,
+    "Real Estate Leading Indicator (% 12-month cumulative) (%)"  ,
+    "alvaras_total"                                              ,
+    "Number of Building Permits (per month)"                     ,
+    "alvaras_prop"                                               ,
+    "Distribution of Building Permits in S\u00e3o Paulo (Total)" ,
+    "alvaras_total_12m"                                          ,
+    "Building Permits (12-month cumulative)"                     ,
+    "alvaras_prop_12m"                                           ,
     "Distribution of Building Permits in S\u00e3o Paulo (%)"
   )
 

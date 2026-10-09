@@ -14,7 +14,7 @@ test_that("bcb_series_first_date falls back for unknown codes", {
 
 test_that("fetch_sgs_series returns the package schema", {
   skip_on_cran()
-  skip_if_offline()
+  skip_if_not_live()
 
   series <- suppressMessages(
     fetch_sgs_series(21340, Sys.Date() - 365)
@@ -30,7 +30,7 @@ test_that("fetch_sgs_series returns the package schema", {
 
 test_that("fetch_sgs_series drops empty windows of a discontinued series", {
   skip_on_cran()
-  skip_if_offline()
+  skip_if_not_live()
 
   # 13421 (TR) ended in 2022, so its final windows return no data
   series <- suppressMessages(fetch_sgs_series(13421, as.Date("2020-01-01")))

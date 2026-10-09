@@ -1,3 +1,11 @@
+# realestatebr (development version)
+
+* Fixed SECOVI year assignment and preserved partially missing ABECIP months and Abrainc series in their original spreadsheet positions.
+* Fixed fresh BCB real estate category tables to return the documented long format used by cached tables, preserving all matching series.
+* Fixed date filters to report unparseable observation dates instead of returning unfiltered data.
+* Required structural validation before cache writes and stopped weekly publication when pipeline targets fail. Required columns now follow the dataset catalog; economic plausibility checks remain advisory.
+* Restored test discovery during package checks and made live source tests opt-in with `REALESTATEBR_RUN_LIVE=true`.
+
 # realestatebr 1.2.0
 
 * Added `query_dataset("mcmv")`, with Minha Casa, Minha Vida financing contracts, official financing totals, and federally subsidized housing projects from the Ministério das Cidades. A new article covers the three tables, and a data dictionary documents their columns and source changes.

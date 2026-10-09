@@ -396,8 +396,10 @@ filter_dataset_date_range <- function(
   if (is.data.frame(data) && "date" %in% names(data)) {
     data_date <- tryCatch(as.Date(data$date), error = function(error) NULL)
 
-    if (is.null(data_date)) {
-      return(data)
+    if (is.null(data_date) || any(is.na(data_date) & !is.na(data$date))) {
+      cli::cli_abort(
+        "The dataset's date column must contain valid dates to apply a date filter."
+      )
     }
 
     keep <- !is.na(data_date)

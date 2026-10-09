@@ -34,66 +34,14 @@ get_bcb_realestate <- function(
   bcb <- download_bcb_realestate(quiet = quiet, max_retries = max_retries)
   clean_bcb <- clean_bcb_realestate(bcb, quiet = quiet)
   clean_bcb <- attach_dataset_metadata(clean_bcb, source = "web")
-
-  # Return full cleaned table ----
-  if (table == "all") {
-    return(clean_bcb)
-  }
-
-  # Pivot to wide format for specific tables ----
-  tbl_bcb_wider <- function(cat, id_cols, names_from) {
-    clean_bcb |>
-      dplyr::filter(category == cat, !stringr::str_detect(type, "[0-9]")) |>
-      tidyr::pivot_wider(
-        id_cols = id_cols,
-        names_from = names_from,
-        values_from = "value",
-        names_sep = "_",
-        names_repair = "universal"
-      ) |>
-      dplyr::rename_with(~ stringr::str_remove(.x, "(_br)|(br$)"))
-  }
-
-  params <- dplyr::tibble(
-    category_label = c(
-      "units",
-      "accounting",
-      "indices",
-      "sources",
-      "application"
-    ),
-    cat = c("imoveis", "contabil", "indices", "fontes", "direcionamento"),
-    id_cols = list(c("date", "abbrev_state"), "date", "date", "date", "date"),
-    names_from = list(
-      c("type", "v1"),
-      c("type", "v1"),
-      c("type", "v1"),
-      c("type", "v1"),
-      c("type", "v1", "v2")
-    )
-  )
-
-  tbl_bcb <- dplyr::mutate(
-    params,
-    tab = purrr::pmap(list(cat, id_cols, names_from), tbl_bcb_wider)
-  ) |>
-    dplyr::filter(category_label == table) |>
-    tidyr::unnest(cols = tab) |>
-    dplyr::select(-category_label, -cat, -id_cols, -names_from)
-
-  tbl_bcb <- attach_dataset_metadata(
-    tbl_bcb,
-    source = "web",
-    category = table
-  )
-
-  n_records <- nrow(tbl_bcb)
+  selected <- apply_table_filtering(clean_bcb, "bcb_realestate", table)
+  n_records <- nrow(selected)
   cli_user(
     "BCB real estate data retrieved: {n_records} records",
     quiet = quiet
   )
 
-  return(tbl_bcb)
+  return(selected)
 }
 
 #' Download raw BCB real estate data from the API

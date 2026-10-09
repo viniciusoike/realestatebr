@@ -51,33 +51,6 @@ fetch_dataset <- function(dataset_name, table = NULL, source = "fresh") {
   return(data)
 }
 
-#' Save Dataset to Cache and Return File Path
-#'
-#' Saves dataset to cache and returns the file path for targets tracking
-#'
-#' @param data Dataset to save
-#' @param cache_name Name to use for cache file
-#' @return Character string with file path
-save_to_cache <- function(data, cache_name) {
-  cli::cli_inform("Saving {cache_name} to cache...")
-
-  # Validate data before saving
-  if (is.null(data)) {
-    stop("Cannot save NULL data for ", cache_name)
-  }
-  if (is.data.frame(data) && nrow(data) == 0) {
-    stop("Empty data frame for ", cache_name)
-  }
-  if (is.list(data) && !is.data.frame(data) && length(data) == 0) {
-    stop("Empty list for ", cache_name)
-  }
-
-  file_path <- save_dataset_to_cache(data, cache_name)
-
-  cli::cli_alert_success("Saved {cache_name}")
-  return(file_path)
-}
-
 # ============================================================================
 # PIPELINE TARGETS
 # ============================================================================

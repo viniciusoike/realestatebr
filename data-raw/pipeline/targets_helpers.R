@@ -1,3 +1,12 @@
+# Cache publication ---------------------------------------------------------
+
+save_to_cache <- function(data, cache_name) {
+  validation <- validate_dataset(data, cache_name)
+  assert_validation_passed(validation)
+  path <- save_dataset_to_cache(data, cache_name)
+  return(path)
+}
+
 # data-raw/targets_helpers.R
 # Helper functions for the {targets} pipeline
 
