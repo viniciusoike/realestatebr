@@ -49,6 +49,9 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Install current package for subprocess tests
+        run: R CMD INSTALL .
+
       - name: Test source pipeline and builders
         env:
           REALESTATEBR_RUN_LIVE: "false"

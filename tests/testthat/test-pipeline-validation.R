@@ -86,3 +86,24 @@ test_that("unknown names and unsupported list children fail predictably", {
     env$validate_dataset(list(series = 1), "abrainc")$structural_passed
   )
 })
+
+test_that("malformed BCB types cannot overwrite an existing cache", {
+  env <- pipeline_validation_env()
+  wrote <- FALSE
+  env$save_dataset_to_cache <- function(...) {
+    wrote <<- TRUE
+  }
+  dat <- tibble::tibble(
+    date = as.Date("2024-01-01"),
+    code_bcb = 1,
+    name_simplified = "rate",
+    value = -0.2
+  )
+  for (column in c("code_bcb", "value")) {
+    invalid <- dat
+    invalid[[column]] <- "not numeric"
+    expect_false(env$validate_dataset(invalid, "bcb_series")$structural_passed)
+    expect_error(env$save_to_cache(invalid, "bcb_series"), "Validation failed")
+    expect_false(wrote)
+  }
+})

@@ -33,4 +33,13 @@ Write regression tests before changing behavior. Fix the critical publication, t
 - Independent review found and verified fixes for missing cache metadata and unsupported list payloads; no remaining publication-gate blocker.
 - AIR formatted new and changed code. Unrelated legacy formatting in the MCMV snapshot tests and pipeline helpers was retained to keep the diff focused.
 - Workflow YAML, shell syntax, target manifest (91 targets), and git diff checks passed.
-- GitHub CI remains pending until the branch is pushed. No live release or snapshot publication was performed.
+- Initial GitHub CI failed in four matrix jobs: the source suite ran before installing the package required by its callr subprocess test. No live release or snapshot publication was performed.
+
+
+## PR #58 review follow-up (2026-10-09)
+
+- Install the current checkout before source tests in both check and integration workflows. A fresh callr process requires an installed package; local installation had hidden the ordering bug.
+- Require numeric BCB codes and values in the structural publication gate. Keep negative values and numeric missingness unchanged.
+- TDD reproduced six failing assertions for malformed code/value types before the fix. Regression tests now confirm rejection before the cache writer is called.
+- Full offline source suite after installing the current checkout: 446 assertions passed, no failures or warnings; 18 live tests skipped. Workflow YAML and diff checks passed.
+- Fresh R CMD check: zero errors, warnings, or notes. Live ingestion and publication remain unrun.

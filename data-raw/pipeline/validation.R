@@ -190,7 +190,8 @@ validate_dataset <- function(data, dataset_name, schema = NULL) {
           "source_contract",
           "all_variables_present",
           "unique_series_dates",
-          "valid_series_codes"
+          "valid_series_codes",
+          "valid_series_values"
         )
       )]
     )
@@ -350,9 +351,11 @@ validate_dataset_specific <- function(data, dataset_name) {
   if (dataset_name == "bcb_series") {
     # BCB series should have reasonable series codes
     if ("code_bcb" %in% names(data)) {
-      specific_checks$valid_series_codes <- all(
-        !is.na(data$code_bcb) & data$code_bcb > 0
-      )
+      specific_checks$valid_series_codes <- is.numeric(data$code_bcb) &&
+        all(!is.na(data$code_bcb) & data$code_bcb > 0)
+    }
+    if ("value" %in% names(data)) {
+      specific_checks$valid_series_values <- is.numeric(data$value)
     }
   } else if (dataset_name == "b3_stocks") {
     # B3 stocks should have valid ticker symbols

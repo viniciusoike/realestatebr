@@ -44,6 +44,9 @@ jobs:
             any::devtools
           needs: test
 
+      - name: Install current package for subprocess tests
+        run: R CMD INSTALL .
+
       - name: Test source-only builders
         env:
           REALESTATEBR_RUN_LIVE: "false"
