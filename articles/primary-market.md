@@ -116,7 +116,7 @@ twelve months.
 abrainc <- get_dataset("abrainc", table = "indicator")
 
 glimpse(abrainc)
-#> Rows: 3,576
+#> Rows: 3,600
 #> Columns: 6
 #> $ date           <date> 2014-01-01, 2014-01-01, 2014-01-01, 2014-01-01, 2014-0…
 #> $ year           <dbl> 2014, 2014, 2014, 2014, 2014, 2014, 2014, 2014, 2014, 2…
@@ -290,8 +290,8 @@ count(secovi, category, variable)
 #>    <chr>    <chr>              <int>
 #>  1 condo    default_condominio   240
 #>  2 condo    icon                1770
-#>  3 launch   launches             540
-#>  4 launch   supply               270
+#>  3 launch   launches             542
+#>  4 launch   supply               271
 #>  5 rent     acao_locaticia      1980
 #>  6 rent     rent_price           236
 #>  7 rent     tipos_de_garantia    618

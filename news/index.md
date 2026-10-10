@@ -19,6 +19,12 @@ CRAN release: 2026-10-01
   household tenure, dwelling type, household size, mean size, and
   domestic-unit composition estimates, including published shares and
   coefficients of variation in their original units.
+- Fixed PNAD Housing validation to reject comma decimals that the
+  numeric parser cannot read, and updated live coverage tests to accept
+  new published years.
+- Fixed the cache publication workflow to save its targets checkpoint
+  after successful publication, allowing failed uploads to retry on the
+  next run.
 
 ## realestatebr 1.1.0
 

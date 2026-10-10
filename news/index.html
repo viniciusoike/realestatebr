@@ -60,6 +60,8 @@
 <ul><li>Added <code>query_dataset("mcmv")</code>, with Minha Casa, Minha Vida financing contracts, official financing totals, and federally subsidized housing projects from the Ministério das Cidades. A new article covers the three tables, and a data dictionary documents their columns and source changes.</li>
 <li>Added <code>get_dataset("paic")</code>, with annual IBGE construction-industry data for the new series starting in 2024 (SIDRA tables 10463, 10441, and 10442). The <code>activity</code>, <code>size</code>, and <code>state</code> tables cover enterprises, employment, revenue, costs, and output; values publish in original units with a <code>value_status</code> column for SIDRA symbols. Do not compare with the 2007-2023 series (see IBGE Nota técnica 01/2026).</li>
 <li>Added <code>get_dataset("pnad_housing")</code> with annual PNAD Contínua household tenure, dwelling type, household size, mean size, and domestic-unit composition estimates, including published shares and coefficients of variation in their original units.</li>
+<li>Fixed PNAD Housing validation to reject comma decimals that the numeric parser cannot read, and updated live coverage tests to accept new published years.</li>
+<li>Fixed the cache publication workflow to save its targets checkpoint after successful publication, allowing failed uploads to retry on the next run.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.0" id="realestatebr-110">realestatebr 1.1.0<a class="anchor" aria-label="anchor" href="#realestatebr-110"></a></h2>
