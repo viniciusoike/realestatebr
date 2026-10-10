@@ -45,6 +45,7 @@ jobs:
           needs: test
 
       - name: Install current package for subprocess tests
+        shell: bash
         run: R CMD INSTALL .
 
       - name: Test source-only builders
