@@ -392,7 +392,7 @@ pnad_housing_value_status <- function(value_raw) {
   status[!is.na(value_raw) & value_raw == "X"] <- "suppressed"
   numeric_value <- !is.na(value_raw) &
     grepl(
-      "^-?[0-9]+([.,][0-9]+)?$",
+      "^-?[0-9]+(\\.[0-9]+)?$",
       value_raw
     )
   status[numeric_value] <- "observed"
