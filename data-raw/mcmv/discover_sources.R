@@ -140,7 +140,7 @@ read_mcmv_head <- function(path) {
       cli::cli_abort("Install bsdtar to read MCMV archives.")
     }
     con <- pipe(
-      paste("bsdtar -xOf", shQuote(path), "2>/dev/null"),
+      paste("bsdtar -xOf", shQuote(path)),
       open = "r",
       encoding = "UTF-8"
     )

@@ -44,3 +44,4 @@ Write regression tests before changing behavior. Fix the critical publication, t
 - Full offline source suite after installing the current checkout: 446 assertions passed, no failures or warnings; 18 live tests skipped. Workflow YAML and diff checks passed.
 - Fresh R CMD check: zero errors, warnings, or notes. Live ingestion and publication remain unrun.
 - Windows follow-up: PowerShell treats R as an Invoke-History alias. Use bash explicitly for R CMD INSTALL; macOS source tests passed in the first rerun.
+- The Windows source suite then exposed /dev/null redirection in the MCMV archive reader. Removed the Unix-specific stderr redirect; the existing archive regression supplies Windows coverage and extraction errors remain visible.
