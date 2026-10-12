@@ -12,40 +12,38 @@ test_that("materialized datasets have internal_function fields", {
     }
 
     expect_true(
-      !is.null(dataset_info$internal_function) && dataset_info$internal_function != "",
+      !is.null(dataset_info$internal_function) &&
+        dataset_info$internal_function != "",
       info = paste("Dataset", dataset_name, "missing internal_function field")
     )
   }
 })
 
 test_that("get_dataset uses internal functions for fresh downloads", {
-  skip_if_offline()
+  skip_if_not_live()
 
-  # Test that get_dataset with source="fresh" now uses internal functions
-  # We'll test with abecip and verify error messages mention internal functions
-
-  tryCatch({
-    data <- get_dataset("abecip", source = "fresh", table = "sbpe")
-    # If successful, verify we got data
-    expect_true(!is.null(data), "Should get data from internal function")
-  }, error = function(e) {
-    # If fresh download fails, that's okay for testing purposes
-    # We just want to verify the code path goes through internal functions
-    expect_true(grepl("get_abecip_indicators|internal function", as.character(e)),
-                "Error should mention internal function")
-  })
+  data <- get_dataset("abecip", source = "fresh", table = "sbpe")
+  expect_s3_class(data, "data.frame")
+  expect_gt(nrow(data), 0)
 })
 
 test_that("internal functions have consistent parameter interface", {
   required_params <- c("table", "quiet", "max_retries")
 
   internal_functions <- c(
-    "get_rppi", "get_abecip_indicators", "get_abrainc_indicators",
-    "get_bcb_realestate", "get_bcb_series", "get_secovi", "get_rppi_bis"
+    "get_rppi",
+    "get_abecip_indicators",
+    "get_abrainc_indicators",
+    "get_bcb_realestate",
+    "get_bcb_series",
+    "get_secovi",
+    "get_rppi_bis"
   )
 
   for (func_name in internal_functions) {
-    if (exists(func_name, mode = "function", envir = asNamespace("realestatebr"))) {
+    if (
+      exists(func_name, mode = "function", envir = asNamespace("realestatebr"))
+    ) {
       func <- get(func_name, envir = asNamespace("realestatebr"))
       func_params <- names(formals(func))
 
@@ -60,25 +58,14 @@ test_that("internal functions have consistent parameter interface", {
 })
 
 test_that("RPPI hierarchical access works through internal functions", {
-  skip_if_offline()
+  skip_if_not_live()
 
-  # Test individual index access
-  tryCatch({
-    fipezap_data <- get_dataset("rppi", source = "fresh", table = "fipezap")
-    expect_true(is.data.frame(fipezap_data) || is.list(fipezap_data))
-  }, error = function(e) {
-    # Fresh download might fail, but error should mention fetch_rppi
-    expect_true(grepl("fetch_rppi|rppi", as.character(e), ignore.case = TRUE))
-  })
-
-  # Test aggregation access
-  tryCatch({
-    sales_data <- get_dataset("rppi", source = "fresh", table = "sales")
-    expect_true(is.data.frame(sales_data) || is.list(sales_data))
-  }, error = function(e) {
-    # Fresh download might fail, but error should mention fetch_rppi
-    expect_true(grepl("fetch_rppi|rppi", as.character(e), ignore.case = TRUE))
-  })
+  fipezap_data <- get_dataset("rppi", source = "fresh", table = "fipezap")
+  sales_data <- get_dataset("rppi", source = "fresh", table = "sale")
+  expect_s3_class(fipezap_data, "data.frame")
+  expect_s3_class(sales_data, "data.frame")
+  expect_gt(nrow(fipezap_data), 0)
+  expect_gt(nrow(sales_data), 0)
 })
 
 test_that("dataset registry consolidated correctly", {
@@ -120,19 +107,12 @@ test_that("internal functions validate input parameters", {
 })
 
 test_that("internal functions return expected data structure", {
-  skip_if_offline()
+  skip_if_not_live()
 
-  tryCatch(
-    {
-      data <- get_dataset("abecip", table = "sbpe", source = "github")
-      expect_true(!is.null(attr(data, "source")))
-      expect_true(!is.null(attr(data, "download_time")))
-      expect_true(!is.null(attr(data, "download_info")))
-    },
-    error = function(e) {
-      skip("GitHub release not reachable")
-    }
-  )
+  data <- get_dataset("abecip", table = "sbpe", source = "github")
+  expect_true(!is.null(attr(data, "source")))
+  expect_true(!is.null(attr(data, "download_time")))
+  expect_true(!is.null(attr(data, "download_info")))
 })
 
 test_that("BCB datasets have distinct dataset_function entries", {
@@ -149,6 +129,8 @@ test_that("BCB datasets have distinct dataset_function entries", {
 })
 
 test_that("all materialized datasets are accessible through get_dataset", {
+  skip_if_not_live()
+
   registry <- load_dataset_registry()
 
   for (dataset_name in names(registry$datasets)) {
@@ -157,60 +139,9 @@ test_that("all materialized datasets are accessible through get_dataset", {
       next
     }
 
-    tryCatch({
-      # Try with GitHub cache first (fastest)
-      data <- get_dataset(dataset_name, source = "github")
-      expect_true(!is.null(data))
-    }, error = function(e) {
-      # If GitHub cache fails, try fresh download
-      tryCatch({
-        data <- get_dataset(dataset_name, source = "fresh")
-        expect_true(!is.null(data))
-      }, error = function(e2) {
-        # If both fail, just check that error mentions the internal function
-        internal_func <- dataset_info$internal_function
-
-        error_msg <- paste(as.character(e), as.character(e2))
-        expect_true(
-          grepl(internal_func, error_msg, ignore.case = TRUE) ||
-          grepl("internal function", error_msg, ignore.case = TRUE),
-          info = paste("Dataset", dataset_name, "error doesn't mention internal function")
-        )
-      })
-    })
+    data <- get_dataset(dataset_name, source = "github")
+    expect_false(is.null(data), info = dataset_name)
   }
-})
-
-test_that("legacy function fallback still works", {
-  skip_if_offline()
-
-  # Temporarily remove internal_function from registry to test fallback
-  registry <- load_dataset_registry()
-  original_abecip <- registry$datasets$abecip
-
-  # Create modified registry without internal_function
-  modified_abecip <- original_abecip
-  modified_abecip$internal_function <- NULL
-
-  # Mock the registry loading
-  original_load <- load_dataset_registry
-  assign("load_dataset_registry", function() {
-    reg <- original_load()
-    reg$datasets$abecip <- modified_abecip
-    return(reg)
-  }, envir = globalenv())
-
-  tryCatch({
-    # This should fall back to legacy function
-    data <- get_dataset("abecip", source = "fresh", table = "sbpe")
-    expect_true(!is.null(data))
-  }, error = function(e) {
-    # Should mention legacy function if internal function is not available
-    expect_true(grepl("legacy|get_abecip", as.character(e), ignore.case = TRUE))
-  }, finally = {
-    # Restore original function
-    assign("load_dataset_registry", original_load, envir = globalenv())
-  })
 })
 
 test_that("lazy-loaded data resolves without attaching the package", {
@@ -225,14 +156,3 @@ test_that("lazy-loaded data resolves without attaching the package", {
   expect_gt(length(codes), 0)
   expect_false(anyNA(codes))
 })
-
-# Helper function for offline testing
-skip_if_offline <- function() {
-  # Simple connection test - try to resolve a domain
-  tryCatch({
-    con <- url("https://www.google.com", open = "rb")
-    close(con)
-  }, error = function(e) {
-    testthat::skip("Offline - no internet connection")
-  })
-}

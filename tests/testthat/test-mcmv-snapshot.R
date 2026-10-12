@@ -1,4 +1,14 @@
 mcmv_builder <- function() {
+  testthat::skip_if_not(
+    file.exists(testthat::test_path(
+      "..",
+      "..",
+      "data-raw",
+      "mcmv",
+      "build_snapshot.R"
+    )),
+    "Source-only MCMV builder is not installed"
+  )
   root <- normalizePath(testthat::test_path("..", ".."))
   env <- new.env(parent = globalenv())
   withr::with_dir(root, sys.source("data-raw/mcmv/build_snapshot.R", env))

@@ -12,12 +12,9 @@ is_single_tibble <- function(x) {
 # RPPI BIS Tests
 test_that("rppi_bis with fresh source works (no closure error)", {
   skip_on_cran()
+  skip_if_not_live()
 
   # This previously failed with: "cannot coerce type 'closure' to vector of type 'character'"
-  expect_no_error({
-    result <- get_dataset("rppi_bis", "detailed_monthly", source = "fresh")
-  })
-
   result <- get_dataset("rppi_bis", "detailed_monthly", source = "fresh")
   expect_s3_class(result, "data.frame")
   expect_true(nrow(result) > 0)
@@ -26,6 +23,7 @@ test_that("rppi_bis with fresh source works (no closure error)", {
 
 test_that("rppi_bis all tables work with fresh source", {
   skip_on_cran()
+  skip_if_not_live()
 
   tables <- c(
     "selected",
@@ -36,10 +34,6 @@ test_that("rppi_bis all tables work with fresh source", {
   )
 
   for (tbl in tables) {
-    expect_no_error({
-      result <- get_dataset("rppi_bis", tbl, source = "fresh")
-    })
-
     result <- get_dataset("rppi_bis", tbl, source = "fresh")
     expect_s3_class(result, "data.frame")
     expect_true(nrow(result) > 0)
@@ -49,6 +43,7 @@ test_that("rppi_bis all tables work with fresh source", {
 # FipeZap Tests
 test_that("FipeZap uses 'Brazil' instead of 'Índice Fipezap' in name_muni", {
   skip_on_cran()
+  skip_if_not_live()
 
   fz <- get_dataset("rppi", table = "fipezap", source = "fresh")
 
@@ -66,15 +61,12 @@ test_that("FipeZap uses 'Brazil' instead of 'Índice Fipezap' in name_muni", {
 # RPPI Individual Tables Tests
 test_that("RPPI individual tables work with fresh source", {
   skip_on_cran()
+  skip_if_not_live()
 
   # Test a few key individual tables
   tables <- c("fipezap", "ivgr", "igmi")
 
   for (tbl in tables) {
-    expect_no_error({
-      result <- get_dataset("rppi", table = tbl, source = "fresh")
-    })
-
     result <- get_dataset("rppi", table = tbl, source = "fresh")
     expect_s3_class(result, "data.frame")
     expect_true(nrow(result) > 0)
@@ -85,6 +77,7 @@ test_that("RPPI individual tables work with fresh source", {
 # SECOVI Tests
 test_that("SECOVI table parameter works correctly", {
   skip_on_cran()
+  skip_if_not_live()
 
   # Previously reported that table argument wasn't working
   tables <- c("condo", "launch", "sale")
@@ -105,6 +98,7 @@ test_that("SECOVI table parameter works correctly", {
 # ABECIP Tests
 test_that("ABECIP CGI table works without confusing messaging", {
   skip_on_cran()
+  skip_if_not_live()
 
   # CGI is a static dataset - should work with both fresh and cached
   expect_no_error({
@@ -119,6 +113,7 @@ test_that("ABECIP CGI table works without confusing messaging", {
 # General Tests
 test_that("get_dataset returns correct structure for all major datasets", {
   skip_on_cran()
+  skip_if_not_live()
 
   # Test that key datasets return proper data structures
   datasets_to_test <- list(
@@ -141,6 +136,7 @@ test_that("get_dataset returns correct structure for all major datasets", {
 
 test_that("get_dataset with source='fresh' doesn't produce closure errors", {
   skip_on_cran()
+  skip_if_not_live()
 
   # Test datasets that previously had closure errors
   # These should all work without "cannot coerce type 'closure'" errors
@@ -157,6 +153,7 @@ test_that("get_dataset with source='fresh' doesn't produce closure errors", {
 # BCB Real Estate Tests
 test_that("bcb_realestate table parameter filters correctly", {
   skip_on_cran()
+  skip_if_not_live()
 
   # Previously reported that all tables returned identical 379,901 rows
   tables <- c("application", "indices", "sources")
@@ -205,6 +202,7 @@ test_that("bcb_realestate table parameter filters correctly", {
 # BCB Series Tests
 test_that("bcb_series hierarchy levels filter cumulatively", {
   skip_on_cran()
+  skip_if_not_live()
 
   # Hierarchy levels are cumulative: primary includes core, secondary
   # includes primary, etc. (introduced in 1.0.0).

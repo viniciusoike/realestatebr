@@ -433,6 +433,10 @@ test_that("PNAD Housing validation rejects a missing published period", {
 })
 
 test_that("pipeline validation exposes the PNAD source-contract result", {
+  skip_if_not(
+    file.exists(test_path("..", "..", "data-raw", "pipeline", "validation.R")),
+    "Source-only pipeline validation is not installed"
+  )
   local_edition(3)
   pipeline_env <- new.env(parent = globalenv())
   sys.source(
@@ -468,6 +472,10 @@ test_that("pipeline validation exposes the PNAD source-contract result", {
 })
 
 test_that("pipeline cache gate rejects failed validation", {
+  skip_if_not(
+    file.exists(test_path("..", "..", "data-raw", "pipeline", "validation.R")),
+    "Source-only pipeline validation is not installed"
+  )
   local_edition(3)
   pipeline_env <- new.env(parent = globalenv())
   sys.source(
@@ -574,7 +582,7 @@ test_that("PNAD Housing loads all tables from release assets", {
 
 test_that("PNAD Housing fresh download matches the live source contract", {
   skip_on_cran()
-  skip_if_offline()
+  skip_if_not_live()
 
   result <- get_pnad_housing("all", quiet = TRUE)
   housing_years <- c(2016:2019, 2022:2025)

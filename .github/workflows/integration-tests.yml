@@ -44,14 +44,20 @@ jobs:
             any::devtools
           needs: test
 
+      - name: Install current package for subprocess tests
+        shell: bash
+        run: R CMD INSTALL .
+
+      - name: Test source-only builders
+        env:
+          REALESTATEBR_RUN_LIVE: "false"
+        run: Rscript -e 'devtools::test(stop_on_failure = TRUE)'
+
       - name: Run integration tests
         env:
           NOT_CRAN: "true"
-        run: |
-          Rscript -e '
-            devtools::load_all()
-            testthat::test_file("tests/testthat/test-integration-get_dataset.R")
-          '
+          REALESTATEBR_RUN_LIVE: "true"
+        run: Rscript -e 'devtools::test(filter = "integration-get_dataset", stop_on_failure = TRUE)'
 
       - name: Upload test results
         if: failure()

@@ -520,7 +520,7 @@ test_that("get_dataset dispatches PAIC tables with the registry schema", {
 
 test_that("PAIC fresh download matches the registry schema", {
   skip_on_cran()
-  skip_if_offline()
+  skip_if_not_live()
 
   result <- get_paic("all", quiet = TRUE)
   columns <- load_dataset_registry()$datasets$paic$categories

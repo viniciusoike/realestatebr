@@ -267,13 +267,23 @@ clean_abecip_units <- function(temp_path) {
     }
   )
 
-  clean_units <- raw |>
-    dplyr::mutate(
-      date = suppressWarnings(
-        janitor::excel_numeric_to_date(as.numeric(date))
-      )
-    ) |>
-    stats::na.omit()
+  date_labels <- as.character(raw$date)
+  footer <- grepl("^\\s*Total\\b", date_labels, ignore.case = TRUE)
+  empty <- rowSums(!is.na(raw[-1])) == 0
+  raw <- raw[!(footer | empty), ]
+
+  date_numbers <- suppressWarnings(as.numeric(raw$date))
+  if (anyNA(date_numbers)) {
+    cli::cli_abort("ABECIP units contain an invalid date in a data row.")
+  }
+
+  clean_units <- dplyr::mutate(
+    raw,
+    date = janitor::excel_numeric_to_date(date_numbers)
+  )
+  if (anyNA(clean_units$date)) {
+    cli::cli_abort("ABECIP units contain an invalid date in a data row.")
+  }
 
   validate_abecip_data(clean_units, "units")
 

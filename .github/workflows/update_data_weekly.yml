@@ -92,6 +92,9 @@ jobs:
               cat("::warning title=", warned$name[i], "::", message_text, "\n", sep = "")
             }
 
+            if (nrow(errored) > 0) {
+              cli::cli_abort("Pipeline failed; release assets were not changed.")
+            }
             cli::cli_alert_success("Pipeline run complete")
           '
           if [ -f "$RUNNER_TEMP/targets-failed" ]; then
