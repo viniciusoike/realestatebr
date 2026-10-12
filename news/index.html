@@ -56,6 +56,14 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="realestatebr-development-version">realestatebr (development version)<a class="anchor" aria-label="anchor" href="#realestatebr-development-version"></a></h2>
+<ul><li>Fixed SECOVI year assignment and preserved partially missing ABECIP months and Abrainc series in their original spreadsheet positions.</li>
+<li>Fixed fresh BCB real estate category tables to return the documented long format used by cached tables, preserving all matching series.</li>
+<li>Fixed date filters to report unparseable observation dates instead of returning unfiltered data.</li>
+<li>Required structural validation before cache writes and stopped weekly publication when pipeline targets fail. Required columns now follow the dataset catalog; economic plausibility checks remain advisory.</li>
+<li>Restored test discovery during package checks and made live source tests opt-in with <code>REALESTATEBR_RUN_LIVE=true</code>.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.2.0" id="realestatebr-120">realestatebr 1.2.0<a class="anchor" aria-label="anchor" href="#realestatebr-120"></a></h2><p class="text-muted">CRAN release: 2026-10-01</p>
 <ul><li>Added <code>query_dataset("mcmv")</code>, with Minha Casa, Minha Vida financing contracts, official financing totals, and federally subsidized housing projects from the Ministério das Cidades. A new article covers the three tables, and a data dictionary documents their columns and source changes.</li>
 <li>Added <code>get_dataset("paic")</code>, with annual IBGE construction-industry data for the new series starting in 2024 (SIDRA tables 10463, 10441, and 10442). The <code>activity</code>, <code>size</code>, and <code>state</code> tables cover enterprises, employment, revenue, costs, and output; values publish in original units with a <code>value_status</code> column for SIDRA symbols. Do not compare with the 2007-2023 series (see IBGE Nota técnica 01/2026).</li>
