@@ -93,6 +93,11 @@ table describes each registered construction work, while three child
 tables record areas, CNAE activities, and responsibility periods.
 <code>realestatebr</code> queries these tables lazily with DuckDB, so
 filtering and aggregation happen before data enter R memory.</p>
+<p><code>realestatebr</code> publishes CNO as a curated snapshot layer.
+It normalizes headers, types, and text, and fixes a small set of
+mechanical source defects (described in <a href="#raw-values-and-snapshot-versions">Raw values and snapshot
+versions</a>) while retaining valid but anomalous values such as area
+outliers and unusual state labels.</p>
 <div class="section level2">
 <h2 id="open-the-dataset">Open the dataset<a class="anchor" aria-label="anchor" href="#open-the-dataset"></a>
 </h2>
@@ -171,74 +176,17 @@ Paulo.</p>
 <span><span class="va">sp_residential</span> <span class="op">&lt;-</span> <span class="va">constructions_sp</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span><span class="va">residential_areas</span>, by <span class="op">=</span> <span class="st">"cno"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>The source may repeat a work’s total area across several
-classifications, and it contains extreme area values. The package
-preserves these source records. Do not assume that summing every
-<code>areas$area</code> row produces an unbiased measure of built
-area.</p>
-<p>Let’s look at CNO <code>"900143355070"</code>. This case shows how
-exact duplicate rows affect a join between the
-<code>constructions</code> and <code>areas</code> tables.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">construction_case</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">constructions</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cno</span> <span class="op">==</span> <span class="st">"900143355070"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">cno</span>, <span class="va">municipality_name</span>, <span class="va">state</span>, <span class="va">total_area</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">area_case</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">areas</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cno</span> <span class="op">==</span> <span class="st">"900143355070"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">case</span> <span class="op">&lt;-</span> <span class="va">construction_case</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span><span class="va">area_case</span>, by <span class="op">=</span> <span class="st">"cno"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">case</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span></span>
-<span>    <span class="va">cno</span>,</span>
-<span>    <span class="va">municipality_name</span>,</span>
-<span>    <span class="va">total_area</span>,</span>
-<span>    <span class="va">destination</span>,</span>
-<span>    <span class="va">area_type</span>,</span>
-<span>    <span class="va">complementary_area_type</span>,</span>
-<span>    <span class="va">area</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="co"># A tibble: 8 × 7</span></span>
-<span><span class="co">#   cno          municipality_name total_area destination               area_type    complementary_area_type            area</span></span>
-<span><span class="co">#   &lt;chr&gt;        &lt;chr&gt;                  &lt;dbl&gt; &lt;chr&gt;                     &lt;chr&gt;        &lt;chr&gt;                             &lt;dbl&gt;</span></span>
-<span><span class="co"># 1 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Quadra Esportiva e Poliesportiva   160</span></span>
-<span><span class="co"># 2 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Estacionamento Térreo             3076.</span></span>
-<span><span class="co"># 3 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Piscina                            136.</span></span>
-<span><span class="co"># 4 900143355070 LONDRINA              18719. Residencial multifamiliar Principal    NA                               15347.</span></span>
-<span><span class="co"># 5 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Quadra Esportiva e Poliesportiva   160</span></span>
-<span><span class="co"># 6 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Estacionamento Térreo             3076.</span></span>
-<span><span class="co"># 7 900143355070 LONDRINA              18719. Residencial multifamiliar Complementar Piscina                            136.</span></span>
-<span><span class="co"># 8 900143355070 LONDRINA              18719. Residencial multifamiliar Principal    NA                               15347.</span></span></code></pre></div>
-<p>These duplicates are present in the original CNO <code>areas</code>
-dataset. <code>realestatebr</code> currently reproduces them exactly.
-For most use cases, these duplicate rows will lead to errors, so we
-advise removing them using, for instance,
-<code><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">dplyr::distinct()</a></code>.</p>
-<p>Removing the duplicate rows, in this case, would also make the sum of
-the individual <code>area</code> column from <code>areas</code> coincide
-with <code>total_area</code> from <code>constructions</code>. This will
-not always be the case.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">construction_case</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">constructions</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cno</span> <span class="op">==</span> <span class="st">"900143355070"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">cno</span>, <span class="va">municipality_name</span>, <span class="va">state</span>, <span class="va">total_area</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">area_case</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">areas</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cno</span> <span class="op">==</span> <span class="st">"900143355070"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">case</span> <span class="op">&lt;-</span> <span class="va">construction_case</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span><span class="va">area_case</span>, by <span class="op">=</span> <span class="st">"cno"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">case</span><span class="op">$</span><span class="va">total_area</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">case</span><span class="op">$</span><span class="va">area</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
-<p>Future versions of <code>realestatebr</code> may add validation steps
-that remove exact duplicate rows and other noise from these tables.</p>
+<p>A work’s area is often reported across several rows: one row for the
+principal area and additional rows for each complementary area.
+Classificatory repetition therefore remains after snapshot cleaning: the
+repeated <code>total_area</code>-inflating duplicates are removed, but
+summing rows across classifications still differs from
+<code>constructions$total_area</code> in general. <code><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum()</a></code>
+demonstrates the join pattern, not a general cleaning rule.</p>
+<p>The snapshot build also drops exact duplicate rows in
+<code>areas</code>. Each removal is counted in the snapshot manifest, as
+described in <a href="#raw-values-and-snapshot-versions">Raw values and
+snapshot versions</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="combine-several-child-tables-safely">Combine several child tables safely<a class="anchor" aria-label="anchor" href="#combine-several-child-tables-safely"></a>
@@ -247,7 +195,7 @@ that remove exact duplicate rows and other noise from these tables.</p>
 multiply rows. A work with two area rows and three CNAE rows produces
 six joined rows. Aggregate each child table to one row per CNO before
 combining them when the analysis needs one row per work.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">area_summary</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">areas</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">cno</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
@@ -273,30 +221,87 @@ combining them when the analysis needs one row per work.</p>
 a general cleaning rule.</p>
 </div>
 <div class="section level2">
-<h2 id="municipality-identifiers">Municipality identifiers<a class="anchor" aria-label="anchor" href="#municipality-identifiers"></a>
+<h2 id="join-to-geobr">Join to geobr<a class="anchor" aria-label="anchor" href="#join-to-geobr"></a>
 </h2>
-<p><code>municipality_tom_code</code> is Receita Federal’s four-digit
-TOM code. It is not the seven-digit IBGE municipality code used by
-<code>geobr</code> and most Brazilian regional datasets. A TOM-to-IBGE
-crosswalk is required before joining those sources.</p>
+<p><code>constructions</code> includes <code>code_muni</code>, the
+seven-digit IBGE municipality code joined from the Receita Federal
+TOM-to-IBGE table, so CNO joins directly to <code>geobr</code> and most
+Brazilian regional datasets without an extra crosswalk. The original
+four-digit <code>municipality_tom_code</code> is retained for
+provenance.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">work_counts</span> <span class="op">&lt;-</span> <span class="va">cno</span><span class="op">$</span><span class="va">constructions</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">code_muni</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>works <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># geobr::read_municipality(code_muni = ...) accepts these codes directly,</span></span>
+<span><span class="co"># so spatial joins need no extra crosswalk.</span></span></code></pre></div>
+<p><code>code_muni</code> is NA for works declared abroad and for the
+rare TOM codes missing from that table. The build aborts when more than
+0.1% of TOM codes fail to match, so unmatched codes should be
+infrequent.</p>
 </div>
 <div class="section level2">
 <h2 id="raw-values-and-snapshot-versions">Raw values and snapshot versions<a class="anchor" aria-label="anchor" href="#raw-values-and-snapshot-versions"></a>
 </h2>
 <p>The tables normalize headers, dates, numeric fields, identifiers, and
-text encoding. They otherwise preserve the source. This includes unusual
-state values, historical date sentinels, area outliers, status codes,
-and reported category labels.</p>
+text encoding, trim surrounding whitespace, and fix these mechanical
+source defects:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr class="header">
+<th>Source defect</th>
+<th>Published fix</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Sentinel dates <code>1900-01-01</code>
+</td>
+<td>Converted to <code>NA</code> in every date column</td>
+</tr>
+<tr class="even">
+<td>Invalid Plus Codes (e.g. <code>00000000+00</code>)</td>
+<td>Converted to <code>NA</code>; valid codes stored in upper case</td>
+</tr>
+<tr class="odd">
+<td>Exact duplicate rows in <code>areas</code>
+</td>
+<td>Dropped; each removal counted in the manifest</td>
+</tr>
+<tr class="even">
+<td>Whitespace-only text</td>
+<td>Converted to <code>NA</code>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Valid but anomalous values are retained. This includes unusual
+<code>state</code> values, area outliers, status codes, and reported
+category labels. The manifest counts every fix per table, along with
+source and published row counts, so the extent of each correction is
+auditable.</p>
 <p><code>query_dataset("cno")</code> resolves <code>"latest"</code> once
 and pins that immutable snapshot while the catalog remains open. Supply
 a published version explicitly when an analysis must be
 reproducible.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cno_2026_09_13</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_dataset.html">query_dataset</a></span><span class="op">(</span><span class="st">"cno"</span>, version <span class="op">=</span> <span class="st">"2026-09-13"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">close</a></span><span class="op">(</span><span class="va">cno_2026_09_13</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Version identifiers are snapshots published by the build workflow; the date</span></span>
+<span><span class="co"># below is illustrative. Check</span></span>
+<span><span class="co"># https://github.com/viniciusoike/realestatebr/releases for published versions.</span></span>
+<span><span class="va">cno_pinned</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/query_dataset.html">query_dataset</a></span><span class="op">(</span><span class="st">"cno"</span>, version <span class="op">=</span> <span class="st">"2026-10-15"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">close</a></span><span class="op">(</span><span class="va">cno_pinned</span><span class="op">)</span></span></code></pre></div>
+<p>The current schema introduced <code>code_muni</code> and the defect
+fixes, so pinned snapshots published before it still carry the sentinel
+dates, duplicate <code>areas</code> rows, and TOM-only municipality
+identifiers. Pin a version from this schema onward when reproducibility
+matters; package versions up to 1.2.0 resolve those older snapshots.</p>
 <p>Close the catalog after the final query. Any lazy tables obtained
 from it become invalid after <code><a href="https://rdrr.io/r/base/connections.html" class="external-link">close()</a></code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">close</a></span><span class="op">(</span><span class="va">cno</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

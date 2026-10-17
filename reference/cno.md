@@ -33,8 +33,11 @@ Receita Federal do Brasil - Cadastro Nacional de Obras
 - **Tables**: `"constructions"`, `"areas"`, `"cnaes"`,
   `"responsibilities"`
 
-Column names are normalized to English, while source labels and
-anomalous values are retained without analytical cleaning.
+Column names are normalized to English and text is trimmed. Mechanical
+source defects are fixed: 1900-01-01 sentinel dates and invalid Plus
+Codes become NA, and exact duplicate area rows are dropped. Each fix is
+counted in the snapshot manifest. Valid but anomalous values, such as
+area outliers and unusual state labels, are retained.
 
 ## Table "constructions" (Constructions)
 
@@ -55,8 +58,8 @@ One row per CNO registration.
 
 - start_date:
 
-  Declared start date of the construction work. Historical sentinel
-  values are retained.
+  Declared start date of the construction work. The 1900-01-01 sentinel
+  is converted to NA.
 
 - responsibility_start_date:
 
@@ -90,7 +93,7 @@ One row per CNO registration.
 - municipality_tom_code:
 
   Four-digit Receita Federal TOM municipality code, not an IBGE
-  municipality code.
+  municipality code. See code_muni.
 
 - municipality_name:
 
@@ -148,8 +151,15 @@ One row per CNO registration.
 
 - plus_code:
 
-  Location code published by Receita Federal. Invalid and sentinel
-  source values are retained.
+  Plus Code (Open Location Code) in upper case. Full and short codes are
+  kept; values that are not valid Plus Codes, such as 00000000+00, are
+  converted to NA.
+
+- code_muni:
+
+  Seven-digit IBGE municipality code, joined from the Receita Federal
+  TOM-to-IBGE table. Compatible with geobr. NA for works abroad and for
+  TOM codes missing from that table.
 
 ## Table "areas" (Construction Areas)
 
@@ -182,8 +192,8 @@ type.
 
 - area:
 
-  Reported area in square metres. Source duplicates and outliers are
-  retained.
+  Reported area in square metres. Exact duplicate rows are dropped;
+  outliers are retained.
 
 ## Table "cnaes" (Economic Activities)
 

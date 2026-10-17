@@ -89,8 +89,11 @@ Brazilian construction works.</p>
 <li><p><strong>Coverage</strong>: November 2018-present, including migrated CEI records with earlier start dates</p></li>
 <li><p><strong>Access mode</strong>: <code>query</code></p></li>
 <li><p><strong>Tables</strong>: <code>"constructions"</code>, <code>"areas"</code>, <code>"cnaes"</code>, <code>"responsibilities"</code></p></li>
-</ul><p>Column names are normalized to English, while source labels and anomalous
-values are retained without analytical cleaning.</p>
+</ul><p>Column names are normalized to English and text is trimmed. Mechanical
+source defects are fixed: 1900-01-01 sentinel dates and invalid Plus Codes
+become NA, and exact duplicate area rows are dropped. Each fix is counted
+in the snapshot manifest. Valid but anomalous values, such as area outliers
+and unusual state labels, are retained.</p>
     </div>
     <div class="section level2">
     <h2 id="table-constructions-constructions-">Table "constructions" (Constructions)<a class="anchor" aria-label="anchor" href="#table-constructions-constructions-"></a></h2>
@@ -107,7 +110,7 @@ values are retained without analytical cleaning.</p>
 <dd><p>Country name published by Receita Federal.</p></dd>
 
 <dt>start_date</dt>
-<dd><p>Declared start date of the construction work. Historical sentinel values are retained.</p></dd>
+<dd><p>Declared start date of the construction work. The 1900-01-01 sentinel is converted to NA.</p></dd>
 
 <dt>responsibility_start_date</dt>
 <dd><p>Start date of the current responsibility period.</p></dd>
@@ -131,7 +134,7 @@ values are retained without analytical cleaning.</p>
 <dd><p>Name assigned to the construction, not the responsible party's name.</p></dd>
 
 <dt>municipality_tom_code</dt>
-<dd><p>Four-digit Receita Federal TOM municipality code, not an IBGE municipality code.</p></dd>
+<dd><p>Four-digit Receita Federal TOM municipality code, not an IBGE municipality code. See code_muni.</p></dd>
 
 <dt>municipality_name</dt>
 <dd><p>Municipality name published by Receita Federal.</p></dd>
@@ -173,7 +176,10 @@ values are retained without analytical cleaning.</p>
 <dd><p>Legal name of the responsible legal person when published.</p></dd>
 
 <dt>plus_code</dt>
-<dd><p>Location code published by Receita Federal. Invalid and sentinel source values are retained.</p></dd>
+<dd><p>Plus Code (Open Location Code) in upper case. Full and short codes are kept; values that are not valid Plus Codes, such as 00000000+00, are converted to NA.</p></dd>
+
+<dt>code_muni</dt>
+<dd><p>Seven-digit IBGE municipality code, joined from the Receita Federal TOM-to-IBGE table. Compatible with geobr. NA for works abroad and for TOM codes missing from that table.</p></dd>
 
 
 </dl></div>
@@ -201,7 +207,7 @@ values are retained without analytical cleaning.</p>
 <dd><p>Complementary-area classification, when applicable.</p></dd>
 
 <dt>area</dt>
-<dd><p>Reported area in square metres. Source duplicates and outliers are retained.</p></dd>
+<dd><p>Reported area in square metres. Exact duplicate rows are dropped; outliers are retained.</p></dd>
 
 
 </dl></div>
