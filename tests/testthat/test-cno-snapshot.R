@@ -308,3 +308,17 @@ test_that("CNO Plus Code pattern follows Open Location Code rules", {
     setNames(rep(FALSE, length(invalid)), invalid)
   )
 })
+
+test_that("CNO input conversion preserves Windows-1252 text across chunks", {
+  b <- cno_builder()
+  input <- withr::local_tempfile()
+  output <- withr::local_tempfile()
+  lines <- rep('"SÃO PAULO";"€ 120"', 10001)
+  write_cp1252_csv(lines, input)
+  original <- readBin(input, "raw", n = file.size(input))
+
+  b$convert_cno_input(input, output)
+
+  expect_identical(readLines(output, encoding = "UTF-8"), lines)
+  expect_identical(readBin(input, "raw", n = file.size(input)), original)
+})

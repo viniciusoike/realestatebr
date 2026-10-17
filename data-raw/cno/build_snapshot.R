@@ -81,9 +81,18 @@ build_cno_snapshot <- function(
     duckdb::duckdb(dbdir = ":memory:", shared_home = FALSE)
   )
   on.exit(DBI::dbDisconnect(connection, shutdown = TRUE), add = TRUE)
-  DBI::dbExecute(connection, "INSTALL encodings")
-  DBI::dbExecute(connection, "LOAD encodings")
-  create_cno_crosswalk(connection, crosswalk_path)
+  utf8_dir <- tempfile("cno-utf8-")
+  dir.create(utf8_dir)
+  on.exit(unlink(utf8_dir, recursive = TRUE), add = TRUE)
+  utf8_paths <- file.path(utf8_dir, paste0(seq_along(required_paths), ".csv"))
+  for (i in seq_along(required_paths)) {
+    convert_cno_input(required_paths[[i]], utf8_paths[[i]])
+  }
+  utf8_source_paths <- setNames(
+    utf8_paths[seq_along(source_paths)],
+    names(source_paths)
+  )
+  create_cno_crosswalk(connection, utf8_paths[[length(utf8_paths)]])
 
   table_metadata <- list()
   schema_metadata <- list()
@@ -94,7 +103,7 @@ build_cno_snapshot <- function(
     typed_view <- paste0("typed_", table)
     normalized_view <- paste0("normalized_", table)
 
-    create_cno_source_view(connection, source_view, source_paths[[table]])
+    create_cno_source_view(connection, source_view, utf8_source_paths[[table]])
     validate_cno_source_headers(
       connection,
       source_view,
@@ -184,7 +193,10 @@ build_cno_snapshot <- function(
   }
 
   validate_cno_relations(connection)
-  declared_totals <- read_cno_declared_totals(connection, totals_path)
+  declared_totals <- read_cno_declared_totals(
+    connection,
+    utf8_paths[[length(source_paths) + 1L]]
+  )
   validate_cno_declared_totals(declared_totals, table_metadata)
 
   source_metadata <- lapply(source_paths, snapshot_file_metadata)
@@ -281,13 +293,34 @@ validate_cno_build_arguments <- function(
   return(invisible(TRUE))
 }
 
+convert_cno_input <- function(input_path, output_path) {
+  input <- file(input_path, open = "rb")
+  on.exit(close(input), add = TRUE)
+  output <- file(output_path, open = "wb")
+  on.exit(close(output), add = TRUE)
+  repeat {
+    lines <- readLines(input, n = 10000L, warn = FALSE)
+    if (length(lines) == 0L) {
+      break
+    }
+    lines <- iconv(lines, from = "CP1252", to = "UTF-8")
+    if (anyNA(lines)) {
+      cli::cli_abort(
+        "Cannot convert Windows-1252 text in {.path {input_path}}."
+      )
+    }
+    writeLines(lines, output, useBytes = TRUE)
+  }
+  return(invisible(output_path))
+}
+
 create_cno_source_view <- function(connection, view, path) {
   statement <- paste0(
     "CREATE VIEW ",
     quote_snapshot_identifier(connection, view),
     " AS SELECT * FROM read_csv(",
     quote_snapshot_string(connection, path),
-    ", header = true, all_varchar = true, encoding = 'cp1252', ",
+    ", header = true, all_varchar = true, encoding = 'utf-8', ",
     "strict_mode = true, nullstr = '')"
   )
   DBI::dbExecute(connection, statement)
@@ -470,7 +503,7 @@ create_cno_crosswalk <- function(connection, path) {
     "CAST(trim(\"CÓDIGO DO MUNICÍPIO - IBGE\") AS INTEGER) AS code_muni ",
     "FROM read_csv(",
     quote_snapshot_string(connection, path),
-    ", delim = ';', header = true, all_varchar = true, encoding = 'cp1252') ",
+    ", delim = ';', header = true, all_varchar = true, encoding = 'utf-8') ",
     # TOM 9707 (EXTERIOR) has IBGE code 0.
     "WHERE code_muni <> 0"
   )
@@ -495,12 +528,16 @@ create_cno_crosswalk <- function(connection, path) {
 }
 
 validate_cno_municipality_match <- function(connection, max_unmatched_share) {
+  # TOM 9707 (EXTERIOR) is foreign by design; crosswalk joins leave its
+  # code_muni NULL, so it must not count against the match threshold.
   share <- query_snapshot_scalar(
     connection,
     paste(
       "SELECT count(*) FILTER (WHERE code_muni IS NULL) /",
       "greatest(count(*), 1) FROM normalized_constructions",
-      "WHERE municipality_tom_code IS NOT NULL"
+      "WHERE municipality_tom_code IS NOT NULL",
+      # Exclude the exterior TOM code from the match threshold.
+      "AND municipality_tom_code <> '9707'"
     )
   )
   if (share > max_unmatched_share) {
@@ -566,7 +603,7 @@ read_cno_declared_totals <- function(connection, totals_path) {
     "CAST(\"Total de vínculos\" AS BIGINT) AS responsibilities ",
     "FROM read_csv(",
     quote_snapshot_string(connection, totals_path),
-    ", header = true, all_varchar = true, encoding = 'cp1252')"
+    ", header = true, all_varchar = true, encoding = 'utf-8')"
   )
 
   return(DBI::dbGetQuery(connection, statement)[1, ])

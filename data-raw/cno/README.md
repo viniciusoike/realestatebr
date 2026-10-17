@@ -43,9 +43,11 @@ by state and CNO, and the child tables are sorted by CNO, which lets DuckDB use
 row-group statistics without creating many small state partitions.
 
 The builder needs `cli`, `DBI`, `digest`, DuckDB 1.5.5 or later, `jsonlite`,
-and `yaml`. DuckDB's `encodings` extension reads the source's Windows-1252
-files. Published Parquet files are UTF-8 and do not require that extension
-when users query them.
+and `yaml`. The builder converts Windows-1252 inputs to temporary UTF-8
+files in chunks before DuckDB reads them. This avoids requiring the
+`encodings` extension, which is unavailable for the Windows MinGW platform.
+Temporary files are removed when the build finishes or fails; the manifest
+records checksums of the original inputs.
 
 The manual `Build CNO Snapshot` GitHub Actions workflow accepts the current
 source archive URL and a version. Every run uploads a short-lived validation
