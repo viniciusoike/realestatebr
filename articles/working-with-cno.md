@@ -153,8 +153,10 @@ work_counts <- cno$constructions |>
 ```
 
 `code_muni` is NA for works declared abroad and for the rare TOM codes
-missing from that table. The build aborts when more than 0.1% of TOM
-codes fail to match, so unmatched codes should be infrequent.
+missing from that table. Among construction rows with a nonempty
+domestic TOM code, the build aborts when more than 0.1% have no IBGE
+match. Rows with the exterior TOM code (`9707`) are excluded from this
+threshold.
 
 ## Raw values and snapshot versions
 
@@ -171,8 +173,10 @@ source defects:
 
 Valid but anomalous values are retained. This includes unusual `state`
 values, area outliers, status codes, and reported category labels. The
-manifest counts every fix per table, along with source and published row
-counts, so the extent of each correction is auditable.
+manifest records sentinel-date replacements, invalid Plus Codes,
+unmatched municipalities, and removed duplicate area rows, along with
+source and published row counts. Whitespace trimming and
+whitespace-to-`NA` conversions are not counted.
 
 `query_dataset("cno")` resolves `"latest"` once and pins that immutable
 snapshot while the catalog remains open. Supply a published version

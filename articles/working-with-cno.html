@@ -238,9 +238,10 @@ provenance.</p>
 <span><span class="co"># geobr::read_municipality(code_muni = ...) accepts these codes directly,</span></span>
 <span><span class="co"># so spatial joins need no extra crosswalk.</span></span></code></pre></div>
 <p><code>code_muni</code> is NA for works declared abroad and for the
-rare TOM codes missing from that table. The build aborts when more than
-0.1% of TOM codes fail to match, so unmatched codes should be
-infrequent.</p>
+rare TOM codes missing from that table. Among construction rows with a
+nonempty domestic TOM code, the build aborts when more than 0.1% have no
+IBGE match. Rows with the exterior TOM code (<code>9707</code>) are
+excluded from this threshold.</p>
 </div>
 <div class="section level2">
 <h2 id="raw-values-and-snapshot-versions">Raw values and snapshot versions<a class="anchor" aria-label="anchor" href="#raw-values-and-snapshot-versions"></a>
@@ -281,9 +282,10 @@ source defects:</p>
 </table>
 <p>Valid but anomalous values are retained. This includes unusual
 <code>state</code> values, area outliers, status codes, and reported
-category labels. The manifest counts every fix per table, along with
-source and published row counts, so the extent of each correction is
-auditable.</p>
+category labels. The manifest records sentinel-date replacements,
+invalid Plus Codes, unmatched municipalities, and removed duplicate area
+rows, along with source and published row counts. Whitespace trimming
+and whitespace-to-<code>NA</code> conversions are not counted.</p>
 <p><code>query_dataset("cno")</code> resolves <code>"latest"</code> once
 and pins that immutable snapshot while the catalog remains open. Supply
 a published version explicitly when an analysis must be
