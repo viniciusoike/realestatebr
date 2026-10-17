@@ -37,7 +37,8 @@ make_cno_query_fixture <- function() {
       status_code = "02",
       status_date = as.Date("2026-01-02"),
       responsible_legal_name = "EMPRESA TESTE",
-      plus_code = NA_character_
+      plus_code = NA_character_,
+      code_muni = c(3550308L, 3304557L)
     ),
     areas = data.frame(
       cno = c("000000000001", "000000000001", "000000000002"),
@@ -117,7 +118,7 @@ make_cno_query_fixture <- function() {
     dataset = "cno",
     version = "2026-01-02",
     schema_version = 1,
-    schema_sha256 = "dfdd670146c4f427e671023aed64192d06d9254655ab740099a7d0757ef90545",
+    schema_sha256 = "5ab5ad02f42effa7c480de77970f53ca43638aaf24959671a2bf38ac8ebd0da7",
     retrieved_at = "2026-01-03T12:00:00Z",
     tables = table_entries
   )
@@ -345,7 +346,7 @@ test_that("CNO registry points to versioned GitHub releases", {
     info$latest_url,
     paste0(
       "https://github.com/viniciusoike/realestatebr/releases/",
-      "download/cno-v2-latest/latest.json"
+      "download/cno-v3-latest/latest.json"
     )
   )
   expect_identical(

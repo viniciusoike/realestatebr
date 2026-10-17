@@ -9,8 +9,16 @@ CNO_SOURCE_FILES <- c(
   responsibilities = "cno_vinculos.csv"
 )
 
+CNO_CROSSWALK_URL <- "https://www.gov.br/receitafederal/dados/municipios.csv"
+CNO_SENTINEL_DATE <- "DATE '1900-01-01'"
+CNO_PLUS_CODE_PATTERN <- paste0(
+  "([23456789CFGHJMPQRVWX]{2}){1,4}[+][23456789CFGHJMPQRVWX]{2,3}"
+)
+
 build_cno_snapshot <- function(
   source_dir,
+  crosswalk_path = file.path(source_dir, "municipios.csv"),
+  max_unmatched_share = 0.001,
   output_dir = file.path("data-raw", "cno_output"),
   version = as.character(Sys.Date()),
   retrieved_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
@@ -28,9 +36,8 @@ build_cno_snapshot <- function(
   source_paths <- file.path(source_dir, unname(CNO_SOURCE_FILES))
   names(source_paths) <- names(CNO_SOURCE_FILES)
   totals_path <- file.path(source_dir, "cno_totais.csv")
-  missing_files <- c(source_paths, totals_path)[
-    !file.exists(c(source_paths, totals_path))
-  ]
+  required_paths <- c(source_paths, totals_path, crosswalk_path)
+  missing_files <- required_paths[!file.exists(required_paths)]
   if (length(missing_files) > 0) {
     cli::cli_abort("Missing CNO source files: {.path {missing_files}}.")
   }
@@ -59,6 +66,7 @@ build_cno_snapshot <- function(
   on.exit(DBI::dbDisconnect(connection, shutdown = TRUE), add = TRUE)
   DBI::dbExecute(connection, "INSTALL encodings")
   DBI::dbExecute(connection, "LOAD encodings")
+  create_cno_crosswalk(connection, crosswalk_path)
 
   table_metadata <- list()
   schema_metadata <- list()
@@ -66,6 +74,7 @@ build_cno_snapshot <- function(
     cli::cli_inform("Building CNO table {.val {table}}.")
     category <- cno_info$categories[[table]]
     source_view <- paste0("source_", table)
+    typed_view <- paste0("typed_", table)
     normalized_view <- paste0("normalized_", table)
 
     create_cno_source_view(connection, source_view, source_paths[[table]])
@@ -78,13 +87,27 @@ build_cno_snapshot <- function(
     create_cno_normalized_view(
       connection,
       source_view,
+      typed_view,
+      category$source_columns
+    )
+    create_cno_silver_view(
+      connection,
+      table,
+      typed_view,
       normalized_view,
       category$source_columns
     )
 
     parquet_path <- file.path(staging_dir, paste0(table, ".parquet"))
     order_columns <- if (table == "constructions") c("state", "cno") else "cno"
-    source_rows <- write_snapshot_parquet(
+    source_rows <- query_snapshot_scalar(
+      connection,
+      paste0(
+        "SELECT count(*) FROM ",
+        quote_snapshot_identifier(connection, typed_view)
+      )
+    )
+    rows <- write_snapshot_parquet(
       connection,
       normalized_view,
       parquet_path,
@@ -98,7 +121,7 @@ build_cno_snapshot <- function(
         ")"
       )
     )
-    if (!identical(source_rows, parquet_rows)) {
+    if (!identical(rows, parquet_rows)) {
       cli::cli_abort(
         "Table {.val {table}} changed row count while writing Parquet."
       )
@@ -108,6 +131,16 @@ build_cno_snapshot <- function(
       normalized_view,
       parquet_path
     )
+    cleaning <- count_cno_fixes(
+      connection,
+      table,
+      typed_view,
+      normalized_view,
+      category$source_columns
+    )
+    if (table == "constructions") {
+      validate_cno_municipality_match(connection, max_unmatched_share)
+    }
 
     distinct_cno <- query_snapshot_scalar(
       connection,
@@ -116,17 +149,16 @@ build_cno_snapshot <- function(
         quote_snapshot_identifier(connection, normalized_view)
       )
     )
-    columns <- lapply(category$source_columns, function(column) {
-      list(name = column$name, type = column$type)
-    })
-    names(columns) <- NULL
+    columns <- snapshot_schema(cno_info$categories[table])[[table]]
     schema_metadata[[table]] <- columns
     table_metadata[[table]] <- list(
       grain = category$grain,
       primary_key = as_snapshot_manifest_array(category$primary_key),
       foreign_key = as_snapshot_manifest_array(category$foreign_key),
       columns = columns,
-      rows = source_rows,
+      source_rows = source_rows,
+      rows = rows,
+      cleaning = cleaning,
       distinct_cno = distinct_cno,
       files = list(paste0(table, ".parquet")),
       bytes = unname(file.size(parquet_path)),
@@ -140,6 +172,10 @@ build_cno_snapshot <- function(
 
   source_metadata <- lapply(source_paths, snapshot_file_metadata)
   source_metadata$totals <- snapshot_file_metadata(totals_path)
+  source_metadata$crosswalk <- c(
+    snapshot_file_metadata(crosswalk_path),
+    url = CNO_CROSSWALK_URL
+  )
 
   schema_sha256 <- snapshot_schema_hash(schema_metadata)
   expected_schema_sha256 <- cno_info$query_manifest$schema_sha256
@@ -279,9 +315,9 @@ create_cno_normalized_view <- function(
       target_sql <- quote_snapshot_identifier(connection, target)
 
       paste0(
-        "CAST(NULLIF(",
+        "CAST(NULLIF(trim(",
         source_sql,
-        ", '') AS ",
+        "), '') AS ",
         type,
         ") AS ",
         target_sql
@@ -303,6 +339,162 @@ create_cno_normalized_view <- function(
   return(invisible(TRUE))
 }
 
+create_cno_silver_view <- function(
+  connection,
+  table,
+  typed_view,
+  silver_view,
+  columns
+) {
+  expressions <- vapply(
+    columns,
+    function(column) {
+      target <- quote_snapshot_identifier(connection, column$name)
+      if (column$type == "DATE") {
+        return(paste0(
+          "NULLIF(",
+          target,
+          ", ",
+          CNO_SENTINEL_DATE,
+          ") AS ",
+          target
+        ))
+      }
+      if (column$name == "plus_code") {
+        return(paste0(
+          "CASE WHEN regexp_full_match(upper(",
+          target,
+          "), ",
+          quote_snapshot_string(connection, CNO_PLUS_CODE_PATTERN),
+          ") THEN upper(",
+          target,
+          ") END AS ",
+          target
+        ))
+      }
+      return(target)
+    },
+    character(1)
+  )
+  from <- quote_snapshot_identifier(connection, typed_view)
+  if (table == "constructions") {
+    expressions <- c(expressions, "crosswalk.code_muni AS code_muni")
+    from <- paste(
+      from,
+      "LEFT JOIN crosswalk ON municipality_tom_code = crosswalk.tom"
+    )
+  }
+  # Areas have no row identifier; exact duplicates inflate area sums.
+  select <- if (table == "areas") "SELECT DISTINCT " else "SELECT "
+
+  statement <- paste0(
+    "CREATE VIEW ",
+    quote_snapshot_identifier(connection, silver_view),
+    " AS ",
+    select,
+    paste(expressions, collapse = ", "),
+    " FROM ",
+    from
+  )
+  DBI::dbExecute(connection, statement)
+
+  return(invisible(TRUE))
+}
+
+count_cno_fixes <- function(
+  connection,
+  table,
+  typed_view,
+  silver_view,
+  columns
+) {
+  typed_sql <- quote_snapshot_identifier(connection, typed_view)
+  silver_sql <- quote_snapshot_identifier(connection, silver_view)
+  count_rows <- function(view_sql, expression = "count(*)") {
+    query_snapshot_scalar(
+      connection,
+      paste("SELECT", expression, "FROM", view_sql)
+    )
+  }
+
+  date_columns <- Filter(\(column) column$type == "DATE", columns)
+  sentinel_dates <- lapply(date_columns, function(column) {
+    target <- quote_snapshot_identifier(connection, column$name)
+    count_rows(
+      typed_sql,
+      paste0("count(*) FILTER (WHERE ", target, " = ", CNO_SENTINEL_DATE, ")")
+    )
+  })
+  names(sentinel_dates) <- vapply(date_columns, `[[`, "", "name")
+  cleaning <- list(sentinel_dates = sentinel_dates)
+
+  if (table == "constructions") {
+    cleaning$invalid_plus_codes <- count_rows(typed_sql, "count(plus_code)") -
+      count_rows(silver_sql, "count(plus_code)")
+    cleaning$unmatched_municipalities <- count_rows(
+      silver_sql,
+      paste(
+        "count(*) FILTER",
+        "(WHERE municipality_tom_code IS NOT NULL AND code_muni IS NULL)"
+      )
+    )
+  }
+  if (table == "areas") {
+    cleaning$duplicate_rows <- count_rows(typed_sql) - count_rows(silver_sql)
+  }
+
+  return(cleaning)
+}
+
+create_cno_crosswalk <- function(connection, path) {
+  statement <- paste0(
+    "CREATE TABLE crosswalk AS SELECT ",
+    "lpad(trim(\"CÓDIGO DO MUNICÍPIO - TOM\"), 4, '0') AS tom, ",
+    "CAST(trim(\"CÓDIGO DO MUNICÍPIO - IBGE\") AS INTEGER) AS code_muni ",
+    "FROM read_csv(",
+    quote_snapshot_string(connection, path),
+    ", delim = ';', header = true, all_varchar = true, encoding = 'cp1252') ",
+    # TOM 9707 (EXTERIOR) has IBGE code 0.
+    "WHERE code_muni <> 0"
+  )
+  DBI::dbExecute(connection, statement)
+
+  invalid <- query_snapshot_scalar(
+    connection,
+    paste(
+      "SELECT count(*) - count(DISTINCT tom) +",
+      "count(*) - count(DISTINCT code_muni) +",
+      "count(*) FILTER (WHERE code_muni NOT BETWEEN 1100000 AND 5399999)",
+      "FROM crosswalk"
+    )
+  )
+  if (invalid != 0) {
+    cli::cli_abort(
+      "The TOM-to-IBGE crosswalk has repeated or invalid municipality codes."
+    )
+  }
+
+  return(invisible(TRUE))
+}
+
+validate_cno_municipality_match <- function(connection, max_unmatched_share) {
+  share <- query_snapshot_scalar(
+    connection,
+    paste(
+      "SELECT count(*) FILTER (WHERE code_muni IS NULL) /",
+      "greatest(count(*), 1) FROM normalized_constructions",
+      "WHERE municipality_tom_code IS NOT NULL"
+    )
+  )
+  if (share > max_unmatched_share) {
+    cli::cli_abort(c(
+      "CNO municipality codes do not match the TOM-to-IBGE crosswalk.",
+      "x" = "Unmatched share: {.val {round(share, 4)}}."
+    ))
+  }
+
+  return(invisible(TRUE))
+}
 
 validate_cno_relations <- function(connection) {
   duplicate_constructions <- query_snapshot_scalar(
@@ -364,7 +556,7 @@ read_cno_declared_totals <- function(connection, totals_path) {
 }
 
 validate_cno_declared_totals <- function(declared, table_metadata) {
-  observed <- vapply(table_metadata, \(table) table$rows, numeric(1))
+  observed <- vapply(table_metadata, \(table) table$source_rows, numeric(1))
   declared <- unlist(declared[1, names(observed)], use.names = TRUE)
   if (!identical(unname(declared), unname(observed))) {
     cli::cli_abort(c(
@@ -376,7 +568,3 @@ validate_cno_declared_totals <- function(declared, table_metadata) {
 
   return(invisible(TRUE))
 }
-
-
-
-
