@@ -74,25 +74,40 @@ as_snapshot_manifest_array <- function(value) {
 
 snapshot_schema <- function(categories) {
   return(lapply(categories, function(category) {
-    columns <- lapply(category$source_columns, function(column) {
-      return(list(name = column$name, type = column$type))
-    })
+    columns <- lapply(
+      c(category$source_columns, category$derived_columns),
+      function(column) {
+        return(list(name = column$name, type = column$type))
+      }
+    )
     names(columns) <- NULL
     return(columns)
   }))
 }
 
 snapshot_schema_hash <- function(schema) {
-  return(digest::digest(jsonlite::toJSON(schema, auto_unbox = TRUE),
-    algo = "sha256", serialize = FALSE))
+  return(digest::digest(
+    jsonlite::toJSON(schema, auto_unbox = TRUE),
+    algo = "sha256",
+    serialize = FALSE
+  ))
 }
 
 snapshot_file_metadata <- function(path) {
-  return(list(file = basename(path), bytes = unname(file.size(path)),
-    sha256 = digest::digest(path, algo = "sha256", file = TRUE)))
+  return(list(
+    file = basename(path),
+    bytes = unname(file.size(path)),
+    sha256 = digest::digest(path, algo = "sha256", file = TRUE)
+  ))
 }
 
 write_snapshot_manifest <- function(manifest, path) {
-  jsonlite::write_json(manifest, path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+  jsonlite::write_json(
+    manifest,
+    path,
+    auto_unbox = TRUE,
+    pretty = TRUE,
+    null = "null"
+  )
   return(invisible(path))
 }

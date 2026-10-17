@@ -23,8 +23,11 @@
 #' * **Access mode**: `query`
 #' * **Tables**: `"constructions"`, `"areas"`, `"cnaes"`, `"responsibilities"`
 #'
-#' Column names are normalized to English, while source labels and anomalous
-#' values are retained without analytical cleaning.
+#' Column names are normalized to English and text is trimmed. Mechanical
+#' source defects are fixed: 1900-01-01 sentinel dates and invalid Plus Codes
+#' become NA, and exact duplicate area rows are dropped. Each fix is counted
+#' in the snapshot manifest. Valid but anomalous values, such as area outliers
+#' and unusual state labels, are retained.
 #'
 #' @section Table "constructions" (Constructions):
 #' One row per CNO registration.
@@ -33,7 +36,7 @@
 #'   \item{cno}{Twelve-digit CNO registration identifier. Stored as character to preserve leading zeroes.}
 #'   \item{country_code}{Three-digit country code published by Receita Federal.}
 #'   \item{country_name}{Country name published by Receita Federal.}
-#'   \item{start_date}{Declared start date of the construction work. Historical sentinel values are retained.}
+#'   \item{start_date}{Declared start date of the construction work. The 1900-01-01 sentinel is converted to NA.}
 #'   \item{responsibility_start_date}{Start date of the current responsibility period.}
 #'   \item{registration_date}{Date on which the work was registered in CNO.}
 #'   \item{linked_cno}{Linked CNO registration when supplied by Receita Federal.}
@@ -41,7 +44,7 @@
 #'   \item{responsible_tax_id}{Fourteen-digit identifier of the responsible legal person. Receita Federal suppresses CPF values.}
 #'   \item{responsible_role_code}{Four-digit code for the responsible party's role.}
 #'   \item{construction_name}{Name assigned to the construction, not the responsible party's name.}
-#'   \item{municipality_tom_code}{Four-digit Receita Federal TOM municipality code, not an IBGE municipality code.}
+#'   \item{municipality_tom_code}{Four-digit Receita Federal TOM municipality code, not an IBGE municipality code. See code_muni.}
 #'   \item{municipality_name}{Municipality name published by Receita Federal.}
 #'   \item{street_type}{Street type.}
 #'   \item{street_name}{Street name.}
@@ -55,7 +58,8 @@
 #'   \item{status_code}{Two-digit CNO status code.}
 #'   \item{status_date}{Date associated with the current status.}
 #'   \item{responsible_legal_name}{Legal name of the responsible legal person when published.}
-#'   \item{plus_code}{Location code published by Receita Federal. Invalid and sentinel source values are retained.}
+#'   \item{plus_code}{Plus Code (Open Location Code) in upper case. Full and short codes are kept; values that are not valid Plus Codes, such as 00000000+00, are converted to NA.}
+#'   \item{code_muni}{Seven-digit IBGE municipality code, joined from the Receita Federal TOM-to-IBGE table. Compatible with geobr. NA for works abroad and for TOM codes missing from that table.}
 #' }
 #'
 #' @section Table "areas" (Construction Areas):
@@ -68,7 +72,7 @@
 #'   \item{structure_type}{Construction structure type.}
 #'   \item{area_type}{Principal or complementary area.}
 #'   \item{complementary_area_type}{Complementary-area classification, when applicable.}
-#'   \item{area}{Reported area in square metres. Source duplicates and outliers are retained.}
+#'   \item{area}{Reported area in square metres. Exact duplicate rows are dropped; outliers are retained.}
 #' }
 #'
 #' @section Table "cnaes" (Economic Activities):

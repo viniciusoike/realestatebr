@@ -371,9 +371,12 @@ validate_query_manifest <- function(
 
 query_registry_schema <- function(categories) {
   schema <- lapply(categories, function(category) {
-    columns <- lapply(category$source_columns, function(column) {
-      list(name = column$name, type = column$type)
-    })
+    columns <- lapply(
+      c(category$source_columns, category$derived_columns),
+      function(column) {
+        list(name = column$name, type = column$type)
+      }
+    )
     names(columns) <- NULL
     return(columns)
   })
