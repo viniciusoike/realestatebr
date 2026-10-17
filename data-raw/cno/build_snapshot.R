@@ -11,9 +11,26 @@ CNO_SOURCE_FILES <- c(
 
 CNO_CROSSWALK_URL <- "https://www.gov.br/receitafederal/dados/municipios.csv"
 CNO_SENTINEL_DATE <- "DATE '1900-01-01'"
-CNO_PLUS_CODE_PATTERN <- paste0(
-  "([23456789CFGHJMPQRVWX]{2}){1,4}[+][23456789CFGHJMPQRVWX]{2,3}"
-)
+# Open Location Code rules from Google's reference isValid(), isShort() and
+# isFull(). The first two characters of a full code bound latitude below 90
+# and longitude below 180.
+CNO_PLUS_CODE_ALPHABET <- "[23456789CFGHJMPQRVWX]"
+CNO_PLUS_CODE_PATTERN <- local({
+  a <- CNO_PLUS_CODE_ALPHABET
+  head <- "[23456789C][23456789CFGHJMPQRV]"
+  suffix <- paste0("(", a, "{2,})?")
+  paste0(
+    "(",
+    paste(
+      paste0(head, a, "{6}[+]", suffix),
+      paste0(head, "(0{6}|", a, "{2}0{4}|", a, "{4}0{2})[+]"),
+      paste0("(", a, "{2}){1,3}[+]", suffix),
+      paste0("[+]", a, "{2,}"),
+      sep = "|"
+    ),
+    ")"
+  )
+})
 
 build_cno_snapshot <- function(
   source_dir,

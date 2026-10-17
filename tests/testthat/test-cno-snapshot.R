@@ -258,3 +258,53 @@ test_that("CNO builder aborts when the municipality crosswalk barely matches", {
     "do not match the TOM-to-IBGE crosswalk"
   )
 })
+
+test_that("CNO Plus Code pattern follows Open Location Code rules", {
+  b <- cno_builder()
+  valid <- c(
+    "6MVW+JM",
+    "58PJ642P+4Q",
+    "5879XJ00+",
+    "58790000+",
+    "58000000+",
+    "6FG22222+2222222",
+    "+22",
+    "CFX3+",
+    "CVXW0000+",
+    "99999999+99"
+  )
+  invalid <- c(
+    "XXXXXXXX+XX",
+    "00000000+00",
+    "HTTPSPLU+SC",
+    "5879XJ0+",
+    "5879X000+",
+    "5879XJ00+22",
+    "00000000+",
+    "6FG22222+2",
+    "6FG2222+22",
+    "6FG2222222+22",
+    "6FG2+22+22",
+    "+",
+    "F2222222+22",
+    "2W222222+22"
+  )
+  con <- DBI::dbConnect(duckdb::duckdb(shared_home = FALSE))
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  matches <- function(codes) {
+    DBI::dbGetQuery(
+      con,
+      "SELECT regexp_full_match(code, ?) AS ok FROM unnest(?) AS t(code)",
+      params = list(b$CNO_PLUS_CODE_PATTERN, list(codes))
+    )$ok
+  }
+
+  expect_identical(
+    setNames(matches(valid), valid),
+    setNames(rep(TRUE, length(valid)), valid)
+  )
+  expect_identical(
+    setNames(matches(invalid), invalid),
+    setNames(rep(FALSE, length(invalid)), invalid)
+  )
+})
