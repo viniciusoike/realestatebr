@@ -16,7 +16,7 @@
 - Every regional PDF above carries `(*) Dados preliminares sujeitos à revisão`; the index has no separate final regional PDF. [SNIC index](https://snic.org.br/numeros-da-industria.php), [2026 consumption PDF](https://snic.org.br/assets/pdf/numeros/1792582081.pdf).
 - The separate [preliminary-results index](https://snic.org.br/numeros-resultados-preliminares.php) lists monthly releases through September 2026, but the state PDFs stop at March 2026. The site gives no reliable state-PDF release schedule; update when a newly linked regional PDF adds months, not on an assumed monthly cadence.
 - The site footer says “© 2026 SNIC - Sindicato Nacional da Indústria do Cimento.” The index and six regional PDFs contain no explicit reuse licence or republication terms; this copyright notice does not grant redistribution rights. [SNIC index](https://snic.org.br/numeros-da-industria.php), [2026 production PDF](https://snic.org.br/assets/pdf/numeros/1792582103.pdf).
-- Direct `curl` and `httr::GET()` on this machine failed certificate validation (`unable to get local issuer certificate`). The probe used certificate bypass only to inspect the six downloaded PDFs; implementation must keep TLS verification and resolve the certificate/trust-chain problem before unattended refresh. [SNIC index](https://snic.org.br/numeros-da-industria.php).
+- Direct `curl` and `httr::GET()` on this machine failed certificate validation (`unable to get local issuer certificate`). The original probe used certificate bypass only to inspect six PDFs. A later `openssl s_client -connect snic.org.br:443 -servername snic.org.br -showcerts` check on 2026-10-23 found that the server sends its Let's Encrypt YR1 intermediate, but its leaf certificate expired on 2026-09-03. A pinned CA bundle cannot cure an expired leaf. The pipeline must fail with a clear `cli` error naming the expired certificate; PDF refresh stays blocked until SNIC renews it. Keep TLS verification on, without a bypass in package or pipeline code. The maintainer will notify SNIC alongside the permission request. [SNIC index](https://snic.org.br/numeros-da-industria.php).
 
 ## Extraction approach
 
@@ -50,6 +50,49 @@ The probe compared every available 2024–2025 month by state, regional adjustme
 - All 2024 PDF monthly region totals equal state values plus adjustments, and the five region totals equal Brazil; the same holds for 2025 and the three published 2026 months. The archive's region totals equal Brazil throughout, but missing state values prevent a state-level check for the 2014–2016 gap. [A03], [A04], [six regional PDFs](https://snic.org.br/numeros-da-industria.php).
 - This comparison proves at least one revision between the archived January 2025 production vintage and today's PDF. It cannot measure every intra-year revision because SNIC does not expose earlier PDF vintages on the current index. [A04], [SNIC index](https://snic.org.br/numeros-da-industria.php).
 
+## Comparability across the gap
+
+The table compares each state's and region's share of the Brazil consumption total in the two complete years before the monthly state gap (2012–2013) with the two complete years after it (2017–2018). Each share divides the two-year sum by the corresponding two-year Brazil sum; regional totals include their `Ajustes` rows. Values are percentage points of Brazil consumption, rounded to two decimals. [A03].
+
+| Geography | 2012–2013 | 2017–2018 | Change |
+| --- | ---: | ---: | ---: |
+| Rondônia | 1.25 | 0.73 | −0.52 |
+| Acre | 0.26 | 0.28 | +0.02 |
+| Amazonas | 1.45 | 0.97 | −0.48 |
+| Roraima | 0.16 | 0.17 | +0.01 |
+| Pará | 3.11 | 2.76 | −0.35 |
+| Amapá | 0.36 | 0.24 | −0.12 |
+| Tocantins | 0.74 | 0.84 | +0.10 |
+| **North** | **7.33** | **6.38** | **−0.95** |
+| Maranhão | 2.20 | 1.61 | −0.59 |
+| Piauí | 1.05 | 1.37 | +0.32 |
+| Ceará | 2.83 | 3.56 | +0.73 |
+| Rio Grande do Norte | 1.37 | 1.06 | −0.30 |
+| Paraíba | 1.66 | 1.40 | −0.26 |
+| Pernambuco | 4.07 | 3.24 | −0.83 |
+| Alagoas | 1.17 | 0.66 | −0.51 |
+| Sergipe | 0.88 | 0.79 | −0.09 |
+| Bahia | 5.47 | 5.68 | +0.20 |
+| **Northeast** | **21.36** | **22.64** | **+1.28** |
+| Minas Gerais | 10.24 | 9.76 | −0.48 |
+| Espírito Santo | 1.95 | 2.10 | +0.16 |
+| Rio de Janeiro | 6.84 | 4.38 | −2.46 |
+| São Paulo | 21.56 | 18.68 | −2.88 |
+| **Southeast** | **44.89** | **43.90** | **−0.99** |
+| Paraná | 6.49 | 7.07 | +0.58 |
+| Santa Catarina | 4.80 | 5.50 | +0.70 |
+| Rio Grande do Sul | 4.99 | 5.03 | +0.05 |
+| **South** | **16.66** | **17.71** | **+1.06** |
+| Mato Grosso do Sul | 1.45 | 1.63 | +0.18 |
+| Mato Grosso | 2.14 | 2.38 | +0.24 |
+| Goiás | 4.45 | 4.27 | −0.18 |
+| Distrito Federal | 1.72 | 1.08 | −0.64 |
+| **Center-West** | **9.76** | **9.36** | **−0.40** |
+
+The sum of `Ajustes` rises from 5.34% to 12.73% of Brazil consumption. The archive footnotes call unavailable monthly state values `...` and warn that reported values may be revised; they do not describe a switch in state attribution. SNIC's [2013 report](https://snic.org.br/assets/pdf/relatorio_anual/rel_anual_2013.pdf) and [2019 report](https://snic.org.br/assets/pdf/relatorio_anual/rel_anual_2019.pdf) retain the same annual apparent-consumption concept, and the 2019 report says estimates for non-member producers were also included in earlier reports. SNIC's [2012 report](https://snic.org.br/assets/pdf/relatorio_anual/rel_anual_2012.pdf) explicitly documents that practice before the gap. The annual reports give 2014–2016 state totals, including São Paulo's gradual decline from 15.089 million tonnes in 2013 to 15.017, 13.140, and 10.982 million tonnes in 2014–2016, but no monthly state observations to fill the archive gap. [A03], [2019 report](https://snic.org.br/assets/pdf/relatorio_anual/rel_anual_2019.pdf).
+
+**Conclusion:** The checked notes do not establish an origin-to-destination redefinition or a dated methodology break. The much larger unattributed estimate share makes state levels and shares across the monthly gap less comparable, even if part of the change reflects the market downturn. Preserve the published values and `Ajustes` separately, do not rescale states, and explain this uncertainty in the dataset help. [A03], [2019 report](https://snic.org.br/assets/pdf/relatorio_anual/rel_anual_2019.pdf).
+
 ## Splice rule
 
 - Use A03/A04 for available months through 2023-12; use current SNIC PDFs for every month from 2024-01. The full 2024 agreement supports this boundary, and the January 2025 production differences favor the current producer PDF. [A03], [A04], [2024 production](https://snic.org.br/assets/pdf/numeros/1752521165.pdf), [2025 production](https://snic.org.br/assets/pdf/numeros/1784570386.pdf).
@@ -74,13 +117,13 @@ Both `consumption` and `production` use the same fields; a `(date, geography_typ
 ## Delivery and caching
 
 - Default `get_dataset("cement")` to the published `cement_consumption.rds` release snapshot through the existing `source = "auto"` memo/cache path; map the companion to `cement_production.rds`. This avoids downloading and parsing PDFs on ordinary CRAN use. [get_dataset.R](../../R/get_dataset.R), [cache_github.R](../../R/cache_github.R), [datasets.yaml](../../inst/extdata/datasets.yaml).
-- Put the two original, checksummed workbooks under version-controlled `data-raw/cement/inputs/`; do not copy them into `inst/extdata` before the reuse decision. The pipeline can build both snapshots from those inputs and the live PDFs. This follows the tracked-input target pattern while keeping unverified redistribution out of the installed package. [FGV target](../../_targets.R), [ABECIP CGI target](../../_targets.R).
+- Keep the full archive workbooks outside git while reuse terms remain unresolved. The pipeline takes an explicit archive directory or the `realestatebr.cement_archive_dir` option at run time, validates the A03/A04 hashes above, and builds both snapshots from those inputs and verified SNIC PDFs. Commit only small test excerpts and source metadata. Do not copy full workbooks into `inst/extdata`. [A03], [A04].
 - Make `source = "fresh"` abort clearly in the first release; the archive lives outside the installed package, so an installed client cannot rebuild the full series. Add a true fresh path only after approved archive distribution in `inst/extdata`. Do not label a GitHub cache read as a fresh SNIC fetch. [get_dataset.R](../../R/get_dataset.R), [get_fgv_ibre.R](../../R/get_fgv_ibre.R).
 - Hold publication of derived snapshot assets until the maintainer resolves SNIC's unstated reuse terms and the archived-workbook redistribution rights. The site's copyright footer supplies no licence. [SNIC index](https://snic.org.br/numeros-da-industria.php), [A03], [A04].
 
 ## Files to add/change
 
-- Add the two archived inputs and a hash/provenance manifest in `data-raw/cement/inputs/`, an explicit-path PDF/index parser and archive reader plus cache getter in `R/get_cement.R`, and `pdftools` in DESCRIPTION Suggests. The pipeline passes input paths; installed users read the cache only. Reuse `rvest`/`xml2` for link discovery, `readxl` for archive sheets, `download_with_retry()` for retries, `fetch_github_release_asset()` for snapshots, and `cli` for failures. [DESCRIPTION](../../DESCRIPTION), [helpers_download.R](../../R/helpers_download.R), [cache_github.R](../../R/cache_github.R).
+- Add a hash/provenance manifest without the full archive workbooks, an explicit-path PDF/index parser and archive reader plus cache getter in `R/get_cement.R`, and `pdftools` in DESCRIPTION Suggests. The pipeline accepts a runtime archive path or `realestatebr.cement_archive_dir`; installed users read the cache only. Reuse `rvest`/`xml2` for link discovery, `readxl` for archive sheets, `download_with_retry()` for retries, `fetch_github_release_asset()` for snapshots, and `cli` for failures. [DESCRIPTION](../../DESCRIPTION), [helpers_download.R](../../R/helpers_download.R), [cache_github.R](../../R/cache_github.R).
 - Add the `cement` registry entry to `inst/extdata/datasets.yaml`, two file targets and validation in `_targets.R` / `data-raw/pipeline/`, and focused fixtures/tests under `tests/testthat/`. Review `R/get_dataset.R` only if the cache-only `fresh` behavior needs a new capability flag. [registry](../../inst/extdata/datasets.yaml), [pipeline](../../_targets.R), [tests](../../tests/testthat/).
 
 ## Test plan
@@ -89,13 +132,13 @@ Both `consumption` and `production` use the same fields; a `(date, geography_typ
 - Test archive parsing across 2003, 2004 fractional values, 2014–2016 missing states, 2024 full year, and 2025 January-only sheets. Assert `...` and blank never become zero. [A03], [A04].
 - Lock the 2024 exact overlap and January 2025 production revision anchors above; verify source precedence, unique keys, row annual totals, state-plus-adjustment regional totals, and region-to-Brazil totals. [A03], [A04], [2025 production](https://snic.org.br/assets/pdf/numeros/1784570386.pdf).
 - Feed changed month labels, extra/missing state, duplicated adjustment, malformed number, and broken totals to the parser; each must raise a named `cli::cli_abort()` error before a snapshot can be published.
-- Run focused tests, AIR on final R code, package tests, `R CMD check`, and a built-tarball inspection after implementation; this phase writes no code or tests. [DESCRIPTION](../../DESCRIPTION), [tests](../../tests/testthat/).
+- Phase 1 adds offline failing tests and runs AIR on the tests. After implementation, run focused and full package tests, `R CMD check`, and a built-tarball inspection before release. [DESCRIPTION](../../DESCRIPTION), [tests](../../tests/testthat/).
 
 ## Risks and open questions
 
-- **Coverage gate:** no checked source supplies monthly state values for 2014-03–2016-12. Decide whether a 34-month state gap is acceptable for the first release or obtain a verified monthly SNIC vintage. A01/A02 and the current national PDFs cannot reconstruct it. [A03], [A04], [A01], [A02], [SNIC monthly PDF](https://snic.org.br/assets/pdf/numeros/1792582071.pdf).
+- **Coverage:** ship explicit missing state rows for 2014-03–2016-12 and retain region/Brazil totals; document this gap in the dataset help. The annual reports supply annual state totals, but no checked source supplies the missing monthly state values. [A03], [A04], [2019 report](https://snic.org.br/assets/pdf/relatorio_anual/rel_anual_2019.pdf).
 - **Rights gate:** SNIC's public pages do not state a reuse licence. Seek written terms for derived snapshots and permission for the archived workbook inputs before republishing either. [SNIC index](https://snic.org.br/numeros-da-industria.php), [A03], [A04].
-- **Transport gate:** HTTPS validation failed in the probe environment. Confirm whether SNIC fixes its chain or the build environment needs a current CA bundle; never disable certificate checking in package code. [SNIC index](https://snic.org.br/numeros-da-industria.php).
+- **Transport gate:** SNIC's leaf certificate expired on 2026-09-03; `openssl s_client` shows the YR1 intermediate is present. The pipeline must fail with a clear `cli` error naming the expired certificate, and PDF refresh remains blocked until SNIC renews it. A pinned CA bundle cannot fix expiration. Keep verification on; the maintainer will report the certificate in the permission email. [SNIC index](https://snic.org.br/numeros-da-industria.php).
 - **Vintage risk:** PDF URLs and values may change without a dated release note. Record hashes and retrieval dates, and reject a year that loses already-published months. [SNIC index](https://snic.org.br/numeros-da-industria.php), [A04].
 
 [A01]: /Users/viniciusreginatto/GitHub/realestatebr/data-raw/backlog/CBIC/tabela_07.A.01_5.xlsx
