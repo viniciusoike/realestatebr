@@ -28,21 +28,6 @@ build_cement_snapshot <- function(
     cli::cli_abort("Install {.pkg pdftools} to parse the SNIC regional PDFs.")
   }
 
-  sha256 <- function(path) {
-    command <- if (nzchar(Sys.which("shasum"))) "shasum" else "sha256sum"
-    args <- if (command == "shasum") c("-a", "256", path) else path
-    result <- suppressWarnings(system2(
-      command,
-      args,
-      stdout = TRUE,
-      stderr = TRUE
-    ))
-    if (length(result) != 1L || !grepl("^[a-f0-9]{64} ", result)) {
-      cli::cli_abort("Could not compute SHA-256 for {.file {path}}.")
-    }
-    return(substr(result, 1L, 64L))
-  }
-
   index_url <- "https://snic.org.br/numeros-da-industria.php"
   if (is.null(index_file)) {
     response <- tryCatch(
@@ -98,7 +83,9 @@ build_cement_snapshot <- function(
       pattern = spec$pattern,
       full.names = TRUE
     )
-    if (length(archive_path) != 1L || sha256(archive_path) != spec$hash) {
+    if (
+      length(archive_path) != 1L || cement_sha256(archive_path) != spec$hash
+    ) {
       cli::cli_abort(
         "Cement {.val {concept}} archive file or SHA-256 differs from the approved source."
       )
@@ -142,18 +129,24 @@ build_cement_snapshot <- function(
           "SNIC regional PDF {.file {pdf_path}} must have one page."
         )
       }
-      pdf_parts[[i]] <- parse_cement_pdf(pages[[1]])
+      pdf_parts[[i]] <- parse_cement_pdf(
+        pages[[1]],
+        concept = concept,
+        year = year
+      )
       manifest[[length(manifest) + 1L]] <- tibble::tibble(
         concept = concept,
         kind = "snic_pdf",
         year = year,
         source_url = url,
         retrieved_date = as.character(pdf_retrieved_date),
-        sha256 = sha256(pdf_path)
+        sha256 = cement_sha256(pdf_path)
       )
       if (is.null(pdf_dir)) unlink(pdf_path)
     }
     pdf <- dplyr::bind_rows(pdf_parts)
+    validate_cement_pdf_coverage(pdf)
+    validate_cement_observed_values(archive, pdf, concept)
     diff <- compare_cement_overlap(archive, pdf)
     diff$concept <- concept
     differences[[concept]] <- diff
@@ -172,33 +165,11 @@ build_cement_snapshot <- function(
     )
   }
 
-  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
-  for (concept in names(snapshots)) {
-    destination <- file.path(output_dir, paste0("cement_", concept, ".rds"))
-    if (file.exists(destination)) {
-      old <- readRDS(destination)
-      old_months <- old$date[old$geography_type == "brazil" & !is.na(old$value)]
-      new <- snapshots[[concept]]
-      new_months <- new$date[new$geography_type == "brazil" & !is.na(new$value)]
-      if (!all(old_months %in% new_months)) {
-        cli::cli_abort(
-          "SNIC {.val {concept}} refresh lost an already-published month."
-        )
-      }
-    }
-    temporary <- tempfile(tmpdir = output_dir, fileext = ".rds")
-    saveRDS(snapshots[[concept]], temporary, compress = "xz")
-    if (!file.rename(temporary, destination)) {
-      cli::cli_abort("Could not replace {.file {destination}}.")
-    }
-  }
-  readr::write_csv(
+  publish_cement_snapshots(
+    snapshots,
+    output_dir,
     dplyr::bind_rows(manifest),
-    file.path(output_dir, "cement_sources.csv")
-  )
-  readr::write_csv(
-    dplyr::bind_rows(differences),
-    file.path(output_dir, "cement_overlap_diff.csv")
+    dplyr::bind_rows(differences)
   )
   return(invisible(snapshots))
 }

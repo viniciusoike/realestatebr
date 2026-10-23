@@ -159,6 +159,159 @@ test_that("2025 PDF parsers preserve complete geography and monthly schema", {
   }
 })
 
+test_that("PDF identity matches the requested concept and year", {
+  consumption <- cement_text_fixture("consumption_2025.txt")
+  production <- cement_text_fixture("production_2025.txt")
+  expect_no_error(parse_cement_pdf(
+    consumption,
+    concept = "consumption",
+    year = 2025L
+  ))
+  expect_error(
+    parse_cement_pdf(production, concept = "consumption", year = 2025L),
+    "concept|title|consumption",
+    class = "rlang_error"
+  )
+  expect_error(
+    parse_cement_pdf(consumption, concept = "consumption", year = 2026L),
+    "year|2026",
+    class = "rlang_error"
+  )
+})
+
+test_that("PDF coverage rejects a lost historical month in a new snapshot", {
+  pdf <- dplyr::bind_rows(
+    parse_cement_pdf(cement_text_fixture("consumption_2024.txt")),
+    parse_cement_pdf(cement_text_fixture("consumption_2025.txt"))
+  )
+  pdf$value[pdf$date == as.Date("2024-12-01")] <- NA_real_
+  expect_error(
+    validate_cement_pdf_coverage(pdf),
+    "month|coverage|December|2024",
+    class = "rlang_error"
+  )
+})
+
+test_that("overlap flags missing values and published cells cannot disappear", {
+  archive <- read_cement_archive(
+    cement_archive_fixture("consumption"),
+    concept = "consumption",
+    years = 2024L
+  )
+  pdf <- parse_cement_pdf(cement_text_fixture("consumption_2024.txt"))
+  pdf$value[pdf$date == as.Date("2024-12-01")] <- NA_real_
+  expect_equal(nrow(compare_cement_overlap(archive, pdf)), 37L)
+  expect_error(
+    validate_cement_observed_values(archive, pdf, "consumption"),
+    "lost|missing|published",
+    class = "rlang_error"
+  )
+})
+
+test_that("missing aggregate totals cannot hide observed components", {
+  dat <- parse_cement_pdf(cement_text_fixture("consumption_2025.txt"))
+  brazil_missing <- dat
+  brazil_missing$value[
+    brazil_missing$date == as.Date("2025-01-01") &
+      brazil_missing$geography_type == "brazil"
+  ] <- NA_real_
+  expect_error(
+    validate_cement_data(brazil_missing),
+    "Brazil|total|missing",
+    class = "rlang_error"
+  )
+
+  region_missing <- dat
+  region_missing$value[
+    region_missing$date == as.Date("2025-01-01") &
+      region_missing$geography_type == "region" &
+      region_missing$code_region == 1L
+  ] <- NA_real_
+  expect_error(
+    validate_cement_data(region_missing),
+    "region|total|missing",
+    class = "rlang_error"
+  )
+})
+
+test_that("wholly missing historical months cannot pass validation", {
+  dat <- dplyr::bind_rows(
+    parse_cement_pdf(cement_text_fixture("consumption_2024.txt")),
+    parse_cement_pdf(cement_text_fixture("consumption_2025.txt"))
+  )
+  dat$value[dat$date == as.Date("2024-12-01")] <- NA_real_
+  expect_error(
+    validate_cement_data(dat),
+    "historical month|missing|coverage",
+    class = "rlang_error"
+  )
+
+  future <- parse_cement_pdf(cement_text_fixture("consumption_2025.txt"))
+  future$value[future$date == as.Date("2025-12-01")] <- NA_real_
+  expect_no_error(validate_cement_data(future))
+})
+
+test_that("failed second-table refresh leaves every existing output unchanged", {
+  destination <- tempfile("cement-snapshot-")
+  dir.create(destination)
+  on.exit(unlink(destination, recursive = TRUE), add = TRUE)
+  old <- list(
+    consumption = parse_cement_pdf(cement_text_fixture("consumption_2025.txt")),
+    production = parse_cement_pdf(cement_text_fixture("production_2025.txt"))
+  )
+  new <- old
+  new$consumption$source_kind <- "refreshed"
+  new$production$value[
+    new$production$date == as.Date("2025-01-01") &
+      new$production$geography_type == "brazil"
+  ] <- NA_real_
+  for (concept in names(old)) {
+    saveRDS(
+      old[[concept]],
+      file.path(destination, paste0("cement_", concept, ".rds"))
+    )
+  }
+  readr::write_csv(
+    data.frame(source = "old"),
+    file.path(destination, "cement_sources.csv")
+  )
+  readr::write_csv(
+    data.frame(change = "old"),
+    file.path(destination, "cement_overlap_diff.csv")
+  )
+  before <- tools::md5sum(list.files(destination, full.names = TRUE))
+  expect_error(
+    publish_cement_snapshots(
+      new,
+      destination,
+      data.frame(source = "new"),
+      data.frame(change = "new")
+    ),
+    "production.*lost|production.*missing|production.*published",
+    class = "rlang_error"
+  )
+  expect_identical(tools::md5sum(names(before)), before)
+})
+
+test_that("snapshot hashes accept paths containing spaces", {
+  skip_on_os("windows")
+  path <- tempfile("cement hash ")
+  writeBin(charToRaw("cement"), path)
+  on.exit(unlink(path), add = TRUE)
+  expect_match(cement_sha256(path), "^[a-f0-9]{64}$")
+})
+
+test_that("cement help renders the complete comparability warning", {
+  help_file <- testthat::test_path("..", "..", "man", "cement.Rd")
+  topic <- if (file.exists(help_file)) {
+    help_file
+  } else {
+    utils:::.getHelpFile(utils::help("cement", package = "realestatebr"))
+  }
+  rendered <- paste(capture.output(tools::Rd2txt(topic)), collapse = "\n")
+  expect_match(rendered, "5% to about 13% of Brazil consumption", fixed = TRUE)
+})
+
 test_that("PDF numbers, adjustment placement, and dashes retain source meaning", {
   consumption <- parse_cement_pdf(cement_text_fixture("consumption_2025.txt"))
   production <- parse_cement_pdf(cement_text_fixture("production_2025.txt"))
@@ -275,7 +428,11 @@ test_that("January 2025 production revisions are not masked by the archive", {
   pdf <- parse_cement_pdf(cement_text_fixture("production_2025.txt"))
   changes <- compare_cement_overlap(archive, pdf)
 
-  expect_equal(nrow(changes), 5L)
+  observed_changes <- changes[
+    !is.na(changes$archive_value) & !is.na(changes$pdf_value),
+  ]
+  expect_equal(nrow(observed_changes), 5L)
+  expect_equal(nrow(changes), 368L)
   expect_equal(
     cement_cell(archive, "2025-01-01", "state", 2L, 23L)$value,
     272197

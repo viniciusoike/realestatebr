@@ -208,7 +208,7 @@ resolve_snic_pdf_url <- function(index_html, label, index_url) {
   return(url)
 }
 
-parse_cement_pdf <- function(text) {
+parse_cement_pdf <- function(text, concept = NULL, year = NULL) {
   lines <- trimws(strsplit(gsub("\\f", "", text), "\\n")[[1]])
   title <- lines[grepl(
     "^CONSUMO APARENTE DE CIMENTO|^PRODU\u00C7\u00C3O NACIONAL DE CIMENTO",
@@ -219,11 +219,29 @@ parse_cement_pdf <- function(text) {
   ) {
     cli::cli_abort("Unexpected SNIC cement PDF title or layout.")
   }
+  if (!is.null(concept)) {
+    expected_title <- switch(
+      concept,
+      consumption = "CONSUMO APARENTE DE CIMENTO",
+      production = "PRODU\u00C7\u00C3O NACIONAL DE CIMENTO",
+      cli::cli_abort("Unknown cement concept {.val {concept}}.")
+    )
+    if (!startsWith(title, expected_title)) {
+      cli::cli_abort(
+        "SNIC PDF title does not match requested {.val {concept}} concept."
+      )
+    }
+  }
   year_line <- lines[grepl("^20[0-9]{2}\\*$", lines)]
   if (length(year_line) != 1L) {
     cli::cli_abort("Unexpected SNIC PDF year title.")
   }
-  year <- as.integer(sub("\\*$", "", year_line))
+  parsed_year <- as.integer(sub("\\*$", "", year_line))
+  if (!is.null(year) && parsed_year != year) {
+    cli::cli_abort(
+      "SNIC PDF year {parsed_year} does not match requested {year}."
+    )
+  }
   header <- lines[grepl("^REGI\u00D5ES E ESTADOS", lines)]
   if (length(header) != 1L) {
     cli::cli_abort("Missing SNIC PDF month header.")
@@ -269,7 +287,7 @@ parse_cement_pdf <- function(text) {
       )
     }
     output[[i]] <- cement_row(
-      year,
+      parsed_year,
       label,
       values[1:12],
       "snic_pdf",
@@ -278,7 +296,7 @@ parse_cement_pdf <- function(text) {
   }
   dat <- dplyr::bind_rows(output)
   counts <- table(factor(
-    dat$geography_type[dat$date == as.Date(sprintf("%d-01-01", year))],
+    dat$geography_type[dat$date == as.Date(sprintf("%d-01-01", parsed_year))],
     levels = c("state", "adjustment", "region", "brazil")
   ))
   if (!identical(as.integer(counts), c(27L, 4L, 5L, 1L))) {
@@ -389,10 +407,59 @@ compare_cement_overlap <- function(archive, pdf) {
   )
   return(dplyr::filter(
     joined,
-    !is.na(.data$archive_value),
-    !is.na(.data$pdf_value),
-    .data$archive_value != .data$pdf_value
+    xor(is.na(.data$archive_value), is.na(.data$pdf_value)) |
+      (!is.na(.data$archive_value) &
+        !is.na(.data$pdf_value) &
+        .data$archive_value != .data$pdf_value)
   ))
+}
+
+validate_cement_pdf_coverage <- function(pdf) {
+  years <- unique(as.integer(format(pdf$date, "%Y")))
+  for (year in years) {
+    year_rows <- pdf[format(pdf$date, "%Y") == year, ]
+    brazil <- year_rows[year_rows$geography_type == "brazil", ]
+    observed <- brazil$date[!is.na(brazil$value)]
+    if (length(observed) == 0L) {
+      cli::cli_abort("SNIC PDF {year} has no observed Brazil month.")
+    }
+    covered <- if (year < max(years)) {
+      seq(
+        as.Date(sprintf("%d-01-01", year)),
+        as.Date(sprintf("%d-12-01", year)),
+        by = "month"
+      )
+    } else {
+      seq(min(observed), max(observed), by = "month")
+    }
+    for (date in as.list(covered)) {
+      month <- year_rows[year_rows$date == date, ]
+      totals <- month$value[month$geography_type %in% c("brazil", "region")]
+      if (length(totals) != 6L || anyNA(totals)) {
+        cli::cli_abort(
+          "SNIC PDF {year} month {date} lost Brazil or region coverage."
+        )
+      }
+    }
+  }
+  return(invisible(pdf))
+}
+
+validate_cement_observed_values <- function(previous, current, concept) {
+  keys <- c("date", "geography_type", "code_region", "code_state")
+  previous <- previous[previous$date >= as.Date("2024-01-01"), ]
+  current <- current[current$date >= as.Date("2024-01-01"), ]
+  joined <- dplyr::left_join(
+    dplyr::select(previous, dplyr::all_of(keys), previous_value = "value"),
+    dplyr::select(current, dplyr::all_of(keys), current_value = "value"),
+    by = keys
+  )
+  if (any(!is.na(joined$previous_value) & is.na(joined$current_value))) {
+    cli::cli_abort(
+      "SNIC {.val {concept}} refresh lost an already-published value."
+    )
+  }
+  return(invisible(current))
 }
 
 splice_cement_sources <- function(archive, pdf) {
@@ -409,10 +476,20 @@ validate_cement_data <- function(data) {
   if (anyDuplicated(data[keys])) {
     cli::cli_abort("Cement data have a duplicate geography/date key.")
   }
-  for (date in unique(data$date)) {
+  observed_dates <- data$date[!is.na(data$value)]
+  if (length(observed_dates) == 0L) {
+    cli::cli_abort("Cement data have no observed month.")
+  }
+  last_observed <- max(observed_dates)
+  for (date in as.list(unique(data$date))) {
     month <- data[data$date == date, ]
     if (sum(month$geography_type == "state") != 27L) {
       cli::cli_abort("Cement data must include 27 state rows per month.")
+    }
+    if (all(is.na(month$value)) && date <= last_observed) {
+      cli::cli_abort(
+        "Cement historical month {date} is missing all observations."
+      )
     }
     for (region in 1:5) {
       states <- month$value[
@@ -427,6 +504,11 @@ validate_cement_data <- function(data) {
       if (length(total) != 1L) {
         cli::cli_abort("Missing cement region total.")
       }
+      if (is.na(total) && any(!is.na(c(states, adjustments)))) {
+        cli::cli_abort(
+          "Cement region total is missing despite observed components on {date}."
+        )
+      }
       if (
         !is.na(total) &&
           any(!is.na(states)) &&
@@ -440,6 +522,11 @@ validate_cement_data <- function(data) {
     if (length(brazil) != 1L || length(regions) != 5L) {
       cli::cli_abort("Missing Brazil or region total.")
     }
+    if (is.na(brazil) && any(!is.na(regions))) {
+      cli::cli_abort(
+        "Cement Brazil total is missing despite observed regions on {date}."
+      )
+    }
     if (
       !is.na(brazil) &&
         (any(is.na(regions)) || abs(sum(regions) - brazil) > 0.001)
@@ -448,6 +535,98 @@ validate_cement_data <- function(data) {
     }
   }
   return(invisible(data))
+}
+
+cement_sha256 <- function(path) {
+  command <- if (nzchar(Sys.which("shasum"))) "shasum" else "sha256sum"
+  args <- if (command == "shasum") {
+    c("-a", "256", shQuote(path))
+  } else {
+    shQuote(path)
+  }
+  result <- suppressWarnings(system2(
+    command,
+    args,
+    stdout = TRUE,
+    stderr = TRUE
+  ))
+  if (length(result) != 1L || !grepl("^[a-f0-9]{64} ", result)) {
+    cli::cli_abort("Could not compute SHA-256 for {.file {path}}.")
+  }
+  return(substr(result, 1L, 64L))
+}
+
+publish_cement_snapshots <- function(
+  snapshots,
+  output_dir,
+  manifest,
+  differences
+) {
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+  destinations <- c(
+    vapply(
+      names(snapshots),
+      function(concept) {
+        file.path(output_dir, paste0("cement_", concept, ".rds"))
+      },
+      character(1)
+    ),
+    sources = file.path(output_dir, "cement_sources.csv"),
+    overlap = file.path(output_dir, "cement_overlap_diff.csv")
+  )
+  for (concept in names(snapshots)) {
+    destination <- destinations[[concept]]
+    if (file.exists(destination)) {
+      validate_cement_observed_values(
+        readRDS(destination),
+        snapshots[[concept]],
+        concept
+      )
+    }
+  }
+
+  temporary <- vapply(
+    destinations,
+    function(path) {
+      tempfile(tmpdir = output_dir, fileext = ".tmp")
+    },
+    character(1)
+  )
+  backups <- vapply(
+    destinations,
+    function(path) {
+      tempfile(tmpdir = output_dir, fileext = ".bak")
+    },
+    character(1)
+  )
+  on.exit(unlink(c(temporary, backups)), add = TRUE)
+  for (concept in names(snapshots)) {
+    saveRDS(snapshots[[concept]], temporary[[concept]], compress = "xz")
+  }
+  readr::write_csv(manifest, temporary[["sources"]])
+  readr::write_csv(differences, temporary[["overlap"]])
+
+  existed <- file.exists(destinations)
+  for (i in which(existed)) {
+    if (!file.copy(destinations[[i]], backups[[i]])) {
+      cli::cli_abort("Could not back up {.file {destinations[[i]]}}.")
+    }
+  }
+  replaced <- integer()
+  for (i in seq_along(destinations)) {
+    if (!file.rename(temporary[[i]], destinations[[i]])) {
+      for (j in replaced) {
+        if (existed[[j]]) {
+          file.copy(backups[[j]], destinations[[j]], overwrite = TRUE)
+        } else {
+          unlink(destinations[[j]])
+        }
+      }
+      cli::cli_abort("Could not replace {.file {destinations[[i]]}}.")
+    }
+    replaced <- c(replaced, i)
+  }
+  return(invisible(destinations))
 }
 
 download_cement_pdf <- function(url, destfile, download = NULL) {

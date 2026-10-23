@@ -86,6 +86,7 @@ Other datasets:
 \code{\link{abecip}},
 \code{\link{bcb_realestate}},
 \code{\link{bcb_series}},
+\code{\link{cement}},
 \code{\link{cno}},
 \code{\link{fgv_ibre}},
 \code{\link{mcmv}},

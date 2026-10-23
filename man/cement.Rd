@@ -30,7 +30,7 @@ cement_production <- get_dataset("cement", table = "production")
 Ajustes are regional estimates not attributed to states. State values are
 missing from March 2014 through December 2016, although region and Brazil
 totals remain. Across this gap, state comparisons are uncertain because the
-unattributed Ajustes share rose from about 5\\% to about 13\\% of Brazil
+unattributed Ajustes share rose from about 5\% to about 13\% of Brazil
 consumption. Preliminary values are subject to revision. The archive and
 PDFs have no stated redistribution licence; snapshots must not be published
 until rights are cleared.
