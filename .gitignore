@@ -116,3 +116,7 @@ data-raw/mcmv_source/
 
 # SICONFI FINBRA bulk files (downloaded manually, never in version control)
 data-raw/siconfi/finbra/
+
+# SICONFI build outputs: snapshot RDS, coverage manifests, API checkpoints
+data-raw/siconfi/output/
+data-raw/siconfi/checkpoints/
