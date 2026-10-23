@@ -1,5 +1,7 @@
 # realestatebr (development version)
 
+* Added `get_dataset("siconfi_taxes")`, annual municipal IPTU and ITBI revenue in nominal BRL from SICONFI/FINBRA DCA Annex I-C for 2013-latest, with the 2018 account-vintage break marked by `account_scope`, non-reporting municipalities kept as `reported = FALSE` rows, and missing deductions left to `NA` rather than zero.
+
 * Fixed SECOVI year assignment and preserved partially missing ABECIP months and Abrainc series in their original spreadsheet positions.
 * Fixed fresh BCB real estate category tables to return the documented long format used by cached tables, preserving all matching series.
 * Fixed date filters to report unparseable observation dates instead of returning unfiltered data.

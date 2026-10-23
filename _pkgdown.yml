@@ -38,6 +38,7 @@ reference:
       - rppi_bis
       - secovi
       - sinapi
+      - siconfi_taxes
   - title: "Bundled tables"
     desc: "Auxiliary data shipped with the package"
     contents:
