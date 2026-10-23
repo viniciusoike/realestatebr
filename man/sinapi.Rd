@@ -61,7 +61,8 @@ Other datasets:
 \code{\link{pnad_housing}},
 \code{\link{rppi}},
 \code{\link{rppi_bis}},
-\code{\link{secovi}}
+\code{\link{secovi}},
+\code{\link{siconfi_taxes}}
 }
 \concept{datasets}
 \keyword{datasets}

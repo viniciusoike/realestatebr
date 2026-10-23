@@ -709,6 +709,38 @@ datasets:
     update_schedule: "weekly"
     warn_after_days: 14
 
+  siconfi_taxes:
+    name: "Municipal IPTU and ITBI Tax Revenue"
+    name_pt: "Arrecadação Municipal de IPTU e ITBI"
+    description: "Annual municipal IPTU and ITBI revenue in nominal BRL from SICONFI/FINBRA DCA Annex I-C, 2013-present, with the 2018 account-vintage break marked by account_scope"
+    source: "Tesouro Nacional - SICONFI (DCA, Anexo I-C) and FINBRA bulk files"
+    url: "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/entes"
+    geography: "Brazilian municipalities"
+    frequency: "annual"
+    coverage: "2013-latest closed year"
+    update_schedule: "annual"
+    warn_after_days: 400
+    columns:
+      code_muni: "Seven-digit IBGE municipality code, geobr-compatible."
+      abbrev_state: "Two-letter state abbreviation as published by the source."
+      year: "Exercise year, 2013 to the latest closed year."
+      tax: "Tax identifier: iptu or itbi."
+      reported: "TRUE when the municipality appears in that year's data (FINBRA file or API refresh); non-reporters keep one NA row per tax."
+      value_status: "observed (tax row present), missing_tax_row (the municipality reported but this tax has no gross row), or non_reporter (absent from the year's data)."
+      gross_revenue: "Realized gross tax-account value in nominal BRL; NA when the tax row is absent."
+      other_deductions: "Non-FUNDEB, non-transfer tax deductions in nominal BRL; NA when the deduction row is absent (missing deductions never prove zero)."
+      net_revenue: "Gross revenue minus deductions, rounded to cents; NA when either side is NA."
+      account_scope: "Account-vintage scope: legacy_line (IPTU and ITBI shown on separate account lines) through 2017, tax_family (post-2018 PCASP parents that fold in fines and old-debt lines) from 2018. Do not build a single constant-scope series across 2017-2018."
+      source: "Row provenance: finbra (bulk-file history) or api (SICONFI API refresh of the latest years); NA for non-reporter rows."
+    data_type: "tibble"
+    cached_file: "siconfi_taxes.rds"
+    # dataset_function is deliberately absent (cache-only): get_dataset()
+    # must abort on source="fresh" and never rebuild from source="auto".
+    # build_siconfi_taxes() below is the pipeline-side builder, wired in
+    # data-raw/siconfi/build_snapshot.R.
+    internal_function: "build_siconfi_taxes"
+    translation_notes: "This dataset is cache-only: it is rebuilt by data-raw/siconfi/build_snapshot.R from the maintainer's local FINBRA bulk files (never in the repository) plus an API refresh of the latest years, so source='fresh' and the fresh half of source='auto' do not apply. Values are nominal BRL with a decimal-comma source parsed to the cent; the 2013 FINBRA files include municipalities that filed QDCC instead of DCA (São Paulo among them), accepted as published. The 2018 PCASP recode folds fines and old-debt lines into the tax parents, so the pre-2018 tax line is not comparable with the post-2018 tax family; account_scope marks the break and no cross-break total is reconstructed. FUNDEB and constitutional-transfer deduction columns never feed the tax deductions. Municipalities absent from a year's FINBRA file appear as non-reporters with reported=FALSE and NA values."
+
   cno:
     name: "National Registry of Construction Works"
     name_pt: "Cadastro Nacional de Obras"
