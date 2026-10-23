@@ -1,0 +1,74 @@
+{
+  "hasMore": false,
+  "limit": 4,
+  "offset": 0,
+  "count": 4,
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://host-5hrds-scan.prosubnet.vcndados.oraclevcn.com/ords/cdwhprd/siconfi/tt/dca?an_exercicio=2017&no_anexo=DCA-Anexo+I-C&id_ente=3550308"
+    },
+    {
+      "rel": "describedby",
+      "href": "https://host-5hrds-scan.prosubnet.vcndados.oraclevcn.com/ords/cdwhprd/siconfi/metadata-catalog/tt/item"
+    },
+    {
+      "rel": "first",
+      "href": "https://host-5hrds-scan.prosubnet.vcndados.oraclevcn.com/ords/cdwhprd/siconfi/tt/dca?an_exercicio=2017&no_anexo=DCA-Anexo+I-C&id_ente=3550308&limit=1000"
+    }
+  ],
+  "items": [
+    {
+      "exercicio": 2017,
+      "instituicao": "Prefeitura Municipal de São Paulo - SP",
+      "cod_ibge": 3550308,
+      "uf": "SP",
+      "anexo": "DCA-Anexo I-C",
+      "rotulo": "Padrão",
+      "coluna": "Receitas Brutas Realizadas",
+      "cod_conta": "RO1.1.1.2.02.00.00",
+      "conta": "1.1.1.2.02.00.00 - Imposto sobre a Propriedade Predial e Territorial Urbana ¿ IPTU",
+      "valor": 8391325245.3,
+      "populacao": 12038175
+    },
+    {
+      "exercicio": 2017,
+      "instituicao": "Prefeitura Municipal de São Paulo - SP",
+      "cod_ibge": 3550308,
+      "uf": "SP",
+      "anexo": "DCA-Anexo I-C",
+      "rotulo": "Padrão",
+      "coluna": "Outras Deduções da Receita",
+      "cod_conta": "RO1.1.1.2.02.00.00",
+      "conta": "1.1.1.2.02.00.00 - Imposto sobre a Propriedade Predial e Territorial Urbana ¿ IPTU",
+      "valor": 127872602.67,
+      "populacao": 12038175
+    },
+    {
+      "exercicio": 2017,
+      "instituicao": "Prefeitura Municipal de São Paulo - SP",
+      "cod_ibge": 3550308,
+      "uf": "SP",
+      "anexo": "DCA-Anexo I-C",
+      "rotulo": "Padrão",
+      "coluna": "Receitas Brutas Realizadas",
+      "cod_conta": "RO1.1.1.2.08.00.00",
+      "conta": "1.1.1.2.08.00.00 - Imposto sobre Transmissão \"Inter Vivos\" de Bens Imóveis e de Direitos Reais sobre Imóveis ¿ ITBI",
+      "valor": 1842891549.55,
+      "populacao": 12038175
+    },
+    {
+      "exercicio": 2017,
+      "instituicao": "Prefeitura Municipal de São Paulo - SP",
+      "cod_ibge": 3550308,
+      "uf": "SP",
+      "anexo": "DCA-Anexo I-C",
+      "rotulo": "Padrão",
+      "coluna": "Outras Deduções da Receita",
+      "cod_conta": "RO1.1.1.2.08.00.00",
+      "conta": "1.1.1.2.08.00.00 - Imposto sobre Transmissão \"Inter Vivos\" de Bens Imóveis e de Direitos Reais sobre Imóveis ¿ ITBI",
+      "valor": 2444356.68,
+      "populacao": 12038175
+    }
+  ]
+}

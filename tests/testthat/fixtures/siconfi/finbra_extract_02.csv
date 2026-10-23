@@ -1,0 +1,14 @@
+Exercício: 2017
+Escopo: Municípios
+Tabela: Receitas Orçamentárias (Anexo I-C)
+Instituição;Cod.IBGE;UF;População;Coluna;Conta;Identificador da Conta;Valor
+Prefeitura Municipal de Canudos do Vale - RS;4304614;RS;1823;"Receitas Brutas Realizadas";"1.1.1.2.02.00.00 - Imposto sobre a Propriedade Predial e Territorial Urbana ¿ IPTU";"siconfi-cor_RO1.1.1.2.02.00.00";60438,2
+Prefeitura Municipal de Canudos do Vale - RS;4304614;RS;1823;"Receitas Brutas Realizadas";"1.1.1.2.08.00.00 - Imposto sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis ¿ ITBI";"siconfi-cor_RO1.1.1.2.08.00.00";16280,00
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12038175;"Receitas Brutas Realizadas";"1.1.1.2.02.00.00 - Imposto sobre a Propriedade Predial e Territorial Urbana ¿ IPTU";"siconfi-cor_RO1.1.1.2.02.00.00";8391325245,3
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12038175;"Receitas Brutas Realizadas";"1.1.1.2.08.00.00 - Imposto sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis ¿ ITBI";"siconfi-cor_RO1.1.1.2.08.00.00";1842891549,55
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12038175;"Outras Deduções da Receita";"1.1.1.2.02.00.00 - Imposto sobre a Propriedade Predial e Territorial Urbana ¿ IPTU";"siconfi-cor_RO1.1.1.2.02.00.00";127872602,67
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12038175;"Outras Deduções da Receita";"1.1.1.2.08.00.00 - Imposto sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis ¿ ITBI";"siconfi-cor_RO1.1.1.2.08.00.00";2444356,68
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6498837;"Receitas Brutas Realizadas";"1.1.1.2.02.00.00 - Imposto sobre a Propriedade Predial e Territorial Urbana ¿ IPTU";"siconfi-cor_RO1.1.1.2.02.00.00";2482263502,05
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6498837;"Receitas Brutas Realizadas";"1.1.1.2.08.00.00 - Imposto sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis ¿ ITBI";"siconfi-cor_RO1.1.1.2.08.00.00";655290000,06
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6498837;"Outras Deduções da Receita";"1.1.1.2.02.00.00 - Imposto sobre a Propriedade Predial e Territorial Urbana ¿ IPTU";"siconfi-cor_RO1.1.1.2.02.00.00";5753178,48
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6498837;"Outras Deduções da Receita";"1.1.1.2.08.00.00 - Imposto sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis ¿ ITBI";"siconfi-cor_RO1.1.1.2.08.00.00";7424161,05
