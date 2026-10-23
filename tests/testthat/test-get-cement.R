@@ -293,6 +293,134 @@ test_that("failed second-table refresh leaves every existing output unchanged", 
   expect_identical(tools::md5sum(names(before)), before)
 })
 
+test_that("rename warnings roll back every existing snapshot with warn = 2", {
+  destination <- tempfile("cement-rename-")
+  dir.create(destination)
+  on.exit(unlink(destination, recursive = TRUE), add = TRUE)
+
+  old <- list(
+    consumption = parse_cement_pdf(cement_text_fixture("consumption_2025.txt")),
+    production = parse_cement_pdf(cement_text_fixture("production_2025.txt"))
+  )
+  for (concept in names(old)) {
+    saveRDS(
+      old[[concept]],
+      file.path(destination, paste0("cement_", concept, ".rds"))
+    )
+  }
+  readr::write_csv(
+    data.frame(source = "old"),
+    file.path(destination, "cement_sources.csv")
+  )
+  readr::write_csv(
+    data.frame(change = "old"),
+    file.path(destination, "cement_overlap_diff.csv")
+  )
+  paths <- list.files(destination, full.names = TRUE)
+  before <- lapply(paths, function(path) {
+    readBin(path, what = "raw", n = file.info(path)$size)
+  })
+
+  refreshed <- old
+  refreshed$consumption$source_kind <- "refreshed"
+  refreshed$production$source_kind <- "refreshed"
+  rename <- base::file.rename
+  rename_calls <- 0L
+  local_mocked_bindings(
+    file.rename = function(from, to) {
+      rename_calls <<- rename_calls + 1L
+      if (rename_calls == 2L) {
+        warning("simulated rename failure")
+        return(FALSE)
+      }
+      return(rename(from, to))
+    },
+    .package = "base"
+  )
+  withr::local_options(warn = 2)
+
+  expect_error(
+    publish_cement_snapshots(
+      refreshed,
+      destination,
+      data.frame(source = "new"),
+      data.frame(change = "new")
+    ),
+    "Could not replace",
+    class = "rlang_error"
+  )
+  expect_identical(rename_calls, 2L)
+  for (i in seq_along(paths)) {
+    expect_identical(
+      readBin(paths[[i]], what = "raw", n = file.info(paths[[i]])$size),
+      before[[i]]
+    )
+  }
+  expect_identical(sort(list.files(destination)), sort(basename(paths)))
+})
+
+test_that("incomplete snapshot rollback keeps backups and names them", {
+  destination <- tempfile("cement-rollback-")
+  dir.create(destination)
+  on.exit(unlink(destination, recursive = TRUE), add = TRUE)
+
+  old <- list(
+    consumption = parse_cement_pdf(cement_text_fixture("consumption_2025.txt")),
+    production = parse_cement_pdf(cement_text_fixture("production_2025.txt"))
+  )
+  for (concept in names(old)) {
+    saveRDS(
+      old[[concept]],
+      file.path(destination, paste0("cement_", concept, ".rds"))
+    )
+  }
+  original_hashes <- tools::md5sum(list.files(destination, full.names = TRUE))
+  refreshed <- old
+  refreshed$consumption$source_kind <- "refreshed"
+  refreshed$production$source_kind <- "refreshed"
+  rename <- base::file.rename
+  copy <- base::file.copy
+  rename_calls <- 0L
+  local_mocked_bindings(
+    file.rename = function(from, to) {
+      rename_calls <<- rename_calls + 1L
+      if (rename_calls == 2L) {
+        warning("simulated rename failure")
+        return(FALSE)
+      }
+      return(rename(from, to))
+    },
+    file.copy = function(from, to, overwrite = FALSE, ...) {
+      if (overwrite) {
+        return(FALSE)
+      }
+      return(copy(from, to, overwrite = overwrite, ...))
+    },
+    .package = "base"
+  )
+  withr::local_options(warn = 2)
+
+  failure <- tryCatch(
+    publish_cement_snapshots(
+      refreshed,
+      destination,
+      data.frame(source = "new"),
+      data.frame(change = "new")
+    ),
+    error = identity
+  )
+  expect_s3_class(failure, "rlang_error")
+  backups <- list.files(destination, pattern = "\\.bak$", full.names = TRUE)
+  expect_length(backups, 2L)
+  for (path in backups) {
+    expect_true(grepl(path, conditionMessage(failure), fixed = TRUE))
+  }
+  expect_identical(
+    sort(unname(tools::md5sum(backups))),
+    sort(unname(original_hashes))
+  )
+})
+
 test_that("snapshot hashes accept paths containing spaces", {
   skip_on_os("windows")
   path <- tempfile("cement hash ")

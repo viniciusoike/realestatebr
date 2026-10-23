@@ -599,7 +599,16 @@ publish_cement_snapshots <- function(
     },
     character(1)
   )
-  on.exit(unlink(c(temporary, backups)), add = TRUE)
+  keep_backups <- FALSE
+  on.exit(
+    {
+      unlink(temporary)
+      if (!keep_backups) {
+        unlink(backups)
+      }
+    },
+    add = TRUE
+  )
   for (concept in names(snapshots)) {
     saveRDS(snapshots[[concept]], temporary[[concept]], compress = "xz")
   }
@@ -608,19 +617,36 @@ publish_cement_snapshots <- function(
 
   existed <- file.exists(destinations)
   for (i in which(existed)) {
-    if (!file.copy(destinations[[i]], backups[[i]])) {
+    if (!suppressWarnings(file.copy(destinations[[i]], backups[[i]]))) {
       cli::cli_abort("Could not back up {.file {destinations[[i]]}}.")
     }
   }
   replaced <- integer()
   for (i in seq_along(destinations)) {
-    if (!file.rename(temporary[[i]], destinations[[i]])) {
+    if (!suppressWarnings(file.rename(temporary[[i]], destinations[[i]]))) {
+      failed_restores <- integer()
       for (j in replaced) {
         if (existed[[j]]) {
-          file.copy(backups[[j]], destinations[[j]], overwrite = TRUE)
+          restored <- suppressWarnings(file.copy(
+            backups[[j]],
+            destinations[[j]],
+            overwrite = TRUE
+          ))
         } else {
-          unlink(destinations[[j]])
+          restored <- suppressWarnings(unlink(destinations[[j]])) == 0L
         }
+        if (!restored) {
+          failed_restores <- c(failed_restores, j)
+        }
+      }
+      if (length(failed_restores) > 0L) {
+        keep_backups <- TRUE
+        failed_paths <- paste(destinations[failed_restores], collapse = ", ")
+        backup_paths <- paste(backups[existed], collapse = ", ")
+        cli::cli_abort(c(
+          "Could not restore cement snapshots: {failed_paths}.",
+          "i" = "Backups retained: {backup_paths}"
+        ))
       }
       cli::cli_abort("Could not replace {.file {destinations[[i]]}}.")
     }
