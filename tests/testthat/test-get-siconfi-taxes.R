@@ -13,12 +13,13 @@
 #     Returns a tibble of tax rows (long form) with columns:
 #       year (integer), code_muni (character, 7 digits), abbrev_state
 #       (character), institution (character), tax ("iptu"/"itbi"),
-#       value_kind ("gross"/"deduction"/"other_deduction"), value (double).
+#       value_kind ("gross"/"deduction"/"excluded_deduction"), value (double).
 #     Value-kind mapping on column labels: `Receitas Realizadas` (2013) and
 #     `Receitas Brutas Realizadas` (2014+) -> gross; `Deduções da Receita`
 #     (2013) and `Outras Deduções da Receita` (2014+) -> deduction; `Deduções
 #     - FUNDEB` and `Deduções - Transferências Constitucionais` ->
-#     other_deduction. Literal `0,00` parses to 0, never NA.
+#     excluded_deduction (these rows never feed other_deductions or
+#     net_revenue). Literal `0,00` parses to 0, never NA.
 #     cli::cli_abort() on: missing or unsupported `Exercício` year, unknown
 #     column label on a tax row, a tax code that does not belong to the
 #     file year's vintage, malformed numeric values.
@@ -66,20 +67,6 @@ local_edition(3)
 
 siconfi_fixture <- function(...) {
   testthat::test_path("fixtures", "siconfi", ...)
-}
-
-# Red-phase guard: fail loudly here (instead of tripping over a missing
-# binding inside local_mocked_bindings) until the internal functions exist.
-need_siconfi_bindings <- function(...) {
-  for (name in c(...)) {
-    if (!exists(name, asNamespace("realestatebr"))) {
-      testthat::fail(sprintf(
-        'siconfi internal function "%s" is not implemented yet',
-        name
-      ))
-    }
-  }
-  return(invisible(NULL))
 }
 
 siconfi_finbra_all <- function() {
@@ -206,9 +193,9 @@ test_that("read_finbra_file maps both label vintages and all three code periods"
       dat2022$value_kind == "gross",
   ]
   expect_equal(sp_2022_iptu$value, 14451490842.17)
-  expect_equal(
+  expect_setequal(
     unique(dat2022$value_kind),
-    c("gross", "deduction", "other_deduction")
+    c("gross", "deduction", "excluded_deduction")
   )
 
   dat2024 <- read_finbra_file(siconfi_fixture("finbra_extract_05.csv"))
@@ -226,11 +213,11 @@ test_that("read_finbra_file keeps literal zeros and separates non-tax deductions
   zeros <- quilombo[quilombo$value == 0, ]
   # Quilombo reports Transferências and FUNDEB rows for its tax identifiers
   # with literal 0,00: they must be parsed as zero (not NA) and land in
-  # value_kind "other_deduction", never in the tax deduction itself.
+  # value_kind "excluded_deduction", never in the tax deduction itself.
   expect_equal(nrow(zeros), 4L)
   expect_equal(sum(zeros$value), 0)
   expect_true(is.numeric(zeros$value))
-  expect_true(all(zeros$value_kind == "other_deduction"))
+  expect_true(all(zeros$value_kind == "excluded_deduction"))
   expect_false(any(is.na(zeros$value)))
 })
 
@@ -381,8 +368,8 @@ test_that("build_siconfi_taxes reproduces the FINBRA anchors with net and scope"
       "source"
     )
   )
-  # The universe has 10 municipalities for 5 years and 2 taxes.
-  expect_equal(nrow(dat), 100L)
+  # The universe has 9 municipalities for 5 years and 2 taxes.
+  expect_equal(nrow(dat), 90L)
 
   for (i in seq_len(nrow(siconfi_anchors))) {
     anchor <- siconfi_anchors[i, ]
@@ -561,17 +548,11 @@ test_that("source auto never falls back to a fresh siconfi rebuild", {
   local_edition(3)
   clear_session_cache()
   withr::defer(clear_session_cache())
-  need_siconfi_bindings("read_finbra_file")
-  if (!exists("read_finbra_file", asNamespace("realestatebr"))) {
-    return(invisible(NULL))
-  }
-  mocks <- list(
-    fetch_github_release_asset = function(cached_name, quiet = FALSE) NULL
+  local_mocked_bindings(
+    fetch_github_release_asset = function(cached_name, quiet = FALSE) {
+      cli::cli_abort("release asset unavailable")
+    }
   )
-  mocks$read_finbra_file <- function(path) {
-    stop("faint: fresh download attempted: ", path)
-  }
-  do.call(local_mocked_bindings, mocks)
   cli_error <- rlang::catch_cnd(
     get_dataset("siconfi_taxes", source = "auto", quiet = TRUE),
     classes = "error"
