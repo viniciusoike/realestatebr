@@ -163,7 +163,12 @@ build_siconfi_snapshot <- function(
   )
   manifest_path <- file.path(output_dir, "siconfi_taxes_manifest.json")
   siconfi_write_text(
-    jsonlite::serializeJSON(manifest, pretty = TRUE),
+    jsonlite::toJSON(
+      manifest,
+      pretty = TRUE,
+      auto_unbox = TRUE,
+      na = "null"
+    ),
     manifest_path
   )
   cli::cli_inform("Coverage manifest written to {.path {manifest_path}}.")
