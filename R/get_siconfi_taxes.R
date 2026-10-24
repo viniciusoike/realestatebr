@@ -873,7 +873,7 @@ siconfi_check_municipalities <- function(municipalities, call = caller_env()) {
   if (nrow(municipalities) > 0L && any(bad)) {
     cli::cli_abort(
       "{.arg municipalities} has non 7-digit code_muni values: \\
-       {.val {head(unique(codes[bad]), 3L)}}.",
+       {.val {utils::head(unique(codes[bad]), 3L)}}.",
       call = call
     )
   }
@@ -1026,7 +1026,7 @@ siconfi_schema_problems <- function(data, expected_names) {
               "non-reporter rows must keep %s NA; got %s",
               column,
               paste(
-                head(data[[column]][non_reported][leaked], 3L),
+                utils::head(data[[column]][non_reported][leaked], 3L),
                 collapse = ", "
               )
             )
