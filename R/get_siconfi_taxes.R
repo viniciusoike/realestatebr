@@ -1045,7 +1045,9 @@ siconfi_schema_problems <- function(data, expected_names) {
   if (
     "deductions_reported" %in% names(data) && numeric_columns && nrow(data) > 0L
   ) {
-    both <- which(data$deductions_reported == TRUE & !is.na(data$net_revenue))
+    both <- which(
+      !is.na(data$deductions_reported) & !is.na(data$net_revenue)
+    )
     if (length(both) > 0L) {
       expected_net <- round(
         data$gross_revenue[both] - data$other_deductions[both],
@@ -1053,16 +1055,19 @@ siconfi_schema_problems <- function(data, expected_names) {
       )
       off <- abs(data$net_revenue[both] - expected_net) > 0.005
       if (any(off)) {
+        first <- which(off)[1L]
         problems <- c(
           problems,
           sprintf(
-            "net_revenue must equal gross_revenue minus other_deductions \\
-             to the cent; %s rows are off, first at code_muni %s year %s \\
-             tax %s",
+            paste0(
+              "net_revenue must equal gross_revenue minus other_deductions",
+              " to the cent; %s row(s) are off, first at code_muni %s",
+              " year %s tax %s"
+            ),
             sum(off),
-            data$code_muni[which(off)[1L]],
-            data$year[which(off)[1L]],
-            data$tax[which(off)[1L]]
+            data$code_muni[both[first]],
+            data$year[both[first]],
+            data$tax[both[first]]
           )
         )
       }

@@ -190,7 +190,7 @@ get_dataset_with_fallback <- function(
     ),
     error = function(cnd) {
       errors$github <<- cnd$message
-      if (!quiet) {
+      if (!quiet && !isTRUE(dataset_info$cache_only)) {
         cli::cli_warn(
           "GitHub release unavailable for {name}, downloading from the
            original source."

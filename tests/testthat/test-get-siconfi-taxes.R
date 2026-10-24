@@ -629,6 +629,37 @@ test_that("missing deduction rows count as zero with deductions_reported FALSE",
   expect_true(is.na(non_reporter$deductions_reported))
 })
 
+test_that("a deduction row without a gross row keeps the deduction", {
+  local_edition(3)
+  # A deduction row with no corresponding gross row: other_deductions
+  # keeps the observed value, deductions_reported is TRUE, and both the
+  # gross and the net stay NA with value_status missing_tax_row.
+  dat <- build_siconfi_taxes(
+    tibble::tibble(
+      year = 2018L,
+      code_muni = "5203559",
+      abbrev_state = "GO",
+      institution = "Prefeitura Municipal de Bonfinópolis - GO",
+      tax = "iptu",
+      value_kind = "deduction",
+      value = 1000.00
+    ),
+    api = NULL,
+    municipalities = siconfi_municipalities_all[
+      siconfi_municipalities_all$code_muni == 5203559L,
+    ]
+  )
+  row <- dat[
+    dat$code_muni == 5203559L & dat$year == 2018L & dat$tax == "iptu",
+  ]
+  expect_equal(nrow(row), 1L)
+  expect_equal(row$value_status, "missing_tax_row")
+  expect_true(is.na(row$gross_revenue))
+  expect_equal(row$other_deductions, 1000.00)
+  expect_true(row$deductions_reported)
+  expect_true(is.na(row$net_revenue))
+})
+
 test_that("build_siconfi_taxes fills non-reporters with NA values", {
   local_edition(3)
   dat <- build_siconfi_taxes(
@@ -972,6 +1003,45 @@ test_that("validate_siconfi_taxes checks non-reporter NA and net invariants", {
   expect_error(validate_siconfi_taxes(bad_net), "net_revenue")
 })
 
+test_that("validate_siconfi_taxes names the row of a net mismatch", {
+  local_edition(3)
+  dat <- build_siconfi_taxes(
+    siconfi_finbra_all(),
+    api = NULL,
+    municipalities = siconfi_municipalities_all
+  )
+
+  # Corrupt the last checked row: the error must name that row's key,
+  # not an unrelated earlier one.
+  checked <- which(
+    !is.na(dat$deductions_reported) & is.finite(dat$net_revenue)
+  )
+  last <- checked[length(checked)]
+  bad_net <- dat
+  bad_net$net_revenue[last] <- bad_net$net_revenue[last] + 1
+  expect_error(
+    validate_siconfi_taxes(bad_net),
+    sprintf("%.0f", dat$code_muni[last]),
+    fixed = TRUE
+  )
+
+  # The identity also holds where the deduction was assumed 0: there the
+  # net must equal the gross.
+  assumed <- which(
+    !is.na(dat$deductions_reported) &
+      !dat$deductions_reported &
+      is.finite(dat$net_revenue)
+  )
+  bad_assumed <- dat
+  bad_assumed$net_revenue[assumed[1]] <-
+    bad_assumed$net_revenue[assumed[1]] + 1
+  expect_error(
+    validate_siconfi_taxes(bad_assumed),
+    sprintf("%.0f", dat$code_muni[assumed[1]]),
+    fixed = TRUE
+  )
+})
+
 # Registry and interface ------------------------------------------------------
 
 test_that("the siconfi_taxes registry entry exists and stays cache-only", {
@@ -1020,6 +1090,27 @@ test_that("source auto never falls back to a fresh siconfi rebuild", {
   expect_match(conditionMessage(cli_error), "release cache", fixed = TRUE)
   expect_false(
     grepl("Try source", conditionMessage(cli_error), fixed = TRUE)
+  )
+})
+
+test_that("source auto on cache-only data never warns about a fresh download", {
+  local_edition(3)
+  clear_session_cache()
+  withr::defer(clear_session_cache())
+  local_mocked_bindings(
+    fetch_github_release_asset = function(cached_name, quiet = FALSE) {
+      cli::cli_abort("release asset unavailable")
+    }
+  )
+  # With quiet = FALSE the GitHub failure must not raise the "downloading
+  # from the original source" advice that can never be honored for a
+  # cache-only dataset; the run aborts with the cache-only message.
+  expect_no_warning(
+    expect_error(
+      get_dataset("siconfi_taxes", source = "auto", quiet = FALSE),
+      "release cache",
+      fixed = TRUE
+    )
   )
 })
 

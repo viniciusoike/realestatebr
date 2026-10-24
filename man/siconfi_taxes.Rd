@@ -56,8 +56,8 @@ reported=FALSE and NA values.
 \item{reported}{TRUE when the municipality appears in that year's data (FINBRA file or API refresh); non-reporters keep one NA row per tax.}
 \item{value_status}{observed (tax row present), missing_tax_row (the municipality reported but this tax has no gross row), or non_reporter (absent from the year's data).}
 \item{gross_revenue}{Realized gross tax-account value in nominal BRL; NA when the tax row is absent.}
-\item{other_deductions}{Non-FUNDEB, non-transfer tax deductions in nominal BRL; 0 when the municipality-year-tax has an observed gross row but no deduction row in the source, otherwise the observed value (NA when no gross row).}
-\item{deductions_reported}{TRUE when the source carried a deduction row for the municipality-year-tax, FALSE when other_deductions=0 was assumed (gross row without a deduction row), NA when there is no gross row.}
+\item{other_deductions}{Non-FUNDEB, non-transfer tax deductions in nominal BRL; 0 when the municipality-year-tax has an observed gross row but no deduction row in the source, otherwise the observed value, kept even when the gross row is missing.}
+\item{deductions_reported}{TRUE when the source carried a deduction row for the municipality-year-tax; FALSE when only a gross row exists and the deduction is assumed 0; NA when the source has neither row.}
 \item{net_revenue}{Gross revenue minus deductions, rounded to cents, computed whenever the gross row exists (an assumed 0 deduction is subtracted).}
 \item{account_scope}{Account-vintage scope: legacy_line (IPTU and ITBI shown on separate account lines) through 2017, tax_family (post-2018 PCASP parents that fold in fines and old-debt lines) from 2018. Do not build a single constant-scope series across 2017-2018.}
 \item{source}{Row provenance: finbra (bulk-file history) or api (SICONFI API refresh of the latest years); NA for non-reporter rows.}
