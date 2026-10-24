@@ -262,6 +262,16 @@ test_that("read_finbra_file rejects bad headers, labels, codes and numbers", {
   )
 })
 
+test_that("read_finbra_file aborts on a short line carrying a tax identifier", {
+  local_edition(3)
+  # A line with 7 fields that still carries the IPTU identifier: it must
+  # abort loudly instead of silently vanishing from the parse.
+  expect_error(
+    read_finbra_file(siconfi_fixture("finbra_short_tax_line.csv")),
+    "RO1.1.1.2.02.00.00"
+  )
+})
+
 # Parsing the DCA API ---------------------------------------------------------
 
 siconfi_dca_items <- function(...) {
@@ -873,6 +883,93 @@ test_that("validate_siconfi_taxes rejects duplicates and bad codes", {
   wrong_type <- dat
   wrong_type$net_revenue <- as.character(wrong_type$net_revenue)
   expect_error(validate_siconfi_taxes(wrong_type), "net_revenue|type")
+})
+
+test_that("validate_siconfi_taxes checks every published column type", {
+  local_edition(3)
+  dat <- build_siconfi_taxes(
+    siconfi_finbra_all(),
+    api = NULL,
+    municipalities = siconfi_municipalities_all
+  )
+
+  for (column in c(
+    "abbrev_state",
+    "tax",
+    "reported",
+    "value_status",
+    "deductions_reported",
+    "account_scope",
+    "source"
+  )) {
+    wrong <- dat
+    wrong[[column]] <- as.numeric(
+      if (
+        column %in%
+          c(
+            "reported",
+            "deductions_reported"
+          )
+      ) {
+        rep(1L, nrow(wrong))
+      } else {
+        rep(0L, nrow(wrong))
+      }
+    )
+    expect_error(
+      validate_siconfi_taxes(wrong),
+      column,
+      info = column
+    )
+  }
+})
+
+test_that("validate_siconfi_taxes checks the documented value domains", {
+  local_edition(3)
+  dat <- build_siconfi_taxes(
+    siconfi_finbra_all(),
+    api = NULL,
+    municipalities = siconfi_municipalities_all
+  )
+
+  bad_status <- dat
+  bad_status$value_status[[1]] <- "hallucinated"
+  expect_error(validate_siconfi_taxes(bad_status), "value_status")
+
+  bad_scope <- dat
+  bad_scope$account_scope[[1]] <- "legacy_parent"
+  expect_error(validate_siconfi_taxes(bad_scope), "account_scope")
+
+  bad_reported <- dat
+  bad_reported$reported[[1]] <- NA
+  expect_error(validate_siconfi_taxes(bad_reported), "reported")
+})
+
+test_that("validate_siconfi_taxes checks non-reporter NA and net invariants", {
+  local_edition(3)
+  dat <- build_siconfi_taxes(
+    siconfi_finbra_all(),
+    api = NULL,
+    municipalities = siconfi_municipalities_all
+  )
+
+  # A non-reporter row cannot carry a source or revenue values.
+  leak_source <- dat
+  leak_source$source[which(!leak_source$reported)[1L]] <- "finbra"
+  expect_error(validate_siconfi_taxes(leak_source), "source")
+
+  leak_value <- dat
+  leak_value$gross_revenue[which(!leak_value$reported)[1L]] <- 1.00
+  expect_error(validate_siconfi_taxes(leak_value), "gross_revenue")
+
+  # net_revenue must equal gross minus deductions where both exist.
+  bad_net <- dat
+  observed <- which(
+    is.finite(bad_net$net_revenue) & bad_net$deductions_reported == TRUE
+  )
+  bad_net$net_revenue[observed[1L]] <-
+    bad_net$net_revenue[observed[1L]] + 1
+  expect_error(validate_siconfi_taxes(bad_net), "net_revenue")
 })
 
 # Registry and interface ------------------------------------------------------

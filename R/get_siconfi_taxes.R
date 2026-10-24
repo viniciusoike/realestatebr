@@ -317,8 +317,24 @@ finbra_parse_line <- function(line, year, call = caller_env()) {
   n <- length(fields)
   if (n < 8L) {
     # Continuation fragments of corrupted account names and short junk
-    # lines can never be a tax row in the bulk files; tax rows keep
-    # exactly 8 fields, full records are longer or equal.
+    # lines can never be a tax row; abort when the fragment still carries
+    # one of the year's tax identifiers: dropping a truncated tax row
+    # silently would publish a wrong value.
+    vintage <- siconfi_vintage_for_year(year, call = call)
+    tax_codes <- c(vintage$iptu, vintage$itbi)
+    hits <- tax_codes[vapply(
+      tax_codes,
+      \(code) grepl(code, line, fixed = TRUE),
+      logical(1L)
+    )]
+    if (length(hits) > 0L) {
+      cli::cli_abort(
+        "FINBRA line fragment carries the tax identifier {.val {hits[[1]]}} \\
+         with only {n} fields; tax rows keep exactly 8 fields, so a \\
+         truncated tax row aborts instead of silently vanishing.",
+        call = call
+      )
+    }
     return(list(code = NA_character_, row = NULL))
   }
 
@@ -866,8 +882,11 @@ siconfi_check_municipalities <- function(municipalities, call = caller_env()) {
 
 #' Validate the built `siconfi_taxes` table
 #'
-#' Checks the published schema (column names, order and types), integer
-#' 7-digit municipality codes, and unique code_muni x year x tax keys.
+#' Checks the published schema (column names, order and types for every
+#' column), integer 7-digit municipality codes, unique code_muni x year x
+#' tax keys, the documented `tax`, `value_status` and `account_scope`
+#' domains, NA values and source on non-reporter rows, and the
+#' gross-minus-deductions net identity.
 #' @keywords internal
 validate_siconfi_taxes <- function(data, call = caller_env()) {
   problems <- siconfi_schema_problems(data, siconfi_published_columns())
@@ -894,16 +913,33 @@ validate_siconfi_taxes <- function(data, call = caller_env()) {
 
 #' Schema problems for the siconfi_taxes table
 #'
-#' Returns a character vector of problems (empty when the table conforms).
+#' Returns a character vector of problems (empty when the table conforms):
+#' column names and order, every published column's type, integer 7-digit
+#' municipality codes, the documented `tax`, `value_status` and
+#' `account_scope` domains, NA values and source on non-reporter rows,
+#' and `net_revenue = gross_revenue - other_deductions` to the cent
+#' wherever both exist.
 #' @noRd
 siconfi_schema_problems <- function(data, expected_names) {
   type_specs <- list(
     "code_muni" = "integer",
+    "abbrev_state" = "character",
     "year" = "integer",
+    "tax" = "character",
+    "reported" = "logical",
+    "value_status" = "character",
     "gross_revenue" = "double",
     "other_deductions" = "double",
     "deductions_reported" = "logical",
-    "net_revenue" = "double"
+    "net_revenue" = "double",
+    "account_scope" = "character",
+    "source" = "character"
+  )
+  domains <- list(
+    "tax" = c("iptu", "itbi"),
+    "value_status" = c("observed", "missing_tax_row", "non_reporter"),
+    "account_scope" = c("legacy_line", "tax_family"),
+    "source" = c("finbra", "api")
   )
   if (!is.data.frame(data)) {
     return("the parsed table must be a data frame")
@@ -935,7 +971,7 @@ siconfi_schema_problems <- function(data, expected_names) {
       }
     }
   }
-  if ("code_muni" %in% names(data)) {
+  if ("code_muni" %in% names(data) && nrow(data) > 0L) {
     codes <- sprintf("%.0f", as.numeric(data$code_muni))
     bad_codes <- !grepl("^[0-9]{7}$", codes)
     if (any(bad_codes)) {
@@ -948,16 +984,87 @@ siconfi_schema_problems <- function(data, expected_names) {
       )
     }
   }
-  if ("tax" %in% names(data)) {
-    bad_tax <- setdiff(unique(data$tax), c("iptu", "itbi"))
-    if (length(bad_tax) > 0L) {
+  for (column in names(domains)) {
+    if (column %in% names(data) && nrow(data) > 0L) {
+      bad_domain <- setdiff(
+        unique(data[[column]]),
+        c(domains[[column]], NA)
+      )
+      if (length(bad_domain) > 0L) {
+        problems <- c(
+          problems,
+          sprintf(
+            "unexpected %s values %s",
+            column,
+            paste(bad_domain, collapse = ", ")
+          )
+        )
+      }
+    }
+  }
+  if ("reported" %in% names(data)) {
+    if (anyNA(data$reported)) {
       problems <- c(
         problems,
-        sprintf(
-          "unexpected tax values %s",
-          paste(bad_tax, collapse = ", ")
-        )
+        "reported must be TRUE or FALSE; NA is not a published value"
       )
+    } else if (nrow(data) > 0L) {
+      non_reported <- which(!data$reported)
+      for (column in c(
+        "gross_revenue",
+        "other_deductions",
+        "deductions_reported",
+        "net_revenue",
+        "source"
+      )) {
+        leaked <- which(!is.na(data[[column]][non_reported]))
+        if (length(leaked) > 0L) {
+          problems <- c(
+            problems,
+            sprintf(
+              "non-reporter rows must keep %s NA; got %s",
+              column,
+              paste(
+                head(data[[column]][non_reported][leaked], 3L),
+                collapse = ", "
+              )
+            )
+          )
+        }
+      }
+    }
+  }
+  numeric_columns <- all(vapply(
+    c("gross_revenue", "other_deductions", "net_revenue"),
+    \(column) {
+      column %in% names(data) && is.double(data[[column]])
+    },
+    logical(1L)
+  ))
+  if (
+    "deductions_reported" %in% names(data) && numeric_columns && nrow(data) > 0L
+  ) {
+    both <- which(data$deductions_reported == TRUE & !is.na(data$net_revenue))
+    if (length(both) > 0L) {
+      expected_net <- round(
+        data$gross_revenue[both] - data$other_deductions[both],
+        2
+      )
+      off <- abs(data$net_revenue[both] - expected_net) > 0.005
+      if (any(off)) {
+        problems <- c(
+          problems,
+          sprintf(
+            "net_revenue must equal gross_revenue minus other_deductions \\
+             to the cent; %s rows are off, first at code_muni %s year %s \\
+             tax %s",
+            sum(off),
+            data$code_muni[which(off)[1L]],
+            data$year[which(off)[1L]],
+            data$tax[which(off)[1L]]
+          )
+        )
+      }
     }
   }
   return(problems)
