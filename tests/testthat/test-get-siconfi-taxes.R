@@ -14,6 +14,9 @@
 #       year (integer), code_muni (character, 7 digits), abbrev_state
 #       (character), institution (character), tax ("iptu"/"itbi"),
 #       value_kind ("gross"/"deduction"/"excluded_deduction"), value (double).
+#     The tibble carries the attribute "reporters": character keys
+#     `<7-digit code_muni> <year>` for every municipality that has a valid
+#     data line in the file (any account), not only tax rows.
 #     Value-kind mapping on column labels: `Receitas Realizadas` (2013) and
 #     `Receitas Brutas Realizadas` (2014+) -> gross; `Deduções da Receita`
 #     (2013) and `Outras Deduções da Receita` (2014+) -> deduction; `Deduções
@@ -28,7 +31,9 @@
 #     Items: list of /dca item lists (jsonlite::fromJSON(simplifyVector =
 #     FALSE) `$items`), with fields `cod_ibge` (integer), `uf`, `coluna`,
 #     `cod_conta`, `valor`, `instituicao`, `exercicio`. Returns the same long
-#     form as read_finbra_file() with the 2014+ label mapping.
+#     form as read_finbra_file() with the 2014+ label mapping, carrying the
+#     same "reporters" attribute keyed from each item's cod_ibge x exercicio
+#     (any account).
 #     cli::cli_abort() on unknown `cod_conta` for the item's year, unknown
 #     `coluna`, malformed `valor`.
 #
@@ -43,7 +48,12 @@
 # - build_siconfi_taxes(finbra, api = NULL, municipalities)
 #     finbra/api: long forms (source "finbra"/"api" respectively);
 #     municipalities: tibble (code_muni integer 7 digits, abbrev_state) —
-#     the per-year IBGE municipality universe. Returns one row per
+#     the per-year IBGE municipality universe. The "reporters" attributes
+#     decide `reported`: a key counts as filed whenever the municipality has
+#     any account in the source, and keeps `source` accordingly; the long
+#     forms' tax rows alone decide only `value_status`. Without the
+#     attribute the reporter keys fall back to the tax rows of the long
+#     form. Returns one row per
 #     municipality x year x tax for every year supplied, with columns
 #     (in order):
 #       code_muni (integer), abbrev_state, year (integer), tax,
@@ -77,15 +87,20 @@ siconfi_fixture <- function(...) {
 
 siconfi_finbra_all <- function() {
   paths <- sprintf("finbra_extract_%02d.csv", seq_len(5))
-  return(dplyr::bind_rows(
-    lapply(paths, \(path) read_finbra_file(siconfi_fixture(path)))
-  ))
+  longs <- lapply(paths, \(path) read_finbra_file(siconfi_fixture(path)))
+  reporters <- unlist(lapply(longs, \(long) attr(long, "reporters")))
+  long <- dplyr::bind_rows(longs)
+  # Carry the reporting-municipality keys across the bind as the pipeline
+  # does; bind_rows alone would drop them.
+  attr(long, "reporters") <- unique(reporters)
+  return(long)
 }
 
 siconfi_municipalities_all <- tibble::tribble(
   ~code_muni , ~abbrev_state ,
   1100015L   , "RO"          , # in no fixture: a non-reporter in every year
   1100122L   , "RO"          , # Ji-Paraná (2024 fixture only)
+  1718501L   , "TO"          , # Recursolândia (files an account in 2018, no tax rows)
   3304557L   , "RJ"          , # Rio de Janeiro (2013, 2017, 2018, 2022, 2024)
   3550308L   , "SP"          , # São Paulo (2013, 2017, 2018, 2022, 2024)
   4126652L   , "PR"          , # Sulina (2013 fixture only)
@@ -375,8 +390,8 @@ test_that("build_siconfi_taxes reproduces the FINBRA anchors with net and scope"
       "source"
     )
   )
-  # The universe has 9 municipalities for 5 years and 2 taxes.
-  expect_equal(nrow(dat), 90L)
+  # The universe has 10 municipalities for 5 years and 2 taxes.
+  expect_equal(nrow(dat), 100L)
 
   for (i in seq_len(nrow(siconfi_anchors))) {
     anchor <- siconfi_anchors[i, ]
@@ -412,7 +427,12 @@ test_that("build_siconfi_taxes reproduces the FINBRA anchors with net and scope"
   )
   expect_true(all(dat$reported[dat$source %in% c("finbra", "api")]))
   expect_equal(unique(dat$source[dat$reported]), "finbra")
-  expect_true(all(dat$value_status[dat$reported] == "observed"))
+  # Observed rows carry a gross value; missing_tax_row rows do not and are
+  # always reported.
+  expect_true(all(!is.na(dat$gross_revenue[dat$value_status == "observed"])))
+  filing_rows <- dat[dat$value_status == "missing_tax_row", ]
+  expect_true(all(filing_rows$reported))
+  expect_true(all(is.na(filing_rows$gross_revenue)))
 })
 
 test_that("missing deduction rows count as zero with deductions_reported FALSE", {
@@ -506,6 +526,41 @@ test_that("build_siconfi_taxes fills non-reporters with NA values", {
   expect_equal(unique(absent$value_status), "non_reporter")
 })
 
+test_that("a municipality that filed but has no tax row is a reporter", {
+  local_edition(3)
+  finbra_2018 <- read_finbra_file(siconfi_fixture("finbra_extract_03.csv"))
+  # Recursolândia-TO has an ordinary revenue line in the 2018 file but no
+  # IPTU/ITBI row; the reporters attribute must record it.
+  expect_true("1718501 2018" %in% attr(finbra_2018, "reporters"))
+
+  dat <- validate_siconfi_taxes(build_siconfi_taxes(
+    finbra_2018,
+    api = NULL,
+    municipalities = siconfi_municipalities_all
+  ))
+  rows <- dat[dat$code_muni == 1718501L & dat$year == 2018L, ]
+  expect_equal(nrow(rows), 2L)
+  expect_true(all(rows$reported))
+  expect_equal(unique(rows$value_status), "missing_tax_row")
+  expect_equal(unique(rows$source), "finbra")
+  expect_true(all(is.na(rows$gross_revenue)))
+  expect_true(all(is.na(rows$net_revenue)))
+  # Everything else about Recursolândia: no other years in this single-file
+  # long form.
+  absent <- dat[dat$code_muni == 1718501L & dat$year != 2018L, ]
+  expect_equal(nrow(absent), 0L)
+})
+
+test_that("parse_siconfi_dca records reporters from any account", {
+  local_edition(3)
+  dat <- parse_siconfi_dca(siconfi_dca_items("dca_sp_tax_2017.json"))
+  expect_equal(attr(dat, "reporters"), "3550308 2017")
+
+  empty <- parse_siconfi_dca(list())
+  expect_equal(attr(empty, "reporters"), character())
+  expect_equal(nrow(empty), 0L)
+})
+
 test_that("API rows replace FINBRA rows for the same year and set source", {
   local_edition(3)
   finbra_2017 <- read_finbra_file(siconfi_fixture("finbra_extract_02.csv"))
@@ -530,6 +585,59 @@ test_that("API rows replace FINBRA rows for the same year and set source", {
 
   # The replacement must not duplicate keys.
   expect_false(anyDuplicated(dat[c("code_muni", "year", "tax")]) > 0)
+})
+
+# Builder pipeline ------------------------------------------------------------
+
+#' Source the maintainer build script into the test frame
+#'
+#' The script lives in data-raw, which is excluded from the R build bundle;
+#' the tests simply skip where it is unavailable (R CMD check).
+siconfi_load_builder <- function() {
+  path <- file.path(
+    test_path("..", ".."),
+    "data-raw",
+    "siconfi",
+    "build_snapshot.R"
+  )
+  skip_if_not(file.exists(path))
+  source(path, local = FALSE, chdir = FALSE)
+  invisible(TRUE)
+}
+
+test_that("siconfi_harvest_finbra aborts on two files for the same year", {
+  siconfi_load_builder()
+  dir <- withr::local_tempdir()
+  zip <- siconfi_fixture("finbra_MUN_ReceitasOrcamentarias(AnexoI-C).zip")
+  file.copy(zip, file.path(dir, "copy_a.zip"))
+  file.copy(zip, file.path(dir, "copy_b.zip"))
+
+  expect_error(
+    siconfi_harvest_finbra(dir),
+    r"(2017.*(copy_a\.zip|copy_b\.zip).*(copy_a\.zip|copy_b\.zip))",
+    ignore.case = TRUE
+  )
+})
+
+test_that("siconfi_harvest_finbra attaches reporting keys per year", {
+  siconfi_load_builder()
+  dir <- withr::local_tempdir()
+  file.copy(
+    siconfi_fixture("finbra_MUN_ReceitasOrcamentarias(AnexoI-C).zip"),
+    file.path(dir, "extract_2017.zip")
+  )
+  file.copy(
+    siconfi_fixture("finbra_extract_03.csv"),
+    file.path(dir, "extract_2018.csv")
+  )
+  harvest <- siconfi_harvest_finbra(dir)
+  expect_true("1718501 2018" %in% attr(harvest$long, "reporters"))
+  expect_true("3550308 2017" %in% attr(harvest$long, "reporters"))
+  expect_equal(length(unique(harvest$files)), 2L)
+  expect_equal(
+    sort(vapply(harvest$files, `[[`, integer(1L), "exercise")),
+    c(2017L, 2018L)
+  )
 })
 
 # Validation ------------------------------------------------------------------

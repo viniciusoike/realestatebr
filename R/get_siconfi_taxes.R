@@ -205,7 +205,9 @@ siconfi_long_columns <- function() {
 #'
 #' @return A tibble of tax rows in the long form (columns `year`,
 #'   `code_muni` (character, 7 digits), `abbrev_state`, `institution`,
-#'   `tax`, `value_kind`, `value`).
+#'   `tax`, `value_kind`, `value`), carrying the attribute `reporters`:
+#'   character keys `<code_muni> <year>` of every municipality that has a
+#'   valid data line in the file (any account), not only tax rows.
 #' @keywords internal
 read_finbra_file <- function(path, call = caller_env()) {
   lines <- finbra_read_lines(path, call = call)
@@ -220,7 +222,8 @@ read_finbra_file <- function(path, call = caller_env()) {
   }
 
   parsed <- lapply(data_lines, finbra_parse_line, year = year, call = call)
-  tax_rows <- parsed[!vapply(parsed, is.null, logical(1L))]
+  rows <- lapply(parsed, `[[`, "row")
+  tax_rows <- rows[!vapply(rows, is.null, logical(1L))]
 
   if (length(tax_rows) == 0L) {
     cli::cli_abort(
@@ -229,7 +232,14 @@ read_finbra_file <- function(path, call = caller_env()) {
     )
   }
 
-  return(dplyr::bind_rows(tax_rows))
+  codes <- vapply(parsed, `[[`, character(1L), "code")
+  reporter_keys <- paste(
+    unique(codes[!is.na(codes)]),
+    year
+  )
+  long <- dplyr::bind_rows(tax_rows)
+  attr(long, "reporters") <- reporter_keys
+  return(long)
 }
 
 #' Read the FINBRA file lines, decoding latin1
@@ -291,28 +301,34 @@ finbra_year <- function(lines, call = caller_env()) {
   return(as.integer(digits))
 }
 
-#' Parse one FINBRA data line into a tax-row tibble
+#' Parse one FINBRA data line
 #'
-#' Returns NULL for non-tax rows. From the end of the line: the last
-#' field is `Valor`, the second-to-last is `Identificador da Conta`, the
-#' third-to-last is the quoted account name, and the fourth-to-last is
-#' `Coluna`; the four leading fields (institution through population)
-#' precede both. The account-name field may carry unescaped quotes or
-#' even `;`.
+#' Returns a list with `code` (the municipality's 7-digit IBGE code when
+#' the line is a full data record, else NA — used for the reporters set)
+#' and `row` (a one-row long-form tibble for tax rows, NULL for non-tax
+#' rows). From the end of the line: the last field is `Valor`, the
+#' second-to-last is `Identificador da Conta`, the third-to-last is the
+#' quoted account name, and the fourth-to-last is `Coluna`; the four
+#' leading fields (institution through population) precede both. The
+#' account-name field may carry unescaped quotes or even `;`.
 #' @noRd
 finbra_parse_line <- function(line, year, call = caller_env()) {
   fields <- strsplit(line, ";", fixed = TRUE)[[1L]]
   n <- length(fields)
   if (n < 8L) {
     # Continuation fragments of corrupted account names and short junk
-    # lines can never be a tax row; tax rows keep exactly 8 fields.
-    return(NULL)
+    # lines can never be a tax row in the bulk files; tax rows keep
+    # exactly 8 fields, full records are longer or equal.
+    return(list(code = NA_character_, row = NULL))
   }
+
+  code_muni <- trimws(fields[2L])
+  reporter <- if (grepl("^[0-9]{7}$", code_muni)) code_muni else NA_character_
 
   code <- siconfi_clean_code(fields[n - 1L])
   tax <- siconfi_classify_code(code, year, call = call)
   if (is.na(tax)) {
-    return(NULL)
+    return(list(code = reporter, row = NULL))
   }
 
   if (n != 8L) {
@@ -324,15 +340,16 @@ finbra_parse_line <- function(line, year, call = caller_env()) {
   }
 
   label <- trimws(gsub('"', "", fields[n - 3L], fixed = TRUE))
-  return(tibble::tibble(
+  row <- tibble::tibble(
     year = year,
-    code_muni = trimws(fields[2L]),
+    code_muni = code_muni,
     abbrev_state = trimws(fields[3L]),
     institution = trimws(fields[1L]),
     tax = tax,
     value_kind = siconfi_value_kind(label, call = call),
     value = siconfi_parse_number(fields[n], call = call)
-  ))
+  )
+  return(list(code = reporter, row = row))
 }
 
 # SICONFI DCA API -------------------------------------------------------------
@@ -342,48 +359,61 @@ finbra_parse_line <- function(line, year, call = caller_env()) {
 #' `items` holds one list per item (`jsonlite::fromJSON(simplifyVector =
 #' FALSE)` outlines), with fields `exercicio`, `cod_ibge`, `uf`,
 #' `instituicao`, `coluna`, `cod_conta`, `valor`. The API column labels
-#' follow the 2014+ vocabulary for every year.
+#' follow the 2014+ vocabulary for every year. The result carries the
+#' attribute `reporters`: `<code_muni> <exercicio>` keys of every item,
+#' any account.
 #' @keywords internal
 parse_siconfi_dca <- function(items, call = caller_env()) {
   if (length(items) == 0L) {
-    return(siconfi_long_columns())
+    long <- siconfi_long_columns()
+    attr(long, "reporters") <- character()
+    return(long)
   }
 
   parsed <- lapply(items, parse_dca_item, call = call)
-  tax_rows <- parsed[!vapply(parsed, is.null, logical(1L))]
+  codes <- vapply(parsed, `[[`, character(1L), "code")
+  years <- vapply(parsed, `[[`, numeric(1L), "year")
 
-  if (length(tax_rows) == 0L) {
-    return(siconfi_long_columns())
+  rows <- lapply(parsed, `[[`, "row")
+  tax_rows <- rows[!vapply(rows, is.null, logical(1L))]
+
+  long <- if (length(tax_rows) == 0L) {
+    siconfi_long_columns()
+  } else {
+    dplyr::bind_rows(tax_rows)
   }
-
-  return(dplyr::bind_rows(tax_rows))
+  attr(long, "reporters") <- unique(paste(codes, years))
+  return(long)
 }
 
-#' Parse one /dca item into a one-row long form (or drop non-tax rows)
+#' Parse one /dca item
+#'
+#' Returns a list with `code` (the item's IBGE code), `year` and `row` (a
+#' one-row long form for tax items, NULL for non-tax items).
 #' @noRd
 parse_dca_item <- function(item, call = caller_env()) {
   year <- as.integer(as.numeric(item$exercicio %||% NA_real_))
+  code_muni <- dca_code_muni(item$cod_ibge, call = call)
   code <- siconfi_clean_code(item$cod_conta %||% "")
   tax <- siconfi_classify_code(code, year, call = call)
-  if (is.na(tax)) {
-    return(NULL)
+  row <- NULL
+  if (!is.na(tax)) {
+    label <- trimws(item$coluna %||% "")
+    raw_value <- item$valor
+    if (is.null(raw_value) || length(raw_value) != 1L) {
+      raw_value <- ""
+    }
+    row <- tibble::tibble(
+      year = year,
+      code_muni = code_muni,
+      abbrev_state = trimws(item$uf %||% ""),
+      institution = trimws(item$instituicao %||% ""),
+      tax = tax,
+      value_kind = siconfi_value_kind(label, call = call),
+      value = siconfi_parse_number(raw_value, call = call)
+    )
   }
-
-  label <- trimws(item$coluna %||% "")
-  raw_value <- item$valor
-  if (is.null(raw_value) || length(raw_value) != 1L) {
-    raw_value <- ""
-  }
-
-  return(tibble::tibble(
-    year = year,
-    code_muni = dca_code_muni(item$cod_ibge, call = call),
-    abbrev_state = trimws(item$uf %||% ""),
-    institution = trimws(item$instituicao %||% ""),
-    tax = tax,
-    value_kind = siconfi_value_kind(label, call = call),
-    value = siconfi_parse_number(raw_value, call = call)
-  ))
+  return(list(code = code_muni, year = year, row = row))
 }
 
 #' Seven-digit IBGE municipality code from a /dca item
@@ -537,6 +567,27 @@ siconfi_wide <- function(long) {
   return(wide)
 }
 
+#' Reporter keys of a parsed long form
+#'
+#' The attribute `reporters` holds `<code_muni> <year>` keys of every
+#' municipality that filed (any account); without it the keys fall back
+#' to the tax rows of the long form.
+#' @noRd
+siconfi_reporter_keys <- function(long) {
+  keys <- attr(long, "reporters")
+  if (is.null(keys)) {
+    return(unique(paste(long$code_muni, long$year)))
+  }
+  return(unique(keys))
+}
+
+#' Years represented by reporter keys, plus the tax rows' own years
+#' @noRd
+reporter_years <- function(keys, fallback_years) {
+  key_years <- as.integer(sub("^.* ", "", keys))
+  return(unique(c(fallback_years, key_years)))
+}
+
 #' Build the published `siconfi_taxes` table
 #'
 #' `finbra` and `api` are parsed long forms (source `finbra` and `api`
@@ -567,23 +618,33 @@ build_siconfi_taxes <- function(
   finbra_wide <- siconfi_wide(finbra)
   api_wide <- if (is.null(api)) NULL else siconfi_wide(api)
 
-  # Any row of the long form (including excluded deductions and rows
-  # without values) proves the municipality reported in that year.
-  api_reported <- if (is.null(api)) {
+  # Reporting keys: any valid account proves the municipality filed in
+  # that year (including municipalities with no IPTU/ITBI row); without
+  # the attribute the keys fall back to the tax rows.
+  finbra_reporters <- siconfi_reporter_keys(finbra)
+  api_reporters <- if (is.null(api)) {
     character()
   } else {
-    paste(api$code_muni, api$year)
+    siconfi_reporter_keys(api)
   }
-  finbra_reported <- setdiff(paste(finbra$code_muni, finbra$year), api_reported)
 
-  # Whole municipality-years covered by the API replace FINBRA rows.
+  # Whole municipality-years covered by the API replace FINBRA rows; an
+  # API response with zero items declares no reporters and keeps FINBRA.
+  api_covered <- union(
+    if (is.null(api)) character() else paste(api$code_muni, api$year),
+    api_reporters
+  )
+  finbra_reports_kept <- setdiff(finbra_reporters, api_covered)
+
   finbra_wide <- dplyr::filter(
     finbra_wide,
-    !(paste(.data$code_muni, .data$year) %in% api_reported)
+    !(paste(.data$code_muni, .data$year) %in% api_covered)
   )
   wide <- dplyr::bind_rows(finbra_wide, api_wide %||% finbra_wide[NULL, ])
 
-  years <- sort(unique(c(finbra$year, if (!is.null(api)) api$year)))
+  finbra_years <- reporter_years(finbra_reporters, finbra$year)
+  api_years <- reporter_years(api_reporters, if (!is.null(api)) api$year)
+  years <- sort(unique(c(finbra$year, api_years, finbra_years)))
   universe <- dplyr::distinct(
     dplyr::mutate(
       as.data.frame(municipalities),
@@ -602,7 +663,7 @@ build_siconfi_taxes <- function(
   data <- dplyr::left_join(grid, wide, by = c("code_muni", "year", "tax"))
 
   keys <- paste(data$code_muni, data$year)
-  data$reported <- keys %in% c(api_reported, finbra_reported)
+  data$reported <- keys %in% c(finbra_reports_kept, api_reporters)
   data$value_status <- dplyr::case_when(
     !data$reported ~ "non_reporter",
     !is.na(data$gross_revenue) ~ "observed",
@@ -610,7 +671,7 @@ build_siconfi_taxes <- function(
   )
   data$source <- dplyr::case_when(
     !data$reported ~ NA_character_,
-    keys %in% api_reported ~ "api",
+    keys %in% api_covered ~ "api",
     TRUE ~ "finbra"
   )
 

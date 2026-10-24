@@ -234,7 +234,7 @@ siconfi_finbra_dir <- function() {
 siconfi_harvest_finbra <- function(finbra_dir) {
   paths <- list.files(
     finbra_dir,
-    pattern = "\\.zip$",
+    pattern = "\\.(zip|csv)$",
     ignore.case = TRUE,
     full.names = TRUE
   )
@@ -250,7 +250,10 @@ siconfi_harvest_finbra <- function(finbra_dir) {
   )
   parsed <- list()
   files <- list()
-  for (path in paths) {
+  reporter_keys <- character()
+  file_years <- integer()
+  for (i in seq_along(paths)) {
+    path <- paths[[i]]
     long <- siconfi_internal()$read_finbra_file(path)
     years <- unique(long$year)
     if (length(years) != 1L) {
@@ -259,38 +262,52 @@ siconfi_harvest_finbra <- function(finbra_dir) {
          file holds exactly one exercise."
       )
     }
-    file_munis <- dplyr::n_distinct(long$code_muni)
-    parsed[[as.character(years)]] <- long
-    files[[as.character(years)]] <- list(
+    file_years <- c(file_years, years)
+    reporter_keys <- c(reporter_keys, attr(long, "reporters"))
+    parsed[[i]] <- long
+    files[[i]] <- list(
       file = basename(path),
       exercise = as.integer(years),
       rows = nrow(long),
-      municipalities = file_munis,
+      # Distinct reporters by any account line, matching the plan's
+      # per-year municipality counts.
+      municipalities = length(unique(
+        sub(" [0-9]{4}$", "", attr(long, "reporters"))
+      )),
       sha256 = digest::digest(path, algo = "sha256", file = TRUE),
       bytes = unname(file.size(path))
     )
     cli::cli_inform(
       "{.path {basename(path)}}: exercise {.val {years}}, \\
-       {.val {nrow(long)}} tax rows, {.val {file_munis}} municipalities."
+       {.val {nrow(long)}} tax rows, {.val {files[[i]]$municipalities}} \\
+       municipalities."
     )
   }
 
-  years <- sort(as.integer(names(parsed)))
-  duplicated_years <- years[duplicated(years)]
+  duplicated_years <- unique(file_years[duplicated(file_years)])
   if (length(duplicated_years) > 0L) {
+    offending <- basename(paths[file_years %in% duplicated_years])
     cli::cli_abort(
-      "Multiple FINBRA files cover year{?s} {.val {duplicated_years}}."
+      c(
+        "Multiple FINBRA files cover year{?s} {.val {duplicated_years}}.",
+        "x" = "Files: {.path {offending}}."
+      )
     )
   }
+
+  years <- sort(unique(unlist(lapply(parsed, `[[`, "year"))))
   gaps <- setdiff(seq(min(years), max(years)), years)
   if (length(gaps) > 0L) {
     cli::cli_abort(
-      "FINBRA files skip year{?s} {.val {gaps}} between {.val {min(years)}} \\
-       and {.val {max(years)}}; the gap breaks the non-reporter fill."
+      "FINBRA files skip exercise years {.val {gaps}} between \\
+       {.val {min(years)}} and {.val {max(years)}}; the gap breaks the \\
+       non-reporter fill."
     )
   }
 
-  return(list(long = dplyr::bind_rows(parsed), files = files))
+  long <- dplyr::bind_rows(parsed)
+  attr(long, "reporters") <- unique(reporter_keys)
+  return(list(long = long, files = unname(files)))
 }
 
 # SICONFI API harvest ----
