@@ -129,20 +129,26 @@ probes for every year 2014–2025:
 
 - Retain `gross_revenue`, `other_deductions`, and calculated
   `net_revenue = gross_revenue - other_deductions` (rounded to cents);
-  tolerate cent-level rounding relative to the anchors. Missing deduction
-  rows stay `NA` and leave `net_revenue` `NA`; literal zero values are
-  preserved.
+  tolerate cent-level rounding relative to the anchors. **Decided (D1):** a
+  municipality-year-tax with an observed gross row but no deduction row
+  counts the deduction as zero: `other_deductions = 0`, `net_revenue` is
+  computed, and the new logical column `deductions_reported` marks the
+  assumption (`FALSE`, right after `other_deductions`; `TRUE` when a
+  deduction row existed; `NA` when there is no gross row). Keys with a
+  deduction row but no gross row keep `gross_revenue` and `net_revenue`
+  `NA`. Literal zero deduction values are preserved (verified: a 2015 São
+  Bernardo do Campo zero `Outras Deduções da Receita` tax row; Quilombo
+  2022 zero rows).
 - Do not subtract `Deduções - FUNDEB` from IPTU or ITBI; the
   [MEC Fundeb list](https://portal.mec.gov.br/component/content/?Itemid=1330&start=100&view=perguntasfrequentes)
   excludes these own-source taxes. Verified in the bulk files: the FUNDEB and
   Transferências columns appear on tax-identifier rows only outside the tax
   value columns (e.g. Quilombo, SC, 2022 carries literal-zero FUNDEB/
   Transferências rows for IPTU/ITBI identifiers).
-- Missing deduction rows do not prove zero: an ~8k-per-year share of
+- Missing-deduction share context: an ~8k-per-year share of
   municipality-tax combinations in each bulk file has a gross row without a
-  deduction row. Keep the deduction and the net as `NA` for those. Literal zeros are
-  preserved when present (verified: a 2015 São Bernardo do Campo zero
-  `Outras Deduções da Receita` tax row; Quilombo 2022 zero rows).
+  deduction row; per the D1 decision these are zero-deduction rows with
+  `deductions_reported = FALSE`.
 
 ### Regression anchors — verified against FINBRA bulk files on 23 Oct 2026
 
@@ -177,10 +183,11 @@ not zero-filled).
 | `year` | integer | Exercise year, 2013–latest closed year. |
 | `tax` | character | `iptu` or `itbi`. |
 | `reported` | logical | `TRUE` when the municipality appears in that year's FINBRA file (or the refreshed API rows). |
-| `value_status` | character | `observed` (tax row present), `missing_tax_row` (municipality appears but that tax has no gross row), or `non_reporter` (absent from the file). Missing deductions are tracked by `NA` in `other_deductions`, not by status. |
+| `value_status` | character | `observed` (tax row present), `missing_tax_row` (municipality filed but that tax has no gross row), or `non_reporter` (absent from the file). |
 | `gross_revenue` | double | Realized gross tax-account value in nominal BRL, else `NA`. |
-| `other_deductions` | double | Non-FUNDEB tax deductions in BRL; `NA` if the deduction row is absent. |
-| `net_revenue` | double | Gross minus deductions, computed when both exist, else `NA`. |
+| `other_deductions` | double | Non-FUNDEB tax deductions in BRL; an observed-gross key with no deduction row publishes 0, else the observed value (NA with no gross row). |
+| `deductions_reported` | logical | `TRUE` when the source carried a deduction row; `FALSE` when the 0 in `other_deductions` was assumed; `NA` when there is no gross row. |
+| `net_revenue` | double | Gross minus deductions, computed whenever the gross row exists, else `NA`. |
 | `account_scope` | character | `legacy_line` through 2017; `tax_family` from 2018. |
 | `source` | character | `finbra` or `api`; `NA` for non-reporter rows. |
 
@@ -273,7 +280,7 @@ Fixture-based, TDD; failing tests land before the functions (this phase).
   not a constant in the dataset function.
 - Municipalities created after 2012 must not be classified as 2013
   non-reporters; the fill needs the per-year IBGE historical universe.
-- Confirm the missing-deduction convention during validation: net is `NA`
-  whenever either side is `NA`; no zero-imputation ever.
+- Missing-deduction convention: resolved by decision D1 (assume zero with
+  `deductions_reported` recording the assumption).
 - FINBRA 2013 mixes DCA and QDCC filings; documented caveat in the help, not
   a data flag (decided).

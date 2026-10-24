@@ -48,15 +48,21 @@
 #     (in order):
 #       code_muni (integer), abbrev_state, year (integer), tax,
 #       reported (logical), value_status ("observed"/"missing_tax_row"/
-#       "non_reporter"), gross_revenue, other_deductions, net_revenue,
+#       "non_reporter"), gross_revenue, other_deductions,
+#       deductions_reported (logical), net_revenue,
 #       account_scope ("legacy_line" <= 2017, "tax_family" >= 2018),
 #       source ("finbra"/"api", NA for non-reporters).
 #     API rows replace FINBRA rows for the same municipality-year (source
 #     becomes "api"); rows supplied only by FINBRA keep "finbra";
 #     non-reporters get reported = FALSE, NA values, value_status =
 #     "non_reporter", source = NA. net_revenue = gross - deductions rounded
-#     to cents when both exist, else NA. Missing deduction rows leave
-#     other_deductions and net_revenue as NA. Literal zeros are preserved.
+#     to cents whenever the gross row exists. Missing deduction rows are
+#     counted as zero: other_deductions becomes 0, net_revenue is computed,
+#     and deductions_reported = FALSE marks the assumption (TRUE when a
+#     deduction row existed in the source, NA when there is no gross row; a
+#     deduction row without a gross row keeps other_deductions and a TRUE
+#     flag with gross_revenue and net_revenue NA). Literal zeros are
+#     preserved.
 #
 # - validate_siconfi_taxes(data)
 #     cli::cli_abort() unless the published schema, types and keys hold:
@@ -363,6 +369,7 @@ test_that("build_siconfi_taxes reproduces the FINBRA anchors with net and scope"
       "value_status",
       "gross_revenue",
       "other_deductions",
+      "deductions_reported",
       "net_revenue",
       "account_scope",
       "source"
@@ -391,6 +398,8 @@ test_that("build_siconfi_taxes reproduces the FINBRA anchors with net and scope"
     expect_equal(row$gross_revenue, anchor$gross_revenue)
     expect_equal(row$other_deductions, anchor$other_deductions)
     expect_equal(row$net_revenue, anchor$net_revenue)
+    # Every anchor carries a deduction row in the source.
+    expect_true(row$deductions_reported)
   }
 
   expect_equal(
@@ -406,7 +415,7 @@ test_that("build_siconfi_taxes reproduces the FINBRA anchors with net and scope"
   expect_true(all(dat$value_status[dat$reported] == "observed"))
 })
 
-test_that("build_siconfi_taxes keeps missing deductions and their net as NA", {
+test_that("missing deduction rows count as zero with deductions_reported FALSE", {
   local_edition(3)
   dat <- build_siconfi_taxes(
     siconfi_finbra_all(),
@@ -414,7 +423,9 @@ test_that("build_siconfi_taxes keeps missing deductions and their net as NA", {
     municipalities = siconfi_municipalities_all
   )
   # Sulina (2013) and the other gross-only municipalities in each fixture
-  # file report gross rows for both taxes and no deduction rows.
+  # file report gross rows for both taxes and no deduction rows: the
+  # deduction is assumed 0, the net is computed, and deductions_reported
+  # marks the assumption.
   for (pair in list(
     c(4126652L, 2013L),
     c(4304614L, 2017L),
@@ -423,15 +434,51 @@ test_that("build_siconfi_taxes keeps missing deductions and their net as NA", {
     c(1100122L, 2024L)
   )) {
     rows <- dat[
-      dat$code_muni == pair[[1]] & dat$year == pair[[2]] & dat$tax == "iptu",
+      dat$code_muni == pair[[1]] & dat$year == pair[[2]],
     ]
-    expect_equal(nrow(rows), 1L)
-    expect_true(rows$reported)
-    expect_true(is.na(rows$other_deductions))
-    expect_true(is.na(rows$net_revenue))
-    expect_false(is.na(rows$gross_revenue))
-    expect_equal(rows$value_status, "observed")
+    expect_equal(nrow(rows), 2L)
+    expect_true(all(rows$reported))
+    expect_true(all(is.finite(rows$gross_revenue)))
+    expect_equal(rows$other_deductions, c(0, 0))
+    expect_false(any(rows$deductions_reported))
+    expect_false(any(is.na(rows$gross_revenue)))
+    expect_equal(rows$value_status, c("observed", "observed"))
+    expect_equal(rows$net_revenue, rows$gross_revenue)
   }
+
+  deduction_only <- build_siconfi_taxes(
+    tibble::tibble(
+      year = 2018L,
+      code_muni = "5203559",
+      abbrev_state = "GO",
+      institution = "Prefeitura Municipal de Bonfinópolis - GO",
+      tax = "iptu",
+      value_kind = "deduction",
+      value = 1234.50
+    ),
+    api = NULL,
+    municipalities = siconfi_municipalities_all[
+      siconfi_municipalities_all$code_muni == 5203559L,
+    ]
+  )
+  deduction <- deduction_only[
+    deduction_only$tax == "iptu",
+  ]
+  # A deduction row without a gross row: the observed deduction stays, the
+  # flag is TRUE, and both the gross and the net stay NA.
+  expect_true(is.na(deduction$gross_revenue))
+  expect_false(is.na(deduction$other_deductions))
+  expect_equal(deduction$other_deductions, 1234.50)
+  expect_true(deduction$deductions_reported)
+  expect_true(is.na(deduction$net_revenue))
+  expect_equal(deduction$value_status, "missing_tax_row")
+
+  # Non-reporters keep NA values and an NA flag (no assumption made).
+  non_reporter <- dat[
+    dat$code_muni == 1100015L & dat$year == 2013L & dat$tax == "iptu",
+  ]
+  expect_true(all(is.na(non_reporter$other_deductions)))
+  expect_true(is.na(non_reporter$deductions_reported))
 })
 
 test_that("build_siconfi_taxes fills non-reporters with NA values", {

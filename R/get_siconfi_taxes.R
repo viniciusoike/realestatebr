@@ -496,7 +496,9 @@ fetch_siconfi_dca <- function(
 #'
 #' One row per code_muni x year x tax with `gross_revenue` and
 #' `other_deductions` (NA when the row is absent); excluded-deduction
-#' rows carry no value.
+#' rows carry no value. `deductions_reported` records whether the
+#' source carried a deduction row; it is NA only for keys absent from
+#' the long form (added later by the grid fill).
 #' @noRd
 siconfi_wide <- function(long) {
   if (nrow(long) == 0L) {
@@ -505,7 +507,8 @@ siconfi_wide <- function(long) {
       year = integer(),
       tax = character(),
       gross_revenue = double(),
-      other_deductions = double()
+      other_deductions = double(),
+      deductions_reported = logical()
     ))
   }
 
@@ -525,11 +528,13 @@ siconfi_wide <- function(long) {
     other_deductions = "value"
   )
 
-  return(dplyr::full_join(
+  wide <- dplyr::full_join(
     gross,
     deductions,
     by = c("code_muni", "year", "tax")
-  ))
+  )
+  wide$deductions_reported <- !is.na(wide$other_deductions)
+  return(wide)
 }
 
 #' Build the published `siconfi_taxes` table
@@ -539,9 +544,12 @@ siconfi_wide <- function(long) {
 #' tibble with integer 7-digit `code_muni` and `abbrev_state`.
 #' API rows replace FINBRA rows for the whole municipality-year so the
 #' per-row `source` stays unambiguous. Non-reporters get one row per tax
-#' with `reported = FALSE` and `NA` values. The net revenue is gross
-#' minus deductions, rounded to cents, and stays `NA` whenever either
-#' side is `NA`: missing deduction rows never prove zero.
+#' with `reported = FALSE` and `NA` values. A gross row with no deduction
+#' row in the source counts the deduction as zero: `other_deductions`
+#' becomes 0, the net is computed, and `deductions_reported` marks the
+#' assumption (FALSE assumed, TRUE observed, NA when there is no gross
+#' row). Keys with a deduction row but no gross row keep `gross_revenue`
+#' and `net_revenue` NA.
 #'
 #' @keywords internal
 build_siconfi_taxes <- function(
@@ -606,8 +614,18 @@ build_siconfi_taxes <- function(
     TRUE ~ "finbra"
   )
 
+  # Gross rows without a deduction row: the deduction is assumed zero,
+  # never missing. `deductions_reported` records the assumption (FALSE),
+  # TRUE when the source carried a deduction row, NA when there is no
+  # gross row. Deduction-only keys keep their observed deduction and NA
+  # gross/net.
+  data$other_deductions <- dplyr::if_else(
+    is.na(data$other_deductions) & !is.na(data$gross_revenue),
+    0,
+    data$other_deductions
+  )
   data$net_revenue <- dplyr::if_else(
-    is.na(data$gross_revenue) | is.na(data$other_deductions),
+    is.na(data$gross_revenue),
     NA_real_,
     round(data$gross_revenue - data$other_deductions, 2)
   )
@@ -638,6 +656,7 @@ siconfi_published_columns <- function() {
     "value_status",
     "gross_revenue",
     "other_deductions",
+    "deductions_reported",
     "net_revenue",
     "account_scope",
     "source"
@@ -752,6 +771,7 @@ siconfi_schema_problems <- function(data, expected_names) {
     "year" = "integer",
     "gross_revenue" = "double",
     "other_deductions" = "double",
+    "deductions_reported" = "logical",
     "net_revenue" = "double"
   )
   if (!is.data.frame(data)) {
