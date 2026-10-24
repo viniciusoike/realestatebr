@@ -277,7 +277,7 @@ finbra_year <- function(lines, call = caller_env()) {
   hits <- trimws(lines)[grepl("^Exerc\u00edcio:", trimws(lines))]
   if (length(hits) != 1L) {
     cli::cli_abort(
-      "FINBRA file has no single `Exercício:` metadata line.",
+      "FINBRA file has no single `Exerc\u00edcio:` metadata line.",
       call = call
     )
   }
