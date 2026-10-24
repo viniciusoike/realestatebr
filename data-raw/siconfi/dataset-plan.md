@@ -19,6 +19,12 @@ two years. This plan requires maintainer approval before implementation.
   are accepted **as published in FINBRA 2013**. The API-only plan's
   per-municipality DCA/QDCC 2013 provenance check is dropped; the caveat goes
   in the plan and the dataset help.
+- **Decided (D2):** the Distrito Federal (5300108) is dropped from the
+  municipality universe. It reports IPTU and ITBI in its state-level
+  accounts, so it never appears in the municipal files (`/entes` lists 5,570
+  `esfera = M` entries; 5,569 after the exclusion). The pipeline asserts
+  that every other universe municipality appears in at least one FINBRA
+  year and aborts listing the codes otherwise.
 - Publish the tax account shown in Annex I-C with a marked 2018 comparability
   break (`account_scope`). Do not describe 2013–2025 as one constant-scope tax
   series and do not build a reconstructed constant-scope series.
@@ -97,7 +103,9 @@ two years. This plan requires maintainer approval before implementation.
   so `source` is unambiguous per row. Municipalities that never file keep
   their `reported = FALSE` rows from the FINBRA pass with `source = NA`.
 - The [current `/entes` response](https://apidatalake.tesouro.gov.br/ords/siconfi/tt/entes?limit=10000)
-  lists 5,570 distinct `esfera=M` municipalities. It is a current register,
+  lists 5,570 distinct `esfera=M` municipalities, minus the Distrito
+  Federal (5300108, see the D2 scope decision) giving a 5,569-municipality
+  universe. It is a current register,
   not proof that every code existed in every earlier year; the non-reporter
   fill uses the per-year IBGE municipality universe (geobr-compatible codes),
   not `/entes` alone.

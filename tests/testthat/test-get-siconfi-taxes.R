@@ -808,6 +808,41 @@ test_that("siconfi_harvest_finbra attaches reporting keys per year", {
   )
 })
 
+test_that("siconfi_entes_universe drops Brasília and reports the exclusion", {
+  siconfi_load_builder()
+  checkpoint_dir <- withr::local_tempdir()
+  cached <- tibble::tibble(
+    code_muni = c(3550308L, 5300108L, 4126652L),
+    abbrev_state = c("SP", "DF", "PR")
+  )
+  saveRDS(cached, file.path(checkpoint_dir, "universe_entes.rds"))
+  expect_message(
+    universe <- siconfi_entes_universe(checkpoint_dir),
+    "5300108|Distrito Federal",
+    ignore.case = TRUE
+  )
+  expect_false(5300108L %in% universe$code_muni)
+  expect_setequal(universe$code_muni, c(3550308L, 4126652L))
+})
+
+test_that("siconfi_check_universe_coverage aborts on munis in no FINBRA year", {
+  siconfi_load_builder()
+  universe <- tibble::tibble(
+    code_muni = c(3550308L, 1718505L),
+    abbrev_state = c("SP", "TO")
+  )
+  finbra <- read_finbra_file(siconfi_fixture("finbra_extract_03.csv"))
+  expect_error(
+    siconfi_check_universe_coverage(universe, attr(finbra, "reporters")),
+    "1718505"
+  )
+  # São Paulo files in the fixture: no error.
+  ok_universe <- universe[universe$code_muni == 3550308L, ]
+  expect_no_error(
+    siconfi_check_universe_coverage(ok_universe, attr(finbra, "reporters"))
+  )
+})
+
 # Validation ------------------------------------------------------------------
 
 test_that("validate_siconfi_taxes accepts the built data", {

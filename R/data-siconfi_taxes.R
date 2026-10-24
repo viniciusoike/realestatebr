@@ -6,7 +6,8 @@
 #' @description
 #' Annual municipal IPTU and ITBI revenue in nominal BRL from SICONFI/FINBRA
 #' DCA Annex I-C, 2013-present, with the 2018 account-vintage break marked by
-#' account_scope.
+#' account_scope; the Distrito Federal (5300108) is excluded because it
+#' reports IPTU and ITBI only in its state-level accounts.
 #'
 #' Retrieve this dataset with [get_dataset()] using the name `"siconfi_taxes"`.
 #'
@@ -31,12 +32,15 @@
 #' among them), accepted as published. The 2018 PCASP recode folds fines and
 #' old-debt lines into the tax parents, so the pre-2018 tax line is not
 #' comparable with the post-2018 tax family; account_scope marks the break and
-#' no cross-break total is reconstructed. FUNDEB and constitutional-transfer
-#' deduction columns never feed the tax deductions. A municipality-year-tax
-#' with an observed gross row but no deduction row counts the deduction as
-#' zero and computes net_revenue; deductions_reported records whether a
-#' deduction row existed in the source. Municipalities absent from a year's
-#' FINBRA file appear as non-reporters with reported=FALSE and NA values.
+#' no cross-break total is reconstructed. The Distrito Federal (5300108) is
+#' excluded from the municipality universe because it reports IPTU and ITBI in
+#' its state-level accounts and never in the municipal files. FUNDEB and
+#' constitutional-transfer deduction columns never feed the tax deductions. A
+#' municipality-year-tax with an observed gross row but no deduction row
+#' counts the deduction as zero and computes net_revenue; deductions_reported
+#' records whether a deduction row existed in the source. Municipalities
+#' absent from a year's FINBRA file appear as non-reporters with
+#' reported=FALSE and NA values.
 #'
 #' @section Columns:
 #' \describe{

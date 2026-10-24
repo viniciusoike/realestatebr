@@ -124,6 +124,10 @@ build_siconfi_snapshot <- function(
   }
   api_long <- siconfi_harvest_api(api_years, checkpoint_dir)
   universe <- siconfi_entes_universe(checkpoint_dir)
+  # Guard: every universe municipality (the /entes register minus the
+  # documented Distrito Federal exclusion) must appear in at least one
+  # FINBRA year; a quiet gap would silently publish wrong non-reporters.
+  siconfi_check_universe_coverage(universe, attr(finbra$long, "reporters"))
 
   siconfi_check_abbreviations(finbra$long)
 
@@ -398,17 +402,40 @@ empty_long_form <- function() {
 
 #' Municipality universe from SICONFI `/entes`
 #'
-#' Keeps only `esfera = "M"` entries and caches the result. The register
-#' (`cod_ibge`, `ente`, `regiao`, `uf`, `esfera`, verified live on 23 Oct
-#' 2026) is the current register, not proof that a municipality existed or
-#' reported in every historical year; the coverage manifest records the
-#' resulting per-year counts as the sanity gate (plan risk).
+#' Keeps only `esfera = "M"` entries and caches the result. The Distrito
+#' Federal (5300108) is dropped: it reports IPTU and ITBI in its
+#' state-level accounts, never in the municipal files, so it is not part
+#' of the municipality universe (documented in the registry and the
+#' dataset help). The register (`cod_ibge`, `ente`, `regiao`, `uf`,
+#' `esfera`, verified live on 23 Oct 2026) is the current register, not
+#' proof that a municipality existed or reported in every historical
+#' year; the coverage manifest records the resulting per-year counts as
+#' the sanity gate (plan risk).
 siconfi_entes_universe <- function(checkpoint_dir) {
   cached <- file.path(checkpoint_dir, "universe_entes.rds")
-  if (file.exists(cached)) {
-    return(readRDS(cached))
+  universe <- if (file.exists(cached)) {
+    readRDS(cached)
+  } else {
+    universe <- siconfi_fetch_entes_universe()
+    siconfi_write_rds(universe, cached)
+    universe
   }
+  return(siconfi_drop_federal_district(universe))
+}
 
+siconfi_drop_federal_district <- function(universe) {
+  df_code <- 5300108L
+  if (df_code %in% universe$code_muni) {
+    cli::cli_inform(
+      "Dropping the Distrito Federal ({.val {df_code}}) from the \\
+       universe: it reports IPTU and ITBI in its state-level accounts, \\
+       never in the municipal files."
+    )
+  }
+  return(universe[universe$code_muni != df_code, , drop = FALSE])
+}
+
+siconfi_fetch_entes_universe <- function() {
   cli::cli_inform(
     "Fetching the municipality register from {.url {SICONFI_ENTES_URL}}."
   )
@@ -478,11 +505,26 @@ siconfi_entes_universe <- function(checkpoint_dir) {
   )
   cli::cli_inform(
     "Municipality universe: {.val {nrow(universe)}} cities \\
-     (esfera = M, {.val {length(unique(universe$abbrev_state))}} states)."
+     (esfera = M, {.val {length(unique(universe$abbrev_state))}} states) \\
+     before the Distrito Federal exclusion."
   )
-
-  siconfi_write_rds(universe, cached)
   return(universe)
+}
+
+siconfi_check_universe_coverage <- function(universe, finbra_reporters) {
+  universe_codes <- sprintf("%.0f", as.numeric(universe$code_muni))
+  finbra_codes <- unique(sub("[ ]+[0-9]{4}$", "", finbra_reporters))
+  missing <- setdiff(universe_codes, finbra_codes)
+  if (length(missing) > 0L) {
+    cli::cli_abort(
+      c(
+        "{.val {length(missing)}} of the universe municipalities appear \\
+         in no FINBRA year of this build.",
+        "x" = "Municipality codes: {.val {head(missing, 50L)}}."
+      )
+    )
+  }
+  return(invisible(TRUE))
 }
 
 siconfi_check_abbreviations <- function(finbra) {

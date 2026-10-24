@@ -712,7 +712,7 @@ datasets:
   siconfi_taxes:
     name: "Municipal IPTU and ITBI Tax Revenue"
     name_pt: "Arrecadação Municipal de IPTU e ITBI"
-    description: "Annual municipal IPTU and ITBI revenue in nominal BRL from SICONFI/FINBRA DCA Annex I-C, 2013-present, with the 2018 account-vintage break marked by account_scope"
+    description: "Annual municipal IPTU and ITBI revenue in nominal BRL from SICONFI/FINBRA DCA Annex I-C, 2013-present, with the 2018 account-vintage break marked by account_scope; the Distrito Federal (5300108) is excluded because it reports IPTU and ITBI only in its state-level accounts"
     source: "Tesouro Nacional - SICONFI (DCA, Anexo I-C) and FINBRA bulk files"
     url: "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/entes"
     geography: "Brazilian municipalities"
@@ -740,7 +740,7 @@ datasets:
     # build_siconfi_taxes() below is the pipeline-side builder, wired in
     # data-raw/siconfi/build_snapshot.R.
     internal_function: "build_siconfi_taxes"
-    translation_notes: "This dataset is cache-only: it is rebuilt by data-raw/siconfi/build_snapshot.R from the maintainer's local FINBRA bulk files (never in the repository) plus an API refresh of the latest years, so source='fresh' and the fresh half of source='auto' do not apply. Values are nominal BRL with a decimal-comma source parsed to the cent; the 2013 FINBRA files include municipalities that filed QDCC instead of DCA (São Paulo among them), accepted as published. The 2018 PCASP recode folds fines and old-debt lines into the tax parents, so the pre-2018 tax line is not comparable with the post-2018 tax family; account_scope marks the break and no cross-break total is reconstructed. FUNDEB and constitutional-transfer deduction columns never feed the tax deductions. A municipality-year-tax with an observed gross row but no deduction row counts the deduction as zero and computes net_revenue; deductions_reported records whether a deduction row existed in the source. Municipalities absent from a year's FINBRA file appear as non-reporters with reported=FALSE and NA values."
+    translation_notes: "This dataset is cache-only: it is rebuilt by data-raw/siconfi/build_snapshot.R from the maintainer's local FINBRA bulk files (never in the repository) plus an API refresh of the latest years, so source='fresh' and the fresh half of source='auto' do not apply. Values are nominal BRL with a decimal-comma source parsed to the cent; the 2013 FINBRA files include municipalities that filed QDCC instead of DCA (São Paulo among them), accepted as published. The 2018 PCASP recode folds fines and old-debt lines into the tax parents, so the pre-2018 tax line is not comparable with the post-2018 tax family; account_scope marks the break and no cross-break total is reconstructed. The Distrito Federal (5300108) is excluded from the municipality universe because it reports IPTU and ITBI in its state-level accounts and never in the municipal files. FUNDEB and constitutional-transfer deduction columns never feed the tax deductions. A municipality-year-tax with an observed gross row but no deduction row counts the deduction as zero and computes net_revenue; deductions_reported records whether a deduction row existed in the source. Municipalities absent from a year's FINBRA file appear as non-reporters with reported=FALSE and NA values."
 
   cno:
     name: "National Registry of Construction Works"
