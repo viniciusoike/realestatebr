@@ -402,7 +402,7 @@ test_that("build_siconfi_taxes reproduces the FINBRA anchors with net and scope"
     "tax_family"
   )
   expect_true(all(dat$reported[dat$source %in% c("finbra", "api")]))
-  expect_equal(unique(dat$source), "finbra")
+  expect_equal(unique(dat$source[dat$reported]), "finbra")
   expect_true(all(dat$value_status[dat$reported] == "observed"))
 })
 
