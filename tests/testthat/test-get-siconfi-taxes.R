@@ -887,10 +887,11 @@ test_that("the siconfi_taxes registry entry exists and stays cache-only", {
   )
   # No fresh download path: rebuilds live in the data-raw pipeline only.
   expect_true(is.null(info$dataset_function) || info$dataset_function == "")
+  expect_true(isTRUE(info$cache_only))
   expect_equal(sum(list_datasets()$name == "siconfi_taxes"), 1L)
 })
 
-test_that("get_dataset aborts on a fresh rebuild of siconfi_taxes", {
+test_that("get_dataset fresh aborts naming the pipeline and the release cache", {
   local_edition(3)
   clear_session_cache()
   withr::defer(clear_session_cache())
@@ -899,7 +900,8 @@ test_that("get_dataset aborts on a fresh rebuild of siconfi_taxes", {
     classes = "error"
   )
   expect_false(is.null(cli_error))
-  expect_match(conditionMessage(cli_error), "fresh|FINBRA|pipeline")
+  expect_match(conditionMessage(cli_error), "data-raw pipeline", fixed = TRUE)
+  expect_match(conditionMessage(cli_error), "release cache", fixed = TRUE)
 })
 
 test_that("source auto never falls back to a fresh siconfi rebuild", {
@@ -915,11 +917,12 @@ test_that("source auto never falls back to a fresh siconfi rebuild", {
     get_dataset("siconfi_taxes", source = "auto", quiet = TRUE),
     classes = "error"
   )
-  # Auto must abort with the cache-only message, not attempt the fresh
-  # builder.
+  # Auto must abort with the cache-only message: it names the cache and
+  # never advises source='fresh', which cannot work for this dataset.
   expect_false(is.null(cli_error))
+  expect_match(conditionMessage(cli_error), "release cache", fixed = TRUE)
   expect_false(
-    grepl("faint: fresh", conditionMessage(cli_error), fixed = TRUE)
+    grepl("Try source", conditionMessage(cli_error), fixed = TRUE)
   )
 })
 

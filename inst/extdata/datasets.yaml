@@ -735,8 +735,10 @@ datasets:
       source: "Row provenance: finbra (bulk-file history) or api (SICONFI API refresh of the latest years); NA for non-reporter rows."
     data_type: "tibble"
     cached_file: "siconfi_taxes.rds"
-    # dataset_function is deliberately absent (cache-only): get_dataset()
-    # must abort on source="fresh" and never rebuild from source="auto".
+    # Cache-only: get_dataset() must abort on source="fresh" with the
+    # pipeline message and never rebuild via source="auto"; the release
+    # snapshot is the only delivery.
+    cache_only: true
     # build_siconfi_taxes() below is the pipeline-side builder, wired in
     # data-raw/siconfi/build_snapshot.R.
     internal_function: "build_siconfi_taxes"
