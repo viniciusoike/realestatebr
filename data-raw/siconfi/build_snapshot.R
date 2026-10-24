@@ -322,28 +322,13 @@ siconfi_harvest_api <- function(api_years, checkpoint_dir) {
   munis <- sprintf("%.0f", universe$code_muni)
   total <- length(munis) * length(api_years)
   cli::cli_inform(
-    "Refreshing year{?s} {.val {api_years}} for {.val {length(munis)}} \\
+    "Refreshing exercise years {.val {api_years}} for {.val {length(munis)}} \\
      municipalities ({.val {total}} municipality-years, at most one \\
      request per second; checkpoints in {.path {checkpoint_dir}})."
   )
 
-  # At most one request per second between request starts, enforced only
-  # across real requests: checkpoint hits never touch the network. The
-  # retry backoff inside `download_with_retry()` is the plan's documented
-  # allowance for transient failures.
-  pacer <- local({
-    last <- -Inf
-    function() {
-      wait <- 1.05 - as.double(difftime(Sys.time(), last, units = "secs"))
-      if (wait > 0) {
-        Sys.sleep(wait)
-      }
-      last <<- Sys.time()
-      return(invisible(TRUE))
-    }
-  })
-
   parsed <- list()
+  reporters <- character()
   done <- 0L
   for (year in api_years) {
     for (code in munis) {
@@ -352,14 +337,36 @@ siconfi_harvest_api <- function(api_years, checkpoint_dir) {
         sprintf("dca_%s_%d.rds", code, year)
       )
       if (file.exists(checkpoint)) {
-        long <- readRDS(checkpoint)
+        checkpointed <- readRDS(checkpoint)
+        if (is.data.frame(checkpointed)) {
+          # Earlier checkpoints stored the parsed long form only; keep
+          # serving them and fall back to the tax rows of the year.
+          long <- checkpointed
+          key_reporters <- unique(paste(long$code_muni, long$year))
+        } else {
+          long <- checkpointed$long
+          key_reporters <- checkpointed$reporters
+        }
       } else {
-        pacer()
         items <- siconfi_internal()$fetch_siconfi_dca(code, year)
         long <- siconfi_internal()$parse_siconfi_dca(items)
-        siconfi_write_rds(long, checkpoint)
+        key_reporters <- if (length(items) > 0L) {
+          paste(code, year)
+        } else {
+          character()
+        }
+        siconfi_write_rds(
+          list(
+            long = long,
+            reporters = key_reporters,
+            raw_items = length(items)
+          ),
+          checkpoint
+        )
       }
+      attr(long, "reporters") <- key_reporters
       parsed[[length(parsed) + 1L]] <- long
+      reporters <- c(reporters, key_reporters)
 
       done <- done + 1L
       if (done %% 50L == 0L) {
@@ -370,7 +377,9 @@ siconfi_harvest_api <- function(api_years, checkpoint_dir) {
     }
   }
 
-  return(dplyr::bind_rows(parsed))
+  long <- dplyr::bind_rows(parsed)
+  attr(long, "reporters") <- unique(reporters)
+  return(long)
 }
 
 empty_long_form <- function() {

@@ -271,6 +271,62 @@ siconfi_dca_items <- function(...) {
   )$items
 }
 
+test_that("api rows replace the whole FINBRA municipality-year", {
+  local_edition(3)
+  finbra_2017 <- read_finbra_file(siconfi_fixture("finbra_extract_02.csv"))
+  finbra_all <- siconfi_finbra_all()
+  keep_years <- finbra_all[finbra_all$year != 2017L, ]
+  finbra_mix <- rbind(keep_years, finbra_2017)
+
+  # The API fixture carries only the IPTU rows with a gross value that
+  # differs from FINBRA: whole-key replacement must erase the FINBRA ITBI
+  # value too, and row-by-row merging would show the FINBRA values.
+  api <- parse_siconfi_dca(siconfi_dca_items("dca_sp_iptu_2017.json"))
+  dat <- build_siconfi_taxes(
+    finbra_mix,
+    api = api,
+    municipalities = siconfi_municipalities_all
+  )
+  sp_2017 <- dat[dat$code_muni == 3550308L & dat$year == 2017L, ]
+  expect_equal(nrow(sp_2017), 2L)
+  expect_equal(unique(sp_2017$source), "api")
+  expect_equal(
+    sp_2017$gross_revenue[sp_2017$tax == "iptu"],
+    1234567.89
+  )
+  expect_true(is.na(sp_2017$gross_revenue[sp_2017$tax == "itbi"]))
+  expect_true(is.na(sp_2017$other_deductions[sp_2017$tax == "itbi"]))
+  expect_true(is.na(sp_2017$net_revenue[sp_2017$tax == "itbi"]))
+  expect_equal(
+    unique(sp_2017$value_status),
+    c("observed", "missing_tax_row")
+  )
+  # Rio keeps its FINBRA 2017 rows.
+  rio <- dat[dat$code_muni == 3304557L & dat$year == 2017L, ]
+  expect_equal(unique(rio$source), "finbra")
+  expect_equal(rio$gross_revenue[rio$tax == "iptu"], 2482263502.05)
+})
+
+test_that("an empty API response keeps the FINBRA rows of the year", {
+  local_edition(3)
+  finbra_2017 <- read_finbra_file(siconfi_fixture("finbra_extract_02.csv"))
+  # A 200 with zero /dca items declares no reporters: the municipality's
+  # FINBRA rows (it filed there) must survive untouched.
+  dat <- build_siconfi_taxes(
+    finbra_2017,
+    api = parse_siconfi_dca(list()),
+    municipalities = siconfi_municipalities_all[
+      siconfi_municipalities_all$code_muni %in% c(3304557L, 3550308L),
+    ]
+  )
+  sp_2017 <- dat[dat$code_muni == 3550308L & dat$year == 2017L, ]
+  expect_equal(unique(sp_2017$source), "finbra")
+  expect_equal(
+    sp_2017$gross_revenue[sp_2017$tax == "iptu"],
+    8391325245.30
+  )
+})
+
 test_that("parse_siconfi_dca turns real /dca tax items into the long form", {
   local_edition(3)
   dat <- parse_siconfi_dca(siconfi_dca_items("dca_sp_tax_2017.json"))
@@ -356,9 +412,71 @@ test_that("fetch_siconfi_dca rejects a repeated page", {
   endless <- function(url) {
     return(page)
   }
+  # The second request (offset 2) gets the first page again: the offset
+  # guard must reject it.
   expect_error(
     fetch_siconfi_dca(3550308, 2024, request = endless),
-    "repeated|same page",
+    "offset|resent",
+    ignore.case = TRUE
+  )
+})
+
+test_that("fetch_siconfi_dca rejects an inconsistent item count", {
+  local_edition(3)
+  page <- jsonlite::fromJSON(
+    siconfi_fixture("dca_page_1.json"),
+    simplifyVector = FALSE
+  )
+  page$hasMore <- FALSE
+  page$count <- 5L
+  truncated <- function(url) {
+    return(page)
+  }
+  expect_error(
+    fetch_siconfi_dca(3550308, 2024, request = truncated),
+    "count",
+    ignore.case = TRUE
+  )
+})
+
+test_that("fetch_siconfi_dca caps pagination", {
+  local_edition(3)
+  paged <- function(url) {
+    offset <- as.integer(sub("^.*offset=", "", url))
+    page <- jsonlite::fromJSON(
+      siconfi_fixture("dca_page_1.json"),
+      simplifyVector = FALSE
+    )
+    page$offset <- offset
+    return(page)
+  }
+  expect_error(
+    fetch_siconfi_dca(3550308, 2024, request = paged),
+    "pag|pages",
+    ignore.case = TRUE
+  )
+})
+
+test_that("fetch_siconfi_dca asserts each page's offset", {
+  local_edition(3)
+  # The second request (offset 2) gets a page claiming offset 349: the
+  # client must reject it instead of re-indexing silently.
+  wrong_offset <- local({
+    page_2 <- jsonlite::fromJSON(
+      siconfi_fixture("dca_page_1.json"),
+      simplifyVector = FALSE
+    )
+    page_2$offset <- 349L
+    function(url) {
+      if (grepl("[?&]offset=0($|[^0-9])", url)) {
+        return(page_2)
+      }
+      return(page_2)
+    }
+  })
+  expect_error(
+    fetch_siconfi_dca(3550308, 2024, request = wrong_offset),
+    "offset",
     ignore.case = TRUE
   )
 })
@@ -604,6 +722,56 @@ siconfi_load_builder <- function() {
   source(path, local = FALSE, chdir = FALSE)
   invisible(TRUE)
 }
+
+test_that("siconfi_harvest_api checkpoints only consistent fetches", {
+  siconfi_load_builder()
+  checkpoint_dir <- withr::local_tempdir()
+  universe <- tibble::tibble(
+    code_muni = c(3550308L, 3304557L),
+    abbrev_state = c("SP", "RJ")
+  )
+  saveRDS(universe, file.path(checkpoint_dir, "universe_entes.rds"))
+  items_sp <- siconfi_dca_items("dca_sp_tax_2017.json")
+
+  # São Paulo fetches fine; Rio's response claims a count it did not send
+  # and must abort before any checkpoint is written.
+  local_mocked_bindings(
+    fetch_siconfi_dca = function(code_muni, year, ...) {
+      if (identical(code_muni, "3304557")) {
+        cli::cli_abort("Inconsistent SICONFI response: count 5 items.")
+      }
+      return(items_sp)
+    }
+  )
+  expect_error(
+    siconfi_harvest_api(2017L, checkpoint_dir),
+    "count|Inconsistent",
+    ignore.case = TRUE
+  )
+  expect_false(file.exists(file.path(checkpoint_dir, "dca_3304557_2017.rds")))
+
+  # Rerun: São Paulo is served from its checkpoint (no re-fetch), Rio is
+  # fetched now; the checkpoint records the raw item count.
+  calls <- new.env(parent = emptyenv())
+  local_mocked_bindings(
+    fetch_siconfi_dca = function(code_muni, year, ...) {
+      calls$n <- (calls$n %||% 0L) + 1L
+      if (identical(code_muni, "3304557")) {
+        return(list())
+      }
+      return(items_sp)
+    }
+  )
+  res <- siconfi_harvest_api(2017L, checkpoint_dir)
+  expect_equal(calls$n, 1L)
+  expect_equal(nrow(res), 4L)
+  expect_equal(attr(res, "reporters"), "3550308 2017")
+  checkpoint <- readRDS(file.path(checkpoint_dir, "dca_3550308_2017.rds"))
+  expect_equal(checkpoint$raw_items, 4L)
+  empty_checkpoint <- readRDS(file.path(checkpoint_dir, "dca_3304557_2017.rds"))
+  expect_equal(empty_checkpoint$raw_items, 0L)
+  expect_equal(empty_checkpoint$reporters, character())
+})
 
 test_that("siconfi_harvest_finbra aborts on two files for the same year", {
   siconfi_load_builder()

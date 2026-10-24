@@ -460,11 +460,29 @@ siconfi_dca_url <- function(code_muni, year, offset) {
   )
 }
 
+#' Minimum spacing between the starts of two SICONFI requests
+#'
+#' The API specification caps traffic at one request per second; retry
+#' backoff adds on top. Shared by the first page, follow-up pages and
+#' retries.
+siconfi_pace <- local({
+  last <- -Inf
+  function() {
+    wait <- 1.05 - as.double(difftime(Sys.time(), last, units = "secs"))
+    if (wait > 0) {
+      Sys.sleep(wait)
+    }
+    last <<- Sys.time()
+    return(invisible(TRUE))
+  }
+})
+
 #' Perform the real HTTP GET for one /dca page, with retries
 #' @noRd
 siconfi_dca_request <- function(url, quiet = FALSE) {
   download_with_retry(
     fn = function() {
+      siconfi_pace()
       response <- httr::GET(
         url = url,
         httr::user_agent(
@@ -481,11 +499,58 @@ siconfi_dca_request <- function(url, quiet = FALSE) {
   )
 }
 
+# Upper bound on the /dca pages fetched for a single municipality-year;
+# every past build fits in one 10,000-item page, so exceeding this cap
+# means pagination is misdirected, never legitimate.
+SICONFI_MAX_PAGES <- 50L
+
+#' Check one /dca page for completeness
+#'
+#' Rejects a page whose declared `count` does not match the carried items
+#' (an inconsistent or truncated response) and one whose `offset` does
+#' not match the requested offset (a resent or misdirected page).
+#' Returns the page's items.
+#' @noRd
+siconfi_check_dca_page <- function(
+  page,
+  offset,
+  code_muni,
+  year,
+  call = caller_env()
+) {
+  items <- page$items %||% list()
+  expected_count <- as.integer(page$count %||% length(items))
+  if (expected_count != length(items)) {
+    cli::cli_abort(
+      c(
+        "Inconsistent SICONFI response for municipality {code_muni} in \\
+         {year}.",
+        "x" = "The response declares count {.val {expected_count}} but \\
+               carries {.val {length(items)}} item{?s}."
+      ),
+      call = call
+    )
+  }
+  page_offset <- as.integer(page$offset %||% offset)
+  if (page_offset != offset) {
+    cli::cli_abort(
+      "The SICONFI API returned offset {.val {page_offset}} when \\
+       {.val {offset}} was requested for municipality {code_muni} in \\
+       {year}; the page may have been resent or misdirected.",
+      call = call
+    )
+  }
+  return(items)
+}
+
 #' Fetch all /dca items for one municipality-year
 #'
 #' Follows pagination by advancing `offset` by the page's reported
-#' `limit` while `hasMore` is true, and rejects a repeated page (the
-#' server can resend a page instead of honouring the offset).
+#' `limit` while `hasMore` is true; every page must carry its declared
+#' `count` and the requested `offset`, and the number of pages is
+#' capped: a truncated, resent or misdirected response aborts instead of
+#' being silently parsed. The default `request` also paces itself at at
+#' most one request per second inside the retry loop.
 #'
 #' @param request Injectable for tests: a callable taking a URL string
 #'   and returning the parsed response body.
@@ -498,23 +563,28 @@ fetch_siconfi_dca <- function(
 ) {
   request <- request %||% siconfi_dca_request
   code <- dca_code_muni(code_muni, call = call)
+  code_muni <- code
 
   offset <- 0L
   page <- request(siconfi_dca_url(code, year, offset))
-  items <- page$items %||% list()
+  items <- siconfi_check_dca_page(page, offset, code_muni, year, call = call)
 
+  pages <- 1L
   while (isTRUE(page$hasMore)) {
-    offset <- offset + (page$limit %||% length(items))
-    next_page <- request(siconfi_dca_url(code, year, offset))
-    if (identical(next_page$offset, page$offset)) {
+    pages <- pages + 1L
+    if (pages > SICONFI_MAX_PAGES) {
       cli::cli_abort(
-        "Repeated page: the SICONFI API sent {page$limit} rows twice for \\
-         municipality {code} in {year}.",
+        "The SICONFI API exceeded {.val {SICONFI_MAX_PAGES}} pages for \\
+         municipality {code} in {year}; the pagination is misdirected.",
         call = call
       )
     }
-    page <- next_page
-    items <- c(items, page$items %||% list())
+    offset <- offset + as.integer(page$limit %||% length(items))
+    page <- request(siconfi_dca_url(code, year, offset))
+    items <- c(
+      items,
+      siconfi_check_dca_page(page, offset, code_muni, year, call = call)
+    )
   }
 
   return(items)
