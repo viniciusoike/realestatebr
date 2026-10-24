@@ -469,21 +469,23 @@ test_that("fetch_siconfi_dca caps pagination", {
 
 test_that("fetch_siconfi_dca asserts each page's offset", {
   local_edition(3)
-  # The second request (offset 2) gets a page claiming offset 349: the
-  # client must reject it instead of re-indexing silently.
-  wrong_offset <- local({
+  # The first page (offset 0) is valid and claims more; the follow-up
+  # request (offset 2) gets a page claiming offset 349: the guard must
+  # reject the misdirected second page.
+  wrong_offset <- function(url) {
+    if (grepl("[?&]offset=0($|[^0-9])", url)) {
+      return(jsonlite::fromJSON(
+        siconfi_fixture("dca_page_1.json"),
+        simplifyVector = FALSE
+      ))
+    }
     page_2 <- jsonlite::fromJSON(
       siconfi_fixture("dca_page_1.json"),
       simplifyVector = FALSE
     )
     page_2$offset <- 349L
-    function(url) {
-      if (grepl("[?&]offset=0($|[^0-9])", url)) {
-        return(page_2)
-      }
-      return(page_2)
-    }
-  })
+    return(page_2)
+  }
   expect_error(
     fetch_siconfi_dca(3550308, 2024, request = wrong_offset),
     "offset",
@@ -712,8 +714,11 @@ test_that("a municipality that filed but has no tax row is a reporter", {
 
 test_that("parse_siconfi_dca records reporters from any account", {
   local_edition(3)
-  dat <- parse_siconfi_dca(siconfi_dca_items("dca_sp_tax_2017.json"))
-  expect_equal(attr(dat, "reporters"), "3550308 2017")
+  # dca_page_1.json carries only non-tax revenue accounts: the municipality
+  # still counts as a reporter, and no tax rows come back.
+  dat <- parse_siconfi_dca(siconfi_dca_items("dca_page_1.json"))
+  expect_equal(attr(dat, "reporters"), "3550308 2024")
+  expect_equal(nrow(dat), 0L)
 
   empty <- parse_siconfi_dca(list())
   expect_equal(attr(empty, "reporters"), character())
