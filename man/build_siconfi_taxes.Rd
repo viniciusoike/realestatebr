@@ -12,8 +12,11 @@ respectively); \code{municipalities} holds the municipality universe as a
 tibble with integer 7-digit \code{code_muni} and \code{abbrev_state}.
 API rows replace FINBRA rows for the whole municipality-year so the
 per-row \code{source} stays unambiguous. Non-reporters get one row per tax
-with \code{reported = FALSE} and \code{NA} values. The net revenue is gross
-minus deductions, rounded to cents, and stays \code{NA} whenever either
-side is \code{NA}: missing deduction rows never prove zero.
+with \code{reported = FALSE} and \code{NA} values. A gross row with no deduction
+row in the source counts the deduction as zero: \code{other_deductions}
+becomes 0, the net is computed, and \code{deductions_reported} marks the
+assumption (FALSE assumed, TRUE observed, NA when there is no gross
+row). Keys with a deduction row but no gross row keep \code{gross_revenue}
+and \code{net_revenue} NA.
 }
 \keyword{internal}

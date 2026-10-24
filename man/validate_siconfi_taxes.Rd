@@ -7,7 +7,10 @@
 validate_siconfi_taxes(data, call = caller_env())
 }
 \description{
-Checks the published schema (column names, order and types), integer
-7-digit municipality codes, and unique code_muni x year x tax keys.
+Checks the published schema (column names, order and types for every
+column), integer 7-digit municipality codes, unique code_muni x year x
+tax keys, the documented \code{tax}, \code{value_status} and \code{account_scope}
+domains, NA values and source on non-reporter rows, and the
+gross-minus-deductions net identity.
 }
 \keyword{internal}

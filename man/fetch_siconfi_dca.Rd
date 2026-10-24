@@ -12,7 +12,10 @@ and returning the parsed response body.}
 }
 \description{
 Follows pagination by advancing \code{offset} by the page's reported
-\code{limit} while \code{hasMore} is true, and rejects a repeated page (the
-server can resend a page instead of honouring the offset).
+\code{limit} while \code{hasMore} is true; every page must carry its declared
+\code{count} and the requested \code{offset}, and the number of pages is
+capped: a truncated, resent or misdirected response aborts instead of
+being silently parsed. The default \code{request} also paces itself at at
+most one request per second inside the retry loop.
 }
 \keyword{internal}

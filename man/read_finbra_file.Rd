@@ -9,7 +9,9 @@ read_finbra_file(path, call = caller_env())
 \value{
 A tibble of tax rows in the long form (columns \code{year},
 \code{code_muni} (character, 7 digits), \code{abbrev_state}, \code{institution},
-\code{tax}, \code{value_kind}, \code{value}).
+\code{tax}, \code{value_kind}, \code{value}), carrying the attribute \code{reporters}:
+character keys \verb{<code_muni> <year>} of every municipality that has a
+valid data line in the file (any account), not only tax rows.
 }
 \description{
 \code{path} may be a \code{.csv} or a \code{.zip} whose single CSV entry is read; the

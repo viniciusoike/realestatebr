@@ -481,6 +481,7 @@ siconfi_dca_url <- function(code_muni, year, offset) {
 #' The API specification caps traffic at one request per second; retry
 #' backoff adds on top. Shared by the first page, follow-up pages and
 #' retries.
+#' @noRd
 siconfi_pace <- local({
   last <- -Inf
   function() {

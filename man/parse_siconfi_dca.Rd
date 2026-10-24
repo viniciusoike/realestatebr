@@ -9,6 +9,8 @@ parse_siconfi_dca(items, call = caller_env())
 \description{
 \code{items} holds one list per item (\code{jsonlite::fromJSON(simplifyVector = FALSE)} outlines), with fields \code{exercicio}, \code{cod_ibge}, \code{uf},
 \code{instituicao}, \code{coluna}, \code{cod_conta}, \code{valor}. The API column labels
-follow the 2014+ vocabulary for every year.
+follow the 2014+ vocabulary for every year. The result carries the
+attribute \code{reporters}: \verb{<code_muni> <exercicio>} keys of every item,
+any account.
 }
 \keyword{internal}
