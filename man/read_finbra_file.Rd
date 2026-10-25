@@ -13,9 +13,10 @@ A tibble of tax rows in the long form (columns \code{year},
 character keys \verb{<code_muni> <year>} of every municipality that has a
 valid data line in the file (any account), not only tax rows; and
 the attribute \code{context}: one tibble row per municipality-year with
-\code{population} (integer, from the file's \code{População} field), plus
 \code{current_revenue} and \code{tax_revenue} (the gross realized values of
-the Current Revenue and Taxes, Fees and Contributions accounts).
+the Current Revenue and Taxes, Fees and Contributions accounts). The
+file's \code{População} field is ignored: population comes from IBGE (see
+\code{fetch_siconfi_population()}).
 }
 \description{
 \code{path} may be a \code{.csv} or a \code{.zip} whose single CSV entry is read; the

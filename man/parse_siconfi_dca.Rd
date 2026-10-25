@@ -13,6 +13,7 @@ follow the 2014+ vocabulary for every year. The result carries the
 attribute \code{reporters}: \verb{<code_muni> <exercicio>} keys of every item,
 any account; and the attribute \code{context} from the current-revenue and
 tax-revenue items (gross column only). The API's \code{populacao} field is
-never collected: population is a FINBRA-only figure.
+ignored: population comes from IBGE (see
+\code{fetch_siconfi_population()}).
 }
 \keyword{internal}

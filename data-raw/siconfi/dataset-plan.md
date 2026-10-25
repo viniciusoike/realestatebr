@@ -126,10 +126,11 @@ verified against every FINBRA file 2013–2025 and the live API for 2017 and
 | 2022–2025 | `siconfi-cor_RO1.1.1.2.50.0.0` | `siconfi-cor_RO1.1.1.2.53.0.0` | `siconfi-cor_RO1.0.0.0.00.0.0` | `siconfi-cor_RO1.1.0.0.00.0.0` | `tax_family` |
 
 São Paulo anchors read from the files (gross realized, `Receitas
-Realizadas` 2013 / `Receitas Brutas Realizadas` 2014+; population as
-published):
+Realizadas` 2013 / `Receitas Brutas Realizadas` 2014+; the `População`
+column below is the FINBRA field as published, kept only as parsing
+history — the dataset itself uses the IBGE population, see below):
 
-| Year | population | current_revenue | tax_revenue |
+| Year | FINBRA `População` | current_revenue | tax_revenue |
 | --- | ---: | ---: | ---: |
 | 2013 | 11,821,873 | 37,710,663,491.90 | 18,565,985,119.76 |
 | 2017 | 12,038,175 | 50,970,741,521.99 | 25,715,190,301.72 |
@@ -139,21 +140,34 @@ published):
 | 2025 | 12,200,180 | 108,153,374,942.34 | 68,282,433,803.83 |
 
 The 2024 API response and the 2025 API response (São Paulo and
-Quilombo-SC) match the FINBRA figures above exactly, for the tax totals
-and the `populacao` field alike — but the API `populacao` is never used:
-population is a FINBRA-only figure by decision.
+Quilombo-SC) match the FINBRA figures above exactly for the tax totals —
+but the API and FINBRA population fields are never used (superseding the
+original population decision, 25 October 2026): Tesouro's `População`
+is stale and lagged — São Paulo 2017 and 2018 both carry 12,038,175
+(IBGE's 2016 estimate) and 2024 and 2025 both carry 12,200,180 against
+IBGE's 11,895,578 and 11,904,961 — so population comes from IBGE.
 
-## Municipality-year context (approved 24 October 2026)
+## Municipality-year context (approved 24 October 2026; population
+superseded 25 October 2026)
 
-- Three context columns ride along on both tax rows, placed after `year`
-  and before `tax`: `population` (integer), `current_revenue` and
+- Context columns ride along on both tax rows, placed after `year`
+  and before `tax`: `population` and the character
+  `population_source` (integer/character), `current_revenue` and
   `tax_revenue` (double, nominal BRL), enabling per-capita values and
   IPTU's share of own revenue.
-- **Population** comes only from the FINBRA `População` field of the same
-  year; never from IBGE or the API. Verified constant across all lines of
-  a municipality-year in all 13 bulk files; a conflicting value aborts
-  with `cli`. For API years without a FINBRA file of that year (none
-  today), `population` is NA.
+- **Population** comes from IBGE, fetched in the build with the existing
+  IBGE aggregates client (`fetch_siconfi_population()`): the yearly
+  resident-population estimates of SIDRA table 6579 (variable 9324;
+  periods 2001–2021 with the census-year gaps and 2024–, verified 25
+  Oct 2026), the 2022 Census count from table 4709 (variable 93), and a
+  2023 filled by linear midpoint between the municipality's 2022 Census
+  and 2024 estimate, rounded to an integer. It is independent of SICONFI
+  reporting, so it fills reporter and non-reporter rows alike;
+  municipality-years without a figure (none in 2013-2025; table 6579 has
+  no 2022/2023) stay NA. `population_source` labels each figure
+  ("estimate", "census", "interpolated"; NA exactly when population is
+  NA) and is validated. The build script injects the tibble via
+  `build_siconfi_taxes(population =)`, injectable for tests.
 - **`current_revenue` = Receitas Correntes** (`RO1.0.0.0.00.0.0` in
   2018+; `RO1.0.0.0.00.00.00` 2013–2017) and **`tax_revenue` = Impostos,
   Taxas e Contribuições de Melhoria** (`RO1.1.0.0.00.0.0` in 2018+;
@@ -162,9 +176,9 @@ population is a FINBRA-only figure by decision.
   column, as `gross_revenue`); FUNDEB and transfer columns never feed
   them. For API-supplied years the totals come from the API items (same
   vintage codes and column labels), so a municipality-year's context
-  stays from one source; population keeps the FINBRA figure. A reporting
+  stays from one source. A reporting
   municipality without the account line keeps NA (never zero);
-  non-reporters get NA for all three.
+  non-reporters get NA totals.
 
 - Rows sharing the legacy codes' family (fines and old-debts under
   `RO1.9.1.1.38/39` and `RO1.9.1.3.11/12` in 2015–2017, and `.2/.3/.4` child
@@ -233,7 +247,8 @@ not zero-filled).
 | `code_muni` | integer | Seven-digit IBGE municipality code, geobr-compatible. |
 | `abbrev_state` | character | Two-letter state abbreviation from the source row. |
 | `year` | integer | Exercise year, 2013–latest closed year. |
-| `population` | integer | Population figure carried on the FINBRA file's lines for that municipality-year (`População`), repeated on both tax rows; NA for API years without a FINBRA file and for non-reporters. |
+| `population` | integer | Resident population from IBGE (yearly estimate of table 6579, the 2022 Census of table 4709, or the 2023 midpoint interpolation), independent of SICONFI reporting; repeated on both tax rows and kept for non-reporters; NA when IBGE has no figure. |
+| `population_source` | character | How population was obtained: `estimate`, `census`, or `interpolated`; NA exactly when population is NA. |
 | `current_revenue` | double | Gross realized total current revenue (Receitas Correntes) of the municipality-year in nominal BRL; repeated on both tax rows. NA when absent or non-reporter. |
 | `tax_revenue` | double | Gross realized Impostos, Taxas e Contribuições de Melhoria of the municipality-year in nominal BRL; repeated on both tax rows. NA when absent or non-reporter. |
 | `tax` | character | `iptu` or `itbi`. |

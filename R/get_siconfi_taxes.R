@@ -234,9 +234,10 @@ siconfi_long_columns <- function() {
 #'   character keys `<code_muni> <year>` of every municipality that has a
 #'   valid data line in the file (any account), not only tax rows; and
 #'   the attribute `context`: one tibble row per municipality-year with
-#'   `population` (integer, from the file's `População` field), plus
 #'   `current_revenue` and `tax_revenue` (the gross realized values of
-#'   the Current Revenue and Taxes, Fees and Contributions accounts).
+#'   the Current Revenue and Taxes, Fees and Contributions accounts). The
+#'   file's `População` field is ignored: population comes from IBGE (see
+#'   `fetch_siconfi_population()`).
 #' @keywords internal
 read_finbra_file <- function(path, call = caller_env()) {
   lines <- finbra_read_lines(path, call = call)
@@ -269,8 +270,6 @@ read_finbra_file <- function(path, call = caller_env()) {
   long <- dplyr::bind_rows(tax_rows)
   attr(long, "reporters") <- reporter_keys
   attr(long, "context") <- siconfi_build_context(
-    pop_keys = vapply(parsed, `[[`, character(1L), "pop_key"),
-    pop_values = vapply(parsed, `[[`, integer(1L), "population"),
     context_rows = Filter(
       Negate(is.null),
       lapply(parsed, `[[`, "context")
@@ -343,15 +342,15 @@ finbra_year <- function(lines, call = caller_env()) {
 #'
 #' Returns a list with `code` (the municipality's 7-digit IBGE code when
 #' the line is a full data record, else NA — used for the reporters set),
-#' `pop_key` (the `<code> <year>` reporter key or NA),
-#' `population` (integer or NA), `context` (a one-row context tibble for
-#' context-account rows carrying a gross-realized value, else NULL) and
-#' `row` (a one-row long-form tibble for tax rows, NULL for non-tax
-#' rows). From the end of the line: the last field is `Valor`, the
-#' second-to-last is `Identificador da Conta`, the third-to-last is the
-#' quoted account name, and the fourth-to-last is `Coluna`; the four
-#' leading fields (institution through population) precede both. The
-#' account-name field may carry unescaped quotes or even `;`.
+#' `context` (a one-row context tibble for context-account rows carrying a
+#' gross-realized value, else NULL) and `row` (a one-row long-form tibble
+#' for tax rows, NULL for non-tax rows). From the end of the line: the
+#' last field is `Valor`, the second-to-last is `Identificador da Conta`,
+#' the third-to-last is the quoted account name, and the fourth-to-last is
+#' `Coluna`; the leading fields (institution through population) precede
+#' both. The account-name field may carry unescaped quotes or even `;`.
+#' The `População` field is not read (population comes from IBGE; see
+#' `fetch_siconfi_population()`).
 #' @noRd
 finbra_parse_line <- function(line, year, call = caller_env()) {
   fields <- strsplit(line, ";", fixed = TRUE)[[1L]]
@@ -378,8 +377,6 @@ finbra_parse_line <- function(line, year, call = caller_env()) {
     }
     return(list(
       code = NA_character_,
-      pop_key = NA_character_,
-      population = NA_integer_,
       context = NULL,
       row = NULL
     ))
@@ -388,17 +385,12 @@ finbra_parse_line <- function(line, year, call = caller_env()) {
   code_muni <- trimws(fields[2L])
   reporter <- if (grepl("^[0-9]{7}$", code_muni)) code_muni else NA_character_
 
-  population <- finbra_population(fields[4L], call = call)
-  pop_key <- if (is.na(reporter)) NA_character_ else paste(reporter, year)
-
   code <- siconfi_clean_code(fields[n - 1L])
   tax <- siconfi_classify_code(code, year, call = call)
   if (is.na(tax)) {
     context <- finbra_context_row(fields, code, code_muni, year, call = call)
     return(list(
       code = reporter,
-      pop_key = pop_key,
-      population = population,
       context = context,
       row = NULL
     ))
@@ -424,24 +416,9 @@ finbra_parse_line <- function(line, year, call = caller_env()) {
   )
   return(list(
     code = reporter,
-    pop_key = pop_key,
-    population = population,
     context = NULL,
     row = row
   ))
-}
-
-#' Parse the `População` field of a FINBRA line
-#' @noRd
-finbra_population <- function(text, call = caller_env()) {
-  raw_text <- trimws(gsub('"', "", as.character(text)[[1L]], fixed = TRUE))
-  if (!grepl("^[0-9]+$", raw_text)) {
-    cli::cli_abort(
-      "Malformed population value {.val {raw_text}} in the FINBRA data.",
-      call = call
-    )
-  }
-  return(as.integer(raw_text))
 }
 
 #' Context tibble for a context-account line (gross realized value only)
@@ -467,7 +444,6 @@ finbra_context_row <- function(
   return(tibble::tibble(
     code_muni = code_muni,
     year = year,
-    population = NA_integer_,
     current_revenue = if (identical(kind, "current_revenue")) {
       value
     } else {
@@ -479,41 +455,16 @@ finbra_context_row <- function(
 
 #' Aggregate the parsed municipality-year context
 #'
-#' `pop_keys`/`pop_values` carry the `<code> <year>` population key and
-#' integer value of every valid data line; `context_rows` are one-row
-#' tibbles from context-account lines. Returns one tibble per
-#' municipality-year with `population`, `current_revenue` and
+#' `context_rows` are one-row tibbles from context-account lines. Returns
+#' one tibble per municipality-year with `current_revenue` and
 #' `tax_revenue`; conflicting values within a municipality-year abort
 #' instead of being silently deduplicated.
 #' @noRd
 siconfi_build_context <- function(
-  pop_keys,
-  pop_values,
   context_rows,
   call = caller_env()
 ) {
   context <- siconfi_context_empty()
-
-  population <- tibble::tibble(
-    key = pop_keys,
-    population = pop_values
-  )
-  population <- population[!is.na(population$key), ]
-  population <- dplyr::distinct(population)
-  keys <- population$key[duplicated(population$key)]
-  if (length(keys) > 0L) {
-    cli::cli_abort(
-      "Conflicting population values for municipality-year \\
-       {.val {utils::head(unique(keys), 3L)}}; every line of the file \\
-       must carry the same figure.",
-      call = call
-    )
-  }
-  population <- tibble::tibble(
-    code_muni = sub(" [0-9]{4}$", "", population$key),
-    year = as.integer(sub("^.* ", "", population$key)),
-    population = population$population
-  )
 
   rows <- dplyr::bind_rows(context_rows)
   if (nrow(rows) > 0L) {
@@ -549,13 +500,7 @@ siconfi_build_context <- function(
         ),
         .groups = "drop"
       )
-    context <- dplyr::full_join(
-      wide,
-      population,
-      by = c("code_muni", "year")
-    )
-  } else {
-    context <- population
+    context <- wide
   }
   missing_cols <- setdiff(
     c("current_revenue", "tax_revenue"),
@@ -564,13 +509,7 @@ siconfi_build_context <- function(
   for (col in missing_cols) {
     context[[col]] <- NA_real_
   }
-  context <- context[c(
-    "code_muni",
-    "year",
-    "population",
-    "current_revenue",
-    "tax_revenue"
-  )]
+  context <- context[c("code_muni", "year", "current_revenue", "tax_revenue")]
   return(dplyr::arrange(context, .data$code_muni, .data$year))
 }
 
@@ -580,7 +519,6 @@ siconfi_context_empty <- function() {
   return(tibble::tibble(
     code_muni = character(),
     year = integer(),
-    population = integer(),
     current_revenue = double(),
     tax_revenue = double()
   ))
@@ -603,7 +541,8 @@ siconfi_context_attr <- function(long) {
 #' attribute `reporters`: `<code_muni> <exercicio>` keys of every item,
 #' any account; and the attribute `context` from the current-revenue and
 #' tax-revenue items (gross column only). The API's `populacao` field is
-#' never collected: population is a FINBRA-only figure.
+#' ignored: population comes from IBGE (see
+#' `fetch_siconfi_population()`).
 #' @keywords internal
 parse_siconfi_dca <- function(items, call = caller_env()) {
   if (length(items) == 0L) {
@@ -627,8 +566,6 @@ parse_siconfi_dca <- function(items, call = caller_env()) {
   }
   attr(long, "reporters") <- unique(paste(codes, years))
   attr(long, "context") <- siconfi_build_context(
-    pop_keys = rep(NA_character_, length(parsed)),
-    pop_values = rep(NA_integer_, length(parsed)),
     context_rows = Filter(
       Negate(is.null),
       lapply(parsed, `[[`, "context")
@@ -644,7 +581,8 @@ parse_siconfi_dca <- function(items, call = caller_env()) {
 #' one-row long form for tax items, NULL for non-tax items) and
 #' `context` (a one-row context tibble for context-account items in the
 #' gross column, NULL otherwise). The item's `populacao` field is
-#' ignored: population is a FINBRA-only figure.
+#' ignored: population comes from IBGE (see
+#' `fetch_siconfi_population()`).
 #' @noRd
 parse_dca_item <- function(item, call = caller_env()) {
   year <- as.integer(as.numeric(item$exercicio %||% NA_real_))
@@ -666,7 +604,6 @@ parse_dca_item <- function(item, call = caller_env()) {
         context <- tibble::tibble(
           code_muni = code_muni,
           year = year,
-          population = NA_integer_,
           current_revenue = if (identical(kind, "current_revenue")) {
             value
           } else {
@@ -876,6 +813,163 @@ fetch_siconfi_dca <- function(
   return(items)
 }
 
+# IBGE population -------------------------------------------------------------
+
+#' Resident population by municipality-year from IBGE
+#'
+#' The estimates come from SIDRA table 6579 (variable 9324, População
+#' residente estimada, every period the table serves, localities N6[all];
+#' table and variable verified 25 Oct 2026), the 2022 Census count from
+#' table 4709 (variable 93, single 2022 period), and 2023 gets a linear
+#' midpoint between the 2022 Census and the 2024 estimate (ties round to
+#' even, R's `round()`). Dataset years without a figure stay absent: the
+#' builder fills them with NA. `fetch` is injectable for tests: the
+#' aggregate fetcher called as `fetch(aggregate, variables, periods,
+#' localities)`.
+#' @param years Exercise years the dataset covers.
+#' @return A tibble `code_muni` (character, 7 digits), `year` (integer),
+#'   `population` (integer), `population_source` ("estimate", "census",
+#'   "interpolated").
+#' @keywords internal
+fetch_siconfi_population <- function(
+  years,
+  fetch = download_ibge_aggregate,
+  call = caller_env()
+) {
+  years <- sort(unique(as.integer(years)))
+  empty <- tibble::tibble(
+    code_muni = character(),
+    year = integer(),
+    population = integer(),
+    population_source = character()
+  )
+  if (length(years) == 0L) {
+    return(empty)
+  }
+
+  estimates <- fetch(
+    aggregate = "6579",
+    variables = "9324",
+    periods = NULL,
+    localities = "N6[all]",
+    # IBGE answers HTTP 500 above ~8 periods on this table when the query
+    # carries the whole N6[all] municipality universe; small chunks keep
+    # every request under the limit.
+    chunk_size = 5L
+  )
+  census <- if (2022L %in% years) {
+    fetch(
+      aggregate = "4709",
+      variables = "93",
+      periods = "2022",
+      localities = "N6[all]"
+    )
+  } else {
+    NULL
+  }
+
+  population <- dplyr::bind_rows(
+    siconfi_population_rows(estimates, "estimate", years),
+    siconfi_population_rows(census, "census", years),
+    empty
+  )
+  cli::cli_inform(
+    "IBGE population: {.val {nrow(population)}} municipality-years from \\
+     the estimates (table 6579) and the 2022 Census (table 4709)."
+  )
+  return(siconfi_interpolate_population(population))
+}
+
+#' Population tibble from one fetch result
+#'
+#' `dat` is a `download_ibge_aggregate()` result; only the requested
+#' years are kept and a missing value skips the row.
+#' @noRd
+siconfi_population_rows <- function(dat, source, years) {
+  if (is.null(dat) || nrow(dat) == 0L) {
+    return(tibble::tibble(
+      code_muni = character(),
+      year = integer(),
+      population = integer(),
+      population_source = character()
+    ))
+  }
+  keep <- dat[as.integer(dat$period) %in% years & !is.na(dat$value), ]
+  return(tibble::tibble(
+    code_muni = sprintf("%.0f", as.numeric(keep$geography_code)),
+    year = as.integer(keep$period),
+    population = as.integer(round(keep$value)),
+    population_source = source
+  ))
+}
+
+#' Fill 2023 with the linear midpoint of the 2022 and 2024 population
+#'
+#' Pure: `population` holds code_muni/year/population rows (any source
+#' labels); returns the input plus one 2023 row per municipality, with
+#' NA population and NA `population_source` when either anchor is
+#' missing. Ties round to even (R's `round()`).
+#' @noRd
+siconfi_interpolate_population <- function(
+  population,
+  call = caller_env()
+) {
+  population$population <- as.integer(population$population)
+  anchors <- population[
+    population$year %in% c(2022L, 2024L),
+    c("code_muni", "year", "population"),
+    drop = FALSE
+  ]
+  census <- anchors[anchors$year == 2022L, c("code_muni", "population")]
+  names(census)[[2L]] <- "population_2022"
+  estimate <- anchors[anchors$year == 2024L, c("code_muni", "population")]
+  names(estimate)[[2L]] <- "population_2024"
+  interpolated <- dplyr::full_join(census, estimate, by = "code_muni") |>
+    dplyr::mutate(
+      year = 2023L,
+      population = as.integer(round(
+        (.data$population_2022 + .data$population_2024) / 2
+      )),
+      population_source = dplyr::if_else(
+        !is.na(.data$population_2022) & !is.na(.data$population_2024),
+        "interpolated",
+        NA_character_
+      )
+    ) |>
+    dplyr::select("code_muni", "year", "population", "population_source")
+  return(dplyr::bind_rows(population, interpolated))
+}
+
+#' Guard and normalize the injected population tibble
+#'
+#' Accepts character or integer 7-digit `code_muni`; NULL becomes an
+#' empty tibble (every population published as NA).
+#' @noRd
+siconfi_check_population <- function(population, call = caller_env()) {
+  if (is.null(population)) {
+    return(tibble::tibble(
+      code_muni = character(),
+      year = integer(),
+      population = integer(),
+      population_source = character()
+    ))
+  }
+  required <- c("code_muni", "year", "population", "population_source")
+  if (!is.data.frame(population) || !all(required %in% names(population))) {
+    cli::cli_abort(
+      "{.arg population} must be a data frame with columns \\
+       {.val {required}}.",
+      call = call
+    )
+  }
+  population <- population[required]
+  population$code_muni <- sprintf("%.0f", as.numeric(population$code_muni))
+  population$year <- as.integer(population$year)
+  population$population <- as.integer(population$population)
+  population$population_source <- as.character(population$population_source)
+  return(population)
+}
+
 # Build the dataset -----------------------------------------------------------
 
 #' Wide per-tax form of a parsed long form
@@ -948,10 +1042,12 @@ reporter_years <- function(keys, fallback_years) {
 #'
 #' `finbra` and `api` are parsed long forms (source `finbra` and `api`
 #' respectively); `municipalities` holds the municipality universe as a
-#' tibble with integer 7-digit `code_muni` and `abbrev_state`.
+#' tibble with integer 7-digit `code_muni` and `abbrev_state`. `population`
+#' holds the IBGE municipality-year population as a tibble (`code_muni`,
+#' `year`, `population`, `population_source`); NULL publishes all NA.
 #' API rows replace FINBRA rows for the whole municipality-year so the
 #' per-row `source` stays unambiguous. Non-reporters get one row per tax
-#' with `reported = FALSE` and `NA` values. A gross row with no deduction
+#' with `reported = FALSE` and NA values. A gross row with no deduction
 #' row in the source counts the deduction as zero: `other_deductions`
 #' becomes 0, the net is computed, and `deductions_reported` marks the
 #' assumption (FALSE assumed, TRUE observed, NA when there is no gross
@@ -963,6 +1059,7 @@ build_siconfi_taxes <- function(
   finbra,
   api = NULL,
   municipalities,
+  population = NULL,
   call = caller_env()
 ) {
   siconfi_check_long_form(finbra, "finbra", call = call)
@@ -970,6 +1067,7 @@ build_siconfi_taxes <- function(
     siconfi_check_long_form(api, "api", call = call)
   }
   siconfi_check_municipalities(municipalities, call = call)
+  population <- siconfi_check_population(population, call = call)
 
   finbra_wide <- siconfi_wide(finbra)
   api_wide <- if (is.null(api)) NULL else siconfi_wide(api)
@@ -1018,13 +1116,14 @@ build_siconfi_taxes <- function(
   )
   data <- dplyr::left_join(grid, wide, by = c("code_muni", "year", "tax"))
 
-  # Municipality-year context: population and the two revenue totals are
-  # repeated on both tax rows. Population is a FINBRA-only figure (the
-  # FINBRA file of the same year; NA for API years without one). The
-  # revenue totals stay from one source per municipality-year: covered by
-  # the API, they take the API values (dropped from FINBRA); else the
-  # FINBRA values. A reporting municipality without the account lines
-  # keeps NA (never zero).
+  # Municipality-year context: the two revenue totals are repeated on
+  # both tax rows, kept from one source per municipality-year (covered by
+  # the API, they take the API values, dropped from FINBRA; else the
+  # FINBRA values; a reporting municipality without the account lines
+  # keeps NA, never zero). Population is independent of SICONFI
+  # reporting: the injected IBGE tibble joins the grid by
+  # municipality-year and fills reporter and non-reporter rows alike;
+  # missing figures publish NA with NA population_source.
   finbra_context <- siconfi_context_attr(finbra)
   api_context <- if (is.null(api)) {
     siconfi_context_empty()[c(
@@ -1045,12 +1144,8 @@ build_siconfi_taxes <- function(
     !(paste(.data$code_muni, .data$year) %in% api_covered_keys)
   )[c("code_muni", "year", "current_revenue", "tax_revenue")]
   revenue <- dplyr::bind_rows(finbra_context_revenue, api_context)
-  context <- dplyr::full_join(
-    revenue,
-    finbra_context[c("code_muni", "year", "population")],
-    by = c("code_muni", "year")
-  )
-  data <- dplyr::left_join(data, context, by = c("code_muni", "year"))
+  data <- dplyr::left_join(data, revenue, by = c("code_muni", "year"))
+  data <- dplyr::left_join(data, population, by = c("code_muni", "year"))
 
   keys <- paste(data$code_muni, data$year)
   data$reported <- keys %in% c(finbra_reports_kept, api_reporters)
@@ -1103,6 +1198,7 @@ siconfi_published_columns <- function() {
     "abbrev_state",
     "year",
     "population",
+    "population_source",
     "current_revenue",
     "tax_revenue",
     "tax",
@@ -1191,9 +1287,10 @@ siconfi_check_municipalities <- function(municipalities, call = caller_env()) {
 #'
 #' Checks the published schema (column names, order and types for every
 #' column), integer 7-digit municipality codes, unique code_muni x year x
-#' tax keys, the documented `tax`, `value_status` and `account_scope`
-#' domains, NA values and source on non-reporter rows, and the
-#' gross-minus-deductions net identity.
+#' tax keys, the documented `tax`, `value_status`, `account_scope` and
+#' `population_source` domains, NA values and source on non-reporter rows
+#' (population is exempt: it is independent of reporting, with its source
+#' NA exactly when it is NA), and the gross-minus-deductions net identity.
 #' @keywords internal
 validate_siconfi_taxes <- function(data, call = caller_env()) {
   problems <- siconfi_schema_problems(data, siconfi_published_columns())
@@ -1222,9 +1319,10 @@ validate_siconfi_taxes <- function(data, call = caller_env()) {
 #'
 #' Returns a character vector of problems (empty when the table conforms):
 #' column names and order, every published column's type, integer 7-digit
-#' municipality codes, the documented `tax`, `value_status` and
-#' `account_scope` domains, NA values and source on non-reporter rows,
-#' and `net_revenue = gross_revenue - other_deductions` to the cent
+#' municipality codes, the documented `tax`, `value_status`,
+#' `account_scope` and `population_source` domains, NA values and source
+#' on non-reporter rows, `population_source` NA exactly when `population`
+#' is NA, and `net_revenue = gross_revenue - other_deductions` to the cent
 #' wherever both exist.
 #' @noRd
 siconfi_schema_problems <- function(data, expected_names) {
@@ -1233,6 +1331,7 @@ siconfi_schema_problems <- function(data, expected_names) {
     "abbrev_state" = "character",
     "year" = "integer",
     "population" = "integer",
+    "population_source" = "character",
     "current_revenue" = "double",
     "tax_revenue" = "double",
     "tax" = "character",
@@ -1249,7 +1348,8 @@ siconfi_schema_problems <- function(data, expected_names) {
     "tax" = c("iptu", "itbi"),
     "value_status" = c("observed", "missing_tax_row", "non_reporter"),
     "account_scope" = c("legacy_line", "tax_family"),
-    "source" = c("finbra", "api")
+    "source" = c("finbra", "api"),
+    "population_source" = c("estimate", "census", "interpolated")
   )
   if (!is.data.frame(data)) {
     return("the parsed table must be a data frame")
@@ -1321,7 +1421,6 @@ siconfi_schema_problems <- function(data, expected_names) {
     } else if (nrow(data) > 0L) {
       non_reported <- which(!data$reported)
       for (column in c(
-        "population",
         "current_revenue",
         "tax_revenue",
         "gross_revenue",
@@ -1345,6 +1444,27 @@ siconfi_schema_problems <- function(data, expected_names) {
           )
         }
       }
+    }
+  }
+  if (
+    all(c("population", "population_source") %in% names(data)) &&
+      nrow(data) > 0L
+  ) {
+    off <- is.na(data$population) != is.na(data$population_source)
+    if (any(off)) {
+      bad <- which(off)[[1L]]
+      problems <- c(
+        problems,
+        sprintf(
+          paste0(
+            "population_source must be NA exactly when population is NA,",
+            "; first at code_muni %s year %s tax %s"
+          ),
+          sprintf("%.0f", data$code_muni[bad]),
+          data$year[bad],
+          data$tax[bad]
+        )
+      )
     }
   }
   numeric_columns <- all(vapply(

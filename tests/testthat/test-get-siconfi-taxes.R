@@ -18,13 +18,11 @@
 #     `<7-digit code_muni> <year>` for every municipality that has a valid
 #     data line in the file (any account), not only tax rows; and the
 #     attribute "context": a tibble (code_muni character, year integer,
-#     population integer, current_revenue double, tax_revenue double) with
-#     the municipality-year context collected from the file: population
-#     from the `População` field of every valid data line, and the gross
+#     current_revenue double, tax_revenue double) with the gross
 #     realized values of the current-revenue and tax-revenue accounts
 #     (`RO1.0.0.0.00.00.00`/`RO1.1.0.0.00.00.00` through 2017;
-#     `RO1.0.0.0.00.0.0`/`RO1.1.0.0.00.0.0` from 2018). Conflicting
-#     population values within a municipality-year abort.
+#     `RO1.0.0.0.00.0.0`/`RO1.1.0.0.00.0.0` from 2018). Population is not
+#     read from the file: it comes from IBGE (see fetch_siconfi_population).
 #     Value-kind mapping on column labels: `Receitas Realizadas` (2013) and
 #     `Receitas Brutas Realizadas` (2014+) -> gross; `Deduções da Receita`
 #     (2013) and `Outras Deduções da Receita` (2014+) -> deduction; `Deduções
@@ -43,8 +41,8 @@
 #     same "reporters" attribute keyed from each item's cod_ibge x exercicio
 #     (any account), and the same "context" attribute built from the
 #     current-revenue and tax-revenue items (gross column only); the API's
-#     `populacao` field is never collected: population is a FINBRA-only
-#     figure, so the API context carries NA population.
+#     `populacao` field is ignored: population comes from IBGE (see
+#     fetch_siconfi_population).
 #     cli::cli_abort() on unknown `cod_conta` for the item's year, unknown
 #     `coluna`, malformed `valor`.
 #
@@ -68,20 +66,23 @@
 #     municipality x year x tax for every year supplied, with columns
 #     (in order):
 #       code_muni (integer), abbrev_state, year (integer), population
-#       (integer), current_revenue (double), tax_revenue (double), tax,
+#       (integer), population_source ("estimate"/"census"/"interpolated"),
+#       current_revenue (double), tax_revenue (double), tax,
 #       reported (logical), value_status ("observed"/"missing_tax_row"/
 #       "non_reporter"), gross_revenue, other_deductions,
 #       deductions_reported (logical), net_revenue,
 #       account_scope ("legacy_line" <= 2017, "tax_family" >= 2018),
 #       source ("finbra"/"api", NA for non-reporters).
-#     The three context columns are municipality-year values repeated
-#     identically on both tax rows. Population comes only from the FINBRA
-#     file of the same year (NA for API years without a FINBRA file; the
-#     API's populacao field is never used). current_revenue and
+#     The context columns are municipality-year values repeated
+#     identically on both tax rows. Population comes from the injected
+#     `population` tibble (code_muni, year, population, population_source;
+#     default NULL = all NA). It is independent of SICONFI reporting, so it
+#     fills non-reporter rows too; municipality-years without a figure keep
+#     NA population and NA population_source. current_revenue and
 #     tax_revenue are gross realized values: FINBRA values, replaced by
 #     the API values for API-covered municipality-years; a reporting
 #     municipality without the account line gets NA, and non-reporters
-#     get NA for all three. Literal zeros stay zero.
+#     get NA totals. Literal zeros stay zero.
 #     API rows replace FINBRA rows for the same municipality-year (source
 #     becomes "api"); rows supplied only by FINBRA keep "finbra";
 #     non-reporters get reported = FALSE, NA values, value_status =
@@ -96,8 +97,26 @@
 #
 # - validate_siconfi_taxes(data)
 #     cli::cli_abort() unless the published schema, types and keys hold:
-#     expected columns and types, integer 7-digit code_muni, and unique
-#     code_muni x year x tax keys.
+#     expected columns and types, integer 7-digit code_muni, the
+#     population_source domain with NA exactly when population is NA,
+#     and unique code_muni x year x tax keys.
+
+# IBGE population -------------------------------------------------------------
+#
+# - fetch_siconfi_population(years, fetch = download_ibge_aggregate)
+#     Estimates from SIDRA table 6579 (variable 9324, all available
+#     periods, localities N6[all]); the 2022 Census count from table 4709
+#     (variable 93); 2023 filled by siconfi_interpolate_population().
+#     Returns a tibble code_muni (character 7 digits), year (integer),
+#     population (integer), population_source ("estimate"/"census"/
+#     "interpolated"). Dataset years without a figure are absent from
+#     the result; non-requested years are dropped.
+#
+# - siconfi_interpolate_population(population)
+#     Pure: fills 2023 per municipality as the midpoint of its 2022 and
+#     2024 population, rounded to an integer (ties to even, R's round).
+#     Missing either anchor keeps 2023 NA with NA source. Returns the
+#     input rows plus the new 2023 rows.
 
 local_edition(3)
 
@@ -148,14 +167,24 @@ siconfi_anchors <- tibble::tribble(
   "3304557"  , 2024L , "itbi" ,  1442603315.39 ,   9399149.05      ,  1433204166.34
 )
 
-# Municipality-year context anchors re-verified on 24 Oct 2026 against the
-# FINBRA bulk files (gross realized values; population as published).
+# Municipality-year revenue anchors re-verified on 24 Oct 2026 against the
+# FINBRA bulk files (gross realized values). Population is not a FINBRA
+# figure anymore: it comes from IBGE (see the population tests below).
 siconfi_context_anchors <- tibble::tribble(
-  ~code_muni , ~year , ~population , ~current_revenue , ~tax_revenue   ,
-  "3550308"  , 2013L ,    11821873 ,  37710663491.90  , 18565985119.76 ,
-  "3304557"  , 2013L ,     6429923 ,  19047283587.19  ,  8358058001.28 ,
-  "3550308"  , 2024L ,    12200180 , 101553334044.89  , 62707212200.14 ,
-  "3304557"  , 2024L ,     6625849 ,  37227244132.72  , 17876279031.64
+  ~code_muni , ~year , ~current_revenue , ~tax_revenue   ,
+  "3550308"  , 2013L ,  37710663491.90  , 18565985119.76 ,
+  "3304557"  , 2013L ,  19047283587.19  ,  8358058001.28 ,
+  "3550308"  , 2024L , 101553334044.89  , 62707212200.14 ,
+  "3304557"  , 2024L ,  37227244132.72  , 17876279031.64
+)
+
+# IBGE population anchors verified against the IBGE aggregates API on 25
+# Oct 2026 (table 6579, variable 9324, and table 4709, variable 93).
+siconfi_population_anchors <- tibble::tribble(
+  ~code_muni , ~year , ~population , ~population_source ,
+  "3550308"  , 2017L ,    12106920 , "estimate"         ,
+  "3550308"  , 2024L ,    11895578 , "estimate"         ,
+  "3550308"  , 2022L ,    11451999 , "census"
 )
 
 # Reading FINBRA bulk files ---------------------------------------------------
@@ -274,7 +303,7 @@ test_that("read_finbra_file collects the municipality-year context anchors", {
     ctx <- attr(anchor_year$dat, "context")
     expect_equal(
       names(ctx),
-      c("code_muni", "year", "population", "current_revenue", "tax_revenue")
+      c("code_muni", "year", "current_revenue", "tax_revenue")
     )
     for (i in seq_len(nrow(siconfi_context_anchors))) {
       anchor <- siconfi_context_anchors[i, ]
@@ -284,27 +313,16 @@ test_that("read_finbra_file collects the municipality-year context anchors", {
       row <- ctx[ctx$code_muni == anchor$code_muni, ]
       expect_equal(nrow(row), 1L)
       expect_equal(row$year, anchor$year)
-      expect_equal(row$population, anchor$population)
       expect_equal(row$current_revenue, anchor$current_revenue)
       expect_equal(row$tax_revenue, anchor$tax_revenue)
     }
   }
-  # Context is collected even for municipalities without tax rows.
+  # A non-context account line (Recursolândia-TO transfers, extract_03)
+  # produces no context row: only the two revenue accounts do.
   dat2018 <- read_finbra_file(siconfi_fixture("finbra_extract_03.csv"))
   ctx2018 <- attr(dat2018, "context")
   recursolandia <- ctx2018[ctx2018$code_muni == "1718501", ]
-  expect_equal(recursolandia$population, 2467L)
-  expect_true(is.na(recursolandia$current_revenue))
-  expect_true(is.na(recursolandia$tax_revenue))
-})
-
-test_that("conflicting population within a municipality-year aborts", {
-  local_edition(3)
-  expect_error(
-    read_finbra_file(siconfi_fixture("finbra_conflicting_population.csv")),
-    "Popula",
-    ignore.case = TRUE
-  )
+  expect_equal(nrow(recursolandia), 0L)
 })
 
 test_that("read_finbra_file keeps literal zeros and separates non-tax deductions", {
@@ -469,10 +487,10 @@ test_that("parse_siconfi_dca collects context totals from the API", {
   expect_equal(ctx$year, 2017L)
   expect_equal(ctx$current_revenue, 50970741521.99)
   expect_equal(ctx$tax_revenue, 25715190301.72)
-  # Population is never taken from the API: it comes from the FINBRA file
-  # of the same year, so the API context carries NA population even though
-  # the items carry populacao.
-  expect_true(is.na(ctx$population))
+  # Population is never taken from the API: it comes from IBGE (see
+  # fetch_siconfi_population), so the context carries no population column
+  # even though the items carry populacao.
+  expect_false("population" %in% names(ctx))
   # The context also accumulates alongside tax rows in the same call.
   dat_tax <- parse_siconfi_dca(siconfi_dca_items("dca_sp_tax_2017.json"))
   expect_equal(nrow(dat_tax), 4L)
@@ -501,36 +519,225 @@ test_that("build_siconfi_taxes repeats the context identically on both tax rows"
       dat$code_muni == anchor$code_muni & dat$year == anchor$year,
     ]
     expect_equal(nrow(rows), 2L)
-    expect_equal(unique(rows$population), anchor$population)
     expect_equal(unique(rows$current_revenue), anchor$current_revenue)
     expect_equal(unique(rows$tax_revenue), anchor$tax_revenue)
   }
   # Context columns are integer/double as documented.
   expect_type(dat$population, "integer")
+  expect_type(dat$population_source, "character")
   expect_type(dat$current_revenue, "double")
   expect_type(dat$tax_revenue, "double")
 })
 
-test_that("an API-supplied year takes revenue totals from the API and population from FINBRA", {
+test_that("siconfi_interpolate_population fills 2023 with the midpoint of 2022 and 2024", {
+  local_edition(3)
+  population <- tibble::tribble(
+    ~code_muni , ~year , ~population , ~population_source ,
+    "3550308"  , 2022L ,    11451999 , "census"           ,
+    "3550308"  , 2024L ,    11895578 , "estimate"         ,
+    "3304557"  , 2022L ,     6211623 , "census"           ,
+    "3304557"  , 2024L ,     6625849 , "estimate"
+  )
+  out <- siconfi_interpolate_population(population)
+
+  # Anchors pass through unchanged; exactly one 2023 row per municipality.
+  expect_equal(nrow(out[out$code_muni == "3550308" & out$year == 2022L, ]), 1L)
+  expect_equal(nrow(out[out$year == 2023L, ]), 2L)
+  sp <- out[out$code_muni == "3550308" & out$year == 2023L, ]
+  # (11451999 + 11895578) / 2 = 11673788.5: R's round keeps the even
+  # neighbour 11673788.
+  expect_equal(sp$population, 11673788L)
+  expect_equal(sp$population_source, "interpolated")
+  rj <- out[out$code_muni == "3304557" & out$year == 2023L, ]
+  # (6211623 + 6625849) / 2 = 6418736: no rounding tie.
+  expect_equal(rj$population, 6418736L)
+  expect_equal(rj$population_source, "interpolated")
+  expect_type(sp$population, "integer")
+})
+
+test_that("siconfi_interpolate_population keeps 2023 NA when an anchor is missing", {
+  local_edition(3)
+  # No 2022 census figure for 3550308.
+  out <- siconfi_interpolate_population(tibble::tribble(
+    ~code_muni , ~year , ~population , ~population_source ,
+    "3550308"  , 2024L ,    11895578 , "estimate"         ,
+    "3304557"  , 2022L ,     6211623 , "census"
+  ))
+  sp <- out[out$code_muni == "3550308" & out$year == 2023L, ]
+  expect_equal(nrow(sp), 1L)
+  expect_true(is.na(sp$population))
+  expect_true(is.na(sp$population_source))
+
+  # No 2024 estimate figure for 3550308.
+  out <- siconfi_interpolate_population(tibble::tribble(
+    ~code_muni , ~year , ~population , ~population_source ,
+    "3550308"  , 2022L ,    11451999 , "census"
+  ))
+  sp <- out[out$code_muni == "3550308" & out$year == 2023L, ]
+  expect_true(is.na(sp$population))
+  expect_true(is.na(sp$population_source))
+})
+
+test_that("fetch_siconfi_population wires the IBGE tables and labels sources", {
+  local_edition(3)
+  calls <- list()
+  fake_fetch <- function(
+    aggregate,
+    variables = "all",
+    periods = NULL,
+    localities = "N1[all]",
+    chunk_size = 120L
+  ) {
+    calls[[length(calls) + 1L]] <<- list(
+      aggregate = aggregate,
+      variables = variables,
+      periods = periods,
+      localities = localities,
+      chunk_size = chunk_size
+    )
+    if (identical(aggregate, "6579")) {
+      return(tibble::tibble(
+        geography_code = rep("3550308", 4L),
+        period = c("2016", "2017", "2024", "2025"),
+        value = c(12038175, 12106920, 11895578, 11904961)
+      ))
+    }
+    return(tibble::tibble(
+      geography_code = "3550308",
+      period = "2022",
+      value = 11451999
+    ))
+  }
+
+  out <- fetch_siconfi_population(2017:2025, fetch = fake_fetch)
+  # Table 6579 for the estimates, variable 9324; table 4709 for the 2022
+  # Census, variable 93. All locality queries are municipalities.
+  expect_equal(
+    vapply(calls, `[[`, character(1L), "aggregate"),
+    c("6579", "4709")
+  )
+  expect_equal(calls[[1]]$variables, "9324")
+  expect_equal(calls[[1]]$periods, NULL)
+  expect_equal(calls[[1]]$localities, "N6[all]")
+  expect_equal(calls[[1]]$chunk_size, 5L)
+  expect_equal(calls[[2]]$variables, "93")
+  expect_equal(calls[[2]]$periods, "2022")
+  expect_equal(calls[[2]]$localities, "N6[all]")
+
+  # Sources and years: estimate years from 6579, census 2022, 2023
+  # interpolated; the non-requested 2016 row is dropped.
+  expect_equal(
+    out[out$year == 2022L, c("population", "population_source")],
+    tibble::tibble(population = 11451999L, population_source = "census")
+  )
+  expect_equal(
+    out[out$year == 2017L, "population_source"][[1]],
+    "estimate"
+  )
+  expect_false(2016L %in% out$year)
+  interp <- out[out$year == 2023L, ]
+  expect_equal(nrow(interp), 1L)
+  expect_equal(
+    interp$population,
+    as.integer(round((11451999 + 11895578) / 2))
+  )
+  expect_equal(interp$population_source, "interpolated")
+  expect_equal(
+    names(out),
+    c("code_muni", "year", "population", "population_source")
+  )
+  expect_type(out$population, "integer")
+})
+
+test_that("fetch_siconfi_population returns an empty tibble without years", {
+  local_edition(3)
+  empty <- fetch_siconfi_population(integer(), fetch = function(...) {
+    cli::cli_abort("must not fetch without years")
+  })
+  expect_equal(
+    names(empty),
+    c("code_muni", "year", "population", "population_source")
+  )
+  expect_equal(nrow(empty), 0L)
+})
+
+test_that("build_siconfi_taxes injects IBGE population on reporter and non-reporter rows", {
+  local_edition(3)
+  population <- tibble::tribble(
+    ~code_muni , ~year , ~population , ~population_source ,
+    "3550308"  , 2017L ,    12106920 , "estimate"         ,
+    "3550308"  , 2024L ,    11895578 , "estimate"         ,
+    "3550308"  , 2022L ,    11451999 , "census"           ,
+    "4304614"  , 2017L ,     2001234 , "census"           ,
+    "4126652"  , 2018L ,        2712 , "interpolated"
+  )
+  dat <- build_siconfi_taxes(
+    siconfi_finbra_all(),
+    api = NULL,
+    municipalities = siconfi_municipalities_all,
+    population = population
+  )
+
+  # Both tax rows share the injected figure and label.
+  sp_2017 <- dat[
+    dat$code_muni == 3550308L & dat$year == 2017L,
+  ]
+  expect_equal(nrow(sp_2017), 2L)
+  expect_equal(unique(sp_2017$population), 12106920L)
+  expect_equal(unique(sp_2017$population_source), "estimate")
+
+  # Different sources per year roundtrip correctly (2022 is a fixture
+  # year; Sulina 2018 covers the interpolated label on a non-reporter).
+  sp_2022 <- dat[dat$code_muni == 3550308L & dat$year == 2022L, ]
+  expect_equal(unique(sp_2022$population_source), "census")
+
+  # A municipality-year with no figure anywhere keeps NA + NA source.
+  sp_2013 <- dat[dat$code_muni == 3550308L & dat$year == 2013L, ]
+  expect_true(all(is.na(sp_2013$population)))
+  expect_true(all(is.na(sp_2013$population_source)))
+
+  # Population is independent of SICONFI reporting: non-reporter rows
+  # keep their IBGE figure (Canudos do Vale reports in 2017; Sulina is a
+  # non-reporter in 2018).
+  canudos <- dat[dat$code_muni == 4304614L & dat$year == 2017L, ]
+  expect_true(all(canudos$reported))
+  expect_equal(unique(canudos$population), 2001234L)
+  expect_equal(unique(canudos$population_source), "census")
+  sulina_2018 <- dat[dat$code_muni == 4126652L & dat$year == 2018L, ]
+  expect_false(any(sulina_2018$reported))
+  expect_equal(unique(sulina_2018$population), 2712L)
+  expect_equal(unique(sulina_2018$population_source), "interpolated")
+})
+
+test_that("an API-supplied year keeps revenue totals from the API and population from IBGE", {
   local_edition(3)
   finbra_all <- siconfi_finbra_all()
   # São Paulo's 2017 municipality-year moves to the API: the revenue totals
-  # must come from the API items while the population stays the FINBRA
-  # figure of the same year.
+  # must come from the API items while the injected IBGE figure covers the
+  # year regardless of the reporting source.
   api <- parse_siconfi_dca(siconfi_dca_items("dca_sp_context_2017.json"))
+  population <- tibble::tibble(
+    code_muni = "3550308",
+    year = 2017L,
+    population = 12106920L,
+    population_source = "estimate"
+  )
   dat <- build_siconfi_taxes(
     finbra_all,
     api = api,
-    municipalities = siconfi_municipalities_all
+    municipalities = siconfi_municipalities_all,
+    population = population
   )
   sp_2017 <- dat[dat$code_muni == 3550308L & dat$year == 2017L, ]
   expect_equal(unique(sp_2017$source), "api")
-  expect_equal(unique(sp_2017$population), 12038175L)
+  expect_equal(unique(sp_2017$population), 12106920L)
+  expect_equal(unique(sp_2017$population_source), "estimate")
   expect_equal(unique(sp_2017$current_revenue), 50970741521.99)
   expect_equal(unique(sp_2017$tax_revenue), 25715190301.72)
 
-  # A 2018 API municipality-year without any FINBRA 2018 file in the build:
-  # population is NA (never taken from the API), totals come from the API.
+  # A 2018 API municipality-year without any FINBRA 2018 file in the build
+  # and no injected population: population stays NA, totals come from the
+  # API.
   finbra_no_2018 <- finbra_all[finbra_all$year != 2018L, ]
   attr(finbra_no_2018, "reporters") <- unique(
     paste(finbra_no_2018$code_muni, finbra_no_2018$year)
@@ -550,11 +757,12 @@ test_that("an API-supplied year takes revenue totals from the API and population
   sp_2018 <- dat_2018[dat_2018$code_muni == 3550308L & dat_2018$year == 2018L, ]
   expect_equal(unique(sp_2018$source), "api")
   expect_true(all(is.na(sp_2018$population)))
+  expect_true(all(is.na(sp_2018$population_source)))
   expect_equal(unique(sp_2018$current_revenue), 52983577439.67)
   expect_equal(unique(sp_2018$tax_revenue), 30083861181.61)
 
-  # A non-reporter in an API-supplied year keeps NA in all three context
-  # columns (Alta Floresta d'Oeste appears in no fixture file).
+  # A non-reporter in an API-supplied year keeps NA in the context columns
+  # (Alta Floresta d'Oeste appears in no fixture file).
   non_2018 <- dat_2018[
     dat_2018$code_muni == 1100015L & dat_2018$year == 2018L,
   ]
@@ -698,6 +906,7 @@ test_that("build_siconfi_taxes reproduces the FINBRA anchors with net and scope"
       "abbrev_state",
       "year",
       "population",
+      "population_source",
       "current_revenue",
       "tax_revenue",
       "tax",
@@ -1052,17 +1261,12 @@ test_that("siconfi_harvest_finbra attaches reporting keys per year", {
     sort(vapply(harvest$files, `[[`, integer(1L), "exercise")),
     c(2017L, 2018L)
   )
-  # The context attribute survives the per-file bind: the 2017 fixture
-  # carries no context accounts, so only the population figure comes
-  # through there.
+  # The context attribute survives the per-file bind; neither fixture
+  # file carries a current/tax-revenue line, and the FINBRA `População`
+  # field is no longer read (population comes from IBGE).
   ctx <- attr(harvest$long, "context")
-  sp_2017 <- ctx[ctx$code_muni == "3550308" & ctx$year == 2017L, ]
-  expect_equal(nrow(sp_2017), 1L)
-  expect_equal(sp_2017$population, 12038175L)
-  expect_true(is.na(sp_2017$current_revenue))
-  expect_true(is.na(sp_2017$tax_revenue))
-  sp_2018 <- ctx[ctx$code_muni == "3550308" & ctx$year == 2018L, ]
-  expect_equal(sp_2018$population, 12038175L)
+  expect_false("population" %in% names(ctx))
+  expect_equal(nrow(ctx[ctx$code_muni == "3550308", ]), 0L)
 })
 
 test_that("siconfi_entes_universe drops Brasília and reports the exclusion", {
@@ -1144,6 +1348,7 @@ test_that("validate_siconfi_taxes checks every published column type", {
     "abbrev_state",
     "tax",
     "population",
+    "population_source",
     "reported",
     "value_status",
     "deductions_reported",
@@ -1200,6 +1405,10 @@ test_that("validate_siconfi_taxes checks the documented value domains", {
   bad_reported <- dat
   bad_reported$reported[[1]] <- NA
   expect_error(validate_siconfi_taxes(bad_reported), "reported")
+
+  bad_source <- dat
+  bad_source$population_source[[1]] <- "hallucinated"
+  expect_error(validate_siconfi_taxes(bad_source), "population_source")
 })
 
 test_that("validate_siconfi_taxes checks non-reporter NA and net invariants", {
@@ -1210,7 +1419,8 @@ test_that("validate_siconfi_taxes checks non-reporter NA and net invariants", {
     municipalities = siconfi_municipalities_all
   )
 
-  # A non-reporter row cannot carry a source or revenue values.
+  # A non-reporter row cannot carry a source or revenue values, but
+  # population is independent of reporting and may carry an IBGE figure.
   leak_source <- dat
   leak_source$source[which(!leak_source$reported)[1L]] <- "finbra"
   expect_error(validate_siconfi_taxes(leak_source), "source")
@@ -1219,13 +1429,27 @@ test_that("validate_siconfi_taxes checks non-reporter NA and net invariants", {
   leak_value$gross_revenue[which(!leak_value$reported)[1L]] <- 1.00
   expect_error(validate_siconfi_taxes(leak_value), "gross_revenue")
 
-  leak_population <- dat
-  leak_population$population[which(!leak_population$reported)[1L]] <- 1000L
-  expect_error(validate_siconfi_taxes(leak_population), "population")
-
   leak_context <- dat
   leak_context$tax_revenue[which(!leak_context$reported)[1L]] <- 1.00
   expect_error(validate_siconfi_taxes(leak_context), "tax_revenue")
+
+  # population_source must be NA exactly when population is NA, on every
+  # row, reporter or not.
+  orphan_source <- dat
+  first_na_population <- which(is.na(orphan_source$population))
+  orphan_source$population_source[first_na_population[[1L]]] <- "census"
+  expect_error(
+    validate_siconfi_taxes(orphan_source),
+    "population_source"
+  )
+
+  orphan_population <- dat
+  first_na_source <- which(is.na(orphan_population$population_source))
+  orphan_population$population[first_na_source[[1L]]] <- 1000L
+  expect_error(
+    validate_siconfi_taxes(orphan_population),
+    "population_source"
+  )
 
   # net_revenue must equal gross minus deductions where both exist.
   bad_net <- dat

@@ -9,8 +9,9 @@ validate_siconfi_taxes(data, call = caller_env())
 \description{
 Checks the published schema (column names, order and types for every
 column), integer 7-digit municipality codes, unique code_muni x year x
-tax keys, the documented \code{tax}, \code{value_status} and \code{account_scope}
-domains, NA values and source on non-reporter rows, and the
-gross-minus-deductions net identity.
+tax keys, the documented \code{tax}, \code{value_status}, \code{account_scope} and
+\code{population_source} domains, NA values and source on non-reporter rows
+(population is exempt: it is independent of reporting, with its source
+NA exactly when it is NA), and the gross-minus-deductions net identity.
 }
 \keyword{internal}

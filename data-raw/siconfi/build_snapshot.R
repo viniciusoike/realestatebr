@@ -24,6 +24,7 @@ SICONFI_INTERNALS <- c(
   "read_finbra_file",
   "parse_siconfi_dca",
   "fetch_siconfi_dca",
+  "fetch_siconfi_population",
   "build_siconfi_taxes",
   "validate_siconfi_taxes",
   "download_with_retry"
@@ -92,6 +93,12 @@ SICONFI_STATE_CODES <- c(
 #'   `source = "api"`. Defaults to the two latest FINBRA years. Pass
 #'   `integer()` (empty) to build from the FINBRA files alone, with no API
 #'   traffic.
+#' @param population Injectable for tests: the IBGE municipality-year
+#'   population as a tibble (`code_muni`, `year`, `population`,
+#'   `population_source`). Default NULL fetches it live from the IBGE
+#'   aggregates API (`fetch_siconfi_population()`: yearly estimates from
+#'   table 6579, the 2022 Census from table 4709, and the 2023 midpoint
+#'   interpolation). Never taken from FINBRA or the SICONFI API.
 #' @param output_dir Write directory for `siconfi_taxes.rds` and
 #'   `siconfi_taxes_manifest.json` (gitignored).
 #' @param checkpoint_dir Directory for the per-municipality-year API
@@ -102,6 +109,7 @@ SICONFI_STATE_CODES <- c(
 build_siconfi_snapshot <- function(
   finbra_dir = siconfi_finbra_dir(),
   api_years = NULL,
+  population = NULL,
   output_dir = file.path("data-raw", "siconfi", "output"),
   checkpoint_dir = file.path("data-raw", "siconfi", "checkpoints")
 ) {
@@ -131,10 +139,17 @@ build_siconfi_snapshot <- function(
 
   siconfi_check_abbreviations(finbra$long)
 
+  if (is.null(population)) {
+    population <- siconfi_internal()$fetch_siconfi_population(
+      sort(unique(c(finbra$long$year, as.integer(api_years))))
+    )
+  }
+
   data <- siconfi_internal()$build_siconfi_taxes(
     finbra = finbra$long,
     api = if (nrow(api_long) == 0L) NULL else api_long,
-    municipalities = universe
+    municipalities = universe,
+    population = population
   )
   siconfi_internal()$validate_siconfi_taxes(data)
 
@@ -414,7 +429,6 @@ empty_long_form <- function() {
   attr(long, "context") <- tibble::tibble(
     code_muni = character(),
     year = integer(),
-    population = integer(),
     current_revenue = double(),
     tax_revenue = double()
   )

@@ -16,7 +16,7 @@
 #' ```
 #'
 #' @details
-#' * **Source**: Tesouro Nacional - SICONFI (DCA, Anexo I-C) and FINBRA bulk files
+#' * **Source**: Tesouro Nacional - SICONFI (DCA, Anexo I-C), FINBRA bulk files, and IBGE population
 #' * **URL**: <https://apidatalake.tesouro.gov.br/ords/siconfi/tt/entes>
 #' * **Geography**: Brazilian municipalities
 #' * **Frequency**: annual
@@ -40,18 +40,21 @@
 #' counts the deduction as zero and computes net_revenue; deductions_reported
 #' records whether a deduction row existed in the source. Municipalities
 #' absent from a year's FINBRA file appear as non-reporters with
-#' reported=FALSE and NA values. population, current_revenue and tax_revenue
-#' are the municipality-year context: population is the figure Tesouro
-#' attaches to each year's accounts (taken only from the FINBRA files), and
-#' both revenue totals are gross, before deductions; the totals switch source
-#' for refreshed API years while the population stays with FINBRA.
+#' reported=FALSE and NA values. population and the two revenue totals are the
+#' municipality-year context: population comes from IBGE (yearly estimates
+#' until 2021 and from 2024, the 2022 Census count, and a 2023 midpoint
+#' interpolation; FINBRA's População field is stale and lagged, so it is never
+#' used), it fills non-reporter rows too, and population_source records where
+#' it came from; both revenue totals are gross, before deductions, and the
+#' totals switch source for refreshed API years.
 #'
 #' @section Columns:
 #' \describe{
 #'   \item{code_muni}{Seven-digit IBGE municipality code, geobr-compatible.}
 #'   \item{abbrev_state}{Two-letter state abbreviation as published by the source.}
 #'   \item{year}{Exercise year, 2013 to the latest closed year.}
-#'   \item{population}{Integer population figure Tesouro attaches to the municipality-year accounts; repeated on both tax rows. Taken from the FINBRA `População` field only (the API figure is never used); NA when the year comes solely from the API or has no FINBRA file.}
+#'   \item{population}{Integer resident population from IBGE, independent of SICONFI reporting; repeated on both tax rows. The yearly estimate (SIDRA table 6579) for the other years, the 2022 Census count (table 4709) for 2022, and a 2023 midpoint between the 2022 Census and the 2024 estimate; NA when IBGE has no figure for the year.}
+#'   \item{population_source}{How population was obtained: estimate (yearly IBGE estimate, table 6579), census (2022 Census count, table 4709), or interpolated (2023 midpoint of the census and the 2024 estimate); NA when population is NA.}
 #'   \item{current_revenue}{Gross realized total current revenue (Receitas Correntes) in nominal BRL for the municipality-year, before any deduction; repeated on both tax rows. From FINBRA, replaced by the API values for refreshed years; NA when the municipality reported but lacks the account line.}
 #'   \item{tax_revenue}{Gross realized Impostos, Taxas e Contribuições de Melhoria (the whole tax group behind the IPTU and ITBI lines) in nominal BRL for the municipality-year, before deductions; repeated on both tax rows. From FINBRA, replaced by the API values for refreshed years; NA when the municipality reported but lacks the account line.}
 #'   \item{tax}{Tax identifier: iptu or itbi.}
@@ -65,7 +68,7 @@
 #'   \item{source}{Row provenance: finbra (bulk-file history) or api (SICONFI API refresh of the latest years); NA for non-reporter rows.}
 #' }
 #'
-#' @source Tesouro Nacional - SICONFI (DCA, Anexo I-C) and FINBRA bulk files
+#' @source Tesouro Nacional - SICONFI (DCA, Anexo I-C), FINBRA bulk files, and IBGE population
 #' @seealso [get_dataset()], [query_dataset()], [list_datasets()], [get_dataset_info()]
 #' @family datasets
 #' @keywords datasets
