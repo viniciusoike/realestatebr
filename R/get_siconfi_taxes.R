@@ -188,14 +188,14 @@ siconfi_clean_code <- function(identifier) {
 
 #' Map a column label to a value kind or abort on an unknown label
 #'
-#' Only tax rows reach this helper, so an unknown label aborts with the
-#' offending label in the message.
+#' Any SICONFI account row (tax or context) reaching an unknown label
+#' aborts with the offending label in the message.
 #' @noRd
 siconfi_value_kind <- function(label, call = caller_env()) {
   kind_index <- match(label, names(.siconfi_label_kinds))
   if (is.na(kind_index)) {
     cli::cli_abort(
-      "Unknown column label {.val {label}} on a tax row.",
+      "Unknown column label {.val {label}} on an account row.",
       call = call
     )
   }
@@ -502,14 +502,6 @@ siconfi_build_context <- function(
       )
     context <- wide
   }
-  missing_cols <- setdiff(
-    c("current_revenue", "tax_revenue"),
-    names(context)
-  )
-  for (col in missing_cols) {
-    context[[col]] <- NA_real_
-  }
-  context <- context[c("code_muni", "year", "current_revenue", "tax_revenue")]
   return(dplyr::arrange(context, .data$code_muni, .data$year))
 }
 
@@ -818,7 +810,7 @@ fetch_siconfi_dca <- function(
 #' Resident population by municipality-year from IBGE
 #'
 #' The estimates come from SIDRA table 6579 (variable 9324, População
-#' residente estimada, every period the table serves, localities N6[all];
+#' residente estimada, the requested years only, localities N6[all];
 #' table and variable verified 25 Oct 2026), the 2022 Census count from
 #' table 4709 (variable 93, single 2022 period), and 2023 gets a linear
 #' midpoint between the 2022 Census and the 2024 estimate (ties round to
@@ -850,7 +842,7 @@ fetch_siconfi_population <- function(
   estimates <- fetch(
     aggregate = "6579",
     variables = "9324",
-    periods = NULL,
+    periods = as.character(years),
     localities = "N6[all]",
     # IBGE answers HTTP 500 above ~8 periods on this table when the query
     # carries the whole N6[all] municipality universe; small chunks keep
@@ -873,11 +865,39 @@ fetch_siconfi_population <- function(
     siconfi_population_rows(census, "census", years),
     empty
   )
-  cli::cli_inform(
-    "IBGE population: {.val {nrow(population)}} municipality-years from \\
-     the estimates (table 6579) and the 2022 Census (table 4709)."
+  population <- siconfi_interpolate_population(population)
+
+  # Guard against a silently thin table: every requested year needs a
+  # universe-sized fetch. 2023 is only produced by the interpolation, so
+  # it is checked unless either anchor year was not requested.
+  checked_years <- years
+  if (!(2022L %in% years) || !(2024L %in% years)) {
+    checked_years <- setdiff(checked_years, 2023L)
+  }
+  counts <- dplyr::summarise(
+    dplyr::filter(population, !is.na(.data$population)),
+    municipalities = dplyr::n_distinct(.data$code_muni),
+    .by = "year"
   )
-  return(siconfi_interpolate_population(population))
+  thin <- counts[
+    counts$year %in% checked_years & counts$municipalities < 5000L,
+  ]
+  if (nrow(thin) > 0L) {
+    details <- paste0(thin$year, " (", thin$municipalities, " municipalities)")
+    cli::cli_abort(
+      c(
+        "The IBGE population fetch came back thin.",
+        "x" = "{.val {details}} carry fewer than 5000 municipalities with \\
+               population; the SIDRA table or the query likely changed."
+      )
+    )
+  }
+  cli::cli_inform(
+    "IBGE population: {.val {nrow(population)}} municipality-years for \\
+     {.val {years}} after the 2023 interpolation (estimates from table \\
+     6579, the 2022 Census from table 4709)."
+  )
+  return(population)
 }
 
 #' Population tibble from one fetch result
@@ -1047,7 +1067,8 @@ reporter_years <- function(keys, fallback_years) {
 #' `year`, `population`, `population_source`); NULL publishes all NA.
 #' API rows replace FINBRA rows for the whole municipality-year so the
 #' per-row `source` stays unambiguous. Non-reporters get one row per tax
-#' with `reported = FALSE` and NA values. A gross row with no deduction
+#' with `reported = FALSE` and NA tax and revenue values (population does
+#' not depend on reporting). A gross row with no deduction
 #' row in the source counts the deduction as zero: `other_deductions`
 #' becomes 0, the net is computed, and `deductions_reported` marks the
 #' assumption (FALSE assumed, TRUE observed, NA when there is no gross
@@ -1124,25 +1145,14 @@ build_siconfi_taxes <- function(
   # reporting: the injected IBGE tibble joins the grid by
   # municipality-year and fills reporter and non-reporter rows alike;
   # missing figures publish NA with NA population_source.
-  finbra_context <- siconfi_context_attr(finbra)
-  api_context <- if (is.null(api)) {
-    siconfi_context_empty()[c(
-      "code_muni",
-      "year",
-      "current_revenue",
-      "tax_revenue"
-    )]
-  } else {
-    dplyr::filter(
-      siconfi_context_attr(api),
-      !is.na(.data$current_revenue) | !is.na(.data$tax_revenue)
-    )[c("code_muni", "year", "current_revenue", "tax_revenue")]
-  }
-  api_covered_keys <- api_covered
   finbra_context_revenue <- dplyr::filter(
-    finbra_context,
-    !(paste(.data$code_muni, .data$year) %in% api_covered_keys)
-  )[c("code_muni", "year", "current_revenue", "tax_revenue")]
+    siconfi_context_attr(finbra),
+    !(paste(.data$code_muni, .data$year) %in% api_covered)
+  )
+  api_context <- dplyr::filter(
+    siconfi_context_attr(api),
+    !is.na(.data$current_revenue) | !is.na(.data$tax_revenue)
+  )
   revenue <- dplyr::bind_rows(finbra_context_revenue, api_context)
   data <- dplyr::left_join(data, revenue, by = c("code_muni", "year"))
   data <- dplyr::left_join(data, population, by = c("code_muni", "year"))

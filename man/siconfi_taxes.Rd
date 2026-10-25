@@ -44,13 +44,14 @@ municipality-year-tax with an observed gross row but no deduction row
 counts the deduction as zero and computes net_revenue; deductions_reported
 records whether a deduction row existed in the source. Municipalities
 absent from a year's FINBRA file appear as non-reporters with
-reported=FALSE and NA values. population and the two revenue totals are the
-municipality-year context: population comes from IBGE (yearly estimates
-until 2021 and from 2024, the 2022 Census count, and a 2023 midpoint
-interpolation; FINBRA's População field is stale and lagged, so it is never
-used), it fills non-reporter rows too, and population_source records where
-it came from; both revenue totals are gross, before deductions, and the
-totals switch source for refreshed API years.
+reported=FALSE and NA tax and revenue values; population does not depend on
+reporting. population and the two revenue totals are the municipality-year
+context: population comes from IBGE (yearly estimates until 2021 and from
+2024, the 2022 Census count, and a 2023 midpoint interpolation; FINBRA's
+População field is stale and lagged, so it is never used), it fills
+non-reporter rows too, and population_source records where it came from;
+both revenue totals are gross, before deductions, and the totals switch
+source for refreshed API years.
 }
 \section{Columns}{
 

@@ -178,15 +178,6 @@ siconfi_context_anchors <- tibble::tribble(
   "3304557"  , 2024L ,  37227244132.72  , 17876279031.64
 )
 
-# IBGE population anchors verified against the IBGE aggregates API on 25
-# Oct 2026 (table 6579, variable 9324, and table 4709, variable 93).
-siconfi_population_anchors <- tibble::tribble(
-  ~code_muni , ~year , ~population , ~population_source ,
-  "3550308"  , 2017L ,    12106920 , "estimate"         ,
-  "3550308"  , 2024L ,    11895578 , "estimate"         ,
-  "3550308"  , 2022L ,    11451999 , "census"
-)
-
 # Reading FINBRA bulk files ---------------------------------------------------
 
 test_that("read_finbra_file reads the exercise year from the header, not the name", {
@@ -596,14 +587,25 @@ test_that("fetch_siconfi_population wires the IBGE tables and labels sources", {
       chunk_size = chunk_size
     )
     if (identical(aggregate, "6579")) {
+      # A universe-sized fetch (the thin-fetch guard requires 5000+),
+      # with the 2022 census year and 2023 (interpolated) absent.
       return(tibble::tibble(
-        geography_code = rep("3550308", 4L),
-        period = c("2016", "2017", "2024", "2025"),
-        value = c(12038175, 12106920, 11895578, 11904961)
+        geography_code = sprintf(
+          "%07d",
+          1100015L + rep(seq_len(5000L), 8L)
+        ),
+        period = rep(
+          c("2016", "2017", "2018", "2019", "2020", "2021", "2024", "2025"),
+          each = 5000L
+        ),
+        value = rep(
+          c(12038175, 12106920, 11900000, 11900000, 11950000, 11960000, 11895578, 11904961),
+          each = 5000L
+        )
       ))
     }
     return(tibble::tibble(
-      geography_code = "3550308",
+      geography_code = sprintf("%07d", 1100015L + seq_len(5000L)),
       period = "2022",
       value = 11451999
     ))
@@ -611,13 +613,14 @@ test_that("fetch_siconfi_population wires the IBGE tables and labels sources", {
 
   out <- fetch_siconfi_population(2017:2025, fetch = fake_fetch)
   # Table 6579 for the estimates, variable 9324; table 4709 for the 2022
-  # Census, variable 93. All locality queries are municipalities.
+  # Census, variable 93. All locality queries are municipalities; the
+  # periods are exactly the requested years, let through in chunks of 5.
   expect_equal(
     vapply(calls, `[[`, character(1L), "aggregate"),
     c("6579", "4709")
   )
   expect_equal(calls[[1]]$variables, "9324")
-  expect_equal(calls[[1]]$periods, NULL)
+  expect_equal(calls[[1]]$periods, as.character(2017:2025))
   expect_equal(calls[[1]]$localities, "N6[all]")
   expect_equal(calls[[1]]$chunk_size, 5L)
   expect_equal(calls[[2]]$variables, "93")
@@ -625,17 +628,19 @@ test_that("fetch_siconfi_population wires the IBGE tables and labels sources", {
   expect_equal(calls[[2]]$localities, "N6[all]")
 
   # Sources and years: estimate years from 6579, census 2022, 2023
-  # interpolated; the non-requested 2016 row is dropped.
+  # interpolated; the non-requested 2016 row is dropped. Assertions read a
+  # single municipality out of the universe-sized result.
+  sp <- out[out$code_muni == "1100016", ]
   expect_equal(
-    out[out$year == 2022L, c("population", "population_source")],
+    sp[sp$year == 2022L, c("population", "population_source")],
     tibble::tibble(population = 11451999L, population_source = "census")
   )
   expect_equal(
-    out[out$year == 2017L, "population_source"][[1]],
+    sp$population_source[sp$year == 2017L],
     "estimate"
   )
   expect_false(2016L %in% out$year)
-  interp <- out[out$year == 2023L, ]
+  interp <- sp[sp$year == 2023L, ]
   expect_equal(nrow(interp), 1L)
   expect_equal(
     interp$population,
@@ -647,6 +652,48 @@ test_that("fetch_siconfi_population wires the IBGE tables and labels sources", {
     c("code_muni", "year", "population", "population_source")
   )
   expect_type(out$population, "integer")
+})
+
+test_that("fetch_siconfi_population aborts on a thin IBGE fetch", {
+  local_edition(3)
+  fake_fetch <- function(
+    aggregate,
+    variables = "all",
+    periods = NULL,
+    localities = "N1[all]",
+    chunk_size = 120L
+  ) {
+    if (identical(aggregate, "6579")) {
+      # Only two municipalities come back for every requested period:
+      # every year would fall below the 5000-municipality guard.
+      return(tibble::tibble(
+        geography_code = rep(c("1100016", "3550308"), 4L),
+        period = rep(c("2016", "2017", "2024", "2025"), each = 2L),
+        value = 12038175
+      ))
+    }
+    return(tibble::tibble(
+      geography_code = c("1100016", "3550308"),
+      period = "2022",
+      value = 11451999
+    ))
+  }
+  expect_error(
+    fetch_siconfi_population(2017:2025, fetch = fake_fetch),
+    "5000",
+    ignore.case = TRUE
+  )
+
+  # 2023 is exempt only when an anchor year is missing: requesting just
+  # 2023 with no anchors keeps the NA interpolation instead of aborting.
+  thin_2023 <- tibble::tibble(
+    geography_code = c("1100015", "3550308"),
+    period = "2023",
+    value = 12038175
+  )
+  expect_no_error(
+    fetch_siconfi_population(2023L, fetch = function(...) thin_2023)
+  )
 })
 
 test_that("fetch_siconfi_population returns an empty tibble without years", {
@@ -729,11 +776,24 @@ test_that("an API-supplied year keeps revenue totals from the API and population
     population = population
   )
   sp_2017 <- dat[dat$code_muni == 3550308L & dat$year == 2017L, ]
+  expect_equal(nrow(sp_2017), 2L)
   expect_equal(unique(sp_2017$source), "api")
   expect_equal(unique(sp_2017$population), 12106920L)
   expect_equal(unique(sp_2017$population_source), "estimate")
   expect_equal(unique(sp_2017$current_revenue), 50970741521.99)
   expect_equal(unique(sp_2017$tax_revenue), 25715190301.72)
+
+  # The FINBRA 2017 fixture carries context totals deliberately different
+  # from the API values (11111111111.11 and 22222222222.22): the covered
+  # municipality-year must repeat the API values on both tax rows, one row
+  # per municipality-year-tax, and never the API-precedence losers.
+  expect_false(any(sp_2017$current_revenue == 11111111111.11))
+  expect_false(any(sp_2017$tax_revenue == 22222222222.22))
+  # Rio is not covered by the API response: it keeps its FINBRA context.
+  rio_2017 <- dat[dat$code_muni == 3304557L & dat$year == 2017L, ]
+  expect_equal(unique(rio_2017$source), "finbra")
+  expect_equal(unique(rio_2017$current_revenue), 33333333333.33)
+  expect_equal(unique(rio_2017$tax_revenue), 44444444444.44)
 
   # A 2018 API municipality-year without any FINBRA 2018 file in the build
   # and no injected population: population stays NA, totals come from the
@@ -1115,6 +1175,10 @@ test_that("a municipality that filed but has no tax row is a reporter", {
   expect_equal(unique(rows$source), "finbra")
   expect_true(all(is.na(rows$gross_revenue)))
   expect_true(all(is.na(rows$net_revenue)))
+  # The 2018 fixture carries no context-account lines: the reporting
+  # municipality-year keeps NA totals, never 0.
+  expect_true(all(is.na(rows$current_revenue)))
+  expect_true(all(is.na(rows$tax_revenue)))
   # Everything else about Recursolândia: no other years in this single-file
   # long form.
   absent <- dat[dat$code_muni == 1718501L & dat$year != 2018L, ]
@@ -1261,12 +1325,17 @@ test_that("siconfi_harvest_finbra attaches reporting keys per year", {
     sort(vapply(harvest$files, `[[`, integer(1L), "exercise")),
     c(2017L, 2018L)
   )
-  # The context attribute survives the per-file bind; neither fixture
-  # file carries a current/tax-revenue line, and the FINBRA `População`
-  # field is no longer read (population comes from IBGE).
+  # The per-file context rows are aggregated through siconfi_build_context()
+  # (dedup and conflict abort included): the 2017 zip copy carries São
+  # Paulo's context lines, the 2018 file carries none, and the FINBRA
+  # `População` field is no longer read (population comes from IBGE).
   ctx <- attr(harvest$long, "context")
   expect_false("population" %in% names(ctx))
-  expect_equal(nrow(ctx[ctx$code_muni == "3550308", ]), 0L)
+  sp_2017 <- ctx[ctx$code_muni == "3550308" & ctx$year == 2017L, ]
+  expect_equal(nrow(sp_2017), 1L)
+  expect_equal(sp_2017$current_revenue, 11111111111.11)
+  expect_equal(sp_2017$tax_revenue, 22222222222.22)
+  expect_equal(nrow(ctx[ctx$year == 2018L, ]), 0L)
 })
 
 test_that("siconfi_entes_universe drops Brasília and reports the exclusion", {

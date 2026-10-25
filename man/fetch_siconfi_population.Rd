@@ -20,7 +20,7 @@ A tibble \code{code_muni} (character, 7 digits), \code{year} (integer),
 }
 \description{
 The estimates come from SIDRA table 6579 (variable 9324, População
-residente estimada, every period the table serves, localities N6\link{all};
+residente estimada, the requested years only, localities N6\link{all};
 table and variable verified 25 Oct 2026), the 2022 Census count from
 table 4709 (variable 93, single 2022 period), and 2023 gets a linear
 midpoint between the 2022 Census and the 2024 estimate (ties round to

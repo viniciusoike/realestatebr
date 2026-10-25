@@ -27,6 +27,7 @@ SICONFI_INTERNALS <- c(
   "fetch_siconfi_population",
   "build_siconfi_taxes",
   "validate_siconfi_taxes",
+  "siconfi_build_context",
   "download_with_retry"
 )
 
@@ -139,9 +140,21 @@ build_siconfi_snapshot <- function(
 
   siconfi_check_abbreviations(finbra$long)
 
+  # Population provenance: fetched live from IBGE unless injected (then
+  # the manifest records the injection as NA fetched_at).
+  population_years <- sort(unique(c(
+    finbra$long$year,
+    as.integer(api_years)
+  )))
+  population_fetched_at <- NULL
   if (is.null(population)) {
+    population_fetched_at <- format(
+      Sys.time(),
+      "%Y-%m-%dT%H:%M:%SZ",
+      tz = "UTC"
+    )
     population <- siconfi_internal()$fetch_siconfi_population(
-      sort(unique(c(finbra$long$year, as.integer(api_years))))
+      population_years
     )
   }
 
@@ -172,6 +185,14 @@ build_siconfi_snapshot <- function(
       years = as.integer(api_years),
       checkpoint_dir = unname(checkpoint_dir),
       completed_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+    ),
+    population = list(
+      tables = list(
+        estimates = list(aggregate = "6579", variable = "9324"),
+        census = list(aggregate = "4709", variable = "93")
+      ),
+      years = as.integer(population_years),
+      fetched_at = population_fetched_at %||% NA_character_
     ),
     coverage = coverage,
     release = list(
@@ -328,7 +349,9 @@ siconfi_harvest_finbra <- function(finbra_dir) {
 
   long <- dplyr::bind_rows(parsed)
   attr(long, "reporters") <- unique(reporter_keys)
-  attr(long, "context") <- dplyr::bind_rows(
+  # The per-file wide context rows are aggregated as context rows: this
+  # runs the same dedup and conflict abort as the per-file parse.
+  attr(long, "context") <- siconfi_internal()$siconfi_build_context(
     Filter(Negate(is.null), context_rows)
   )
   return(list(long = long, files = unname(files)))
@@ -410,7 +433,9 @@ siconfi_harvest_api <- function(api_years, checkpoint_dir) {
 
   long <- dplyr::bind_rows(parsed)
   attr(long, "reporters") <- unique(reporters)
-  attr(long, "context") <- dplyr::bind_rows(
+  # The checkpointed wide context rows are aggregated as context rows:
+  # this runs the same dedup and conflict abort as the per-key parse.
+  attr(long, "context") <- siconfi_internal()$siconfi_build_context(
     Filter(Negate(is.null), context_rows)
   )
   return(long)

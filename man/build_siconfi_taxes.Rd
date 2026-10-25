@@ -20,7 +20,8 @@ holds the IBGE municipality-year population as a tibble (\code{code_muni},
 \code{year}, \code{population}, \code{population_source}); NULL publishes all NA.
 API rows replace FINBRA rows for the whole municipality-year so the
 per-row \code{source} stays unambiguous. Non-reporters get one row per tax
-with \code{reported = FALSE} and NA values. A gross row with no deduction
+with \code{reported = FALSE} and NA tax and revenue values (population does
+not depend on reporting). A gross row with no deduction
 row in the source counts the deduction as zero: \code{other_deductions}
 becomes 0, the net is computed, and \code{deductions_reported} marks the
 assumption (FALSE assumed, TRUE observed, NA when there is no gross
