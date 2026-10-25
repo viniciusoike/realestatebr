@@ -44,7 +44,11 @@ municipality-year-tax with an observed gross row but no deduction row
 counts the deduction as zero and computes net_revenue; deductions_reported
 records whether a deduction row existed in the source. Municipalities
 absent from a year's FINBRA file appear as non-reporters with
-reported=FALSE and NA values.
+reported=FALSE and NA values. population, current_revenue and tax_revenue
+are the municipality-year context: population is the figure Tesouro
+attaches to each year's accounts (taken only from the FINBRA files), and
+both revenue totals are gross, before deductions; the totals switch source
+for refreshed API years while the population stays with FINBRA.
 }
 \section{Columns}{
 
@@ -52,6 +56,9 @@ reported=FALSE and NA values.
 \item{code_muni}{Seven-digit IBGE municipality code, geobr-compatible.}
 \item{abbrev_state}{Two-letter state abbreviation as published by the source.}
 \item{year}{Exercise year, 2013 to the latest closed year.}
+\item{population}{Integer population figure Tesouro attaches to the municipality-year accounts; repeated on both tax rows. Taken from the FINBRA \code{População} field only (the API figure is never used); NA when the year comes solely from the API or has no FINBRA file.}
+\item{current_revenue}{Gross realized total current revenue (Receitas Correntes) in nominal BRL for the municipality-year, before any deduction; repeated on both tax rows. From FINBRA, replaced by the API values for refreshed years; NA when the municipality reported but lacks the account line.}
+\item{tax_revenue}{Gross realized Impostos, Taxas e Contribuições de Melhoria (the whole tax group behind the IPTU and ITBI lines) in nominal BRL for the municipality-year, before deductions; repeated on both tax rows. From FINBRA, replaced by the API values for refreshed years; NA when the municipality reported but lacks the account line.}
 \item{tax}{Tax identifier: iptu or itbi.}
 \item{reported}{TRUE when the municipality appears in that year's data (FINBRA file or API refresh); non-reporters keep one NA row per tax.}
 \item{value_status}{observed (tax row present), missing_tax_row (the municipality reported but this tax has no gross row), or non_reporter (absent from the year's data).}

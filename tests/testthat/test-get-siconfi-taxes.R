@@ -16,7 +16,15 @@
 #       value_kind ("gross"/"deduction"/"excluded_deduction"), value (double).
 #     The tibble carries the attribute "reporters": character keys
 #     `<7-digit code_muni> <year>` for every municipality that has a valid
-#     data line in the file (any account), not only tax rows.
+#     data line in the file (any account), not only tax rows; and the
+#     attribute "context": a tibble (code_muni character, year integer,
+#     population integer, current_revenue double, tax_revenue double) with
+#     the municipality-year context collected from the file: population
+#     from the `População` field of every valid data line, and the gross
+#     realized values of the current-revenue and tax-revenue accounts
+#     (`RO1.0.0.0.00.00.00`/`RO1.1.0.0.00.00.00` through 2017;
+#     `RO1.0.0.0.00.0.0`/`RO1.1.0.0.00.0.0` from 2018). Conflicting
+#     population values within a municipality-year abort.
 #     Value-kind mapping on column labels: `Receitas Realizadas` (2013) and
 #     `Receitas Brutas Realizadas` (2014+) -> gross; `Deduções da Receita`
 #     (2013) and `Outras Deduções da Receita` (2014+) -> deduction; `Deduções
@@ -33,7 +41,10 @@
 #     `cod_conta`, `valor`, `instituicao`, `exercicio`. Returns the same long
 #     form as read_finbra_file() with the 2014+ label mapping, carrying the
 #     same "reporters" attribute keyed from each item's cod_ibge x exercicio
-#     (any account).
+#     (any account), and the same "context" attribute built from the
+#     current-revenue and tax-revenue items (gross column only); the API's
+#     `populacao` field is never collected: population is a FINBRA-only
+#     figure, so the API context carries NA population.
 #     cli::cli_abort() on unknown `cod_conta` for the item's year, unknown
 #     `coluna`, malformed `valor`.
 #
@@ -56,12 +67,21 @@
 #     form. Returns one row per
 #     municipality x year x tax for every year supplied, with columns
 #     (in order):
-#       code_muni (integer), abbrev_state, year (integer), tax,
+#       code_muni (integer), abbrev_state, year (integer), population
+#       (integer), current_revenue (double), tax_revenue (double), tax,
 #       reported (logical), value_status ("observed"/"missing_tax_row"/
 #       "non_reporter"), gross_revenue, other_deductions,
 #       deductions_reported (logical), net_revenue,
 #       account_scope ("legacy_line" <= 2017, "tax_family" >= 2018),
 #       source ("finbra"/"api", NA for non-reporters).
+#     The three context columns are municipality-year values repeated
+#     identically on both tax rows. Population comes only from the FINBRA
+#     file of the same year (NA for API years without a FINBRA file; the
+#     API's populacao field is never used). current_revenue and
+#     tax_revenue are gross realized values: FINBRA values, replaced by
+#     the API values for API-covered municipality-years; a reporting
+#     municipality without the account line gets NA, and non-reporters
+#     get NA for all three. Literal zeros stay zero.
 #     API rows replace FINBRA rows for the same municipality-year (source
 #     becomes "api"); rows supplied only by FINBRA keep "finbra";
 #     non-reporters get reported = FALSE, NA values, value_status =
@@ -90,9 +110,13 @@ siconfi_finbra_all <- function() {
   longs <- lapply(paths, \(path) read_finbra_file(siconfi_fixture(path)))
   reporters <- unlist(lapply(longs, \(long) attr(long, "reporters")))
   long <- dplyr::bind_rows(longs)
-  # Carry the reporting-municipality keys across the bind as the pipeline
-  # does; bind_rows alone would drop them.
+  # Carry the reporting keys and context rows across the bind as the
+  # pipeline does; bind_rows alone would drop the attributes.
   attr(long, "reporters") <- unique(reporters)
+  attr(long, "context") <- dplyr::bind_rows(Filter(
+    Negate(is.null),
+    lapply(longs, \(long) attr(long, "context"))
+  ))
   return(long)
 }
 
@@ -122,6 +146,16 @@ siconfi_anchors <- tibble::tribble(
   "3550308"  , 2024L , "itbi" ,  4335013258.17 ,   7005450.04      ,  4328007808.13 ,
   "3304557"  , 2024L , "iptu" ,  4946593936.34 ,  40587331.46      ,  4906006604.88 ,
   "3304557"  , 2024L , "itbi" ,  1442603315.39 ,   9399149.05      ,  1433204166.34
+)
+
+# Municipality-year context anchors re-verified on 24 Oct 2026 against the
+# FINBRA bulk files (gross realized values; population as published).
+siconfi_context_anchors <- tibble::tribble(
+  ~code_muni , ~year , ~population , ~current_revenue , ~tax_revenue   ,
+  "3550308"  , 2013L ,    11821873 ,  37710663491.90  , 18565985119.76 ,
+  "3304557"  , 2013L ,     6429923 ,  19047283587.19  ,  8358058001.28 ,
+  "3550308"  , 2024L ,    12200180 , 101553334044.89  , 62707212200.14 ,
+  "3304557"  , 2024L ,     6625849 ,  37227244132.72  , 17876279031.64
 )
 
 # Reading FINBRA bulk files ---------------------------------------------------
@@ -225,6 +259,52 @@ test_that("read_finbra_file maps both label vintages and all three code periods"
     2024L
   )
   expect_setequal(unique(dat2024$tax), c("iptu", "itbi"))
+})
+
+test_that("read_finbra_file collects the municipality-year context anchors", {
+  local_edition(3)
+
+  dat2013 <- read_finbra_file(siconfi_fixture("finbra_extract_01.csv"))
+  dat2024 <- read_finbra_file(siconfi_fixture("finbra_extract_05.csv"))
+
+  for (anchor_year in list(
+    list(dat = dat2013, year = 2013L),
+    list(dat = dat2024, year = 2024L)
+  )) {
+    ctx <- attr(anchor_year$dat, "context")
+    expect_equal(
+      names(ctx),
+      c("code_muni", "year", "population", "current_revenue", "tax_revenue")
+    )
+    for (i in seq_len(nrow(siconfi_context_anchors))) {
+      anchor <- siconfi_context_anchors[i, ]
+      if (anchor$year != anchor_year$year) {
+        next
+      }
+      row <- ctx[ctx$code_muni == anchor$code_muni, ]
+      expect_equal(nrow(row), 1L)
+      expect_equal(row$year, anchor$year)
+      expect_equal(row$population, anchor$population)
+      expect_equal(row$current_revenue, anchor$current_revenue)
+      expect_equal(row$tax_revenue, anchor$tax_revenue)
+    }
+  }
+  # Context is collected even for municipalities without tax rows.
+  dat2018 <- read_finbra_file(siconfi_fixture("finbra_extract_03.csv"))
+  ctx2018 <- attr(dat2018, "context")
+  recursolandia <- ctx2018[ctx2018$code_muni == "1718501", ]
+  expect_equal(recursolandia$population, 2467L)
+  expect_true(is.na(recursolandia$current_revenue))
+  expect_true(is.na(recursolandia$tax_revenue))
+})
+
+test_that("conflicting population within a municipality-year aborts", {
+  local_edition(3)
+  expect_error(
+    read_finbra_file(siconfi_fixture("finbra_conflicting_population.csv")),
+    "Popula",
+    ignore.case = TRUE
+  )
 })
 
 test_that("read_finbra_file keeps literal zeros and separates non-tax deductions", {
@@ -379,6 +459,114 @@ test_that("parse_siconfi_dca rejects unknown vintages, columns and values", {
   )
 })
 
+test_that("parse_siconfi_dca collects context totals from the API", {
+  local_edition(3)
+  dat <- parse_siconfi_dca(siconfi_dca_items("dca_sp_context_2017.json"))
+  expect_equal(nrow(dat), 0L)
+  ctx <- attr(dat, "context")
+  expect_equal(nrow(ctx), 1L)
+  expect_equal(ctx$code_muni, "3550308")
+  expect_equal(ctx$year, 2017L)
+  expect_equal(ctx$current_revenue, 50970741521.99)
+  expect_equal(ctx$tax_revenue, 25715190301.72)
+  # Population is never taken from the API: it comes from the FINBRA file
+  # of the same year, so the API context carries NA population even though
+  # the items carry populacao.
+  expect_true(is.na(ctx$population))
+  # The context also accumulates alongside tax rows in the same call.
+  dat_tax <- parse_siconfi_dca(siconfi_dca_items("dca_sp_tax_2017.json"))
+  expect_equal(nrow(dat_tax), 4L)
+})
+
+test_that("parse_siconfi_dca collects the 2018-vintage context codes", {
+  local_edition(3)
+  dat <- parse_siconfi_dca(siconfi_dca_items("dca_sp_context_2018.json"))
+  ctx <- attr(dat, "context")
+  expect_equal(nrow(ctx), 1L)
+  expect_equal(ctx$year, 2018L)
+  expect_equal(ctx$current_revenue, 52983577439.67)
+  expect_equal(ctx$tax_revenue, 30083861181.61)
+})
+
+test_that("build_siconfi_taxes repeats the context identically on both tax rows", {
+  local_edition(3)
+  dat <- build_siconfi_taxes(
+    siconfi_finbra_all(),
+    api = NULL,
+    municipalities = siconfi_municipalities_all
+  )
+  for (i in seq_len(nrow(siconfi_context_anchors))) {
+    anchor <- siconfi_context_anchors[i, ]
+    rows <- dat[
+      dat$code_muni == anchor$code_muni & dat$year == anchor$year,
+    ]
+    expect_equal(nrow(rows), 2L)
+    expect_equal(unique(rows$population), anchor$population)
+    expect_equal(unique(rows$current_revenue), anchor$current_revenue)
+    expect_equal(unique(rows$tax_revenue), anchor$tax_revenue)
+  }
+  # Context columns are integer/double as documented.
+  expect_type(dat$population, "integer")
+  expect_type(dat$current_revenue, "double")
+  expect_type(dat$tax_revenue, "double")
+})
+
+test_that("an API-supplied year takes revenue totals from the API and population from FINBRA", {
+  local_edition(3)
+  finbra_all <- siconfi_finbra_all()
+  # São Paulo's 2017 municipality-year moves to the API: the revenue totals
+  # must come from the API items while the population stays the FINBRA
+  # figure of the same year.
+  api <- parse_siconfi_dca(siconfi_dca_items("dca_sp_context_2017.json"))
+  dat <- build_siconfi_taxes(
+    finbra_all,
+    api = api,
+    municipalities = siconfi_municipalities_all
+  )
+  sp_2017 <- dat[dat$code_muni == 3550308L & dat$year == 2017L, ]
+  expect_equal(unique(sp_2017$source), "api")
+  expect_equal(unique(sp_2017$population), 12038175L)
+  expect_equal(unique(sp_2017$current_revenue), 50970741521.99)
+  expect_equal(unique(sp_2017$tax_revenue), 25715190301.72)
+
+  # A 2018 API municipality-year without any FINBRA 2018 file in the build:
+  # population is NA (never taken from the API), totals come from the API.
+  finbra_no_2018 <- finbra_all[finbra_all$year != 2018L, ]
+  attr(finbra_no_2018, "reporters") <- unique(
+    paste(finbra_no_2018$code_muni, finbra_no_2018$year)
+  )
+  # The context rows of the dropped 2018 file are gone with it, as in a
+  # build without that file.
+  finbra_context <- attr(finbra_no_2018, "context")
+  attr(finbra_no_2018, "context") <- finbra_context[
+    finbra_context$year != 2018L,
+  ]
+  api_2018 <- parse_siconfi_dca(siconfi_dca_items("dca_sp_context_2018.json"))
+  dat_2018 <- build_siconfi_taxes(
+    finbra_no_2018,
+    api = api_2018,
+    municipalities = siconfi_municipalities_all
+  )
+  sp_2018 <- dat_2018[dat_2018$code_muni == 3550308L & dat_2018$year == 2018L, ]
+  expect_equal(unique(sp_2018$source), "api")
+  expect_true(all(is.na(sp_2018$population)))
+  expect_equal(unique(sp_2018$current_revenue), 52983577439.67)
+  expect_equal(unique(sp_2018$tax_revenue), 30083861181.61)
+
+  # A non-reporter in an API-supplied year keeps NA in all three context
+  # columns (Alta Floresta d'Oeste appears in no fixture file).
+  non_2018 <- dat_2018[
+    dat_2018$code_muni == 1100015L & dat_2018$year == 2018L,
+  ]
+  expect_equal(nrow(non_2018), 2L)
+  expect_false(any(non_2018$reported))
+  expect_true(all(is.na(non_2018[c(
+    "population",
+    "current_revenue",
+    "tax_revenue"
+  )])))
+})
+
 # Fetching from the DCA API ---------------------------------------------------
 
 test_that("fetch_siconfi_dca follows hasMore across two pages", {
@@ -509,6 +697,9 @@ test_that("build_siconfi_taxes reproduces the FINBRA anchors with net and scope"
       "code_muni",
       "abbrev_state",
       "year",
+      "population",
+      "current_revenue",
+      "tax_revenue",
       "tax",
       "reported",
       "value_status",
@@ -676,7 +867,16 @@ test_that("build_siconfi_taxes fills non-reporters with NA values", {
   expect_false(any(missing$reported))
   expect_equal(unique(missing$value_status), "non_reporter")
   expect_true(all(is.na(
-    missing[c("gross_revenue", "other_deductions", "net_revenue")]
+    missing[
+      c(
+        "population",
+        "current_revenue",
+        "tax_revenue",
+        "gross_revenue",
+        "other_deductions",
+        "net_revenue"
+      )
+    ]
   )))
   expect_true(all(is.na(missing$source)))
 
@@ -852,6 +1052,17 @@ test_that("siconfi_harvest_finbra attaches reporting keys per year", {
     sort(vapply(harvest$files, `[[`, integer(1L), "exercise")),
     c(2017L, 2018L)
   )
+  # The context attribute survives the per-file bind: the 2017 fixture
+  # carries no context accounts, so only the population figure comes
+  # through there.
+  ctx <- attr(harvest$long, "context")
+  sp_2017 <- ctx[ctx$code_muni == "3550308" & ctx$year == 2017L, ]
+  expect_equal(nrow(sp_2017), 1L)
+  expect_equal(sp_2017$population, 12038175L)
+  expect_true(is.na(sp_2017$current_revenue))
+  expect_true(is.na(sp_2017$tax_revenue))
+  sp_2018 <- ctx[ctx$code_muni == "3550308" & ctx$year == 2018L, ]
+  expect_equal(sp_2018$population, 12038175L)
 })
 
 test_that("siconfi_entes_universe drops Brasília and reports the exclusion", {
@@ -932,6 +1143,7 @@ test_that("validate_siconfi_taxes checks every published column type", {
   for (column in c(
     "abbrev_state",
     "tax",
+    "population",
     "reported",
     "value_status",
     "deductions_reported",
@@ -958,6 +1170,15 @@ test_that("validate_siconfi_taxes checks every published column type", {
       info = column
     )
   }
+
+  # The two revenue-total columns must stay double: character coercion
+  # aborts naming the column.
+  wrong_totals <- dat
+  wrong_totals$current_revenue <- as.character(wrong_totals$current_revenue)
+  expect_error(validate_siconfi_taxes(wrong_totals), "current_revenue")
+  wrong_totals <- dat
+  wrong_totals$tax_revenue <- as.character(wrong_totals$tax_revenue)
+  expect_error(validate_siconfi_taxes(wrong_totals), "tax_revenue")
 })
 
 test_that("validate_siconfi_taxes checks the documented value domains", {
@@ -997,6 +1218,14 @@ test_that("validate_siconfi_taxes checks non-reporter NA and net invariants", {
   leak_value <- dat
   leak_value$gross_revenue[which(!leak_value$reported)[1L]] <- 1.00
   expect_error(validate_siconfi_taxes(leak_value), "gross_revenue")
+
+  leak_population <- dat
+  leak_population$population[which(!leak_population$reported)[1L]] <- 1000L
+  expect_error(validate_siconfi_taxes(leak_population), "population")
+
+  leak_context <- dat
+  leak_context$tax_revenue[which(!leak_context$reported)[1L]] <- 1.00
+  expect_error(validate_siconfi_taxes(leak_context), "tax_revenue")
 
   # net_revenue must equal gross minus deductions where both exist.
   bad_net <- dat

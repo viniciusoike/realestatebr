@@ -255,6 +255,7 @@ siconfi_harvest_finbra <- function(finbra_dir) {
   parsed <- list()
   files <- list()
   reporter_keys <- character()
+  context_rows <- list()
   file_years <- integer()
   for (i in seq_along(paths)) {
     path <- paths[[i]]
@@ -268,6 +269,7 @@ siconfi_harvest_finbra <- function(finbra_dir) {
     }
     file_years <- c(file_years, years)
     reporter_keys <- c(reporter_keys, attr(long, "reporters"))
+    context_rows[[length(context_rows) + 1L]] <- attr(long, "context")
     parsed[[i]] <- long
     files[[i]] <- list(
       file = basename(path),
@@ -311,6 +313,9 @@ siconfi_harvest_finbra <- function(finbra_dir) {
 
   long <- dplyr::bind_rows(parsed)
   attr(long, "reporters") <- unique(reporter_keys)
+  attr(long, "context") <- dplyr::bind_rows(
+    Filter(Negate(is.null), context_rows)
+  )
   return(list(long = long, files = unname(files)))
 }
 
@@ -333,6 +338,7 @@ siconfi_harvest_api <- function(api_years, checkpoint_dir) {
 
   parsed <- list()
   reporters <- character()
+  context_rows <- list()
   done <- 0L
   for (year in api_years) {
     for (code in munis) {
@@ -340,18 +346,16 @@ siconfi_harvest_api <- function(api_years, checkpoint_dir) {
         checkpoint_dir,
         sprintf("dca_%s_%d.rds", code, year)
       )
+      checkpointed <- NULL
       if (file.exists(checkpoint)) {
         checkpointed <- readRDS(checkpoint)
-        if (is.data.frame(checkpointed)) {
-          # Earlier checkpoints stored the parsed long form only; keep
-          # serving them and fall back to the tax rows of the year.
-          long <- checkpointed
-          key_reporters <- unique(paste(long$code_muni, long$year))
-        } else {
-          long <- checkpointed$long
-          key_reporters <- checkpointed$reporters
+        if (is.null(checkpointed$context)) {
+          # Checkpoints written before the context columns existed: drop
+          # them and re-fetch, so the context totals are not lost.
+          checkpointed <- NULL
         }
-      } else {
+      }
+      if (is.null(checkpointed)) {
         items <- siconfi_internal()$fetch_siconfi_dca(code, year)
         long <- siconfi_internal()$parse_siconfi_dca(items)
         key_reporters <- if (length(items) > 0L) {
@@ -359,18 +363,26 @@ siconfi_harvest_api <- function(api_years, checkpoint_dir) {
         } else {
           character()
         }
+        key_context <- attr(long, "context")
         siconfi_write_rds(
           list(
             long = long,
             reporters = key_reporters,
+            context = key_context,
             raw_items = length(items)
           ),
           checkpoint
         )
+      } else {
+        long <- checkpointed$long
+        key_reporters <- checkpointed$reporters
+        key_context <- checkpointed$context
       }
       attr(long, "reporters") <- key_reporters
+      attr(long, "context") <- key_context
       parsed[[length(parsed) + 1L]] <- long
       reporters <- c(reporters, key_reporters)
+      context_rows[[length(context_rows) + 1L]] <- key_context
 
       done <- done + 1L
       if (done %% 50L == 0L) {
@@ -383,11 +395,14 @@ siconfi_harvest_api <- function(api_years, checkpoint_dir) {
 
   long <- dplyr::bind_rows(parsed)
   attr(long, "reporters") <- unique(reporters)
+  attr(long, "context") <- dplyr::bind_rows(
+    Filter(Negate(is.null), context_rows)
+  )
   return(long)
 }
 
 empty_long_form <- function() {
-  return(tibble::tibble(
+  long <- tibble::tibble(
     year = integer(),
     code_muni = character(),
     abbrev_state = character(),
@@ -395,7 +410,15 @@ empty_long_form <- function() {
     tax = character(),
     value_kind = character(),
     value = double()
-  ))
+  )
+  attr(long, "context") <- tibble::tibble(
+    code_muni = character(),
+    year = integer(),
+    population = integer(),
+    current_revenue = double(),
+    tax_revenue = double()
+  )
+  return(long)
 }
 
 # Municipality universe ----

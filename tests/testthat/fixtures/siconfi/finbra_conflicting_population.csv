@@ -1,0 +1,6 @@
+Exercício: 2024
+Escopo: Municípios
+Tabela: Receitas Orçamentárias (Anexo I-C)
+Instituição;Cod.IBGE;UF;População;Coluna;Conta;Identificador da Conta;Valor
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12200180;"Receitas Brutas Realizadas";"1.1.1.2.50.0.0 - Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.2.50.0.0";16533492276,91
+Prefeitura Municipal de São Paulo - SP;3550308;SP;99999999;"Receitas Brutas Realizadas";"1.1.1.2.53.0.0 - Impostos sobre Transmissão de Bens Imóveis";"siconfi-cor_RO1.1.1.2.53.0.0";4335013258,17

@@ -1,6 +1,6 @@
 # realestatebr (development version)
 
-* Added `get_dataset("siconfi_taxes")`, annual municipal IPTU and ITBI revenue in nominal BRL from SICONFI/FINBRA DCA Annex I-C for 2013-latest, with the 2018 account-vintage break marked by `account_scope`, non-reporting municipalities kept as `reported = FALSE` rows, and missing deduction rows counted as zero and flagged by `deductions_reported`.
+* Added `get_dataset("siconfi_taxes")`, annual municipal IPTU and ITBI revenue in nominal BRL from SICONFI/FINBRA DCA Annex I-C for 2013-latest, with the 2018 account-vintage break marked by `account_scope`, non-reporting municipalities kept as `reported = FALSE` rows, and missing deduction rows counted as zero and flagged by `deductions_reported`. Each row also carries the municipality-year context: `population` (the figure Tesouro attaches to each year's accounts, taken only from the FINBRA files), `current_revenue` (gross total current revenue), and `tax_revenue` (gross Impostos, Taxas e Contribuições de Melhoria), both before deductions and repeated identically on the IPTU and ITBI rows.
 
 * Fixed SECOVI year assignment and preserved partially missing ABECIP months and Abrainc series in their original spreadsheet positions.
 * Fixed fresh BCB real estate category tables to return the documented long format used by cached tables, preserving all matching series.

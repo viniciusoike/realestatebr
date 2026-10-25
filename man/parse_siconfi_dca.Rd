@@ -11,6 +11,8 @@ parse_siconfi_dca(items, call = caller_env())
 \code{instituicao}, \code{coluna}, \code{cod_conta}, \code{valor}. The API column labels
 follow the 2014+ vocabulary for every year. The result carries the
 attribute \code{reporters}: \verb{<code_muni> <exercicio>} keys of every item,
-any account.
+any account; and the attribute \code{context} from the current-revenue and
+tax-revenue items (gross column only). The API's \code{populacao} field is
+never collected: population is a FINBRA-only figure.
 }
 \keyword{internal}
