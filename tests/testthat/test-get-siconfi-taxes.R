@@ -1238,6 +1238,8 @@ siconfi_load_builder <- function() {
     "build_snapshot.R"
   )
   skip_if_not(file.exists(path))
+  skip_if_not_installed("devtools")
+  skip_if_not_installed("digest")
   source(path, local = FALSE, chdir = FALSE)
   invisible(TRUE)
 }
