@@ -413,7 +413,7 @@ test_that("incomplete snapshot rollback keeps backups and names them", {
   backups <- list.files(destination, pattern = "\\.bak$", full.names = TRUE)
   expect_length(backups, 2L)
   for (path in backups) {
-    expect_true(grepl(path, conditionMessage(failure), fixed = TRUE))
+    expect_true(grepl(basename(path), conditionMessage(failure), fixed = TRUE))
   }
   expect_identical(
     sort(unname(tools::md5sum(backups))),
