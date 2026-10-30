@@ -88,6 +88,7 @@ ds <- list_datasets()
 | rppi | Brazilian Residential Property Price Indices | Multiple (FIPE/ZAP, IVGR, IGMI, IQA, IQAIW, IVAR, SECOVI-SP) | fipezap, ivgr, igmi, iqa, iqaiw, ivar, secovi_sp, sale, rent, all | monthly |
 | rppi_bis | BIS Residential Property Price Indices | Bank for International Settlements | selected, detailed_monthly, detailed_quarterly, detailed_annual, detailed_halfyearly | quarterly |
 | secovi | SECOVI-SP Real Estate Market Data | SECOVI-SP - Sindicato da Habitação | condo, rent, launch, sale | monthly |
+| siconfi_taxes | Municipal IPTU and ITBI Tax Revenue | Tesouro Nacional - SICONFI (DCA, Anexo I-C), FINBRA bulk files, and IBGE population | (single table) | annual |
 | sinapi | SINAPI Construction Costs and Indices | IBGE - Sistema Nacional de Pesquisa de Custos e Índices da Construção Civil | (single table) | monthly |
 
 - **[`get_dataset_info()`](https://viniciusoike.github.io/realestatebr/reference/get_dataset_info.md)**

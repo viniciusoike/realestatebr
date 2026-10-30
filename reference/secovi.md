@@ -83,4 +83,5 @@ Other datasets:
 [`pnad_housing`](https://viniciusoike.github.io/realestatebr/reference/pnad_housing.md),
 [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md),
 [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md),
+[`siconfi_taxes`](https://viniciusoike.github.io/realestatebr/reference/siconfi_taxes.md),
 [`sinapi`](https://viniciusoike.github.io/realestatebr/reference/sinapi.md)

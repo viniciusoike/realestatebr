@@ -192,4 +192,5 @@ Other datasets:
 [`rppi`](https://viniciusoike.github.io/realestatebr/reference/rppi.md),
 [`rppi_bis`](https://viniciusoike.github.io/realestatebr/reference/rppi_bis.md),
 [`secovi`](https://viniciusoike.github.io/realestatebr/reference/secovi.md),
+[`siconfi_taxes`](https://viniciusoike.github.io/realestatebr/reference/siconfi_taxes.md),
 [`sinapi`](https://viniciusoike.github.io/realestatebr/reference/sinapi.md)

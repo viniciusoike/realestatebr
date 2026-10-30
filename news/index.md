@@ -4,6 +4,19 @@
 
 - Added `get_dataset("cement")` with monthly SNIC apparent consumption
   and production snapshots by state, region, and Brazil.
+- Added `get_dataset("siconfi_taxes")`, annual municipal IPTU and ITBI
+  revenue in nominal BRL from SICONFI/FINBRA DCA Annex I-C for
+  2013-latest, with the 2018 account-vintage break marked by
+  `account_scope`, non-reporting municipalities kept as
+  `reported = FALSE` rows, and missing deduction rows counted as zero
+  and flagged by `deductions_reported`. Each row also carries the
+  municipality-year context: `population` from IBGE (yearly estimates
+  until 2021 and from 2024, the 2022 Census count, and a 2023 midpoint
+  interpolation, labeled by `population_source`; FINBRA’s own population
+  field is stale and lagged, so it is never used), `current_revenue`
+  (gross total current revenue), and `tax_revenue` (gross Impostos,
+  Taxas e Contribuições de Melhoria), both before deductions and
+  repeated identically on the IPTU and ITBI rows.
 - Fixed SECOVI year assignment and preserved partially missing ABECIP
   months and Abrainc series in their original spreadsheet positions.
 - Fixed fresh BCB real estate category tables to return the documented

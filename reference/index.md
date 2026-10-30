@@ -49,6 +49,8 @@ Table and column documentation for each dataset
   : SECOVI-SP Real Estate Market Data
 - [`sinapi`](https://viniciusoike.github.io/realestatebr/reference/sinapi.md)
   : SINAPI Construction Costs and Indices
+- [`siconfi_taxes`](https://viniciusoike.github.io/realestatebr/reference/siconfi_taxes.md)
+  : Municipal IPTU and ITBI Tax Revenue
 
 ## Bundled tables
 
