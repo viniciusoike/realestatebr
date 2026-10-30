@@ -2,6 +2,8 @@
 
 ## realestatebr (development version)
 
+- Added `get_dataset("cement")` with monthly SNIC apparent consumption
+  and production snapshots by state, region, and Brazil.
 - Fixed SECOVI year assignment and preserved partially missing ABECIP
   months and Abrainc series in their original spreadsheet positions.
 - Fixed fresh BCB real estate category tables to return the documented

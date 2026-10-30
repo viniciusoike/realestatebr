@@ -252,6 +252,7 @@ Other datasets:
 [`abrainc`](https://viniciusoike.github.io/realestatebr/reference/abrainc.md),
 [`bcb_realestate`](https://viniciusoike.github.io/realestatebr/reference/bcb_realestate.md),
 [`bcb_series`](https://viniciusoike.github.io/realestatebr/reference/bcb_series.md),
+[`cement`](https://viniciusoike.github.io/realestatebr/reference/cement.md),
 [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md),
 [`mcmv`](https://viniciusoike.github.io/realestatebr/reference/mcmv.md),
 [`paic`](https://viniciusoike.github.io/realestatebr/reference/paic.md),

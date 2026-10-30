@@ -78,6 +78,7 @@ ds <- list_datasets()
 | abrainc | ABRAINC-FIPE Primary Market Indicators | ABRAINC/FIPE | indicator, radar, leading | quarterly |
 | bcb_realestate | BCB Real Estate Market Data | Banco Central do Brasil | accounting, application, indices, sources, units | monthly |
 | bcb_series | BCB Economic Series | Banco Central do Brasil - SGS | core, primary, secondary, tertiary, full | varies (daily/monthly/quarterly) |
+| cement | SNIC Cement: Apparent Consumption and Production | SNIC - Sindicato Nacional da Indústria do Cimento | consumption, production | monthly |
 | cno | National Registry of Construction Works | Receita Federal do Brasil - Cadastro Nacional de Obras | constructions, areas, cnaes, responsibilities | annual snapshots |
 | fgv_ibre | FGV IBRE Real Estate Indicators | FGV IBRE | (single table) | monthly |
 | mcmv | FGTS/MCMV Housing Finance and Subsidized Projects | Ministério das Cidades - Secretaria Nacional de Habitação | financing, financing_summary, subsidized_projects | dated full snapshots |

@@ -29,6 +29,8 @@ Table and column documentation for each dataset
   : BCB Economic Series
 - [`cno`](https://viniciusoike.github.io/realestatebr/reference/cno.md)
   : National Registry of Construction Works
+- [`cement`](https://viniciusoike.github.io/realestatebr/reference/cement.md)
+  : SNIC Cement: Apparent Consumption and Production
 - [`fgv_ibre`](https://viniciusoike.github.io/realestatebr/reference/fgv_ibre.md)
   : FGV IBRE Real Estate Indicators
 - [`mcmv`](https://viniciusoike.github.io/realestatebr/reference/mcmv.md)
