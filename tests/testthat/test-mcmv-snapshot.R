@@ -50,6 +50,7 @@ mcmv_fixture_sources <- function() {
 }
 
 test_that("MCMV adapters reject drift, invalid numerics and nonmidnight dates", {
+  skip_if_not_installed("duckdb", "1.5.5")
   b <- mcmv_builder()
   con <- DBI::dbConnect(duckdb::duckdb())
   withr::defer(DBI::dbDisconnect(con, shutdown = TRUE))
@@ -71,6 +72,7 @@ test_that("MCMV adapters reject drift, invalid numerics and nonmidnight dates", 
 })
 
 test_that("MCMV keeps categories, NULLs and exact repeated observations", {
+  skip_if_not_installed("duckdb", "1.5.5")
   b <- mcmv_builder()
   con <- DBI::dbConnect(duckdb::duckdb())
   withr::defer(DBI::dbDisconnect(con, shutdown = TRUE))
@@ -130,6 +132,7 @@ test_that("MCMV snapshots use existing lazy catalog and manifest contracts", {
 })
 
 test_that("failed MCMV builds clean staging", {
+  skip_if_not_installed("duckdb", "1.5.5")
   b <- mcmv_builder()
   output <- tempfile()
   withr::defer(unlink(output, recursive = TRUE))
