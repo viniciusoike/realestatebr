@@ -58,6 +58,7 @@ Suggests:
     ggplot2,
     kableExtra,
     knitr,
+    pdftools,
     pkgdown,
     RcppRoll,
     rmarkdown,
