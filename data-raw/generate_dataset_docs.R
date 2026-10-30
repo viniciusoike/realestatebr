@@ -16,8 +16,8 @@ library(yaml)
 # Helpers ------------------------------------------------------------------
 
 escape_rd <- function(x) {
-  y <- gsub("%", "\\\\%", x)
-  return(y)
+  # roxygen2 escapes percent signs when it writes Rd.
+  return(x)
 }
 
 # Wrap text as roxygen comment lines, breaking at ~76 characters

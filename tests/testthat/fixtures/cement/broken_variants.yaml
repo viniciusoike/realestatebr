@@ -1,0 +1,18 @@
+broken_month_header:
+  action: replace
+  pattern: Fev
+  replacement: Fex
+broken_missing_state:
+  action: remove_line
+  pattern: '^Acre[[:space:]]'
+broken_duplicate_adjustment:
+  action: duplicate_line
+  pattern: '^Ajustes[[:space:]]'
+broken_malformed_number:
+  action: replace
+  pattern: '34.004'
+  replacement: '34.x04'
+broken_total:
+  action: replace
+  pattern: '5.216.773'
+  replacement: '5.216.774'
