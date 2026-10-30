@@ -22,7 +22,9 @@ jobs:
         config:
           - {os: macos-latest,   r: 'release'}
           - {os: windows-latest, r: 'release'}
-          - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release'}
+          # R-devel has no duckdb binary on Ubuntu 26.04, and the ~1h source
+          # build intermittently fails to install. Its tests skip without it.
+          - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release', extra-packages: 'duckdb=?ignore'}
           - {os: ubuntu-latest,  r: 'release'}
           - {os: ubuntu-latest,  r: 'oldrel-1'}
 
@@ -46,7 +48,9 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: |
+            any::rcmdcheck
+            ${{ matrix.config.extra-packages }}
           needs: check
 
       - name: Install current package for subprocess tests

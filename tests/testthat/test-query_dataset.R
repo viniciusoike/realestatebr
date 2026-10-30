@@ -186,6 +186,7 @@ test_that("query_dataset can return one CNO table", {
 
 test_that("query_dataset rejects the former CNO table name", {
   local_edition(3)
+  skip_if_not_installed("duckdb", "1.5.5")
 
   expect_snapshot(
     error = TRUE,
