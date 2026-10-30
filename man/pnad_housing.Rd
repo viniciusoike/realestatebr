@@ -65,7 +65,7 @@ series are returned.
 \seealso{
 \code{\link[=get_dataset]{get_dataset()}}, \code{\link[=query_dataset]{query_dataset()}}, \code{\link[=list_datasets]{list_datasets()}}, \code{\link[=get_dataset_info]{get_dataset_info()}}
 
-Other datasets:
+Other datasets: 
 \code{\link{abecip}},
 \code{\link{abrainc}},
 \code{\link{bcb_realestate}},
@@ -79,6 +79,7 @@ Other datasets:
 \code{\link{rppi}},
 \code{\link{rppi_bis}},
 \code{\link{secovi}},
+\code{\link{siconfi_taxes}},
 \code{\link{sinapi}}
 }
 \concept{datasets}

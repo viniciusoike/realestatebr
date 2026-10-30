@@ -190,7 +190,7 @@ get_dataset_with_fallback <- function(
     ),
     error = function(cnd) {
       errors$github <<- cnd$message
-      if (!quiet) {
+      if (!quiet && !isTRUE(dataset_info$cache_only)) {
         cli::cli_warn(
           "GitHub release unavailable for {name}, downloading from the
            original source."
@@ -204,7 +204,20 @@ get_dataset_with_fallback <- function(
     return(result)
   }
 
-  result <- rlang::try_fetch(
+  # Cache-only datasets are never rebuilt from the source: the release
+  # snapshot is the only delivery, and running the maintainer's build is
+  # not an option for users, so no source='fresh' advice here either.
+  if (isTRUE(dataset_info$cache_only)) {
+    cli::cli_abort(c(
+      "Dataset {.val {name}} is built by the data-raw pipeline and is \\
+       served only from the release cache.",
+      "x" = "GitHub release: {errors$github %||% 'Not attempted'}",
+      "i" = "Update the package or retry later: the release carries the \\
+             rebuilt snapshot. No fresh download of this dataset exists."
+    ))
+  }
+
+  rlang::try_fetch(
     get_dataset_from_source(
       name,
       dataset_info,
@@ -327,6 +340,17 @@ get_from_internal_function <- function(
   quiet = FALSE,
   ...
 ) {
+  # Cache-only datasets have no fresh path at all: the fresh request must
+  # name the pipeline and the release cache instead of a missing function.
+  if (isTRUE(dataset_info$cache_only)) {
+    cli::cli_abort(c(
+      "Dataset {.val {name}} is built by the data-raw pipeline and is \\
+       only served from the release cache.",
+      "i" = "There is no fresh download to run; the data-raw pipeline \\
+             rebuilds it from files that are never in the repository."
+    ))
+  }
+
   internal_function <- dataset_info$dataset_function
 
   if (is.null(internal_function) || internal_function == "") {

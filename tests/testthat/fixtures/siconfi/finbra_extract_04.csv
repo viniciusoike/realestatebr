@@ -1,0 +1,22 @@
+Exercício: 2022
+Escopo: Municípios
+Tabela: Receitas Orçamentárias (Anexo I-C)
+Instituição;Cod.IBGE;UF;População;Coluna;Conta;Identificador da Conta;Valor
+Prefeitura Municipal de Progresso - RS;4315156;RS;6235;"Receitas Brutas Realizadas";"1.1.1.2.50.0.0 - Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.2.50.0.0";441624,9
+Prefeitura Municipal de Progresso - RS;4315156;RS;6235;"Receitas Brutas Realizadas";"1.1.1.2.53.0.0 - Impostos sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.2.53.0.0";98277,00
+Prefeitura Municipal de Quilombo - SC;4214201;SC;9773;"Receitas Brutas Realizadas";"1.1.1.2.50.0.0 - Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.2.50.0.0";927902,82
+Prefeitura Municipal de Quilombo - SC;4214201;SC;9773;"Receitas Brutas Realizadas";"1.1.1.2.53.0.0 - Impostos sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.2.53.0.0";581374,59
+Prefeitura Municipal de Quilombo - SC;4214201;SC;9773;"Deduções - Transferências Constitucionais";"1.1.1.2.50.0.0 - Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.2.50.0.0";0,00
+Prefeitura Municipal de Quilombo - SC;4214201;SC;9773;"Deduções - Transferências Constitucionais";"1.1.1.2.53.0.0 - Impostos sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.2.53.0.0";0,00
+Prefeitura Municipal de Quilombo - SC;4214201;SC;9773;"Deduções - FUNDEB";"1.1.1.2.50.0.0 - Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.2.50.0.0";0,00
+Prefeitura Municipal de Quilombo - SC;4214201;SC;9773;"Deduções - FUNDEB";"1.1.1.2.53.0.0 - Impostos sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.2.53.0.0";0,00
+Prefeitura Municipal de Quilombo - SC;4214201;SC;9773;"Outras Deduções da Receita";"1.1.1.2.50.0.0 - Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.2.50.0.0";337,53
+Prefeitura Municipal de Quilombo - SC;4214201;SC;9773;"Outras Deduções da Receita";"1.1.1.2.53.0.0 - Impostos sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.2.53.0.0";3270,17
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12396372;"Receitas Brutas Realizadas";"1.1.1.2.50.0.0 - Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.2.50.0.0";14451490842,17
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12396372;"Receitas Brutas Realizadas";"1.1.1.2.53.0.0 - Impostos sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.2.53.0.0";3251417898,1
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12396372;"Outras Deduções da Receita";"1.1.1.2.50.0.0 - Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.2.50.0.0";127898366,02
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12396372;"Outras Deduções da Receita";"1.1.1.2.53.0.0 - Impostos sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.2.53.0.0";9326635,34
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6775561;"Receitas Brutas Realizadas";"1.1.1.2.50.0.0 - Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.2.50.0.0";4391321304,14
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6775561;"Receitas Brutas Realizadas";"1.1.1.2.53.0.0 - Impostos sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.2.53.0.0";1113185884,32
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6775561;"Outras Deduções da Receita";"1.1.1.2.50.0.0 - Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.2.50.0.0";83318932,48
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6775561;"Outras Deduções da Receita";"1.1.1.2.53.0.0 - Impostos sobre Transmissão "Inter Vivos" de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.2.53.0.0";10915709,23

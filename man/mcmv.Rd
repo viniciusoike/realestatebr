@@ -129,6 +129,7 @@ Other datasets:
 \code{\link{rppi}},
 \code{\link{rppi_bis}},
 \code{\link{secovi}},
+\code{\link{siconfi_taxes}},
 \code{\link{sinapi}}
 }
 \concept{datasets}

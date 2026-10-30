@@ -1,0 +1,35 @@
+{
+  "hasMore": false,
+  "limit": 2,
+  "offset": 0,
+  "links": [],
+  "count": 2,
+  "items": [
+    {
+      "exercicio": 2018,
+      "instituicao": "Prefeitura Municipal de São Paulo - SP",
+      "cod_ibge": 3550308,
+      "uf": "SP",
+      "anexo": "DCA-Anexo I-C",
+      "rotulo": "Padrão",
+      "coluna": "Receitas Brutas Realizadas",
+      "cod_conta": "RO1.0.0.0.00.0.0",
+      "conta": "conta",
+      "valor": 52983577439.67,
+      "populacao": 12038175
+    },
+    {
+      "exercicio": 2018,
+      "instituicao": "Prefeitura Municipal de São Paulo - SP",
+      "cod_ibge": 3550308,
+      "uf": "SP",
+      "anexo": "DCA-Anexo I-C",
+      "rotulo": "Padrão",
+      "coluna": "Receitas Brutas Realizadas",
+      "cod_conta": "RO1.1.0.0.00.0.0",
+      "conta": "conta",
+      "valor": 30083861181.61,
+      "populacao": 12038175
+    }
+  ]
+}

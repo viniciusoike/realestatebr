@@ -1,0 +1,15 @@
+Exercício: 2018
+Escopo: Municípios
+Tabela: Receitas Orçamentárias (Anexo I-C)
+Instituição;Cod.IBGE;UF;População;Coluna;Conta;Identificador da Conta;Valor
+Prefeitura Municipal de Bonfinópolis - GO;5203559;GO;8876;"Receitas Brutas Realizadas";"1.1.1.8.01.1.0 Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.8.01.1.0";431153,44
+Prefeitura Municipal de Bonfinópolis - GO;5203559;GO;8876;"Receitas Brutas Realizadas";"1.1.1.8.01.4.0 Imposto sobre Transmissão ¿Inter Vivos¿ de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.8.01.4.0";113235,93
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12038175;"Receitas Brutas Realizadas";"1.1.1.8.01.1.0 Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.8.01.1.0";10071810109,96
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12038175;"Receitas Brutas Realizadas";"1.1.1.8.01.4.0 Imposto sobre Transmissão ¿Inter Vivos¿ de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.8.01.4.0";2012955546,3
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12038175;"Outras Deduções da Receita";"1.1.1.8.01.1.0 Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.8.01.1.0";130878689,12
+Prefeitura Municipal de São Paulo - SP;3550308;SP;12038175;"Outras Deduções da Receita";"1.1.1.8.01.4.0 Imposto sobre Transmissão ¿Inter Vivos¿ de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.8.01.4.0";9922454,76
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6498837;"Receitas Brutas Realizadas";"1.1.1.8.01.1.0 Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.8.01.1.0";3262717234,67
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6498837;"Receitas Brutas Realizadas";"1.1.1.8.01.4.0 Imposto sobre Transmissão ¿Inter Vivos¿ de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.8.01.4.0";747202280,24
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6498837;"Outras Deduções da Receita";"1.1.1.8.01.1.0 Imposto sobre a Propriedade Predial e Territorial Urbana";"siconfi-cor_RO1.1.1.8.01.1.0";8983993,03
+Prefeitura Municipal do Rio de Janeiro - RJ;3304557;RJ;6498837;"Outras Deduções da Receita";"1.1.1.8.01.4.0 Imposto sobre Transmissão ¿Inter Vivos¿ de Bens Imóveis e de Direitos Reais sobre Imóveis";"siconfi-cor_RO1.1.1.8.01.4.0";5967794,95
+Prefeitura Municipal de Recursolandia - TO;1718501;TO;2467;"Receitas Brutas Realizadas";"1.7.2.2.01.1.6 Transferências de Convênios da União";"siconfi-cor_RO1.7.2.2.01.1.6";3209241,71

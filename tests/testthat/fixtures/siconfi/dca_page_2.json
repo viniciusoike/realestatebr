@@ -1,0 +1,52 @@
+{
+  "items": [
+    {
+      "exercicio": 2024,
+      "instituicao": "Prefeitura Municipal de São Paulo - SP",
+      "cod_ibge": 3550308,
+      "uf": "SP",
+      "anexo": "DCA-Anexo I-C",
+      "rotulo": "Padrão",
+      "coluna": "Deduções - FUNDEB",
+      "cod_conta": "TotalReceitas",
+      "conta": "TOTAL DAS RECEITAS (III) = (I + II)",
+      "valor": 3037203144.09,
+      "populacao": 12200180
+    },
+    {
+      "exercicio": 2024,
+      "instituicao": "Prefeitura Municipal de São Paulo - SP",
+      "cod_ibge": 3550308,
+      "uf": "SP",
+      "anexo": "DCA-Anexo I-C",
+      "rotulo": "Padrão",
+      "coluna": "Outras Deduções da Receita",
+      "cod_conta": "TotalReceitas",
+      "conta": "TOTAL DAS RECEITAS (III) = (I + II)",
+      "valor": 1272574120.81,
+      "populacao": 12200180
+    }
+  ],
+  "hasMore": false,
+  "limit": 2,
+  "offset": 2,
+  "count": 2,
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://host-5hrds-scan.prosubnet.vcndados.oraclevcn.com/ords/cdwhprd/siconfi/tt/dca?an_exercicio=2024&no_anexo=DCA-Anexo+I-C&id_ente=3550308"
+    },
+    {
+      "rel": "describedby",
+      "href": "https://host-5hrds-scan.prosubnet.vcndados.oraclevcn.com/ords/cdwhprd/siconfi/metadata-catalog/tt/item"
+    },
+    {
+      "rel": "first",
+      "href": "https://host-5hrds-scan.prosubnet.vcndados.oraclevcn.com/ords/cdwhprd/siconfi/tt/dca?an_exercicio=2024&no_anexo=DCA-Anexo+I-C&id_ente=3550308&limit=2"
+    },
+    {
+      "rel": "prev",
+      "href": "https://host-5hrds-scan.prosubnet.vcndados.oraclevcn.com/ords/cdwhprd/siconfi/tt/dca?an_exercicio=2024&no_anexo=DCA-Anexo+I-C&id_ente=3550308&offset=347&limit=2"
+    }
+  ]
+}
