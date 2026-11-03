@@ -32,7 +32,7 @@ RoxygenNote: 7.3.3
 Imports:
     cli,
     dplyr,
-    GetBCBData,
+    GetBCBData (>= 0.9.5),
     httr,
     janitor,
     jsonlite,

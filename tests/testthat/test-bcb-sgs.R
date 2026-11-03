@@ -12,6 +12,24 @@ test_that("bcb_series_first_date falls back for unknown codes", {
   expect_equal(bcb_series_first_date(999999), BCB_SERIES_FLOOR)
 })
 
+test_that("fetch_sgs_series reads GetBCBData >= 0.9.5 output", {
+  fake_series <- function(id, first_date, last_date, be_quiet, use_memoise) {
+    dplyr::tibble(
+      ref_date = as.Date(c("2026-01-01", NA)),
+      value = c(1.5, NA),
+      id_num = id,
+      series_name = "id"
+    )
+  }
+  local_mocked_bindings(gbcbd_get_series = fake_series, .package = "GetBCBData")
+
+  series <- fetch_sgs_series(21340, as.Date("2026-01-01"))
+
+  expect_named(series, c("date", "value", "code_bcb"))
+  expect_equal(series$date, as.Date("2026-01-01"))
+  expect_equal(series$code_bcb, 21340)
+})
+
 test_that("fetch_sgs_series returns the package schema", {
   skip_on_cran()
   skip_if_not_live()
