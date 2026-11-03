@@ -2,6 +2,10 @@
 
 ## realestatebr (development version)
 
+- Fixed `get_dataset("bcb_series")` and
+  `get_dataset("rppi", table = "ivgr")`, which failed with `GetBCBData`
+  0.9.5 after it renamed its output columns and arguments. The package
+  now requires `GetBCBData (>= 0.9.5)`.
 - Added `get_dataset("cement")` with monthly SNIC apparent consumption
   and production snapshots by state, region, and Brazil.
 - Added `get_dataset("siconfi_taxes")`, annual municipal IPTU and ITBI
