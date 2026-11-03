@@ -1,7 +1,6 @@
-# IBGE Aggregates API --------------------------------------------------------
+# IBGE SIDRA API -------------------------------------------------------------
 
-ibge_aggregates_base_url <-
-  "https://servicodados.ibge.gov.br/api/v3/agregados"
+ibge_sidra_base_url <- "https://apisidra.ibge.gov.br/values"
 
 download_ibge_aggregate <- function(
   aggregate,
@@ -42,23 +41,34 @@ download_ibge_aggregate <- function(
         max_retries = max_retries,
         description = paste("IBGE aggregate", aggregate)
       )
-      parse_ibge_aggregate_chunk(raw, aggregate)
+      parse_sidra_response(raw, aggregate, classifications)
     }
   )
-  dat <- dplyr::bind_rows(chunks)
 
-  units <- download_ibge_units(
-    aggregate,
-    quiet = quiet,
-    max_retries = max_retries
-  )
-  dat <- apply_ibge_units(dat, units)
+  return(fill_sidra_units(dplyr::bind_rows(chunks)))
+}
+
+# SIDRA leaves the unit empty on rows from before a variable starts, so those
+# rows take the unit reported for the same variable elsewhere in the table.
+fill_sidra_units <- function(dat) {
+  if (nrow(dat) == 0) {
+    return(dat)
+  }
+
+  reported <- dat[!is.na(dat$unit) & dat$unit != "", ]
+  units <- reported$unit[match(dat$variable_id, reported$variable_id)]
+  dat$unit <- dplyr::if_else(is.na(dat$unit) | dat$unit == "", units, dat$unit)
 
   return(dat)
 }
 
 download_ibge_periods <- function(aggregate, quiet, max_retries) {
-  url <- paste0(ibge_aggregates_base_url, "/", aggregate, "/periodos")
+  url <- paste0(
+    ibge_sidra_base_url,
+    "/t/",
+    aggregate,
+    "/n1/all/v/all/p/all/f/c/h/y"
+  )
   raw <- download_ibge_json(
     url,
     quiet = quiet,
@@ -66,43 +76,16 @@ download_ibge_periods <- function(aggregate, quiet, max_retries) {
     description = paste("IBGE aggregate", aggregate, "period list")
   )
 
-  return(vapply(raw, `[[`, character(1), "id"))
+  return(sort(unique(raw$D3C[-1])))
 }
 
-# Data responses leave `unidade` empty when the requested periods include
-# months before a variable starts, so units come from the metadata endpoint.
-download_ibge_units <- function(aggregate, quiet, max_retries) {
-  url <- paste0(ibge_aggregates_base_url, "/", aggregate, "/metadados")
-  raw <- download_ibge_json(
-    url,
-    quiet = quiet,
-    max_retries = max_retries,
-    description = paste("IBGE aggregate", aggregate, "metadata")
-  )
+# "N1[all]|N3[11,12]" becomes "n1/all/n3/11,12", and prefix "c" does the same
+# for "24[103340]|76[2630]".
+sidra_selection_path <- function(selection, prefix = "") {
+  parts <- strsplit(selection, "|", fixed = TRUE)[[1]]
+  path <- sub("^([^\\[]+)\\[(.*)\\]$", "\\1/\\2", parts)
 
-  units <- vapply(
-    raw$variaveis,
-    function(variable) variable$unidade %||% NA_character_,
-    character(1)
-  )
-  names(units) <- vapply(
-    raw$variaveis,
-    function(variable) as.character(variable$id),
-    character(1)
-  )
-
-  return(units)
-}
-
-apply_ibge_units <- function(dat, units) {
-  if (nrow(dat) == 0) {
-    return(dat)
-  }
-
-  metadata_unit <- unname(units[dat$variable_id])
-  dat$unit <- dplyr::coalesce(metadata_unit, dplyr::na_if(dat$unit, ""))
-
-  return(dat)
+  return(paste0(prefix, path, collapse = "/"))
 }
 
 build_ibge_aggregate_url <- function(
@@ -112,29 +95,18 @@ build_ibge_aggregate_url <- function(
   localities,
   classifications = NULL
 ) {
-  period_path <- paste(periods, collapse = "|")
-  variable_path <- paste(variables, collapse = "|")
-  query <- paste0("localidades=", utils::URLencode(localities, reserved = TRUE))
+  segments <- c(
+    paste0("t/", aggregate),
+    tolower(sidra_selection_path(localities)),
+    paste0("v/", paste(variables, collapse = ",")),
+    paste0("p/", paste(periods, collapse = ",")),
+    if (!is.null(classifications)) {
+      sidra_selection_path(classifications, prefix = "c")
+    },
+    "f/a/h/y/d/m"
+  )
 
-  if (!is.null(classifications)) {
-    query <- paste0(
-      query,
-      "&classificacao=",
-      utils::URLencode(classifications, reserved = TRUE)
-    )
-  }
-
-  return(paste0(
-    ibge_aggregates_base_url,
-    "/",
-    aggregate,
-    "/periodos/",
-    period_path,
-    "/variaveis/",
-    variable_path,
-    "?",
-    query
-  ))
+  return(paste(c(ibge_sidra_base_url, segments), collapse = "/"))
 }
 
 download_ibge_json <- function(url, quiet, max_retries, description) {
@@ -151,7 +123,7 @@ download_ibge_json <- function(url, quiet, max_retries, description) {
       httr::stop_for_status(response)
 
       text <- httr::content(response, as = "text", encoding = "UTF-8")
-      jsonlite::fromJSON(text, simplifyVector = FALSE)
+      jsonlite::fromJSON(text)
     },
     max_retries = max_retries,
     quiet = quiet,
@@ -159,60 +131,52 @@ download_ibge_json <- function(url, quiet, max_retries, description) {
   ))
 }
 
-parse_ibge_aggregate_chunk <- function(raw, aggregate) {
-  rows <- list()
-  row_index <- 0L
-
-  for (variable in raw) {
-    for (result in variable$resultados) {
-      classifications <- parse_ibge_classifications(result$classificacoes)
-
-      for (series in result$series) {
-        period_ids <- names(series$serie)
-        values <- unlist(series$serie, use.names = FALSE)
-        locality <- series$localidade
-
-        row_index <- row_index + 1L
-        row <- tibble::tibble(
-          aggregate_id = as.character(aggregate),
-          variable_id = as.character(variable$id),
-          variable_name = variable$variavel,
-          unit = variable$unidade,
-          period = period_ids,
-          geography_level = locality$nivel$id,
-          geography_level_name = locality$nivel$nome,
-          geography_code = as.character(locality$id),
-          geography_name = locality$nome,
-          value_raw = as.character(values),
-          value = parse_ibge_value(values)
-        )
-
-        if (length(classifications) > 0) {
-          for (column in names(classifications)) {
-            row[[column]] <- classifications[[column]]
-          }
-        }
-
-        rows[[row_index]] <- row
-      }
-    }
+# SIDRA returns a header row, then D1 = geography, D2 = variable, D3 = period,
+# and one more dimension per requested classification, in request order.
+parse_sidra_response <- function(raw, aggregate, classifications) {
+  if (nrow(raw) <= 1L) {
+    return(tibble::tibble())
   }
 
-  return(dplyr::bind_rows(rows))
-}
-
-parse_ibge_classifications <- function(classifications) {
-  columns <- list()
-
-  for (classification in classifications) {
-    category <- classification$categoria
-    category_id <- names(category)[[1]]
-    prefix <- paste0("classification_", classification$id)
-    columns[[paste0(prefix, "_code")]] <- category_id
-    columns[[paste0(prefix, "_name")]] <- unname(category[[1]])
+  classification_ids <- character()
+  if (!is.null(classifications)) {
+    parts <- strsplit(classifications, "|", fixed = TRUE)[[1]]
+    classification_ids <- sub("\\[.*$", "", parts)
   }
 
-  return(columns)
+  dimension_count <- sum(grepl("^D[0-9]+C$", names(raw)))
+  if (
+    dimension_count != 3L + length(classification_ids) ||
+      !identical(raw$D2N[[1]], "Vari\u00e1vel")
+  ) {
+    cli::cli_abort(
+      "Unexpected SIDRA layout for table {.val {aggregate}}: \\
+      {.val {unlist(raw[1, grepl('^D[0-9]+N$', names(raw))])}}."
+    )
+  }
+
+  rows <- raw[-1, , drop = FALSE]
+  dat <- tibble::tibble(
+    aggregate_id = rep(as.character(aggregate), nrow(rows)),
+    variable_id = rows$D2C,
+    variable_name = rows$D2N,
+    unit = rows$MN,
+    period = rows$D3C,
+    geography_level = paste0(rep("N", nrow(rows)), rows$NC),
+    geography_level_name = rows$NN,
+    geography_code = rows$D1C,
+    geography_name = rows$D1N,
+    value_raw = rows$V,
+    value = parse_ibge_value(rows$V)
+  )
+
+  for (i in seq_along(classification_ids)) {
+    prefix <- paste0("classification_", classification_ids[[i]])
+    dat[[paste0(prefix, "_code")]] <- rows[[paste0("D", i + 3L, "C")]]
+    dat[[paste0(prefix, "_name")]] <- rows[[paste0("D", i + 3L, "N")]]
+  }
+
+  return(dat)
 }
 
 parse_ibge_value <- function(x) {

@@ -1,6 +1,8 @@
 # PNAD Housing fixtures
 
-Retrieved from the official IBGE Aggregates API v3 on 2026-10-01.
+Retrieved from the official IBGE Aggregates API v3 on 2026-10-01. The package now
+reads the same tables through SIDRA, and `helper-ibge-fixtures.R` converts these
+files to the tibble that `download_ibge_aggregate()` returns.
 
 - `6678_brazil_2025.json` contains variable 162 for total households and
   one-resident households. Source request:

@@ -844,7 +844,7 @@ fetch_siconfi_population <- function(
     variables = "9324",
     periods = as.character(years),
     localities = "N6[all]",
-    # IBGE answers HTTP 500 above ~8 periods on this table when the query
+    # IBGE rejects requests above ~8 periods on this table when the query
     # carries the whole N6[all] municipality universe; small chunks keep
     # every request under the limit.
     chunk_size = 5L
