@@ -146,14 +146,14 @@ fetch_sgs_series <- function(code, first_date) {
   raw <- suppressWarnings(
     GetBCBData::gbcbd_get_series(
       id = code,
-      first.date = first_date,
-      last.date = Sys.Date(),
-      be.quiet = TRUE,
-      use.memoise = FALSE
+      first_date = first_date,
+      last_date = Sys.Date(),
+      be_quiet = TRUE,
+      use_memoise = FALSE
     )
   )
 
-  cols_rename <- c("date" = "ref.date", "code_bcb" = "id.num")
+  cols_rename <- c("date" = "ref_date", "code_bcb" = "id_num")
   cols_select <- c("date", "value", "code_bcb")
 
   series <- raw |>

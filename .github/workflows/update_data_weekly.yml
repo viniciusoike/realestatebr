@@ -92,8 +92,12 @@ jobs:
               cat("::warning title=", warned$name[i], "::", message_text, "\n", sep = "")
             }
 
-            if (nrow(errored) > 0) {
-              cli::cli_abort("Pipeline failed; release assets were not changed.")
+            # Targets that succeeded still publish. A failed dataset keeps its
+            # last release asset, and the final step marks the run as failed.
+            root_cause <- errored[!grepl("could not load dependency", errored$error), ]
+            for (i in seq_len(nrow(root_cause))) {
+              message_text <- gsub("[\r\n]+", " ", root_cause$error[i])
+              cat("::error title=", root_cause$name[i], "::", message_text, "\n", sep = "")
             }
             cli::cli_alert_success("Pipeline run complete")
           '
@@ -210,9 +214,10 @@ jobs:
           done
           echo "Uploaded $uploaded file(s)"
 
-      # Keep the previous store when publication fails so the next run retries.
+      # Failed targets stay outdated in the store, so the next run retries them.
+      # Skip saving when publication fails so the next run retries those too.
       - name: Save targets store
-        if: success() && steps.pipeline.outputs.targets_failed != 'true'
+        if: success()
         uses: actions/cache/save@v4
         with:
           path: _targets
@@ -223,7 +228,7 @@ jobs:
         run: |
           count="${{ steps.validate.outputs.file_count || '0' }}"
           if [ "${{ steps.pipeline.outputs.targets_failed }}" == "true" ]; then
-            echo "::error::Pipeline completed with target failures — check logs for details"
+            echo "::error::Some datasets failed and kept their last published version ($count file(s) uploaded) — see the annotations above"
             exit 1
           elif [ "${{ job.status }}" == "success" ]; then
             if [ "$count" -gt 0 ]; then
