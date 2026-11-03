@@ -1,0 +1,35 @@
+name: Diagnose SIDRA from runner
+on:
+  push:
+    branches: [diag/sidra-runner]
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Install package
+        run: R CMD INSTALL .
+      - name: Fetch every SIDRA dataset
+        run: |
+          Rscript -e '
+            library(realestatebr)
+            ns <- asNamespace("realestatebr")
+            tables <- list(c("paic","activity"), c("paic","size"), c("paic","state"),
+              c("pnad_housing","tenure"), c("pnad_housing","dwelling_type"),
+              c("pnad_housing","household_size"), c("pnad_housing","mean_household_size"),
+              c("pnad_housing","household_composition"))
+            run <- function(label, expr) {
+              t0 <- Sys.time()
+              x <- expr
+              cat(sprintf("RESULT %s rows=%d secs=%.0f\n", label, nrow(x), as.numeric(difftime(Sys.time(), t0, units = "secs"))))
+            }
+            run("sinapi", ns$get_sinapi(quiet = TRUE))
+            run("pim_pf", ns$get_pim_pf_construction(quiet = TRUE))
+            for (t in tables) run(paste(t, collapse = "/"), get_dataset(t[[1]], table = t[[2]], source = "fresh"))
+            run("population", ns$fetch_siconfi_population(2021:2025))
+          '
