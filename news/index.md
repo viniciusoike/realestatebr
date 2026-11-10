@@ -2,6 +2,10 @@
 
 ## realestatebr (development version)
 
+- Changed `sinapi`, `pim_pf_construction`, `paic`, `pnad_housing`, and
+  the `siconfi_taxes` population fetch to download from the IBGE SIDRA
+  API instead of the Aggregates API, which GitHub Actions runners cannot
+  reach.
 - Fixed `get_dataset("bcb_series")` and
   `get_dataset("rppi", table = "ivgr")`, which failed with `GetBCBData`
   0.9.5 after it renamed its output columns and arguments. The package
